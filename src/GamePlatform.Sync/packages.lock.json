@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "dependencies": {
+    ".NETStandard,Version=v2.1": {
+      "gameplatform.backend.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Core": "[0.1.0-draft, )"
+        }
+      },
+      "gameplatform.core": {
+        "type": "Project"
+      },
+      "gameplatform.diagnostics.abstractions": {
+        "type": "Project"
+      },
+      "gameplatform.storage.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Core": "[0.1.0-draft, )"
+        }
+      }
+    }
+  }
+}

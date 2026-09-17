@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-build-test-package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - run: python scripts/validate.py
+      - run: python -m unittest discover -s scripts -p "test_*.py"
+      - run: dotnet restore GamePlatform.sln --locked-mode
+      - run: dotnet build GamePlatform.sln -c Release --no-restore
+      - run: dotnet test GamePlatform.sln -c Release --no-build --no-restore
+      - run: python scripts/package-sdk.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: game-platform-dotnet-m0
+          path: artifacts/

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "0.1.0-draft",
+  "status": "adopted_target_implementation_pending",
+  "identity": {
+    "newPlatformOwnedIds": "uuid_v7",
+    "existingProviderIds": "preserve",
+    "wire": "messagepack_bin16_rfc_order",
+    "json": "canonical_lowercase_uuid"
+  },
+  "integers": {
+    "typescript": "bigint",
+    "signedMinimum": "-9223372036854775808",
+    "signedMaximum": "9223372036854775807",
+    "json": "decimal_string",
+    "unsafeNumber": "reject"
+  },
+  "timestamps": {
+    "unit": "unix_milliseconds",
+    "minimum": 0,
+    "maximum": 253402300799999
+  },
+  "serialization": {
+    "primary": "messagepack",
+    "namedFields": true,
+    "typeless": false,
+    "json": "diagnostic_or_explicitly_negotiated",
+    "fallbackOnDecodeError": false,
+    "commandDigest": "versioned_canonical_semantics"
+  },
+  "outbox": {
+    "sequenceScope": ["backendNamespace", "appId", "platformUserId", "clientStreamId"],
+    "firstSequence": "1",
+    "atomicEnqueue": ["allocate_sequence", "persist_local_projection", "insert_immutable_command"],
+    "terminalRejectionFinalizesSequence": true,
+    "pushAcknowledgementAdvancesPullCursor": false
+  },
+  "sync": {
+    "canonicalStream": "private_player",
+    "cursor": "opaque_binary_bound_to_account_app_visibility_protocol_epoch",
+    "revisionAllocator": "transactionally_locked_player_feed_head",
+    "atomicChangeGroups": true,
+    "fixedCommittedWatermark": true,
+    "retentionRecovery": "reset_required_snapshot_preserve_pending",
+    "pushRoute": "POST /v1/apps/{appId}/sync/push",
+    "pullRoute": "POST /v1/apps/{appId}/sync/pull"
+  },
+  "firstLaunch": {
+    "requiresOnlineAnonymousProvisioning": true,
+    "completeBootstrapBeforeOwnedGameplay": true,
+    "authSubjectIsPlayerId": false
+  },
+  "extensionPayload": {
+    "type": "bounded_versioned_json_object",
+    "maximumBytes": 16384,
+    "maximumDepth": 16
+  },
+  "rewards": {
+    "transactionOwner": "application_use_case",
+    "fulfillmentBorrowsTransaction": true,
+    "valueModules": ["wallet", "inventory", "entitlements"],
+    "idempotency": ["operation_id", "business_source_key"],
+    "automaticRuleCycles": "reject"
+  },
+  "initialTuningDefaults": {
+    "atomicFeedGroupMaximumBytes": 65536,
+    "syncPageTargetBytes": 131072,
+    "syncResponseHardCapBytes": 262144,
+    "feedRetentionDays": 30,
+    "leaderboardSoftTtlSeconds": 30,
+    "provenPerformanceOptimum": false
+  }
+}
+

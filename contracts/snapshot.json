@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "0.1.0-draft",
+  "algorithm": "sha256",
+  "files": {
+    "platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
+    "v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5"
+  }
+}
