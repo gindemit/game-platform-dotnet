@@ -29,4 +29,6 @@ Environment: Windows 10.0.26200, .NET SDK 9.0.203/MSBuild 17.13.20, Python 3.10.
 - `python scripts/package-sdk.py`: passed after correcting directory enumeration; produced 15 local `.nupkg` files, 15 managed DLLs and a SHA-256 dependency manifest. It included no native libraries and published nothing.
 - Contract SHA-256: policy `3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c`; primitive vectors `d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5`.
 
-Publication/permission status: local Git repository only. No remote was created or pushed by this M0 task; repository publication is owned by the parent integration task. There were no local filesystem or package-feed permission blockers.
+## Publication
+
+The private repository is published at `https://github.com/gindemit/game-platform-dotnet` with default branch `main`. The reviewed bootstrap commit is `9c7ceca148a658fffaf30e6b43388184a6140f6d`; a follow-up status-only commit records publication. There were no repository-creation, push, local-filesystem or package-feed permission blockers.
