@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "track": "client_sdk_and_mrsquare",
+  "prepared_on": "2026-09-18",
+  "canonical_repository": "gindemit/game-platform-backend",
+  "canonical_path": "contracts/",
+  "reviewed_commit": "66e40558045cbe5c314119022a55ced46ad9d04e",
+  "client_baseline_commit": "f446101574e11c9885583ea184af583303b74ba1",
+  "consumer_baseline_commit": "a3dc3f00aea334cdf538cc34d49c2e8a92b8cbd9",
+  "policy_version": "0.1.0-draft",
+  "policy_schema_version": 1,
+  "digests": {
+    "contracts/platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
+    "contracts/fixtures/primitives.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5"
+  },
+  "digest_evidence": "Values inspected in the existing canonical/mirror snapshot records; recompute against fetched bytes during CL-003 before repinning. This planning session did not run the repository pinning tool.",
+  "operation_schema_version": null,
+  "operation_fixture_version": null,
+  "freeze_status": "blocked_missing_operation_schemas_and_real_peer_fixtures",
+  "compatible_backend_implementation_commit": null,
+  "compatible_sdk_artifact_commit": null,
+  "compatible_unity_import_commit": null,
+  "owners_to_assign": {
+    "canonical_changes": "BackendContractOwner",
+    "reviewed_mirror_and_dto_mapping": "ClientContractOwner",
+    "shared_unity_surfaces": "ConsumerIntegrationOwner"
+  },
+  "owned_changes_this_track": ["SDK planning and client mirror review requests", "explicitly scoped MrSquare integration planning"],
+  "unowned_changes": ["backend canonical schemas and migrations", "backend deployment", "production data and secrets"],
+  "peer_requests": [
+    {"key":"PEER-CORE","client_task":"CL-003","need":"Auth/provision/membership/full bootstrap paging, profile/progression, push/pull/results/reset/error schemas, explicit unknown-field/version rules and canonical-semantic fingerprint algorithm; bidirectional C#/TS binary fixtures."},
+    {"key":"PEER-VALUE","client_tasks":["CL-103","CL-104","CL-105","CL-106","CL-107"],"need":"Catalog bindings, exact balances/instances/rights, atomic private change groups, trusted reward receipts and permanent operation plus business-source uniqueness."},
+    {"key":"PEER-OBJECTIVES","client_tasks":["CL-109","CL-110"],"need":"Definition/evaluator/occurrence versions, seven initial objective kinds, upgrade policy, claims/reward slots and duplicate-event fixtures."},
+    {"key":"PEER-COMMERCE","client_tasks":["CL-111","CL-112"],"need":"Offer/version/price/limits, virtual purchase and external receipt verification state machines; authoritative verification and replay fixtures."},
+    {"key":"PEER-SOCIAL","client_tasks":["CL-113","CL-114"],"need":"Leaderboard query/snapshot/score/season and team query/membership/contribution contracts, complete authorization/cache scope."},
+    {"key":"PEER-CONFIG-INBOX","client_tasks":["CL-115","CL-116"],"need":"Assignment-scoped remote config and player inbox read/attachment-claim contracts distinct from internal event inbox."},
+    {"key":"PEER-LIVE-SLICE","client_task":"INT-010","need":"Real nonproduction auth/PostgreSQL API, explicit seed command and fixtures, complete bootstrap/feed/receipt behavior, one allowed test-content outcome/reward policy and exact backend revision."}
+  ],
+  "unresolved_decisions": [
+    {"key":"DEC-LEGACY-TRUST","owner":"Product owner and backend owner","recommendation":"Preserve old progress locally as unverified import bound once to an explicitly chosen provisioned account; no replayed grants or automatic account merging."},
+    {"key":"DEC-CONTENT-VALIDATION","owner":"Game/backend owners","recommendation":"Freeze a versioned nonproduction content-validation adapter and reward-source key for the first live slice. A client checkpoint signature is not proof of trusted completion."},
+    {"key":"SQLITE-PIN","owner":"PackagingOwner via CL-006","recommendation":"Qualify the documented unity-sqlite-net candidate and use a single managed/native bundle acquisition route; record an ADR before changing driver."}
+  ],
+  "delta_policy": "After freeze, record changed fields/semantics, compatibility, schema/fixture versions, both reviewers, exact peer commits and regenerated hashes; coordinate repinning before dependent merges. Mirrors are artifacts, never independent specifications.",
+  "peer_plan_task_ids": [],
+  "peer_plan_note": "No concrete backend implementation-plan task IDs were established in the audited main baseline. The separate planning chat must map these named requests to its own actual tasks and return a durable handoff. Do not invent BE task completion."
+}
