@@ -11,7 +11,7 @@
   "policy_schema_version": 1,
   "digests": {
     "contracts/platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
-    "contracts/fixtures/primitives.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5"
+    "contracts/v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5"
   },
   "digest_evidence": "Values inspected in the existing canonical/mirror snapshot records; recompute against fetched bytes during CL-003 before repinning. This planning session did not run the repository pinning tool.",
   "operation_schema_version": null,
@@ -20,11 +20,7 @@
   "compatible_backend_implementation_commit": null,
   "compatible_sdk_artifact_commit": null,
   "compatible_unity_import_commit": null,
-  "owners_to_assign": {
-    "canonical_changes": "BackendContractOwner",
-    "reviewed_mirror_and_dto_mapping": "ClientContractOwner",
-    "shared_unity_surfaces": "ConsumerIntegrationOwner"
-  },
+  "owners_to_assign": {"canonical_changes":"BackendContractOwner","reviewed_mirror_and_dto_mapping":"ClientContractOwner","shared_unity_surfaces":"ConsumerIntegrationOwner"},
   "owned_changes_this_track": ["SDK planning and client mirror review requests", "explicitly scoped MrSquare integration planning"],
   "unowned_changes": ["backend canonical schemas and migrations", "backend deployment", "production data and secrets"],
   "peer_requests": [
