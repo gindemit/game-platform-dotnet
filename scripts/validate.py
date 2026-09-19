@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -22,6 +23,10 @@ FEATURES = {
 }
 FEATURE_DIRS = {"reward-fulfillment": "RewardFulfillment", "remote-config": "RemoteConfig"}
 FEATURE_STATUSES = {"stubbed", "planned", "implemented", "unverified", "blocked"}
+FEATURE_CLASSES = {
+    feature: FEATURE_DIRS.get(feature, "".join(part.title() for part in feature.split("-"))) + "Feature"
+    for feature in FEATURES
+}
 
 
 def read_json(path: Path):
@@ -95,6 +100,38 @@ def existing_repository_file(root: Path, relative: object) -> bool:
     return resolved.is_file()
 
 
+def feature_is_unavailable(root: Path, feature_id: str) -> bool:
+    class_name = FEATURE_CLASSES[feature_id]
+    marker = re.compile(rf"\bclass\s+{re.escape(class_name)}\s*:\s*UnavailableFeature\b")
+    return any(marker.search(path.read_text(encoding="utf-8")) for path in (root / "src" / "GamePlatform.Features").rglob("*.cs"))
+
+
+def validate_test_report(root: Path, relative: object, selected_tests: object, test_names: object) -> str | None:
+    if not existing_repository_file(root, relative):
+        return "missing or unsafe test report path"
+    try:
+        report = ET.parse(root / str(relative)).getroot()
+        counters = report.find(".//{*}Counters")
+        if counters is None:
+            return "test report has no counters"
+        total = int(counters.attrib.get("total", "-1"))
+        executed = int(counters.attrib.get("executed", "-1"))
+        passed = int(counters.attrib.get("passed", "-1"))
+        failed = int(counters.attrib.get("failed", "-1"))
+        if not isinstance(selected_tests, int) or selected_tests <= 0:
+            return "selected test count is not positive"
+        if failed != 0 or total != selected_tests or executed != selected_tests or passed != selected_tests:
+            return f"test report counters do not match selected tests ({total}/{executed}/{passed}/{failed})"
+        if not isinstance(test_names, list) or len(test_names) != selected_tests or not all(isinstance(name, str) and name for name in test_names):
+            return "test name selection does not match selected test count"
+        actual_names = {node.attrib.get("testName") for node in report.findall(".//{*}UnitTestResult")}
+        if actual_names != set(test_names):
+            return "test report result names do not match declared selection"
+    except (OSError, ET.ParseError, TypeError, ValueError) as exc:
+        return f"invalid test report: {exc}"
+    return None
+
+
 def validate_implemented_evidence(root: Path, entry: dict, ledger: dict, task: dict) -> list[str]:
     feature_id = entry.get("id", "<unknown>")
     task_id = ledger.get("sdk_task", "")
@@ -103,6 +140,8 @@ def validate_implemented_evidence(root: Path, entry: dict, ledger: dict, task: d
         errors.append(f"{feature_id}: catalog implemented but manifest ledger is not implemented")
     if task.get("status") != "complete":
         errors.append(f"{feature_id}: implemented without completed task {task_id}")
+    if feature_id in FEATURE_CLASSES and feature_is_unavailable(root, feature_id):
+        errors.append(f"{feature_id}: implemented while {FEATURE_CLASSES[feature_id]} derives from UnavailableFeature")
     catalog_evidence = entry.get("evidence")
     ledger_evidence = ledger.get("sdk_evidence")
     task_evidence = task.get("evidence")
@@ -134,14 +173,16 @@ def validate_implemented_evidence(root: Path, entry: dict, ledger: dict, task: d
                 errors.append(f"{feature_id}: evidence lacks existing source paths in {relative}")
             if not isinstance(test_paths, list) or not test_paths or not all(existing_repository_file(root, p) for p in test_paths):
                 errors.append(f"{feature_id}: evidence lacks existing test paths in {relative}")
-            if not isinstance(commands, list) or not commands or not all(
-                isinstance(command, dict)
-                and command.get("exitCode") == 0
-                and isinstance(command.get("selectedTests"), int)
-                and command["selectedTests"] > 0
-                for command in commands
-            ):
+            if not isinstance(commands, list) or not commands:
                 errors.append(f"{feature_id}: evidence lacks passing non-empty test commands in {relative}")
+            else:
+                for command in commands:
+                    if not isinstance(command, dict) or command.get("exitCode") != 0:
+                        errors.append(f"{feature_id}: evidence contains a failing or malformed command in {relative}")
+                        continue
+                    report_error = validate_test_report(root, command.get("reportPath"), command.get("selectedTests"), command.get("testNames"))
+                    if report_error:
+                        errors.append(f"{feature_id}: {report_error} in {relative}")
         except (OSError, AttributeError, json.JSONDecodeError) as exc:
             errors.append(f"{feature_id}: invalid evidence report {relative}: {exc}")
     return errors
