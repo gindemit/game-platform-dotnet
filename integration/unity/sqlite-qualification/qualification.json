@@ -30,6 +30,7 @@
       "target": "windows-x86_64",
       "path": "Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll",
       "sha256": "e7e370938925dff66d9a4d50bfac6d18cc9505bd2f3f127a232b410491b46e3e",
+      "importMetadataSha256": "28aeb4a2056ad3c1e0343dec14d11afa80122f319b521dc094ac09092ba6047c",
       "execution": "passed-dotnet-native-probe"
     },
     {
@@ -42,12 +43,14 @@
       "target": "macos-universal",
       "path": "Plugins/lib/macos/libgilzoide-sqlite-net.dylib",
       "sha256": "39489aa49e2ba5ae0619b0f9f9a1821da058fab95f173bf15399ee2210cfb3d4",
+      "importMetadataSha256": "35d74d7b264d93fb0cd2ed3de9a90f40bf1466b4d4207298cd0effe7ba6d3e48",
       "execution": "unrun"
     },
     {
       "target": "android-arm64",
       "path": "Plugins/lib/android/arm64/libgilzoide-sqlite-net.so",
       "sha256": "6d7f5c14cc5eda83c919f13ac75cc342a619090c9d6aee7be039f052fa86621d",
+      "importMetadataSha256": "11c8840f2ab62bc1524c0aaa7ed456bd863e2ba4505b1f020b4fb698fefda0f0",
       "execution": "deferred-cl015-int009"
     }
   ]

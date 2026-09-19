@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "codec": {
+    "capability": "qualification-only",
+    "runtimeCodeGeneration": false,
+    "typeless": false,
+    "mapping": "checked-in generated named-field DTO mapping",
+    "preservedTypes": [
+      "GamePlatform.Serialization.MessagePack.DesktopQualificationWireCodec",
+      "GamePlatform.Serialization.MessagePack.QualificationMessagePackCodec",
+      "GamePlatform.Serialization.MessagePack.TypedQualificationCodec"
+    ],
+    "formatterGap": "No MessagePack-CSharp serializer formatter is used by the bounded reader/writer path; production IWireCodec and Unity IL2CPP execution remain unavailable."
+  },
+  "sqlite": {
+    "pinvokeNames": ["gilzoide-sqlite-net", "__Internal"],
+    "desktopAndAndroidBundleName": "gilzoide-sqlite-net",
+    "preservedTypes": ["SQLite.SQLite3"],
+    "reflection": "The production adapter uses raw parameterized SQL and does not use sqlite-net table mapping or generic ORM materialization paths."
+  },
+  "unrun": [
+    "Unity Editor import and compilation",
+    "managed stripping",
+    "IL2CPP generation and link",
+    "APK native-library inspection",
+    "Android ARM64 device database and codec execution"
+  ]
+}

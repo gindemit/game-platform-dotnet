@@ -1,0 +1,10 @@
+<linker>
+  <assembly fullname="GamePlatform.Serialization.MessagePack">
+    <type fullname="GamePlatform.Serialization.MessagePack.DesktopQualificationWireCodec" preserve="all" />
+    <type fullname="GamePlatform.Serialization.MessagePack.QualificationMessagePackCodec" preserve="all" />
+    <type fullname="GamePlatform.Serialization.MessagePack.TypedQualificationCodec" preserve="all" />
+  </assembly>
+  <assembly fullname="GamePlatform.Storage.Sqlite">
+    <type fullname="SQLite.SQLite3" preserve="all" />
+  </assembly>
+</linker>
