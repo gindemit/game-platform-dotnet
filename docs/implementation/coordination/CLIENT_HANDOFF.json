@@ -10,7 +10,7 @@
   "quiescent": true,
   "next_gate": "G3",
   "implementation_commits": {
-    "sdk": "1c406d9",
+    "sdk": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
     "unity": "84c2b1137a8dbde497f22495910c9117d3024c5f"
   },
   "required_repository_keys": [
@@ -34,6 +34,7 @@
   ],
   "partial_task_ids": [
     "CL-004",
+    "CL-015",
     "CL-016",
     "INT-001",
     "INT-002"
@@ -42,6 +43,7 @@
     "CL-002": "Canonical typed UUID/scope primitives and compatibility-preserving outcomes/state; original 14 Platform tests pass against canonical SDK types.",
     "CL-003": "G1 schema/mirror plus 64 immutable DTO shapes,12 unions,explicit presence and generated schema mapping. No canonical delta.",
     "CL-013": "14-assembly managed bundle with dependency closure,symbols,notices,hashes and identical retained build inventories. Qualification MessagePack excluded pending CL-015.",
+    "CL-015": "Packaging-complete unpublished 23-assembly bundle with exact MessagePack closure,three reviewed SQLite targets,notices,import metadata,AOT/PInvoke inventory and reproducible 99-file manifest. Unity/IL2CPP/device execution unrun.",
     "CL-004": "Qualification-only bounded MessagePack,typed mapping,canonical fingerprints and hostile-input checks; actual G2 peer/AOT remains unverified.",
     "CL-016": "Producer/consumer and raw encode/decode CLI;34 actual CSharp MessagePack fixtures plus24 fingerprints; service/fault modes unavailable.",
     "INT-002": "Real Core/Features import and duplicate removal,exact artifact verifier,selected Unity7/7 EditMode with both scene assets; visual/control PlayMode and tested rollback remain unrun."
@@ -76,6 +78,12 @@
       "note": "Two byte-identical retained manifests,33 files in each verified;11 packaging tests. Original build stdout unarchived author observation."
     },
     {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/CL-015/results.json",
+      "tests": {"dotnet": 335, "scripts": 38, "packaging": 16, "manifest": 14},
+      "note": "Two clean byte-identical 99-file manifests at bb4136a;23 managed assemblies,three native targets and exact notices verified. Unity/AOT/device execution unrun."
+    },
+    {
       "repository": "unity",
       "path": "Reports/PlatformIntegration/INT-002/results.json",
       "tests": {
@@ -94,7 +102,8 @@
     "src/GamePlatform.Wire.Contracts/dto-catalog.json": "110ea411c91d342edcd3c291fdad2b2db09495bf0e2b56bd1fb76bcd6bd23592",
     "docs/implementation/evidence/P2/csharp-corpus.json": "c4988f5a1fee3eba832cfcfeed9dc2f561f5a17d0321c5db5afc93ad8d2aabc0",
     "docs/implementation/evidence/P2/results.json": "1cf3228297be1cd78a1601c80452049b882b5c64a4a22eec477a1cb708c42360",
-    "docs/implementation/evidence/CL-013/results.json": "d6991daedd745becf72d739340a7521b88cdcbd068f84f44b20aa2219e3e808c"
+    "docs/implementation/evidence/CL-013/results.json": "d6991daedd745becf72d739340a7521b88cdcbd068f84f44b20aa2219e3e808c",
+    "docs/implementation/evidence/CL-015/results.json": "bd1ed9e330477adabde32a83c7ceb511dbe2abcc95179ca31d3ad7201b569898"
   },
   "approved_schema": {
     "version": "0.2.0-core-schema.1",
@@ -110,6 +119,15 @@
       "GamePlatform.Core",
       "GamePlatform.Features.Contracts"
     ]
+  },
+  "available_sdk_bundle": {
+    "source_commit": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
+    "manifest_sha256": "c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7",
+    "managed_assemblies": 23,
+    "native_targets": ["windows-x86_64", "macos-universal", "android-arm64"],
+    "consumer_imported": false,
+    "production_iwirecodec": false,
+    "unity_aot_device_verified": false
   },
   "contract_proposals": [],
   "blockers": [
@@ -131,7 +149,7 @@
     },
     {
       "scope": "CL-015/INT-009",
-      "reason": "Complete native/codec bundle,IL2CPP/AOT/stripping and device qualification pending."
+      "reason": "CL-015 bundle packaging is complete; Unity import,IL2CPP/AOT/stripping,APK inspection and device qualification remain INT-009."
     },
     {
       "scope": "Live migration/rewards",
@@ -174,7 +192,7 @@
   "p3_progress": {
     "status": "in_progress",
     "observed_backend_head": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
-    "sdk_head": "2e46b6f90ed60492d77114c655fb9788d4112e25",
+    "sdk_head": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
     "unity_head": "84c2b1137a8dbde497f22495910c9117d3024c5f",
     "source_commits": {
       "CL-004": "2e46b6f90ed60492d77114c655fb9788d4112e25",
@@ -183,7 +201,8 @@
       "CL-005": "6462d471d498eb92c4a773cd008e979924afd6dc",
       "CL-012": "010d47c07907baf86d8a1c9396f81cd5628d03d2",
       "CL-009": "6ee33493e2919086331918210d01aa26835243ac",
-      "CL-010": "cc329e39d309808150af760d30beb33861ed9fc7"
+      "CL-010": "cc329e39d309808150af760d30beb33861ed9fc7",
+      "CL-015": "bb4136a9e11fb142980c57c0a8d5ca251a634d29"
     },
     "evidence_commits": {
       "CL-007": "1dce23b98c425e8d5d0178b04d22deb5eba307a4",
@@ -197,7 +216,7 @@
       "CL-010": "cc329e39d309808150af760d30beb33861ed9fc7"
     },
     "complete_task_ids": ["CL-012"],
-    "partial_task_ids": ["CL-004", "CL-005", "CL-007", "CL-008", "CL-009", "CL-010"],
+    "partial_task_ids": ["CL-004", "CL-005", "CL-007", "CL-008", "CL-009", "CL-010", "CL-015"],
     "sdk_tests": {
       "dotnet": 335,
       "CL-004_desktop_candidate": 7,
@@ -212,7 +231,7 @@
       "CL-010_http_boundary": 27,
       "CL-010_migration_native": 5,
       "CL-007_010_durability_regression": 46,
-      "script": 33,
+      "script": 38,
       "manifest": 14
     },
     "unity_fresh_checks": {
@@ -228,9 +247,9 @@
       "INT-004": "blocked by INT-003 and real executor/device acceptance",
       "INT-005": "blocked by DEC-LEGACY-TRUST despite qualified CL-007/008 desktop slices",
       "INT-008": "blocked by CL-102/105/107 and INT-007",
-      "INT-009": "blocked by CL-015, INT-006 and authorized Android/device workflow"
+      "INT-009": "CL-015 packaging input available; blocked by INT-006 and authorized Unity Android/device workflow"
     },
-    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "CL-004 production IWireCodec after required AOT acceptance", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 codec/native/AOT bundle", "actual Unity PlayMode/IL2CPP/device journey"],
+    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "CL-004 production IWireCodec after required AOT acceptance", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 Unity import/IL2CPP/AOT/device execution", "actual Unity PlayMode/IL2CPP/device journey"],
     "cl010_http_increment": {
       "date": "2026-09-20",
       "sdk_baseline": "568d945c5597f085484465ac4372e4d2e2a3b9b3",
@@ -248,6 +267,15 @@
       "versions": {"platform_outbox": 1, "platform_private_sync": 2},
       "verification": {"migration_native": 5, "focused_storage_and_migration": 25, "durability_regression": 46, "full_dotnet": 328, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
     },
-    "next_action": "Qualify the codec through CL-015/Unity IL2CPP/AOT/device before production IWireCodec availability; then continue concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript. Do not assess G3 or start P4."
+    "cl015_bundle_increment": {
+      "date": "2026-09-20",
+      "source_commit": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
+      "status": "packaging_complete_execution_unverified",
+      "manifest_sha256": "c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7",
+      "inventory": {"managed_assemblies": 23, "managed_packages": 9, "native_targets": 3, "pinvoke_declarations": 38, "files": 99},
+      "verification": {"reproducible_builds": 2, "full_dotnet": 335, "script": 38, "packaging": 16, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0},
+      "remaining": "Unity import/stripping,IL2CPP/APK,Android device and macOS execution unrun; production IWireCodec remains unavailable."
+    },
+    "next_action": "Import and qualify the CL-015 bundle through the authorized INT-009 Unity IL2CPP/AOT/device workflow before production IWireCodec availability; then continue concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript. Do not assess G3 or start P4."
   }
 }

@@ -1,0 +1,44 @@
+{
+  "task": "CL-015",
+  "date": "2026-09-20",
+  "status": "in_progress_packaging_complete_execution_unverified",
+  "source_commit": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
+  "manifest_sha256": "c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7",
+  "reproducible_builds": 2,
+  "manifests_byte_equal": true,
+  "inventory": {
+    "sdk_projects": 15,
+    "managed_assemblies": 23,
+    "managed_packages": 9,
+    "native_targets": 3,
+    "pinvoke_declarations": 38,
+    "hashed_files": 99
+  },
+  "native_targets": ["windows-x86_64", "macos-universal", "android-arm64"],
+  "verification": {
+    "dotnet_tests": 335,
+    "script_tests": 38,
+    "packaging_tests": 16,
+    "manifest_tests": 14,
+    "projects_restored_and_built": 18,
+    "warnings": 0,
+    "errors": 0
+  },
+  "capabilities": {
+    "bundle": "complete_for_reviewed_targets",
+    "messagepack": "qualification_only",
+    "production_iwirecodec": "unavailable",
+    "unity_import": "metadata_only_unverified",
+    "aot_and_device": "unverified",
+    "published": false,
+    "duplicate_upm_acquisition": false
+  },
+  "unrun": [
+    "Unity Editor import and compilation",
+    "managed stripping",
+    "IL2CPP generation and link",
+    "APK native-library inspection",
+    "Android ARM64 physical-device database and codec execution",
+    "macOS native execution"
+  ]
+}

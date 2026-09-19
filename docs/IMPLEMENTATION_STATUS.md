@@ -1,5 +1,31 @@
 # Implementation status
 
+## CL-015 complete bundle checkpoint — 2026-09-20
+
+Packaging source `bb4136a9e11fb142980c57c0a8d5ca251a634d29`
+replaces the early managed-only output with one unpublished, reproducible
+managed/native artifact. It contains all 15 SDK assemblies, the exact eight-DLL
+runtime closure for the nine pinned MessagePack packages, three reviewed SQLite
+native targets, their upstream Unity import metadata, exact notices/hashes,
+deterministic explicit-reference managed metadata, a 38-entry P/Invoke inventory,
+targeted linker preservation and install/upgrade/uninstall/CL-013 rollback rules.
+Duplicate UPM acquisition is forbidden and missing packages/native targets fail
+closed. The included codec remains qualification-only and does not implement
+production `IWireCodec`.
+
+Two clean builds produced identical 99-file manifests with SHA-256
+`c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7`.
+Fresh verification passed, as did 335/335 .NET tests, 38/38 script tests (16
+packaging cases), validation, 18-project locked restore/build with zero warnings
+or errors, the 52-task/16-ledger/21-wave manifest and 14/14 manifest tests. See
+[CL-015 evidence](implementation/evidence/CL-015/README.md).
+
+CL-015 remains `in_progress` at this packaging-complete checkpoint: Unity import,
+stripping, IL2CPP/APK inspection, Android device database/codec execution and
+macOS native execution were not run. INT-009, production codec/composition, G3
+and P4 remain open; no Unity/backend repository, package feed or deployment was
+changed.
+
 ## CL-004 desktop wire candidate checkpoint — 2026-09-20; corrected
 
 Source `83caf64596869fc7a1dc35ac6440e21ac97a7d68`, corrected by
