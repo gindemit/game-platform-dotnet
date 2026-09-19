@@ -6,6 +6,13 @@ checksums, owner validation, foreign keys, WAL and bounded busy handling. It
 depends only on Core/storage abstractions plus the reviewed pinned sqlite-net
 source; there is no in-memory production fallback or nested commit API.
 
+The CL-008 outbox layer persists the owner/stream tuple, checked sequence and
+local revision, projection mutation and immutable semantic command in that same
+outer transaction. It rejects non-Ready or mismatched streams, makes exact
+operation/business-run retries idempotent, rejects changed immutable semantics,
+retains terminal rows, recovers expired lease scheduling separately, and reports
+clone/gap states without rotating or resequencing attempted work.
+
 Windows x64 native execution is covered by the CL-007 tests. The retained
 `UnavailableSqliteStore` remains the public M0 compatibility stub and still
 throws. Production composition, the coordinated native bundle, Unity

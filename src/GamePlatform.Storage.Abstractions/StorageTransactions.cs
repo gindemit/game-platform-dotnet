@@ -63,6 +63,10 @@ namespace GamePlatform.Storage.Abstractions
         Migration,
         InvalidOwner,
         Closing,
+        NotReady,
+        IdentityConflict,
+        SequenceExhausted,
+        StreamRecoveryRequired,
         Unavailable
     }
 
