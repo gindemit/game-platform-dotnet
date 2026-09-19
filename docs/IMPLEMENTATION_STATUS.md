@@ -1,5 +1,22 @@
 # Implementation status
 
+## CL-007 real SQLite executor — 2026-09-19
+
+Source commit `91a67c7805ff59bc3b0ca286fddc2a5124291188` implements
+the qualified Windows x64 portion of CL-007: one serialized native connection,
+scope-owned migrations with checksummed journal markers, callback-borrowed
+transactions, cancellation and bounded quiescent disposal, and typed storage
+failures. The real-native CL-007 suite passes 8/8 and the full SDK suite passes
+244/244; locked restore/build, 33 script tests, manifest validation and 14
+manifest tests also pass with zero build warnings/errors. See
+[CL-007 evidence](implementation/evidence/CL-007/README.md).
+
+CL-007 remains `in_progress`, not production-accepted: abrupt process-kill,
+disk-full/corruption, other native targets, Unity IL2CPP/AOT/stripping and device
+tests remain unrun. CL-015 and INT-009 therefore remain outstanding, SQLite is
+not yet composed into the consumer, and G3/P4 are not claimed. CL-008 is now
+dependency-ready for bounded implementation.
+
 ## P3 dependency-ready SDK preflight — 2026-09-19
 
 The coordinated branch remains at `06ba050929117bd48cba5993c28156bbb2c6418c`.

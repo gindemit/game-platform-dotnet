@@ -1,0 +1,29 @@
+{
+  "task": "CL-007",
+  "date": "2026-09-19",
+  "source_commit": "91a67c7805ff59bc3b0ca286fddc2a5124291188",
+  "scope": "windows-x64-real-native",
+  "status": "in_progress",
+  "counts": {
+    "cl007_native_tests": 8,
+    "full_dotnet_tests": 244,
+    "script_tests": 33,
+    "manifest_tests": 14,
+    "projects_restored": 18,
+    "projects_built": 18,
+    "warnings": 0,
+    "errors": 0
+  },
+  "native": {
+    "sqlite_version_number": 3050001,
+    "library_sha256": "e7e370938925dff66d9a4d50bfac6d18cc9505bd2f3f127a232b410491b46e3e",
+    "compiled_managed_sha256": "2157936811c69cbd235a4545415c467b76e88f4b645853b88ca7c00c7ef21a4d"
+  },
+  "unrun": [
+    "abrupt OS process-kill recovery",
+    "real disk-full and corruption injection",
+    "non-Windows native targets",
+    "Unity Editor and IL2CPP/AOT/stripping",
+    "physical device"
+  ]
+}
