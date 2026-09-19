@@ -1,6 +1,6 @@
 # CL-001 current API and reference inventory
 
-Inventory revision: `91929801c07c28e40610e7e4f9a25a3e5661406a` (the CL-001 starting tree). This records source reality. It does not freeze future production signatures: CL-002, CL-003/G1, CL-005, CL-007/008, CL-011 and CL-014 still own their reviewed additions.
+Inventory revision: `91929801c07c28e40610e7e4f9a25a3e5661406a` (the CL-001 starting tree). This records source reality. The separate foundation-contract document freezes the schema-neutral target signatures; CL-002, CL-003/G1, CL-005, CL-007/008, CL-011 and CL-014 implement or fill their owned details against that baseline.
 
 ## Public signatures
 
@@ -22,7 +22,7 @@ Nullable annotations shown below are part of the C# source. All asynchronous mem
 | Other portable stubs | `UnavailableSyncCoordinator.RunOnceAsync(CancellationToken)`; `NavigationStub.IsAvailable`; `PresentationStub.IsAvailable` |
 | Adapter stubs | `UnavailableHttpTransport.EnsureAvailable()`; `UnavailableSqliteStore.Open()`; `UnavailableMessagePackCodec.Encode<T>(T value)`; `UnavailableJsonCodec.Encode<T>(T value)` |
 
-The byte-only `IBackendGateway`, account-opening `IPlatformStore`, generic `IFeatureCapability.ExecuteUnavailableAsync`, and compatibility-shaped Core types are explicitly not the future semantic/session interfaces. This task freezes their present ownership and the responsibilities in `README.md`; exact replacements remain blocked on their owning tasks and, for wire operations, G1.
+The byte-only `IBackendGateway`, account-opening `IPlatformStore`, generic `IFeatureCapability.ExecuteUnavailableAsync`, and compatibility-shaped Core types are explicitly not the future semantic/session interfaces. Their schema-neutral replacements are frozen in `FOUNDATION_CONTRACTS.md`; only concrete operation body fields remain blocked on G1.
 
 ## Actual and allowed project references
 

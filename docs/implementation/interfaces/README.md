@@ -1,6 +1,6 @@
 # CL-001 interface baseline
 
-This partial P1 baseline freezes responsibility, ownership and dependency direction. It does not add operation schemas, feature implementations or claim Unity/runtime acceptance. [CURRENT_API_INVENTORY.md](CURRENT_API_INVENTORY.md) records exact present signatures and direct/transitive references. Future production signatures are intentionally not frozen before their owning task and G1 reviews; later tasks add them only with a reviewed delta.
+This P1 design baseline freezes responsibility, ownership, dependency direction and exact schema-neutral foundation signatures. It does not add operation schemas, source implementations or claim Unity/runtime acceptance. [CURRENT_API_INVENTORY.md](CURRENT_API_INVENTORY.md) records exact present signatures and direct/transitive references; [FOUNDATION_CONTRACTS.md](FOUNDATION_CONTRACTS.md) records the frozen target contracts. G1 fills operation-specific request/response bodies without reopening these foundations.
 
 ## Portable interface ownership
 
