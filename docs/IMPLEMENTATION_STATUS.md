@@ -33,7 +33,7 @@ projection provider, Unity/AOT/device or independent review evidence was run.
 G3 was not assessed and P4 was not started. See
 [CL-010 evidence](implementation/evidence/CL-010/README.md).
 
-Follow-up source `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de` corrects
+Provider source `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de` corrects
 the preflight scope and implements the actionable portable semantic provider
 over injected `IWireCodec`, `IHttpExecutor` and auth-session ports. It freezes
 the authenticated bootstrap GET, bootstrap-page POST and pull POST routes,
@@ -45,6 +45,14 @@ the full SDK to 317/317. They are not live or production-composition evidence.
 `TypedQualificationCodec` remains qualification-only,
 `UnavailableMessagePackCodec` remains production-facing, and no concrete HTTP
 executor or host is registered.
+
+Hardening source `6462d471d498eb92c4a773cd008e979924afd6dc`
+scopes private sync to the expected platform account, shares externally owned
+session/account-keyed refresh single-flight across provider instances, binds
+protocol error envelopes to the response correlation header, enforces the
+requested page/pull byte budget in addition to the global cap, bounds
+pre-envelope errors, and rejects reset reasons outside the frozen set. Six new
+cases bring the focused selection to 59/59 and the full suite to 323/323.
 
 ## CL-009 ordered sender increment — 2026-09-19
 

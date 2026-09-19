@@ -2,7 +2,9 @@
 
 Initial date: 2026-09-19; corrective review finalized 2026-09-20
 
-Effective source commit: `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de`
+Effective source commit: `6462d471d498eb92c4a773cd008e979924afd6dc`
+
+Initial HTTP provider source commit: `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de`
 
 Storage/policy source commit: `13c36e9083a6b814896724e949f0f7f1dfd35c29`
 
@@ -112,3 +114,14 @@ Twenty-one new scripted provider cases bring focused CL-005/CL-010 coverage to
 backend or production-codec/executor evidence. `TypedQualificationCodec` remains
 qualification-only, `UnavailableMessagePackCodec` remains production-facing,
 and no concrete executor/host is registered. CL-010 remains `in_progress`.
+
+The corrective provider increment requires the expected `PlatformUserId` at
+construction and rejects a bootstrap response for another account before it can
+reach the coordinator/storage path. An externally owned, disposable refresh
+coordinator supplies auth-session/account-keyed single-flight across provider
+instances; providers borrow it and never dispose it. Protocol error correlation
+must exactly match the response header. Bootstrap pages and pull pages use the
+minimum of global and requested byte caps, including pre-envelope/error bodies.
+Reset reasons outside the four frozen values fail protocol validation. Six new
+negative/race cases bring provider boundary coverage to 27, focused CL-005/
+CL-010 to 59/59 and the full suite to 323/323.

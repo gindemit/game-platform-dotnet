@@ -4,7 +4,9 @@ Date: 2026-09-19
 
 Provisioning source commit: `5b7308d5537462623ef7cf6b3b53bcd1312439bf`
 
-Private-sync provider source commit: `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de`
+Private-sync provider source commit: `6462d471d498eb92c4a773cd008e979924afd6dc`
+
+Initial provider source commit: `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de`
 
 The qualified provisioning slice now maps a semantic Core-only port to the
 frozen `POST /v1/apps/{appId}/provision` wire operation through injected neutral
@@ -92,3 +94,13 @@ orchestration only: their executor and codec are scripted, not live or productio
 `TypedQualificationCodec` remains qualification-only,
 `UnavailableMessagePackCodec` remains production-facing, and no concrete host
 executor/composition exists. No qualification type was relabeled.
+
+The corrective increment injects one externally owned refresh coordinator,
+shared across provider instances and keyed by auth session plus account where
+known. Provisioning instances with the same pre-account auth session now also
+share one refresh flight. The owner disposes the coordinator only after provider
+requests quiesce. Private bootstrap rejects a wrong platform account, protocol
+errors require exact header/envelope correlation, requested page/pull budgets
+bound responses and pre-envelopes, and reset reasons use the frozen closed set.
+Six additional cases bring focused CL-005/CL-010 coverage to 59/59 and the full
+suite to 323/323.

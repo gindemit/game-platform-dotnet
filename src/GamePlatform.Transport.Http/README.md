@@ -11,6 +11,14 @@ diagnostic JSON available only by explicit construction. Mutations are never
 replayed after timeout/5xx and no operation falls back to JSON after decode
 failure.
 
+Private sync instances are scoped to an expected app and platform account and
+reject mismatched bootstrap ownership before returning data to the coordinator.
+An externally owned `AuthRefreshCoordinator` provides session/account-keyed
+single-flight renewal across provider instances, including provisioning. Its
+owner disposes it only after all borrowing providers and admitted requests have
+quiesced. Page and pull responses are bounded by both the global cap and their
+requested budget; error correlation and reset reasons are closed protocol data.
+
 The semantic providers are portable boundary implementations, not production
 composition. `UnavailableMessagePackCodec` remains production-facing and no
 concrete HTTP executor is registered. Push, receipt, account, profile and
