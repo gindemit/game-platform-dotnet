@@ -1,0 +1,6 @@
+[rtk] /!\ No hook installed â€” run `rtk init -g` for automatic token savings
+...........
+----------------------------------------------------------------------
+Ran 11 tests in 0.046s
+
+OK
