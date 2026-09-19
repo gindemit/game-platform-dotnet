@@ -13,7 +13,8 @@ var databasePath = Path.GetFullPath(args[0]);
 Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
 if (File.Exists(databasePath))
 {
-    File.Delete(databasePath);
+    Console.Error.WriteLine($"Refusing to overwrite existing database: {databasePath}");
+    return 2;
 }
 
 const long expectedSequence = 9_007_199_254_740_993L;
