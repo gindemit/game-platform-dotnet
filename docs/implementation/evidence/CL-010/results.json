@@ -7,8 +7,16 @@
   "backend_coordination": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
   "backend_be012": "048d3e427a5c78e4cdefd4a1cb82b0ee07bd695b",
   "backend_be013_correction": "ebd2bced1fbb4e34986dcabd68c644b0223825cb",
-  "status": "in_progress",
+  "status": "blocked",
   "counts": {"focused": 20, "durability_regression": 41, "full_dotnet": 296, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0},
+  "http_codec_preflight": {
+    "date": "2026-09-20",
+    "sdk_baseline": "568d945c5597f085484465ac4372e4d2e2a3b9b3",
+    "backend_semantics": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
+    "status": "blocked_no_runtime_change",
+    "reason": "TypedQualificationCodec is not a production IWireCodec, UnavailableMessagePackCodec remains production-facing, and no qualified concrete HTTP executor/host composition exists.",
+    "counts": {"focused_cl005_cl010": 32, "full_dotnet": 296, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
+  },
   "proved": ["durable multi-page staging", "atomic final visibility and cursor", "crash rollback and reopen resume", "fixed-watermark ordered pull", "cross-page stale-group rejection", "server-cursor invisible-prefix advancement", "stale entity revision protection", "active successor and retired null-next semantics", "exhausted active rejection before staging", "server-ahead and local-gap rejection", "foreign-stream row rejection with rollback", "pending and in-flight at/below server final rejection with rollback", "accepted and terminal-rejected beyond server final rejection with rollback", "accepted, rejected, uncertain and pending identity preservation", "retired command admission disabled", "reset preserves outbox and rebuilds overlay", "expired staging authorized replacement", "defensive collection snapshots", "view removal and tombstone reset", "oversized group rollback"],
   "unrun": ["authenticated HTTP provider", "production codec and host", "live backend peer", "process kill, disk full, corruption", "migration registry", "multi-app shared projection provider", "Unity/AOT/device", "independent review"]
 }

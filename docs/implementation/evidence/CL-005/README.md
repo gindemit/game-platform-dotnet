@@ -65,5 +65,28 @@ Only provisioning is implemented. Account/bootstrap/push/pull/profile/recovery
 providers remain unavailable; there is no portable production codec registration,
 real host executor, BE-016 deployable backend composition, UnityWebRequest adapter,
 live TLS/provider sandbox, or device evidence. BE-008 cannot yet truthfully return
-the full durable provisioning response. CL-005 therefore remains `in_progress`.
+the full durable provisioning response. The composition preflight below changes
+CL-005 to `blocked` while preserving its implemented provisioning slice.
 
+## 2026-09-20 composition preflight
+
+At coordinated SDK head `568d945c5597f085484465ac4372e4d2e2a3b9b3`, the
+requested bootstrap/pull composition was inspected against backend
+`e1e687605e9f5d2fc51aa6be15d804c0f1248e96`. The backend freezes authenticated
+`GET /v1/apps/{appId}/bootstrap`, `POST /v1/apps/{appId}/bootstrap/pages`, and
+`POST /v1/apps/{appId}/sync/pull`, preferring the v1 MessagePack media type and
+permitting only explicitly negotiated diagnostic JSON.
+
+The SDK dependency is not ready: `TypedQualificationCodec` is documented and
+implemented as a qualification-only surface, does not implement `IWireCodec`,
+and production still exposes `UnavailableMessagePackCodec`. `IHttpExecutor` is
+only a neutral interface; no qualified concrete host executor or real host
+composition exists. No qualification type was relabeled and no additional
+scripted-only HTTP provider was added. Resume CL-005 provider expansion only
+after a separately reviewed production codec and concrete executor/composition
+slice exists.
+
+The unchanged baseline passed locked restore/build for 18 projects with zero
+warnings/errors, 32/32 focused CL-005/CL-010 tests, 296/296 full tests,
+architecture validation, 33/33 script tests, manifest validation, and 14/14
+manifest tests.

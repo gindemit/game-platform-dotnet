@@ -86,3 +86,28 @@ multi-app shared-row provider integration, physical process-kill/disk/corrupt
 faults, Unity/IL2CPP/AOT/device execution and independent review remain unrun.
 The native evidence is Windows x64 SQLite only. CL-010 and A04/A05/A07 therefore
 remain partial; G3 and P4 are unchanged.
+
+## 2026-09-20 authenticated HTTP/codec preflight
+
+The dependency check ran at coordinated SDK head
+`568d945c5597f085484465ac4372e4d2e2a3b9b3` against accepted backend head
+`e1e687605e9f5d2fc51aa6be15d804c0f1248e96`. Backend route and HTTP tests freeze
+the authenticated bootstrap start/page and pull routes, fixed-boundary final
+cursor behavior, successful reset envelopes, MessagePack preference, explicit
+diagnostic JSON negotiation, bounded bodies, and protocol error mapping.
+
+No production codec/executor composition dependency exists in the SDK.
+`TypedQualificationCodec` is qualification-only and does not implement
+`IWireCodec`; `UnavailableMessagePackCodec` remains production-facing.
+`IHttpExecutor` is only an injected abstraction, with no qualified concrete
+host executor or real host registration. Using the qualification type as a
+production adapter or adding tests over another scripted codec would contradict
+the accepted CL-004/CL-005 limits. The authenticated CL-010 HTTP provider was
+therefore not implemented, and no runtime source was changed.
+
+Preflight verification of the unchanged baseline: locked restore/build covered
+18 projects with zero warnings/errors; focused CL-005/CL-010 tests passed 32/32;
+the full SDK passed 296/296; architecture validation, 33/33 script tests,
+manifest validation, and 14/14 manifest tests passed. CL-010 is `blocked` after
+its implemented storage/policy slice; next dependency action is explicit production codec plus concrete
+executor/composition qualification, followed by this HTTP slice.

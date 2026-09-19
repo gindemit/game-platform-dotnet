@@ -224,7 +224,15 @@
       "INT-008": "blocked by CL-102/105/107 and INT-007",
       "INT-009": "blocked by CL-015, INT-006 and authorized Android/device workflow"
     },
-    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "BE-016 hosted composition", "CL-015 native/AOT bundle", "actual Unity PlayMode/IL2CPP/device journey"],
-    "next_action": "Continue only the remaining CL-010 authenticated HTTP/codec composition, migration registration and real fixed-boundary peer transcript; retain live/Unity/device gates and do not assess G3 or start P4."
+    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "CL-004 production IWireCodec qualification", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 native/AOT bundle", "actual Unity PlayMode/IL2CPP/device journey"],
+    "cl010_http_preflight": {
+      "date": "2026-09-20",
+      "sdk_baseline": "568d945c5597f085484465ac4372e4d2e2a3b9b3",
+      "backend_semantics": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
+      "status": "blocked_no_runtime_change",
+      "reason": "TypedQualificationCodec is qualification-only and does not implement IWireCodec; UnavailableMessagePackCodec remains production-facing, and IHttpExecutor has no qualified concrete host implementation/composition.",
+      "verification": {"focused_cl005_cl010": 32, "full_dotnet": 296, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
+    },
+    "next_action": "Qualify and review a production IWireCodec plus concrete HTTP executor/host composition first; then resume the bounded CL-010 authenticated bootstrap/pull HTTP slice, followed by migration registration and the real fixed-boundary peer transcript. Retain live/Unity/device gates and do not assess G3 or start P4."
   }
 }
