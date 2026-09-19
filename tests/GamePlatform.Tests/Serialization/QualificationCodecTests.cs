@@ -19,6 +19,21 @@ public sealed class QualificationCodecTests
         using var document=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(Root,"contracts/v1/fixtures/semantic/fingerprint-vectors.json")));
         foreach(var v in document.RootElement.GetProperty("vectors").EnumerateArray()) yield return new object[]{v.GetProperty("name").GetString()!,v.GetRawText()};
     }
+    public static IEnumerable<object[]> Corpus()
+    {
+        using var document=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(Root,"tests/acceptance/core-corpus.json")));
+        foreach(var v in document.RootElement.GetProperty("validations").EnumerateArray()) yield return new object[]{v.GetProperty("id").GetString()!,v.GetRawText()};
+    }
+    [Theory][MemberData(nameof(Corpus))]
+    public void ReviewedCorpus(string name,string json)
+    {
+        Assert.False(string.IsNullOrWhiteSpace(name)); using var doc=JsonDocument.Parse(json);var v=doc.RootElement;
+        using var source=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(Root,v.GetProperty("instancePath").GetString()!)));
+        var schema=Path.GetFileName(v.GetProperty("schemaPath").GetString()!)+v.GetProperty("schemaFragment").GetString();var codec=new QualificationMessagePackCodec();
+        if(!v.GetProperty("expectedValid").GetBoolean()) { Assert.ThrowsAny<Exception>(()=>codec.Encode(schema,Parse(source.RootElement)));return; }
+        var value=Parse(source.RootElement);var bytes=codec.Encode(schema,value);var back=codec.Decode(schema,bytes);
+        Assert.Equal(Convert.ToHexString(bytes),Convert.ToHexString(codec.Encode(schema,back)));
+    }
     [Theory][MemberData(nameof(Fingerprints))]
     public void CanonicalKnownAnswers(string name,string json)
     {
