@@ -14,6 +14,15 @@ immutable semantic tree. `CanonicalBytes` and `Fingerprint` accept the approved
 fingerprint input envelope, including authenticated scope. They do not infer
 authentication or permit a request to choose its actor.
 
+`TypedQualificationCodec` provides explicit generated DTO conversion and generic
+`Encode<T>`/`Decode<T>` for the reviewed concrete DTOs and named schema unions.
+It rejects unknown interface implementations and preserves omitted fields,
+explicit null, nullable integer timestamps and decimal-string diagnostic int64s.
+`generate-dto-mapper.py --check` verifies its checked-in mapping. Mapping reserves
+three logical copies before DTO materialization; combined typed encode and
+diagnostic roundtrips reserve four, including the still-retained input graph.
+These explicit qualifications do not register a production `IWireCodec`.
+
 Bounds include 262144-byte bodies and fixed-capacity output buffering, strict
 local collection/string/binary limits, 32 container levels, 16384 decoded nodes,
 and 2097152 logical allocation units. Decoding reserves the raw tree plus output
