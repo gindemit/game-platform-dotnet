@@ -19,6 +19,14 @@ both sides of the migration marker, checksum/newer-schema rejection, parallel
 writer serialization, queued versus active cancellation, bounded disposal,
 scope ownership, SQL guard behavior, and external-writer lock classification.
 
+The CL-010 registry increment at source
+`cc329e39d309808150af760d30beb33861ed9fc7` composes the retained outbox v1
+and additive private-sync v2 through this same journal. Five additional native
+cases prove fresh/upgrade/reopen/drift/rollback behavior and preservation of
+Ready, immutable commands, confirmed view, opaque checkpoint and staging rows.
+The combined CL-007/008/009/010 native selection passes 46/46; this does not
+close the physical-fault or non-Windows acceptance gaps below.
+
 ## Commands and raw results
 
 All commands ran from the repository root on Windows x64 with .NET SDK 9.0.203.

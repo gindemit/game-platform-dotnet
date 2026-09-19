@@ -28,7 +28,7 @@ regressions passed 41/41. The original full SDK suite passed 296/296; locked res
 covered 18 projects with zero warnings/errors, architecture validation and 33
 script tests passed, and the 52-task/16-ledger/21-wave manifest plus 14 tests
 passed. CL-010 remains `in_progress`: production codec/host composition, live backend transcript,
-process-kill/disk/corruption, migration registry integration, multi-app shared
+process-kill/disk/corruption, multi-app shared
 projection provider, Unity/AOT/device or independent review evidence was run.
 G3 was not assessed and P4 was not started. See
 [CL-010 evidence](implementation/evidence/CL-010/README.md).
@@ -53,6 +53,17 @@ protocol error envelopes to the response correlation header, enforces the
 requested page/pull byte budget in addition to the global cap, bounds
 pre-envelope errors, and rejects reset reasons outside the frozen set. Six new
 cases bring the focused selection to 59/59 and the full suite to 323/323.
+
+Migration-registry source `cc329e39d309808150af760d30beb33861ed9fc7`
+integrates the unchanged CL-008 outbox schema as fixed version 1 and the additive
+CL-010 private-sync schema as version 2 in one immutable scope-owned registry.
+Five Windows x64 native cases prove fresh installation, retained-v1 upgrade,
+idempotent reopen, checksum-drift rejection, and rollback between schema effects
+and journal insertion. Upgrade preserves Ready/outbox state; reopen preserves the
+confirmed view, opaque checkpoint and staged bootstrap rows. Focused CL-010
+storage/migration tests pass 25/25, the combined CL-007/008/009/010 regression
+passes 46/46, and the full suite passes 328/328. Locked restore/build remains
+clean across 18 projects; validation, 33 script tests and 14 manifest tests pass.
 
 ## CL-009 ordered sender increment — 2026-09-19
 

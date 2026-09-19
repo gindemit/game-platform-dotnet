@@ -174,7 +174,7 @@
   "p3_progress": {
     "status": "in_progress",
     "observed_backend_head": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
-    "sdk_head": "986ff67c6813e82806037486efd33bd1952fa47a",
+    "sdk_head": "cc329e39d309808150af760d30beb33861ed9fc7",
     "unity_head": "84c2b1137a8dbde497f22495910c9117d3024c5f",
     "source_commits": {
       "CL-007": "91a67c7805ff59bc3b0ca286fddc2a5124291188",
@@ -182,7 +182,7 @@
       "CL-005": "6462d471d498eb92c4a773cd008e979924afd6dc",
       "CL-012": "010d47c07907baf86d8a1c9396f81cd5628d03d2",
       "CL-009": "6ee33493e2919086331918210d01aa26835243ac",
-      "CL-010": "6462d471d498eb92c4a773cd008e979924afd6dc"
+      "CL-010": "cc329e39d309808150af760d30beb33861ed9fc7"
     },
     "evidence_commits": {
       "CL-007": "1dce23b98c425e8d5d0178b04d22deb5eba307a4",
@@ -193,7 +193,7 @@
       "CL-010": "986ff67c6813e82806037486efd33bd1952fa47a"
     },
     "test_commits": {
-      "CL-010": "6462d471d498eb92c4a773cd008e979924afd6dc"
+      "CL-010": "cc329e39d309808150af760d30beb33861ed9fc7"
     },
     "complete_task_ids": ["CL-012"],
     "partial_task_ids": ["CL-005", "CL-007", "CL-008", "CL-009", "CL-010"],
@@ -204,9 +204,10 @@
       "CL-008": 8,
       "CL-012": 7,
       "CL-009": 5,
-      "CL-010": 47,
+      "CL-010": 52,
       "CL-010_http_boundary": 27,
-      "CL-007_010_durability_regression": 41,
+      "CL-010_migration_native": 5,
+      "CL-007_010_durability_regression": 46,
       "script": 33,
       "manifest": 14
     },
@@ -236,6 +237,13 @@
       "hardening": ["expected account ownership", "shared session/account refresh single-flight", "error correlation binding", "requested response caps", "bounded pre-envelope errors", "closed reset reasons"],
       "verification": {"provider_boundary": 27, "focused_cl005_cl010": 59, "full_dotnet": 323, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
     },
-    "next_action": "Continue CL-010 with final migration registration and the real fixed-boundary peer transcript when its environment exists. Production IWireCodec plus concrete HTTP executor/host qualification remains a separate composition blocker. Retain live/Unity/device gates and do not assess G3 or start P4."
+    "cl010_migration_increment": {
+      "date": "2026-09-20",
+      "source_commit": "cc329e39d309808150af760d30beb33861ed9fc7",
+      "status": "implemented_windows_x64_native",
+      "versions": {"platform_outbox": 1, "platform_private_sync": 2},
+      "verification": {"migration_native": 5, "focused_storage_and_migration": 25, "durability_regression": 46, "full_dotnet": 328, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
+    },
+    "next_action": "Continue CL-010 with the real fixed-boundary peer transcript when its environment exists. Production IWireCodec plus concrete HTTP executor/host qualification remains a separate composition blocker. Retain live/Unity/device gates and do not assess G3 or start P4."
   }
 }

@@ -2,7 +2,7 @@
 
 Initial date: 2026-09-19; corrective review finalized 2026-09-20
 
-Effective source commit: `6462d471d498eb92c4a773cd008e979924afd6dc`
+Effective source commit: `cc329e39d309808150af760d30beb33861ed9fc7`
 
 Initial HTTP provider source commit: `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de`
 
@@ -56,8 +56,11 @@ Ready flag, opaque cursor, committed checkpoint and confirmed view.
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter FullyQualifiedName~Cl010PrivateSyncTests --no-restore
 exit 0; 20 passed, 0 failed/skipped/warnings
 
-rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~Cl007|FullyQualifiedName~Cl008AtomicOutboxTests|FullyQualifiedName~Cl009OrderedCommandSenderTests|FullyQualifiedName~Cl010PrivateSyncTests"
-exit 0; 41 passed, 0 failed/skipped/warnings
+rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter "FullyQualifiedName~Cl010MigrationRegistryTests|FullyQualifiedName~Cl010PrivateSyncTests" --no-restore
+exit 0; 25 passed, 0 failed/skipped/warnings
+
+rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~Cl007|FullyQualifiedName~Cl008AtomicOutboxTests|FullyQualifiedName~Cl009OrderedCommandSenderTests|FullyQualifiedName~Cl010PrivateSyncTests|FullyQualifiedName~Cl010MigrationRegistryTests"
+exit 0; 46 passed, 0 failed/skipped/warnings
 
 rtk dotnet restore GamePlatform.sln --locked-mode
 exit 0; 18 projects, 0 errors/warnings
@@ -66,7 +69,7 @@ rtk dotnet build GamePlatform.sln -c Release --no-restore
 exit 0; 18 projects, 0 errors/warnings
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
-exit 0; 296 passed, 0 failed/skipped/warnings
+exit 0; 328 passed, 0 failed/skipped/warnings (latest registry increment)
 
 rtk python scripts/validate.py
 exit 0
@@ -85,7 +88,7 @@ exit 0; 14 passed
 
 The remote port now has a portable authenticated pull/bootstrap semantic HTTP
 provider. Production codec registration, concrete executor/hosted backend execution,
-fixed-boundary peer transcripts, final migration registry composition,
+fixed-boundary peer transcripts,
 multi-app shared-row provider integration, physical process-kill/disk/corrupt
 faults, Unity/IL2CPP/AOT/device execution and independent review remain unrun.
 The native evidence is Windows x64 SQLite only. CL-010 and A04/A05/A07 therefore
@@ -125,3 +128,19 @@ minimum of global and requested byte caps, including pre-envelope/error bodies.
 Reset reasons outside the four frozen values fail protocol validation. Six new
 negative/race cases bring provider boundary coverage to 27, focused CL-005/
 CL-010 to 59/59 and the full suite to 323/323.
+
+## 2026-09-20 migration-registry increment
+
+Source `cc329e39d309808150af760d30beb33861ed9fc7` replaces test-local CL-010
+version assignment with the immutable scope-owned platform registry. The
+already-used outbox migration remains byte-for-byte version 1; private-sync is
+the additive version 2. No applied identity or checksum is rewritten.
+
+Five real Windows x64 cases retain a prior-version fixture and prove fresh
+installation, v1-to-v2 upgrade, reopen idempotence, drift rejection and rollback
+after v2 effects but before its marker. Ready and immutable outbox bytes survive
+upgrade; confirmed view, opaque pull cursor and bootstrap staging survive reopen.
+Focused storage/migration coverage is 25/25, the combined native durability
+selection is 46/46, and the full SDK suite is 328/328. This closes only the
+migration-registry composition gap; live peer, production transport, physical
+fault, shared-row multi-app, Unity/AOT/device and independent review gates remain.
