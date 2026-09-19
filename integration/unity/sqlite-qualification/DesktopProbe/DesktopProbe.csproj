@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);SYSLIB0054</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SqliteCandidateRoot)/Runtime/sqlite-net/SQLite.cs" Link="Upstream/SQLite.cs" />
+    <None Include="$(SqliteCandidateRoot)/Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll"
+          Link="gilzoide-sqlite-net.dll"
+          CopyToOutputDirectory="PreserveNewest"
+          Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+</Project>

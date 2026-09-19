@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "candidate": {
+    "repository": "https://github.com/gilzoide/unity-sqlite-net.git",
+    "version": "1.3.2",
+    "commit": "08248bd5884d8eb932a837aa56d4ff456daf913f",
+    "managedSource": {
+      "name": "praeclarum/sqlite-net",
+      "version": "1.9.172",
+      "commit": "5f72241035dd48f4305a7c811eba8e7c955e9840"
+    },
+    "nativeSource": {
+      "name": "SQLite3 Multiple Ciphers",
+      "version": "2.1.3",
+      "commit": "632ca1ef4a3457991ec638d5180cc3358620ea93",
+      "sqliteVersion": "3.50.1"
+    }
+  },
+  "distribution": {
+    "route": "sdk-managed-native-bundle",
+    "upmAcquisitionAllowedInConsumer": false,
+    "requiredNotices": [
+      "LICENSE.txt",
+      "Runtime/sqlite-net/LICENSE.txt",
+      "SQLite3MultipleCiphers@632ca1ef4a3457991ec638d5180cc3358620ea93/LICENSE"
+    ]
+  },
+  "inputs": [
+    {
+      "target": "windows-x86_64",
+      "path": "Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll",
+      "sha256": "e7e370938925dff66d9a4d50bfac6d18cc9505bd2f3f127a232b410491b46e3e",
+      "execution": "passed-dotnet-native-probe"
+    },
+    {
+      "target": "windows-arm64",
+      "path": "Plugins/lib/windows/arm64/gilzoide-sqlite-net.dll",
+      "sha256": "97d34848e9504fbb62ca4fda75354e4fc08eadf6c323cea955ce265f08169e08",
+      "execution": "unrun"
+    },
+    {
+      "target": "macos-universal",
+      "path": "Plugins/lib/macos/libgilzoide-sqlite-net.dylib",
+      "sha256": "39489aa49e2ba5ae0619b0f9f9a1821da058fab95f173bf15399ee2210cfb3d4",
+      "execution": "unrun"
+    },
+    {
+      "target": "android-arm64",
+      "path": "Plugins/lib/android/arm64/libgilzoide-sqlite-net.so",
+      "sha256": "6d7f5c14cc5eda83c919f13ac75cc342a619090c9d6aee7be039f052fa86621d",
+      "execution": "deferred-cl015-int009"
+    }
+  ]
+}
