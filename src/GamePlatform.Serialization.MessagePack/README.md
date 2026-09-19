@@ -51,7 +51,8 @@ duplicate keys, reference siblings, actual depth/node/allocation limits,
 extension boundaries and aggregate feed groups.
 
 `UnavailableMessagePackCodec` remains the production-facing fail-closed seam.
-Desktop candidate qualification is not production `IWireCodec` availability,
-Unity integration, IL2CPP/AOT/stripping, physical-device, native-bundle, concrete
-HTTP executor or host acceptance. The candidate never authenticates, grants,
-acknowledges synchronization or advances checkpoints.
+CL-015 packages this assembly and its exact runtime dependency closure with
+targeted preservation metadata, still labeled qualification-only. Packaging is
+not production `IWireCodec` availability, Unity integration, IL2CPP/AOT/stripping,
+physical-device, concrete HTTP executor or host acceptance. The candidate never
+authenticates, grants, acknowledges synchronization or advances checkpoints.

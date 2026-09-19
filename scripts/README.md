@@ -5,4 +5,4 @@
 - `sync-contracts.py`: explicit copy from a reviewed backend root.
 - `pin-contracts.py`: verify pins; `--write` is an explicit reviewed action.
 - `fetch-source-docs.py`: read a path at the pinned Unity commit without modifying it.
-- `package-sdk.py`: create local managed DLL/NuGet artifacts and hash manifest; never publishes or claims native libraries.
+- `package-sdk.py`: create and verify the unpublished CL-015 managed/transitive/native bundle, notices, importer metadata and AOT inventory; never publishes it or claims Unity/device execution.

@@ -11,10 +11,13 @@ not an approved substitution. UniTask may appear only at a Unity boundary.
 VContainer, reactive frameworks, logging implementations and JSON libraries
 require explicit reviewed adoption with license, AOT/runtime and allowlist evidence.
 
-CL-013's early managed bundle deliberately excludes the qualification MessagePack
-assembly and its runtime dependencies pending CL-015. Its 14 included assemblies
-have verified internal dependency closure, symbols, notices and exact hashes;
-only Core and Features.Contracts are selected for the early Unity import.
+CL-013's early imported bundle deliberately excluded the qualification MessagePack
+assembly and its runtime dependencies. CL-015 now produces a separate unpublished
+23-assembly bundle: all 15 SDK assemblies plus the exact eight-assembly runtime
+closure for the nine pinned MessagePack packages (the analyzer is build-only).
+It carries exact notices, hashes and deterministic explicit-reference Unity
+metadata. This does not alter the existing Core/Features.Contracts consumer import
+or make the qualification codec a production `IWireCodec`.
 
 P1 qualifies `gilzoide/unity-sqlite-net` 1.3.2 at `08248bd5884d8eb932a837aa56d4ff456daf913f` using a real Windows x64 desktop transaction/reopen probe. See the [qualification decision](implementation/dependencies/CL-006-sqlite-candidate.md) and [exact input manifest](../integration/unity/sqlite-qualification/qualification.json).
 
@@ -25,6 +28,8 @@ patch and original/compiled hashes are recorded beside the source. Real tests
 use the exact pinned Windows x64 native DLL
 `e7e370938925dff66d9a4d50bfac6d18cc9505bd2f3f127a232b410491b46e3e`.
 All three MIT notices are retained. This does not install a Unity package or
-complete the production native bundle. CL-015 still owns linker preservation,
-multi-platform packaging and Unity/IL2CPP/device evidence. Do not install a
-duplicate UPM copy.
+complete Unity/device acceptance. CL-015 packaging now includes the reviewed
+Windows x86-64, macOS universal and Android ARM64 binaries, their upstream Unity
+import metadata, all three SQLite notices, the exact 38-entry P/Invoke inventory
+and targeted linker metadata. Unity import/stripping, IL2CPP/APK and physical-device
+execution remain unrun under INT-009. Do not install a duplicate UPM copy.

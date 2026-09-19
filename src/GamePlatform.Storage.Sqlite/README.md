@@ -15,8 +15,9 @@ clone/gap states without rotating or resequencing attempted work.
 
 Windows x64 native execution is covered by the CL-007 tests. The retained
 `UnavailableSqliteStore` remains the public M0 compatibility stub and still
-throws. Production composition, the coordinated native bundle, Unity
-Editor/IL2CPP/AOT and device execution remain unavailable until CL-015/INT-009.
+throws. Production composition and Unity Editor/IL2CPP/AOT/device execution remain
+unavailable. CL-015 now supplies the coordinated reviewed native inputs and
+metadata; their actual consumer import and execution remain INT-009.
 Gates: A03, A05, A09, A13.
 
 CL-010 adds durable snapshot staging, a final atomic confirmed-view/cursor/Ready

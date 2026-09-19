@@ -1,33 +1,33 @@
-# Managed SDK bundle
+# Managed/native SDK bundle
 
-This unpublished bundle contains the exact managed assemblies and portable
-symbols listed in dependency-manifest.json, actual assembly references,
-target-framework metadata, public type inventory, hashes, licenses and source
-commit. A sourceDirty=true or buildSkipped=true bundle is development evidence
-and must not be used for pinned import. Native SQLite, production codec,
-live service and AOT/device capabilities remain absent/unverified.
+This unpublished CL-015 bundle contains the exact managed assemblies, portable
+symbols, transitive runtime DLLs, actual assembly references, target-framework
+metadata, hashes, licenses and source commit listed in
+`dependency-manifest.json`. It also carries reviewed SQLite native inputs for
+Windows x86-64 and macOS Editors/standalone plus Android ARM64, adjacent upstream
+import metadata, and the targeted AOT/linker inventory. A `sourceDirty=true` or
+`buildSkipped=true` artifact is development evidence and must not be imported.
 
-The MessagePack qualification assembly is explicitly excluded because its full
-transitive dependency/license delivery belongs to CL-015. The 14 included
-assemblies have no external runtime dependencies beyond netstandard. An included
-assembly referencing an excluded or missing assembly fails packaging.
+The MessagePack assembly and eight runtime package DLLs are included only as a
+qualification candidate; the ninth pinned package is a build-only analyzer. The
+candidate does not implement production `IWireCodec`. Missing or unknown managed
+references, packages, native targets, metadata or notices fail packaging.
 
-Build from a clean committed checkout using `rtk proxy python scripts/package-sdk.py`.
-Verify with `rtk proxy python scripts/package-sdk.py --verify`. Output is
-artifacts/sdk; the previous verified output remains at artifacts/sdk-previous.
-Other artifacts/evidence directories are preserved. Run clean builds twice and
-compare both files inventories to qualify reproducibility. Desktop byte equality
-does not certify device compatibility.
+Build from a clean committed checkout with
+`rtk proxy python scripts/package-sdk.py`. The script acquires the exact SQLite
+candidate into ignored `artifacts/acquisition`, or `--sqlite-source` can name an
+existing clean checkout at the same revision. Verify with
+`rtk proxy python scripts/package-sdk.py --verify`. Output is `artifacts/sdk`;
+the prior verified output is retained at `artifacts/sdk-previous`. Run clean
+builds twice and compare complete manifests. Byte equality does not certify
+Unity or device behavior.
 
-This managed bundle is not a NuGet feed; nothing is published. Import only
-assemblies required by each consumer's explicit precompiled-reference list and
-their full assemblies[].references dependency closure; do not automatically
-reference every DLL from every Unity asmdef. Install each assembly once. Use core
-contracts as sole canonical owner and remove duplicated declarations in the same
-coordinated consumer change. Packaging changes no game code or Unity settings.
+This is not a NuGet feed and nothing is published. Import only assemblies named
+by a consumer's explicit precompiled-reference list plus their full declared
+closure; never auto-reference every DLL. Install each runtime once and do not
+acquire MessagePack-CSharp or unity-sqlite-net again through UPM.
 
-Keep the prior manifest/imported files before adoption. Roll back callers and
-managed files together to that exact version; do not rewrite identities, clear
-pending commands or delete saves. Actual Unity import/compilation/runtime
-verification belongs to INT-002. Native/AOT bundling and acceptance belong to
-CL-015/INT-009. A qualification MessagePack harness is not production capability.
+Follow `lifecycle-manifest.json` for install, upgrade, uninstall and the exact
+CL-013 rollback anchor. Never rewrite identities, cursors, immutable commands,
+migration journals or saves. Unity import/compilation, stripping, IL2CPP/APK
+inspection and physical-device execution belong to INT-009 and remain unrun.
