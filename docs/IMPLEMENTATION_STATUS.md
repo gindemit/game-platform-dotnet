@@ -1,5 +1,18 @@
 # Implementation status
 
+## CL-008 atomic projection/sequence/outbox — 2026-09-19
+
+Source commit `4de294141ea7d0f6cf062b8ce736ea0ce89fa112` implements
+the qualified Windows x64 atomic admission slice. Eight real-native cases pass,
+including actual pre/post-commit process termination and reopen; the full suite
+passes 252/252 with zero build warnings/errors. See
+[CL-008 evidence](implementation/evidence/CL-008/README.md).
+
+CL-008 remains `in_progress`: disk-full/corruption, terminal result persistence,
+authorized server stream rotation, Unity/AOT/device and real game projection
+integration remain. No stream is silently reset or relabeled. CL-009/010,
+CL-015, INT-005/007/009, G3 and P4 remain outstanding.
+
 ## CL-007 real SQLite executor — 2026-09-19
 
 Source commit `91a67c7805ff59bc3b0ca286fddc2a5124291188` implements
