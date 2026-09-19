@@ -1,5 +1,29 @@
 # Implementation status
 
+## P2 epoch 2 client delivery — 2026-09-19
+
+G1 is passed and P2 authorized by backend `19aef14eaa6ca428775ec7ff7a4f69cfeab0e20a`.
+CL-002 canonical/compatible core, CL-003 DTO delivery and CL-013 early managed
+bundle are implemented. CL-004/016 provide a qualification codec, typed mappings,
+fingerprints and real producer/consumer CLI; production codec and live-service
+modes remain unavailable. See [exact P2 evidence](implementation/evidence/P2/README.md).
+
+Locked Release build and 222 .NET tests pass, alongside 73 schema cases, 32
+fingerprint vectors, five hostile JSON cases, six CLI failure/conversion tests and the
+architecture/manifest/package checks. An exact Core/Features bundle is imported
+into the real consumer at `7375251e5302db308198b7956037c1b33e6edfb6`: Unity
+6000.5.3f1 selected EditMode 7/7, Platform 14/14 and GameplayDomain 27/27 pass.
+INT-002 remains partial for visual/control PlayMode and tested rollback; the
+historical unavailable-editor blocker is superseded, not evidence of device/AOT
+acceptance. Existing 123 documentation errors remain unwaived.
+
+34 C# MessagePack fixtures and 24 fingerprints are committed for G2. Actual
+TypeScript exchange and minimal live-slice schema review remain unrun. STOPPED AT
+G2; P3 is not released. Full A01–A13 production, native/device/provider/live-game
+gates and unresolved product policies remain pending. All sixteen product feature
+ledgers remain stubbed/not_installed. Changes are published on coordinated
+execution/task branches, not main, per CODEX_CLIENT.md.
+
 ## G1 epoch 2 schema review — 2026-09-19
 
 G1-R1–R5 are resolved at schema level against canonical

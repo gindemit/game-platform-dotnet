@@ -1,0 +1,9 @@
+{
+  "argv": ["rtk", "proxy", "dotnet", "run", "--project", "tests/acceptance/GamePlatform.CodecHarness", "-c", "Release", "--no-build", "--no-restore", "--", "produce", "--root", ".", "--output", "docs/implementation/evidence/P2/csharp-corpus.json", "--sdk-commit", "b8b60bbe1f3478274d5d2ebd9e8c4a739fdff86c", "--backend-commit", "19aef14eaa6ca428775ec7ff7a4f69cfeab0e20a", "--unity-commit", "7375251e5302db308198b7956037c1b33e6edfb6"],
+  "exit_code": 0,
+  "cases": 34,
+  "fingerprints": 24,
+  "sha256": "c4988f5a1fee3eba832cfcfeed9dc2f561f5a17d0321c5db5afc93ad8d2aabc0",
+  "peer_interoperability": "unverified",
+  "backend_revision_kind": "observed G1 release, not claimed as tested runtime implementation"
+}

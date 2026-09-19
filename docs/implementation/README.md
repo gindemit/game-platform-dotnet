@@ -2,7 +2,8 @@
 
 Current schema baseline: G1-reviewed `0.2.0-core-schema.1`, exact 90-file mirror;
 [epoch 2 review](evidence/CL-003/G1-epoch2/README.md). Fetch central state for P2
-release and finish CL-003 DTO delivery before dependent runtime implementation.
+release. CL-003 DTO delivery is complete; [P2 evidence](evidence/P2/README.md)
+records codec qualification, early import and the pending G2 review.
 
 Prepared 2026-09-18; coordinated launch instructions updated 2026-09-19. **Planning complete is not implementation complete.** The baseline remains M0: sixteen unavailable modules, no SDK import in MrSquare, no real account/sync/economy acceptance.
 

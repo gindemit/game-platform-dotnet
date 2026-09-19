@@ -1,0 +1,10 @@
+{
+  "consumer_revision": "bc53723a8eec3521dd7bd8e05eaa726fca29795d",
+  "sdk_root": "C:\\Work\\git\\gindemit\\game-platform-dotnet",
+  "exit_code": 0,
+  "stdout": "PASS platform is independent of Unity and gameplay\nPASS state round-trip preserves revision and ownership\nPASS state writes enforce conflicts and ownership\nPASS unrelated gameplay reports a generic outcome\nPASS team providers are swappable and expose offline\nPASS leaderboards are swappable, bounded and expose offline\nPASS quest ignores duplicates and restores its cursor\nPASS feature gates are deterministic\nPASS schema migration advances without mutating the source\nPASS hostile IDs, enums, ranges and payloads are rejected\nPASS migration parse failures are explicit results\nPASS module failure rolls itself back\nPASS module initialization preserves cleanup failures\nPASS module disposal is reverse ordered and resilient\nPlatform: 14 passed, 0 failed.\n",
+  "stderr": ""
+}
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings

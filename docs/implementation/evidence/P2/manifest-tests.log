@@ -1,0 +1,8 @@
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+..............
+----------------------------------------------------------------------
+Ran 14 tests in 0.036s
+
+OK

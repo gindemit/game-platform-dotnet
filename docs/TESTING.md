@@ -1,5 +1,12 @@
 # Testing and acceptance
 
+P2 reproduction: `rtk proxy python docs/implementation/evidence/verify_p2.py`
+records desktop tests, generated mappings, locked build, schema/fingerprint
+qualification, CLI failure cases and source-linked compatibility. The real
+Unity import has separate evidence at consumer `7375251` under
+`Reports/PlatformIntegration/INT-002`. Neither proves G2 peer exchange or device
+acceptance. See [P2 limits and exact counts](implementation/evidence/P2/README.md).
+
 `scripts/validate.py` checks required topology, JSON, project targets/references, feature catalog/readmes and contract hashes. `scripts/test_validation.py` tests the validator. xUnit tests cover M0 typed fail-closed behavior and basic legacy-compatibility value semantics. `scripts/package-sdk.py` builds local NuGet/DLL artifacts and a dependency manifest without publishing.
 
 A01–A13 remain pending except M0 scaffold evidence. Portable build does not prove native SQLite, Unity import, IL2CPP/AOT, PostgreSQL transactions or any host runtime. Never report skipped/unrun environments as passing.

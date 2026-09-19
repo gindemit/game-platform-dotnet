@@ -59,8 +59,9 @@ the coordinator alone integrates shared manifests and project changes.
 
 G1 epoch 2: schema/mirror review delivered as `0.2.0-core-schema.1`; see
 [review and mappings](evidence/CL-003/G1-epoch2/README.md). The attribute-free DTO
-subpart in Steps remains P2 work, so CL-003 is partial/in_progress. Do not infer
-runtime compatibility or skip this delivery before dependent codecs.
+subpart is delivered in P2 with its generated catalog and tests; see
+[P2 evidence](evidence/P2/README.md). CL-003 is complete at schema/DTO scope;
+runtime interoperability remains G2 work.
 
 **Scope/value:** SDK client contract owner; M1/A; P0. Turn draft primitive policy into a usable peer agreement. No independent backend protocol fork.
 
@@ -231,6 +232,11 @@ runtime compatibility or skip this delivery before dependent codecs.
 
 <a id="cl-013"></a>
 ## CL-013 — Early reproducible managed SDK artifact
+
+P2 delivery owns `scripts/package-sdk.py`, `scripts/package-inspector/`,
+`scripts/test_packaging.py` and `scripts/sdk-bundle-README.md` under the existing
+packaging lock. The early 14-assembly package excludes the qualification codec
+and its dependencies pending CL-015 and selects Core/Features.Contracts for import.
 
 **Scope/value:** PackagingOwner; M1/B; P0. Enable the first real consumer import before all features exist. No package publication.
 

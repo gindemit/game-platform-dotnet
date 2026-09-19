@@ -1,0 +1,7 @@
+  Determining projects to restore...
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Core\GamePlatform.Core.csproj (in 59 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Features.Contracts\GamePlatform.Features.Contracts.csproj (in 59 ms).
+  15 of 17 projects are up-to-date for restore.
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings

@@ -1,0 +1,4 @@
+Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and reviewed contract pins.
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings

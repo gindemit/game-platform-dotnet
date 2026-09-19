@@ -1,0 +1,79 @@
+Project 'GamePlatform.Backend.Contracts' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Core' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Diagnostics.Abstractions' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Features' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Features.Contracts' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Features.Presentation' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Navigation' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Serialization.Json' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Serialization.MessagePack' has the following package references
+   [netstandard2.1]: 
+   Top-level Package      Requested   Resolved
+   > MessagePack          3.1.8       3.1.8   
+
+   Transitive Package                            Resolved
+   > MessagePack.Annotations                     3.1.8   
+   > MessagePackAnalyzer                         3.1.8   
+   > Microsoft.NET.StringTools                   17.11.4 
+   > System.Buffers                              4.5.1   
+   > System.Collections.Immutable                8.0.0   
+   > System.Memory                               4.5.5   
+   > System.Numerics.Vectors                     4.4.0   
+   > System.Runtime.CompilerServices.Unsafe      6.0.0   
+
+Project 'GamePlatform.Storage.Abstractions' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Storage.Sqlite' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Sync' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Transport.Abstractions' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Transport.Http' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Wire.Contracts' has the following package references
+   [netstandard2.1]: No packages were found for this framework.
+Project 'GamePlatform.Tests' has the following package references
+   [net9.0]: 
+   Top-level Package                Requested   Resolved
+   > coverlet.collector             6.0.2       6.0.2   
+   > Microsoft.NET.Test.Sdk         17.12.0     17.12.0 
+   > xunit                          2.9.2       2.9.2   
+   > xunit.runner.visualstudio      2.8.2       2.8.2   
+
+   Transitive Package                        Resolved
+   > MessagePack                             3.1.8   
+   > MessagePack.Annotations                 3.1.8   
+   > MessagePackAnalyzer                     3.1.8   
+   > Microsoft.CodeCoverage                  17.12.0 
+   > Microsoft.NET.StringTools               17.11.4 
+   > Microsoft.TestPlatform.ObjectModel      17.12.0 
+   > Microsoft.TestPlatform.TestHost         17.12.0 
+   > Newtonsoft.Json                         13.0.1  
+   > System.Reflection.Metadata              1.6.0   
+   > xunit.abstractions                      2.0.3   
+   > xunit.analyzers                         1.16.0  
+   > xunit.assert                            2.9.2   
+   > xunit.core                              2.9.2   
+   > xunit.extensibility.core                2.9.2   
+   > xunit.extensibility.execution           2.9.2   
+
+Project 'GamePlatform.CodecHarness' has the following package references
+   [net9.0]: 
+   Transitive Package               Resolved
+   > MessagePack                    3.1.8   
+   > MessagePack.Annotations        3.1.8   
+   > MessagePackAnalyzer            3.1.8   
+   > Microsoft.NET.StringTools      17.11.4 
+
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings

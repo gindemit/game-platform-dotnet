@@ -456,6 +456,15 @@
       "G1-R5"
     ],
     "runtime_compatibility": "unverified",
-    "DTO_delivery": "partial_P2"
+    "DTO_delivery": "complete_P2_schema_carriers_and_mapping"
+  },
+  "p2_client_delivery": {
+    "sdk_implementation_commit": "b8b60bbe1f3478274d5d2ebd9e8c4a739fdff86c",
+    "unity_implementation_commit": "7375251e5302db308198b7956037c1b33e6edfb6",
+    "dto_catalog": "src/GamePlatform.Wire.Contracts/dto-catalog.json",
+    "codec_harness": "tests/acceptance/README.md",
+    "producer_evidence": "docs/implementation/evidence/P2/csharp-corpus.json",
+    "runtime_compatibility": "unverified_pending_G2",
+    "live_slice_schema": "pending_backend_proposal_and_client_review"
   }
 }

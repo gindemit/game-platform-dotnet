@@ -4,7 +4,11 @@ Code, generated lockfiles, tests and CI establish the implementation. Accepted d
 
 Start with [ARCHITECTURE](ARCHITECTURE.md), [DECISIONS](DECISIONS.md), [DATA_AND_SYNC](DATA_AND_SYNC.md), [FEATURES](FEATURES.md), [DEPENDENCIES](DEPENDENCIES.md), [IMPLEMENTATION_STATUS](IMPLEMENTATION_STATUS.md), [ROADMAP](ROADMAP.md), [TESTING](TESTING.md), [AGENT_WORKFLOW](AGENT_WORKFLOW.md), and [PROVENANCE](PROVENANCE.md). Protocol work also reads [contracts/README.md](../contracts/README.md); Unity compatibility work reads [integration/unity/EXTRACTION.md](../integration/unity/EXTRACTION.md).
 
-The coordinated P1 implementation is recorded in [implementation status](IMPLEMENTATION_STATUS.md) and the [client handoff](implementation/coordination/CLIENT_HANDOFF.json). [CODEX_CLIENT.md](../CODEX_CLIENT.md) and backend execution state govern phase authorization; M0 evidence below and planning documents do not certify product/runtime integration. MrSquare caller/save/import evidence is committed on its separate execution branch; the SDK remains unimported.
+The coordinated P2 delivery is recorded in [implementation status](IMPLEMENTATION_STATUS.md),
+[P2 evidence](implementation/evidence/P2/README.md) and the [client handoff](implementation/coordination/CLIENT_HANDOFF.json).
+[CODEX_CLIENT.md](../CODEX_CLIENT.md) and backend execution state govern phase authorization.
+Core/Features.Contracts are imported into real MrSquare callers with selected
+EditMode evidence; product/live/device integration and G2 interoperability remain unverified.
 
 ## Detailed execution plan — 2026-09-18
 
