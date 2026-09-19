@@ -1,0 +1,752 @@
+{
+  "schemaVersion": 2,
+  "version": "0.1.0-draft",
+  "sourceCommit": "5dfac45875fa4b829e9e04729938eb4a984e1db5",
+  "sourceDirty": false,
+  "managedRuntime": "netstandard2.1",
+  "nativeLibrariesIncluded": false,
+  "published": false,
+  "projects": [
+    "GamePlatform.Backend.Contracts",
+    "GamePlatform.Core",
+    "GamePlatform.Diagnostics.Abstractions",
+    "GamePlatform.Features",
+    "GamePlatform.Features.Contracts",
+    "GamePlatform.Features.Presentation",
+    "GamePlatform.Navigation",
+    "GamePlatform.Serialization.Json",
+    "GamePlatform.Storage.Abstractions",
+    "GamePlatform.Storage.Sqlite",
+    "GamePlatform.Sync",
+    "GamePlatform.Transport.Abstractions",
+    "GamePlatform.Transport.Http",
+    "GamePlatform.Wire.Contracts"
+  ],
+  "assemblies": [
+    {
+      "file": "GamePlatform.Backend.Contracts.dll",
+      "name": "GamePlatform.Backend.Contracts",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Backend.Contracts.IBackendGateway"
+      ],
+      "moduleVersionId": "5ace2d00-4da2-4ff4-a7a3-6d083736d86f"
+    },
+    {
+      "file": "GamePlatform.Core.dll",
+      "name": "GamePlatform.Core",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Core.AppId",
+        "GamePlatform.Core.BackendNamespace",
+        "GamePlatform.Core.ClientStreamId",
+        "GamePlatform.Core.CryptographicUuidRandomSource",
+        "GamePlatform.Core.IUnixMillisecondClock",
+        "GamePlatform.Core.IUuidRandomSource",
+        "GamePlatform.Core.OperationId",
+        "GamePlatform.Core.OwnerScope",
+        "GamePlatform.Core.PlatformCapabilityUnavailableException",
+        "GamePlatform.Core.PlatformFailure",
+        "GamePlatform.Core.PlatformId",
+        "GamePlatform.Core.PlatformNumbers",
+        "GamePlatform.Core.PlatformResult`1",
+        "GamePlatform.Core.PlatformUserId",
+        "GamePlatform.Core.ScopedOwnerContext",
+        "GamePlatform.Core.SemanticId",
+        "GamePlatform.Core.SystemUnixMillisecondClock",
+        "GamePlatform.Core.UuidIdentity",
+        "GamePlatform.Core.UuidV7Generator"
+      ],
+      "moduleVersionId": "36712252-83af-4cb1-b6f7-82bb7566ffd5"
+    },
+    {
+      "file": "GamePlatform.Diagnostics.Abstractions.dll",
+      "name": "GamePlatform.Diagnostics.Abstractions",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Diagnostics.Abstractions.AppLogContext",
+        "GamePlatform.Diagnostics.Abstractions.AppLogLevel",
+        "GamePlatform.Diagnostics.Abstractions.AppLogRecord",
+        "GamePlatform.Diagnostics.Abstractions.IAppLog",
+        "GamePlatform.Diagnostics.Abstractions.IStructuredAppLogSink",
+        "GamePlatform.Diagnostics.Abstractions.NullAppLog",
+        "GamePlatform.Diagnostics.Abstractions.NullStructuredAppLogSink",
+        "GamePlatform.Diagnostics.Abstractions.SafeAppLog"
+      ],
+      "moduleVersionId": "5f9953b8-0a7b-4e19-afc9-7773eb739f41"
+    },
+    {
+      "file": "GamePlatform.Features.Contracts.dll",
+      "name": "GamePlatform.Features.Contracts",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Features.Contracts.DataOwnership",
+        "GamePlatform.Features.Contracts.FeatureStatus",
+        "GamePlatform.Features.Contracts.GameplayOutcome",
+        "GamePlatform.Features.Contracts.IFeatureCapability",
+        "GamePlatform.Features.Contracts.IGameplayOutcomeSink",
+        "GamePlatform.Features.Contracts.IProgressObserver",
+        "GamePlatform.Features.Contracts.ProgressEvent",
+        "GamePlatform.Features.Contracts.StateRecord"
+      ],
+      "moduleVersionId": "91f22e97-7603-4331-8e74-72684ae0007c"
+    },
+    {
+      "file": "GamePlatform.Features.Presentation.dll",
+      "name": "GamePlatform.Features.Presentation",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Features.Presentation.PresentationStub"
+      ],
+      "moduleVersionId": "fc0a4b28-8bf7-478b-956e-03b87e05be03"
+    },
+    {
+      "file": "GamePlatform.Features.dll",
+      "name": "GamePlatform.Features",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Features.Contracts",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Features.AccountsFeature",
+        "GamePlatform.Features.AchievementsFeature",
+        "GamePlatform.Features.CatalogFeature",
+        "GamePlatform.Features.EntitlementsFeature",
+        "GamePlatform.Features.InboxFeature",
+        "GamePlatform.Features.InventoryFeature",
+        "GamePlatform.Features.LeaderboardsFeature",
+        "GamePlatform.Features.ProfilesFeature",
+        "GamePlatform.Features.ProgressionFeature",
+        "GamePlatform.Features.PurchasesFeature",
+        "GamePlatform.Features.QuestsFeature",
+        "GamePlatform.Features.RemoteConfigFeature",
+        "GamePlatform.Features.RewardFulfillmentFeature",
+        "GamePlatform.Features.StoreFeature",
+        "GamePlatform.Features.TeamsFeature",
+        "GamePlatform.Features.UnavailableFeature",
+        "GamePlatform.Features.WalletFeature"
+      ],
+      "moduleVersionId": "b1cb0f54-f080-4c8d-be50-31619e86160d"
+    },
+    {
+      "file": "GamePlatform.Navigation.dll",
+      "name": "GamePlatform.Navigation",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Navigation.NavigationStub"
+      ],
+      "moduleVersionId": "5f2c283e-c707-4c2a-90fd-8c54246cdd8c"
+    },
+    {
+      "file": "GamePlatform.Serialization.Json.dll",
+      "name": "GamePlatform.Serialization.Json",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Serialization.Json.UnavailableJsonCodec"
+      ],
+      "moduleVersionId": "966c8605-e243-411e-b832-1f23dc299a8b"
+    },
+    {
+      "file": "GamePlatform.Storage.Abstractions.dll",
+      "name": "GamePlatform.Storage.Abstractions",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Storage.Abstractions.IPlatformStore"
+      ],
+      "moduleVersionId": "4d46b4ab-7b05-446e-bfbb-0997e3360f13"
+    },
+    {
+      "file": "GamePlatform.Storage.Sqlite.dll",
+      "name": "GamePlatform.Storage.Sqlite",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Storage.Sqlite.UnavailableSqliteStore"
+      ],
+      "moduleVersionId": "cd28783e-5b75-4ba9-9ca3-eea99ded1e69"
+    },
+    {
+      "file": "GamePlatform.Sync.dll",
+      "name": "GamePlatform.Sync",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Sync.UnavailableSyncCoordinator"
+      ],
+      "moduleVersionId": "aaf96195-53ea-4597-b94d-e735567bc6e6"
+    },
+    {
+      "file": "GamePlatform.Transport.Abstractions.dll",
+      "name": "GamePlatform.Transport.Abstractions",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Transport.Abstractions.IHttpExecutor",
+        "GamePlatform.Transport.Abstractions.IWireCodec"
+      ],
+      "moduleVersionId": "84a5d165-acc2-4173-bc33-14c7da06175a"
+    },
+    {
+      "file": "GamePlatform.Transport.Http.dll",
+      "name": "GamePlatform.Transport.Http",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Transport.Http.UnavailableHttpTransport"
+      ],
+      "moduleVersionId": "6b1a57ca-86b8-4b23-af64-86a68a3ec328"
+    },
+    {
+      "file": "GamePlatform.Wire.Contracts.dll",
+      "name": "GamePlatform.Wire.Contracts",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Wire.Contracts.AccountResponse",
+        "GamePlatform.Wire.Contracts.BootstrapCollection",
+        "GamePlatform.Wire.Contracts.BootstrapPageRequest",
+        "GamePlatform.Wire.Contracts.BootstrapPageResponse",
+        "GamePlatform.Wire.Contracts.BootstrapStartQuery",
+        "GamePlatform.Wire.Contracts.BootstrapStartResponse",
+        "GamePlatform.Wire.Contracts.CommonAccount",
+        "GamePlatform.Wire.Contracts.CommonActor",
+        "GamePlatform.Wire.Contracts.CommonError",
+        "GamePlatform.Wire.Contracts.CommonExtension",
+        "GamePlatform.Wire.Contracts.CommonMembership",
+        "GamePlatform.Wire.Contracts.CommonStreamState",
+        "GamePlatform.Wire.Contracts.ErrorDetailKind",
+        "GamePlatform.Wire.Contracts.ErrorDetailValue",
+        "GamePlatform.Wire.Contracts.ErrorResponse",
+        "GamePlatform.Wire.Contracts.ExtensionValue",
+        "GamePlatform.Wire.Contracts.ExtensionValueKind",
+        "GamePlatform.Wire.Contracts.GameplayCompletionCommand",
+        "GamePlatform.Wire.Contracts.GameplayValidation",
+        "GamePlatform.Wire.Contracts.IProjectionChange",
+        "GamePlatform.Wire.Contracts.IProjectionEntitlementChange",
+        "GamePlatform.Wire.Contracts.IProjectionInventoryChange",
+        "GamePlatform.Wire.Contracts.IProjectionProfileChangeUnion",
+        "GamePlatform.Wire.Contracts.IProjectionProgressionChange",
+        "GamePlatform.Wire.Contracts.IProjectionSnapshotEntity",
+        "GamePlatform.Wire.Contracts.IProjectionWalletChange",
+        "GamePlatform.Wire.Contracts.IPullResponse",
+        "GamePlatform.Wire.Contracts.IPushAcceptedResult",
+        "GamePlatform.Wire.Contracts.IPushFinalResult",
+        "GamePlatform.Wire.Contracts.IPushPayload",
+        "GamePlatform.Wire.Contracts.IPushResult",
+        "GamePlatform.Wire.Contracts.ProfilePatchCommand",
+        "GamePlatform.Wire.Contracts.ProfileProfile",
+        "GamePlatform.Wire.Contracts.ProfileResponse",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementData",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementKey",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryData",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryKey",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionInventorySnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionProfileKey",
+        "GamePlatform.Wire.Contracts.ProjectionProfileRemovalValue",
+        "GamePlatform.Wire.Contracts.ProjectionProfileSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionProfileUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionData",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionKey",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionWalletData",
+        "GamePlatform.Wire.Contracts.ProjectionWalletKey",
+        "GamePlatform.Wire.Contracts.ProjectionWalletRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionWalletSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionWalletUpsert",
+        "GamePlatform.Wire.Contracts.ProtocolVersion",
+        "GamePlatform.Wire.Contracts.ProvisionRequest",
+        "GamePlatform.Wire.Contracts.ProvisionResponse",
+        "GamePlatform.Wire.Contracts.PullGroup",
+        "GamePlatform.Wire.Contracts.PullPage",
+        "GamePlatform.Wire.Contracts.PullRequest",
+        "GamePlatform.Wire.Contracts.PullReset",
+        "GamePlatform.Wire.Contracts.PushAccepted",
+        "GamePlatform.Wire.Contracts.PushGameplayCompletionRecordedResult",
+        "GamePlatform.Wire.Contracts.PushOperation",
+        "GamePlatform.Wire.Contracts.PushProfileUpdatedResult",
+        "GamePlatform.Wire.Contracts.PushRequest",
+        "GamePlatform.Wire.Contracts.PushResponse",
+        "GamePlatform.Wire.Contracts.PushRetryable",
+        "GamePlatform.Wire.Contracts.PushTerminalRejected",
+        "GamePlatform.Wire.Contracts.PushUpgradeRequired",
+        "GamePlatform.Wire.Contracts.PushWaiting",
+        "GamePlatform.Wire.Contracts.RecoveryInspectRequest",
+        "GamePlatform.Wire.Contracts.RecoveryInspectResponse",
+        "GamePlatform.Wire.Contracts.RecoveryReceiptRequest",
+        "GamePlatform.Wire.Contracts.RecoveryReceiptResponse",
+        "GamePlatform.Wire.Contracts.RecoveryStreamRequest",
+        "GamePlatform.Wire.Contracts.RecoveryStreamResponse",
+        "GamePlatform.Wire.Contracts.WireOptional`1"
+      ],
+      "moduleVersionId": "db75dde0-02ca-4d11-9670-71bef9949008"
+    }
+  ],
+  "excludedProjects": {
+    "GamePlatform.Serialization.MessagePack": "qualification_only; complete transitive license/native/AOT bundle remains CL-015"
+  },
+  "capabilities": {
+    "coreContracts": "included",
+    "wireDtoContracts": "included",
+    "safeDiagnostics": "included",
+    "productionMessagePack": "unavailable",
+    "nativeSqlite": "absent",
+    "unityImport": "unverified",
+    "aotAndDevice": "unverified",
+    "liveBackendIntegration": "unverified"
+  },
+  "features": {
+    "schemaVersion": 1,
+    "catalogVersion": "0.1.0-draft",
+    "features": [
+      {
+        "id": "accounts",
+        "name": "Accounts",
+        "status": "stubbed",
+        "acceptance": [
+          "A05",
+          "A07",
+          "A12"
+        ]
+      },
+      {
+        "id": "profiles",
+        "name": "Profiles",
+        "status": "stubbed",
+        "acceptance": [
+          "A07"
+        ]
+      },
+      {
+        "id": "catalog",
+        "name": "Catalog",
+        "status": "stubbed",
+        "acceptance": [
+          "A07"
+        ]
+      },
+      {
+        "id": "inventory",
+        "name": "Inventory",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07"
+        ]
+      },
+      {
+        "id": "wallet",
+        "name": "Wallet",
+        "status": "stubbed",
+        "acceptance": [
+          "A06"
+        ]
+      },
+      {
+        "id": "entitlements",
+        "name": "Entitlements",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07"
+        ]
+      },
+      {
+        "id": "reward-fulfillment",
+        "name": "RewardFulfillment",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A08"
+        ]
+      },
+      {
+        "id": "progression",
+        "name": "Progression",
+        "status": "stubbed",
+        "acceptance": [
+          "A03",
+          "A04",
+          "A07"
+        ]
+      },
+      {
+        "id": "quests",
+        "name": "Quests",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A08"
+        ]
+      },
+      {
+        "id": "achievements",
+        "name": "Achievements",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A08"
+        ]
+      },
+      {
+        "id": "store",
+        "name": "Store",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07"
+        ]
+      },
+      {
+        "id": "purchases",
+        "name": "Purchases",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A12"
+        ]
+      },
+      {
+        "id": "leaderboards",
+        "name": "Leaderboards",
+        "status": "stubbed",
+        "acceptance": [
+          "A07",
+          "A11"
+        ]
+      },
+      {
+        "id": "teams",
+        "name": "Teams",
+        "status": "stubbed",
+        "acceptance": [
+          "A07",
+          "A12"
+        ]
+      },
+      {
+        "id": "remote-config",
+        "name": "RemoteConfig",
+        "status": "stubbed",
+        "acceptance": [
+          "A07"
+        ]
+      },
+      {
+        "id": "inbox",
+        "name": "Inbox",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07",
+          "A12"
+        ]
+      }
+    ]
+  },
+  "build": {
+    "configuration": "Release",
+    "pathMap": "/_/",
+    "sdkVersion": "9.0.203",
+    "buildSkipped": false
+  },
+  "files": [
+    {
+      "path": "architecture.json",
+      "sha256": "ff19967fd4e265ed241c9adf5ee1566fc9cbc87095925a63ec7f7cecda6134cb",
+      "bytes": 2588
+    },
+    {
+      "path": "contract-snapshot.json",
+      "sha256": "7ec4f790219dfcde44308ad86c0fbd8b2527eb3f2116b68541020dd01422bd4b",
+      "bytes": 10928
+    },
+    {
+      "path": "features.json",
+      "sha256": "ae7a4d0ba6d81e84ca21cf3d24dc3cf9eec947083deb5eef995d9869fe8590f0",
+      "bytes": 1500
+    },
+    {
+      "path": "licenses/LICENSE-NOTICE.md",
+      "sha256": "28ec600831acb6410e18e0e3dcff4a0ca956c1e11de1f205e9613d38a6ae8acb",
+      "bytes": 398
+    },
+    {
+      "path": "managed/GamePlatform.Backend.Contracts.dll",
+      "sha256": "0248b4d74828efb3531f57c65f31c8d8fb7c697e807a03d797bf6b72890a300f",
+      "bytes": 5120
+    },
+    {
+      "path": "managed/GamePlatform.Backend.Contracts.pdb",
+      "sha256": "ca96afed742a60254530ba135ed1f7b34bc4fe1ee5da39aa34a7ca4ab8b80ea8",
+      "bytes": 8800
+    },
+    {
+      "path": "managed/GamePlatform.Core.dll",
+      "sha256": "91e91b4b722923af8f0392ce7083b6216f55ead4296710b720cad55e81b447be",
+      "bytes": 15872
+    },
+    {
+      "path": "managed/GamePlatform.Core.pdb",
+      "sha256": "aa01bd5f4d663c7719c61710d2b676b862504acb4b5c7b8984acd97053c87d02",
+      "bytes": 13076
+    },
+    {
+      "path": "managed/GamePlatform.Diagnostics.Abstractions.dll",
+      "sha256": "0275e2b915e6b2c661c15d3df107cb6f5a3f7dd763cb45ce6d07b8ac5fba74fc",
+      "bytes": 10752
+    },
+    {
+      "path": "managed/GamePlatform.Diagnostics.Abstractions.pdb",
+      "sha256": "c1eb38cb9b59be5329dd2070e8ede9c8bd98abf1a9207b473921f72bfc196c81",
+      "bytes": 10148
+    },
+    {
+      "path": "managed/GamePlatform.Features.Contracts.dll",
+      "sha256": "e388238ebc4c3f440f3acfc4f107a78305de1b63f19432428e509e203cbe43a4",
+      "bytes": 10240
+    },
+    {
+      "path": "managed/GamePlatform.Features.Contracts.pdb",
+      "sha256": "06511485b1498ded6815d9325a27f7f0c971760d8b9388bacc2a56816b6ab34d",
+      "bytes": 10128
+    },
+    {
+      "path": "managed/GamePlatform.Features.dll",
+      "sha256": "ef7b0bc543a555c304ecf2048b891355c0e8f96f1dfa3833ac8542b15026e95c",
+      "bytes": 6656
+    },
+    {
+      "path": "managed/GamePlatform.Features.pdb",
+      "sha256": "9a2a093e69596b6498a5663003728de64d3425bdc4c7fd3750d82155bb596ecb",
+      "bytes": 9864
+    },
+    {
+      "path": "managed/GamePlatform.Features.Presentation.dll",
+      "sha256": "0ec262fa80324e1accc32b98512c1b5d48cd3b791be80584c160d0e90cfbcdab",
+      "bytes": 4608
+    },
+    {
+      "path": "managed/GamePlatform.Features.Presentation.pdb",
+      "sha256": "2480eb87e2f88742549b4e86c2fdca5529e947d4a869d2985de3cc3d4c194a1f",
+      "bytes": 8936
+    },
+    {
+      "path": "managed/GamePlatform.Navigation.dll",
+      "sha256": "d38e37ad9c5cc1a00b2b48825d0bf55fce07f77f3b15668b24816fb4d0f38ab9",
+      "bytes": 4096
+    },
+    {
+      "path": "managed/GamePlatform.Navigation.pdb",
+      "sha256": "2747769ed16d2eb5db37644a36db2bce60629af1bdfc5e665222416ac3ac0474",
+      "bytes": 8780
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.Json.dll",
+      "sha256": "79cfb76d194356c37a5cc1b9490bd87645494c695b70ab4837f3e8da6d254f6d",
+      "bytes": 5632
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.Json.pdb",
+      "sha256": "a0aa422f97699f638b0c95e8e8dfe3c4aacafe9ceda979da5c399fc9eea47cf9",
+      "bytes": 8980
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Abstractions.dll",
+      "sha256": "6c5782585cb95a15b650f0bd964037b8e0953b94f57bab461c04bf415ff0b0a1",
+      "bytes": 5120
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Abstractions.pdb",
+      "sha256": "c10245cc853e6ff44db542457be12d9bdd15a0b2db14ed3fe7a1b0eaa0974a3f",
+      "bytes": 8804
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Sqlite.dll",
+      "sha256": "e4e044999f611f0b2447d946b6e1ef998eadfbb7bf9448d6e09dd17e7b446196",
+      "bytes": 4608
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Sqlite.pdb",
+      "sha256": "86457ec1044674309cdc40ad1fd0c6ed46b7bdd4d4195e202d13c1ffb6f5785f",
+      "bytes": 8884
+    },
+    {
+      "path": "managed/GamePlatform.Sync.dll",
+      "sha256": "c93483b380667813c9fbd348af2bcf913ce1c1557209023092470886880fcce5",
+      "bytes": 5120
+    },
+    {
+      "path": "managed/GamePlatform.Sync.pdb",
+      "sha256": "79460fde6c3a01656f9ad97868288d4d6a228c74529a29c4bd6ecaa8a28c1aec",
+      "bytes": 9064
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Abstractions.dll",
+      "sha256": "ccd1fb1e8a329607a88ce3c070cc13e01354f8cedb0fa53594f69ebdd4237427",
+      "bytes": 5632
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Abstractions.pdb",
+      "sha256": "e0b914c67f21df3bf64d0cf26279cc3c5ecdf85bdb9c69d68b58235ca4362ca9",
+      "bytes": 8784
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Http.dll",
+      "sha256": "e6c8d397386e741e98c0aef57a3a622c0d220f4d9e8029bcd6f1703412f6d497",
+      "bytes": 4608
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Http.pdb",
+      "sha256": "9c809ea81718142c039cb0ebb97f99a286703991ecd54393273bc93401cd1135",
+      "bytes": 9004
+    },
+    {
+      "path": "managed/GamePlatform.Wire.Contracts.dll",
+      "sha256": "59127295bbc8c72c2b888f804f37e34bfad1d1de408f5cdb18bd784b3a21e0f3",
+      "bytes": 39424
+    },
+    {
+      "path": "managed/GamePlatform.Wire.Contracts.pdb",
+      "sha256": "e1814bd6104a4156744a032d35eb3c6e52273bed572a9aaec9234c264f59370d",
+      "bytes": 20648
+    },
+    {
+      "path": "README.md",
+      "sha256": "91c6df3d77eefd67d5cda89be960855b64e55ad4ac1ec5baae9d1e3da2cf2f10",
+      "bytes": 2076
+    }
+  ]
+}

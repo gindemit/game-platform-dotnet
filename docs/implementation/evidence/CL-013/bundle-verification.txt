@@ -1,0 +1,2 @@
+Bundle inventory, hashes and declared dependency closure verified.
+[rtk] /!\ No hook installed â€” run `rtk init -g` for automatic token savings
