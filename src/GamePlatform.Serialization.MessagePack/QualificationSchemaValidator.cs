@@ -42,7 +42,13 @@ namespace GamePlatform.Serialization.MessagePack
                 if (value.Kind != K.Integer) Fail();
                 value = V.String(value.IntegerValue.ToString(CultureInfo.InvariantCulture));
             }
+            if(file=="pull.schema.json" && split[1]=="/$defs/group")
+            {
+                long bytes=direction==Direction.FromWire?value.EncodedByteLength:direction==Direction.Diagnostic?DiagnosticSize(value):0;
+                if(bytes>65536) Fail();
+            }
             value = Evaluate(schema!, file, value, direction);
+            if(file=="pull.schema.json" && split[1]=="/$defs/group" && direction==Direction.ToWire && QualificationMessagePackCodec.EncodedSize(value)>65536) Fail();
             if (direction == Direction.ToWire && uuid)
             {
                 var hex = value.StringValue.Replace("-", ""); var bytes = new byte[16];

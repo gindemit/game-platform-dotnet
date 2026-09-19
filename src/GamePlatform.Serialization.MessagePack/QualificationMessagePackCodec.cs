@@ -106,6 +106,13 @@ namespace GamePlatform.Serialization.MessagePack
         }
         private static V Read(ref MessagePackReader reader,Budget budget,int depth)
         {
+            long start=reader.Consumed;
+            var result=ReadValue(ref reader,budget,depth);
+            if(result.Kind==K.Object) result.EncodedByteLength=reader.Consumed-start;
+            return result;
+        }
+        private static V ReadValue(ref MessagePackReader reader,Budget budget,int depth)
+        {
             budget.Node(depth,reader.NextMessagePackType==MessagePackType.Array || reader.NextMessagePackType==MessagePackType.Map);
             switch(reader.NextMessagePackType)
             {
@@ -145,9 +152,24 @@ namespace GamePlatform.Serialization.MessagePack
             switch(value.Kind)
             {
                 case K.Null: writer.WriteNil();break; case K.Boolean:writer.Write(value.BooleanValue);break; case K.Integer:writer.Write(value.IntegerValue);break;
-                case K.String:writer.Write(value.StringValue);break; case K.Binary:writer.Write(value.BinaryBytes);break;
+                case K.String:writer.WriteString(V.Utf8.GetBytes(value.StringValue));break; case K.Binary:writer.Write(value.BinaryBytes);break;
                 case K.Array:writer.WriteArrayHeader(value.Items.Count);foreach(var v in value.Items) Write(ref writer,v);break;
-                case K.Object:writer.WriteMapHeader(value.Properties.Count);foreach(var p in value.Properties) { writer.Write(p.Key);Write(ref writer,p.Value); }break;
+                case K.Object:writer.WriteMapHeader(value.Properties.Count);foreach(var p in value.Properties) { writer.WriteString(V.Utf8.GetBytes(p.Key));Write(ref writer,p.Value); }break;
+            }
+        }
+        internal static long EncodedSize(V value)
+        {
+            switch(value.Kind)
+            {
+                case K.Null:case K.Boolean:return 1;
+                case K.Integer:
+                    long n=value.IntegerValue;
+                    return n>=0 ? n<=127?1:n<=255?2:n<=65535?3:n<=uint.MaxValue?5:9 : n>=-32?1:n>=sbyte.MinValue?2:n>=short.MinValue?3:n>=int.MinValue?5:9;
+                case K.String:
+                    int bytes=V.Utf8.GetByteCount(value.StringValue);return bytes+(bytes<=31?1:bytes<=255?2:bytes<=65535?3:5);
+                case K.Binary:int length=value.BinaryBytes.Length;return length+(length<=255?2:length<=65535?3:5);
+                case K.Array:return (value.Items.Count<=15?1:value.Items.Count<=65535?3:5)+value.Items.Sum(EncodedSize);
+                default:return (value.Properties.Count<=15?1:value.Properties.Count<=65535?3:5)+value.Properties.Sum(p=>EncodedSize(V.String(p.Key))+EncodedSize(p.Value));
             }
         }
         private sealed class Budget

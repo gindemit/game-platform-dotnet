@@ -145,6 +145,22 @@ public sealed class QualificationCodecTests
         Assert.Throws<QualificationCodecException>(()=>codec.Encode(schema,V.String("2")));
         Assert.Throws<QualificationCodecException>(()=>codec.Decode(schema,new byte[]{2}));
     }
+    [Fact]
+    public void AtomicFeedGroupHasAggregateBoundInBothRepresentations()
+    {
+        var codec=new QualificationMessagePackCodec();
+        var change=V.Object(new Dictionary<string,V>{{"entityType",V.String("wallet")},{"entityKey",V.Object(new Dictionary<string,V>{{"currencyId",V.String(new string('a',128))}})},{"revision",V.String("1")},{"kind",V.String("upsert")},{"data",V.Object(new Dictionary<string,V>{{"balance",V.String("1")}})}});
+        var group=V.Object(new Dictionary<string,V>{{"feedRevision",V.String("1")},{"changes",V.Array(Enumerable.Repeat(change,320))}});
+        Assert.Throws<QualificationCodecException>(()=>codec.Encode("pull.schema.json#/$defs/group",group));
+        var encodedChange=codec.Encode("projection.schema.json#/$defs/change",change);
+        var buffer=new System.Buffers.ArrayBufferWriter<byte>();var writer=new global::MessagePack.MessagePackWriter(buffer);
+        writer.WriteMapHeader(2);writer.Write("feedRevision");writer.Write(1);writer.Write("changes");writer.WriteArrayHeader(320);
+        for(int i=0;i<320;i++) writer.WriteRaw(encodedChange);writer.Flush();
+        Assert.True(buffer.WrittenCount>65536);
+        Assert.Throws<QualificationCodecException>(()=>codec.Decode("pull.schema.json#/$defs/group",buffer.WrittenSpan.ToArray()));
+        var small=V.Object(new Dictionary<string,V>{{"feedRevision",V.String("1")},{"changes",V.Array(Enumerable.Repeat(change,200))}});
+        codec.Decode("pull.schema.json#/$defs/group",codec.Encode("pull.schema.json#/$defs/group",small));
+    }
     internal static V Parse(JsonElement value) => value.ValueKind switch
     {
         JsonValueKind.Null=>V.Null,JsonValueKind.True=>V.Boolean(true),JsonValueKind.False=>V.Boolean(false),
