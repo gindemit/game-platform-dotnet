@@ -1,0 +1,3878 @@
+{
+  "canonicalCommit": "0109936f0ebf232924cec70adb79c4f790b604bc",
+  "objects": [
+    {
+      "schema": "account.schema.json#/$defs/response",
+      "sourceSchema": "account.schema.json#/$defs/response",
+      "type": "AccountResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "account",
+          "property": "Account",
+          "parameter": "@account",
+          "type": "CommonAccount",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/account"
+          }
+        },
+        {
+          "wire": "memberships",
+          "property": "Memberships",
+          "parameter": "@memberships",
+          "type": "IReadOnlyList<CommonMembership>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "maxItems": 128,
+            "items": {
+              "$ref": "common.schema.json#/$defs/membership"
+            }
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "bootstrap.schema.json#/$defs/collection",
+      "sourceSchema": "bootstrap.schema.json#/$defs/collection",
+      "type": "BootstrapCollection",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "name",
+          "property": "Name",
+          "parameter": "@name",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "profile",
+              "progression",
+              "inventory",
+              "wallet",
+              "entitlements"
+            ]
+          }
+        },
+        {
+          "wire": "schemaVersion",
+          "property": "SchemaVersion",
+          "parameter": "@schemaVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "required",
+          "property": "Required",
+          "parameter": "@required",
+          "type": "bool",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": true
+          }
+        }
+      ]
+    },
+    {
+      "schema": "bootstrap.schema.json#/$defs/startResponse",
+      "sourceSchema": "bootstrap.schema.json#/$defs/startResponse",
+      "type": "BootstrapStartResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "account",
+          "property": "Account",
+          "parameter": "@account",
+          "type": "CommonAccount",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/account"
+          }
+        },
+        {
+          "wire": "membership",
+          "property": "Membership",
+          "parameter": "@membership",
+          "type": "CommonMembership",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/membership"
+          }
+        },
+        {
+          "wire": "snapshotSession",
+          "property": "SnapshotSession",
+          "parameter": "@snapshotSession",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "committedThrough",
+          "property": "CommittedThrough",
+          "parameter": "@committedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "visibilityGeneration",
+          "property": "VisibilityGeneration",
+          "parameter": "@visibilityGeneration",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "logEpoch",
+          "property": "LogEpoch",
+          "parameter": "@logEpoch",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "collections",
+          "property": "Collections",
+          "parameter": "@collections",
+          "type": "IReadOnlyList<BootstrapCollection>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 64,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/collection"
+            },
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "profile"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "progression"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "inventory"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "wallet"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "name": {
+                      "const": "entitlements"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "wire": "firstPageToken",
+          "property": "FirstPageToken",
+          "parameter": "@firstPageToken",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "expiresAt",
+          "property": "ExpiresAt",
+          "parameter": "@expiresAt",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "streamState",
+          "property": "StreamState",
+          "parameter": "@streamState",
+          "type": "CommonStreamState",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/streamState"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "bootstrap.schema.json#/$defs/pageRequest",
+      "sourceSchema": "bootstrap.schema.json#/$defs/pageRequest",
+      "type": "BootstrapPageRequest",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "snapshotSession",
+          "property": "SnapshotSession",
+          "parameter": "@snapshotSession",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "pageToken",
+          "property": "PageToken",
+          "parameter": "@pageToken",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "maxBytes",
+          "property": "MaxBytes",
+          "parameter": "@maxBytes",
+          "type": "int",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 65536,
+            "maximum": 262144
+          }
+        }
+      ]
+    },
+    {
+      "schema": "bootstrap.schema.json#/$defs/pageResponse",
+      "sourceSchema": "bootstrap.schema.json#/$defs/pageResponse",
+      "type": "BootstrapPageResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "snapshotSession",
+          "property": "SnapshotSession",
+          "parameter": "@snapshotSession",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "committedThrough",
+          "property": "CommittedThrough",
+          "parameter": "@committedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "entities",
+          "property": "Entities",
+          "parameter": "@entities",
+          "type": "IReadOnlyList<IProjectionSnapshotEntity>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "maxItems": 1024,
+            "items": {
+              "$ref": "#/$defs/entity"
+            }
+          }
+        },
+        {
+          "wire": "hasMore",
+          "property": "HasMore",
+          "parameter": "@hasMore",
+          "type": "bool",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "wire": "nextPageToken",
+          "property": "NextPageToken",
+          "parameter": "@nextPageToken",
+          "type": "string?",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "common.schema.json#/$defs/opaqueToken"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "wire": "initialPullCursor",
+          "property": "InitialPullCursor",
+          "parameter": "@initialPullCursor",
+          "type": "string?",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "common.schema.json#/$defs/opaqueToken"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "bootstrap.schema.json#/$defs/startQuery",
+      "sourceSchema": "bootstrap.schema.json#/$defs/startQuery",
+      "type": "BootstrapStartQuery",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "common.schema.json#/$defs/error",
+      "sourceSchema": "common.schema.json#/$defs/error",
+      "type": "CommonError",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "code",
+          "property": "Code",
+          "parameter": "@code",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/semanticKey"
+          }
+        },
+        {
+          "wire": "category",
+          "property": "Category",
+          "parameter": "@category",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "authentication",
+              "authorization",
+              "validation",
+              "conflict",
+              "rate_limit",
+              "dependency",
+              "protocol",
+              "internal"
+            ]
+          }
+        },
+        {
+          "wire": "message",
+          "property": "Message",
+          "parameter": "@message",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        {
+          "wire": "retryable",
+          "property": "Retryable",
+          "parameter": "@retryable",
+          "type": "bool",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "wire": "retryAfterMilliseconds",
+          "property": "RetryAfterMilliseconds",
+          "parameter": "@retryAfterMilliseconds",
+          "type": "WireOptional<int>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400000
+          }
+        },
+        {
+          "wire": "details",
+          "property": "Details",
+          "parameter": "@details",
+          "type": "WireOptional<IReadOnlyDictionary<string, ErrorDetailValue>>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "type": "object",
+            "maxProperties": 32,
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "schema": "common.schema.json#/$defs/extension",
+      "sourceSchema": "common.schema.json#/$defs/extension",
+      "type": "CommonExtension",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "schema",
+          "property": "Schema",
+          "parameter": "@schema",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/semanticKey"
+          }
+        },
+        {
+          "wire": "version",
+          "property": "Version",
+          "parameter": "@version",
+          "type": "int",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        {
+          "wire": "value",
+          "property": "Value",
+          "parameter": "@value",
+          "type": "IReadOnlyDictionary<string, ExtensionValue>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "object",
+            "maxProperties": 128,
+            "x-recursiveScalars": [
+              "null",
+              "boolean",
+              "string"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "common.schema.json#/$defs/actor",
+      "sourceSchema": "common.schema.json#/$defs/actor",
+      "type": "CommonActor",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "player",
+              "service",
+              "administrator",
+              "provider"
+            ]
+          }
+        },
+        {
+          "wire": "id",
+          "property": "Id",
+          "parameter": "@id",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        }
+      ]
+    },
+    {
+      "schema": "common.schema.json#/$defs/account",
+      "sourceSchema": "common.schema.json#/$defs/account",
+      "type": "CommonAccount",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "platformUserId",
+          "property": "PlatformUserId",
+          "parameter": "@platformUserId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "createdAt",
+          "property": "CreatedAt",
+          "parameter": "@createdAt",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "common.schema.json#/$defs/membership",
+      "sourceSchema": "common.schema.json#/$defs/membership",
+      "type": "CommonMembership",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "appId",
+          "property": "AppId",
+          "parameter": "@appId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "status",
+          "property": "Status",
+          "parameter": "@status",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "active",
+              "suspended",
+              "revoked"
+            ]
+          }
+        },
+        {
+          "wire": "createdAt",
+          "property": "CreatedAt",
+          "parameter": "@createdAt",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "common.schema.json#/$defs/streamState",
+      "sourceSchema": "common.schema.json#/$defs/streamState",
+      "type": "CommonStreamState",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "installationId",
+          "property": "InstallationId",
+          "parameter": "@installationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "finalizedThrough",
+          "property": "FinalizedThrough",
+          "parameter": "@finalizedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "nextSequence",
+          "property": "NextSequence",
+          "parameter": "@nextSequence",
+          "type": "long?",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "common.schema.json#/$defs/positiveInt64"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "wire": "state",
+          "property": "State",
+          "parameter": "@state",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "active",
+              "retired"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "error.schema.json#/$defs/response",
+      "sourceSchema": "error.schema.json#/$defs/response",
+      "type": "ErrorResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "correlationId",
+          "property": "CorrelationId",
+          "parameter": "@correlationId",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/correlationId"
+          }
+        },
+        {
+          "wire": "error",
+          "property": "Error",
+          "parameter": "@error",
+          "type": "CommonError",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/error"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "gameplay.schema.json#/$defs/completionCommand",
+      "sourceSchema": "gameplay.schema.json#/$defs/completionCommand",
+      "type": "GameplayCompletionCommand",
+      "interfaces": [
+        "IPushPayload"
+      ],
+      "properties": [
+        {
+          "wire": "contentId",
+          "property": "ContentId",
+          "parameter": "@contentId",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/consumerId"
+          }
+        },
+        {
+          "wire": "contentVersion",
+          "property": "ContentVersion",
+          "parameter": "@contentVersion",
+          "type": "int",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        {
+          "wire": "mode",
+          "property": "Mode",
+          "parameter": "@mode",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/consumerId"
+          }
+        },
+        {
+          "wire": "difficulty",
+          "property": "Difficulty",
+          "parameter": "@difficulty",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/consumerId"
+          }
+        },
+        {
+          "wire": "success",
+          "property": "Success",
+          "parameter": "@success",
+          "type": "bool",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "wire": "score",
+          "property": "Score",
+          "parameter": "@score",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/signedInt64"
+          }
+        },
+        {
+          "wire": "validation",
+          "property": "Validation",
+          "parameter": "@validation",
+          "type": "GameplayValidation",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/validation"
+          }
+        },
+        {
+          "wire": "extension",
+          "property": "Extension",
+          "parameter": "@extension",
+          "type": "WireOptional<CommonExtension>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/extension"
+          }
+        },
+        {
+          "wire": "session",
+          "property": "Session",
+          "parameter": "@session",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/consumerId"
+          }
+        },
+        {
+          "wire": "durationTicks",
+          "property": "DurationTicks",
+          "parameter": "@durationTicks",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "ticksPerSecond",
+          "property": "TicksPerSecond",
+          "parameter": "@ticksPerSecond",
+          "type": "int",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000
+          }
+        },
+        {
+          "wire": "metrics",
+          "property": "Metrics",
+          "parameter": "@metrics",
+          "type": "IReadOnlyDictionary<string, long>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "object",
+            "maxProperties": 256,
+            "propertyNames": {
+              "$ref": "common.schema.json#/$defs/consumerId"
+            },
+            "additionalProperties": {
+              "$ref": "common.schema.json#/$defs/signedInt64"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "schema": "profile.schema.json#/$defs/profile",
+      "sourceSchema": "profile.schema.json#/$defs/profile",
+      "type": "ProfileProfile",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "displayName",
+          "property": "DisplayName",
+          "parameter": "@displayName",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        {
+          "wire": "avatarKey",
+          "property": "AvatarKey",
+          "parameter": "@avatarKey",
+          "type": "WireOptional<string?>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "common.schema.json#/$defs/semanticKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "wire": "locale",
+          "property": "Locale",
+          "parameter": "@locale",
+          "type": "WireOptional<string>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$",
+            "maxLength": 35
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "updatedAt",
+          "property": "UpdatedAt",
+          "parameter": "@updatedAt",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "profile.schema.json#/$defs/response",
+      "sourceSchema": "profile.schema.json#/$defs/response",
+      "type": "ProfileResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "profile",
+          "property": "Profile",
+          "parameter": "@profile",
+          "type": "ProfileProfile",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/profile"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "profile.schema.json#/$defs/patchCommand",
+      "sourceSchema": "profile.schema.json#/$defs/patchCommand",
+      "type": "ProfilePatchCommand",
+      "interfaces": [
+        "IPushPayload"
+      ],
+      "properties": [
+        {
+          "wire": "expectedRevision",
+          "property": "ExpectedRevision",
+          "parameter": "@expectedRevision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "displayName",
+          "property": "DisplayName",
+          "parameter": "@displayName",
+          "type": "WireOptional<string>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        {
+          "wire": "avatarKey",
+          "property": "AvatarKey",
+          "parameter": "@avatarKey",
+          "type": "WireOptional<string?>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "common.schema.json#/$defs/semanticKey"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "wire": "locale",
+          "property": "Locale",
+          "parameter": "@locale",
+          "type": "WireOptional<string>",
+          "optional": true,
+          "constant": false,
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$",
+            "maxLength": 35
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/profileKey",
+      "sourceSchema": "projection.schema.json#/$defs/profileKey",
+      "type": "ProjectionProfileKey",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "profile",
+          "property": "Profile",
+          "parameter": "@profile",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "self"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/progressionKey",
+      "sourceSchema": "projection.schema.json#/$defs/progressionKey",
+      "type": "ProjectionProgressionKey",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "stateKey",
+          "property": "StateKey",
+          "parameter": "@stateKey",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/inventoryKey",
+      "sourceSchema": "projection.schema.json#/$defs/inventoryKey",
+      "type": "ProjectionInventoryKey",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "itemId",
+          "property": "ItemId",
+          "parameter": "@itemId",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/walletKey",
+      "sourceSchema": "projection.schema.json#/$defs/walletKey",
+      "type": "ProjectionWalletKey",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "currencyId",
+          "property": "CurrencyId",
+          "parameter": "@currencyId",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/entitlementKey",
+      "sourceSchema": "projection.schema.json#/$defs/entitlementKey",
+      "type": "ProjectionEntitlementKey",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "entitlementId",
+          "property": "EntitlementId",
+          "parameter": "@entitlementId",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/progressionData",
+      "sourceSchema": "projection.schema.json#/$defs/progressionData",
+      "type": "ProjectionProgressionData",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "value",
+          "property": "Value",
+          "parameter": "@value",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/inventoryData",
+      "sourceSchema": "projection.schema.json#/$defs/inventoryData",
+      "type": "ProjectionInventoryData",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "quantity",
+          "property": "Quantity",
+          "parameter": "@quantity",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/walletData",
+      "sourceSchema": "projection.schema.json#/$defs/walletData",
+      "type": "ProjectionWalletData",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "balance",
+          "property": "Balance",
+          "parameter": "@balance",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/entitlementData",
+      "sourceSchema": "projection.schema.json#/$defs/entitlementData",
+      "type": "ProjectionEntitlementData",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "active",
+          "property": "Active",
+          "parameter": "@active",
+          "type": "bool",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "wire": "expiresAt",
+          "property": "ExpiresAt",
+          "parameter": "@expiresAt",
+          "type": "long?",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "common.schema.json#/$defs/timestamp"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/profileSnapshot",
+      "sourceSchema": "projection.schema.json#/$defs/profileSnapshot",
+      "type": "ProjectionProfileSnapshot",
+      "interfaces": [
+        "IProjectionSnapshotEntity"
+      ],
+      "properties": [
+        {
+          "wire": "collection",
+          "property": "Collection",
+          "parameter": "@collection",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "profile"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionProfileKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/profileKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProfileProfile",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "profile.schema.json#/$defs/profile"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/progressionSnapshot",
+      "sourceSchema": "projection.schema.json#/$defs/progressionSnapshot",
+      "type": "ProjectionProgressionSnapshot",
+      "interfaces": [
+        "IProjectionSnapshotEntity"
+      ],
+      "properties": [
+        {
+          "wire": "collection",
+          "property": "Collection",
+          "parameter": "@collection",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "progression"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionProgressionKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/progressionKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionProgressionData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/progressionData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/inventorySnapshot",
+      "sourceSchema": "projection.schema.json#/$defs/inventorySnapshot",
+      "type": "ProjectionInventorySnapshot",
+      "interfaces": [
+        "IProjectionSnapshotEntity"
+      ],
+      "properties": [
+        {
+          "wire": "collection",
+          "property": "Collection",
+          "parameter": "@collection",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "inventory"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionInventoryKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/inventoryKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionInventoryData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/inventoryData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/walletSnapshot",
+      "sourceSchema": "projection.schema.json#/$defs/walletSnapshot",
+      "type": "ProjectionWalletSnapshot",
+      "interfaces": [
+        "IProjectionSnapshotEntity"
+      ],
+      "properties": [
+        {
+          "wire": "collection",
+          "property": "Collection",
+          "parameter": "@collection",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "wallet"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionWalletKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/walletKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionWalletData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/walletData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/entitlementSnapshot",
+      "sourceSchema": "projection.schema.json#/$defs/entitlementSnapshot",
+      "type": "ProjectionEntitlementSnapshot",
+      "interfaces": [
+        "IProjectionSnapshotEntity"
+      ],
+      "properties": [
+        {
+          "wire": "collection",
+          "property": "Collection",
+          "parameter": "@collection",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "entitlements"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionEntitlementKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/entitlementKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionEntitlementData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/entitlementData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/profileUpsert",
+      "sourceSchema": "projection.schema.json#/$defs/profileUpsert",
+      "type": "ProjectionProfileUpsert",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionProfileChangeUnion"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "profile"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionProfileKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/profileKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "upsert"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProfileProfile",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "profile.schema.json#/$defs/profile"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/progressionUpsert",
+      "sourceSchema": "projection.schema.json#/$defs/progressionUpsert",
+      "type": "ProjectionProgressionUpsert",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionProgressionChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "progression"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionProgressionKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/progressionKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "upsert"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionProgressionData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/progressionData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/inventoryUpsert",
+      "sourceSchema": "projection.schema.json#/$defs/inventoryUpsert",
+      "type": "ProjectionInventoryUpsert",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionInventoryChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "inventory"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionInventoryKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/inventoryKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "upsert"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionInventoryData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/inventoryData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/walletUpsert",
+      "sourceSchema": "projection.schema.json#/$defs/walletUpsert",
+      "type": "ProjectionWalletUpsert",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionWalletChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "wallet"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionWalletKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/walletKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "upsert"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionWalletData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/walletData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/entitlementUpsert",
+      "sourceSchema": "projection.schema.json#/$defs/entitlementUpsert",
+      "type": "ProjectionEntitlementUpsert",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionEntitlementChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "entitlements"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionEntitlementKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/entitlementKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "upsert"
+          }
+        },
+        {
+          "wire": "data",
+          "property": "Data",
+          "parameter": "@data",
+          "type": "ProjectionEntitlementData",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/entitlementData"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/profileRemovalValue",
+      "sourceSchema": "projection.schema.json#/$defs/profileRemovalValue",
+      "type": "ProjectionProfileRemovalValue",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionProfileChangeUnion"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "profile"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionProfileKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/profileKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "tombstone",
+              "view_remove",
+              "invalidation"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/progressionRemoval",
+      "sourceSchema": "projection.schema.json#/$defs/progressionRemoval",
+      "type": "ProjectionProgressionRemoval",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionProgressionChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "progression"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionProgressionKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/progressionKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "tombstone",
+              "view_remove",
+              "invalidation"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/inventoryRemoval",
+      "sourceSchema": "projection.schema.json#/$defs/inventoryRemoval",
+      "type": "ProjectionInventoryRemoval",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionInventoryChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "inventory"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionInventoryKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/inventoryKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "tombstone",
+              "view_remove",
+              "invalidation"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/walletRemoval",
+      "sourceSchema": "projection.schema.json#/$defs/walletRemoval",
+      "type": "ProjectionWalletRemoval",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionWalletChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "wallet"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionWalletKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/walletKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "tombstone",
+              "view_remove",
+              "invalidation"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "projection.schema.json#/$defs/entitlementRemoval",
+      "sourceSchema": "projection.schema.json#/$defs/entitlementRemoval",
+      "type": "ProjectionEntitlementRemoval",
+      "interfaces": [
+        "IProjectionChange",
+        "IProjectionEntitlementChange"
+      ],
+      "properties": [
+        {
+          "wire": "entityType",
+          "property": "EntityType",
+          "parameter": "@entityType",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "entitlements"
+          }
+        },
+        {
+          "wire": "entityKey",
+          "property": "EntityKey",
+          "parameter": "@entityKey",
+          "type": "ProjectionEntitlementKey",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/entitlementKey"
+          }
+        },
+        {
+          "wire": "revision",
+          "property": "Revision",
+          "parameter": "@revision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "tombstone",
+              "view_remove",
+              "invalidation"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "schema": "provision.schema.json#/$defs/request",
+      "sourceSchema": "provision.schema.json#/$defs/request",
+      "type": "ProvisionRequest",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "installationId",
+          "property": "InstallationId",
+          "parameter": "@installationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuidV7"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "provision.schema.json#/$defs/response",
+      "sourceSchema": "provision.schema.json#/$defs/response",
+      "type": "ProvisionResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "account",
+          "property": "Account",
+          "parameter": "@account",
+          "type": "CommonAccount",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/account"
+          }
+        },
+        {
+          "wire": "membership",
+          "property": "Membership",
+          "parameter": "@membership",
+          "type": "CommonMembership",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/membership"
+          }
+        },
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "nextSequence",
+          "property": "NextSequence",
+          "parameter": "@nextSequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "pull.schema.json#/$defs/request",
+      "sourceSchema": "pull.schema.json#/$defs/request",
+      "type": "PullRequest",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "cursor",
+          "property": "Cursor",
+          "parameter": "@cursor",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "maxBytes",
+          "property": "MaxBytes",
+          "parameter": "@maxBytes",
+          "type": "int",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 131072,
+            "maximum": 262144
+          }
+        }
+      ]
+    },
+    {
+      "schema": "pull.schema.json#/$defs/group",
+      "sourceSchema": "pull.schema.json#/$defs/group",
+      "type": "PullGroup",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "feedRevision",
+          "property": "FeedRevision",
+          "parameter": "@feedRevision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "changes",
+          "property": "Changes",
+          "parameter": "@changes",
+          "type": "IReadOnlyList<IProjectionChange>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1024,
+            "items": {
+              "$ref": "#/$defs/change"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "schema": "pull.schema.json#/$defs/page",
+      "sourceSchema": "pull.schema.json#/$defs/page",
+      "type": "PullPage",
+      "interfaces": [
+        "IPullResponse"
+      ],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "changes",
+          "property": "Changes",
+          "parameter": "@changes",
+          "type": "IReadOnlyList<PullGroup>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "maxItems": 1024,
+            "items": {
+              "$ref": "#/$defs/group"
+            }
+          }
+        },
+        {
+          "wire": "nextCursor",
+          "property": "NextCursor",
+          "parameter": "@nextCursor",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "hasMore",
+          "property": "HasMore",
+          "parameter": "@hasMore",
+          "type": "bool",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "wire": "resetRequired",
+          "property": "ResetRequired",
+          "parameter": "@resetRequired",
+          "type": "bool",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": false
+          }
+        },
+        {
+          "wire": "committedThrough",
+          "property": "CommittedThrough",
+          "parameter": "@committedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "pull.schema.json#/$defs/reset",
+      "sourceSchema": "pull.schema.json#/$defs/reset",
+      "type": "PullReset",
+      "interfaces": [
+        "IPullResponse"
+      ],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "changes",
+          "property": "Changes",
+          "parameter": "@changes",
+          "type": "IReadOnlyList<IProjectionChange>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "maxItems": 0
+          }
+        },
+        {
+          "wire": "nextCursor",
+          "property": "NextCursor",
+          "parameter": "@nextCursor",
+          "type": "string?",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "null"
+          }
+        },
+        {
+          "wire": "hasMore",
+          "property": "HasMore",
+          "parameter": "@hasMore",
+          "type": "bool",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": false
+          }
+        },
+        {
+          "wire": "resetRequired",
+          "property": "ResetRequired",
+          "parameter": "@resetRequired",
+          "type": "bool",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": true
+          }
+        },
+        {
+          "wire": "reason",
+          "property": "Reason",
+          "parameter": "@reason",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "history_expired",
+              "visibility_changed",
+              "log_epoch_changed",
+              "cursor_invalidated"
+            ]
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/operation",
+      "sourceSchema": "push.schema.json#/$defs/operation",
+      "type": "PushOperation",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "installationId",
+          "property": "InstallationId",
+          "parameter": "@installationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "sequence",
+          "property": "Sequence",
+          "parameter": "@sequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "type",
+          "property": "Type",
+          "parameter": "@type",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "profile.patch",
+              "gameplay.session.completed"
+            ]
+          }
+        },
+        {
+          "wire": "schemaVersion",
+          "property": "SchemaVersion",
+          "parameter": "@schemaVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "clientCreatedAt",
+          "property": "ClientCreatedAt",
+          "parameter": "@clientCreatedAt",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "payload",
+          "property": "Payload",
+          "parameter": "@payload",
+          "type": "IPushPayload",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/payload"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/request",
+      "sourceSchema": "push.schema.json#/$defs/request",
+      "type": "PushRequest",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "operations",
+          "property": "Operations",
+          "parameter": "@operations",
+          "type": "IReadOnlyList<PushOperation>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 64,
+            "items": {
+              "$ref": "#/$defs/operation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/accepted",
+      "sourceSchema": "push.schema.json#/$defs/accepted",
+      "type": "PushAccepted",
+      "interfaces": [
+        "IPushFinalResult",
+        "IPushResult"
+      ],
+      "properties": [
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "sequence",
+          "property": "Sequence",
+          "parameter": "@sequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "status",
+          "property": "Status",
+          "parameter": "@status",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "accepted"
+          }
+        },
+        {
+          "wire": "feedRevision",
+          "property": "FeedRevision",
+          "parameter": "@feedRevision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "result",
+          "property": "Result",
+          "parameter": "@result",
+          "type": "IPushAcceptedResult",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "#/$defs/acceptedResult"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/terminalRejected",
+      "sourceSchema": "push.schema.json#/$defs/terminalRejected",
+      "type": "PushTerminalRejected",
+      "interfaces": [
+        "IPushFinalResult",
+        "IPushResult"
+      ],
+      "properties": [
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "sequence",
+          "property": "Sequence",
+          "parameter": "@sequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "status",
+          "property": "Status",
+          "parameter": "@status",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "terminal_rejected"
+          }
+        },
+        {
+          "wire": "error",
+          "property": "Error",
+          "parameter": "@error",
+          "type": "CommonError",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/error"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/waiting",
+      "sourceSchema": "push.schema.json#/$defs/waiting",
+      "type": "PushWaiting",
+      "interfaces": [
+        "IPushResult"
+      ],
+      "properties": [
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "sequence",
+          "property": "Sequence",
+          "parameter": "@sequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "status",
+          "property": "Status",
+          "parameter": "@status",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "waiting_for_sequence"
+          }
+        },
+        {
+          "wire": "expectedSequence",
+          "property": "ExpectedSequence",
+          "parameter": "@expectedSequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/retryable",
+      "sourceSchema": "push.schema.json#/$defs/retryable",
+      "type": "PushRetryable",
+      "interfaces": [
+        "IPushResult"
+      ],
+      "properties": [
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "sequence",
+          "property": "Sequence",
+          "parameter": "@sequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "status",
+          "property": "Status",
+          "parameter": "@status",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "retryable"
+          }
+        },
+        {
+          "wire": "error",
+          "property": "Error",
+          "parameter": "@error",
+          "type": "CommonError",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/error"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/upgradeRequired",
+      "sourceSchema": "push.schema.json#/$defs/upgradeRequired",
+      "type": "PushUpgradeRequired",
+      "interfaces": [
+        "IPushResult"
+      ],
+      "properties": [
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "sequence",
+          "property": "Sequence",
+          "parameter": "@sequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "status",
+          "property": "Status",
+          "parameter": "@status",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "upgrade_required"
+          }
+        },
+        {
+          "wire": "minimumProtocolVersion",
+          "property": "MinimumProtocolVersion",
+          "parameter": "@minimumProtocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 2
+          }
+        },
+        {
+          "wire": "error",
+          "property": "Error",
+          "parameter": "@error",
+          "type": "CommonError",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/error"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/response",
+      "sourceSchema": "push.schema.json#/$defs/response",
+      "type": "PushResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "operationResults",
+          "property": "OperationResults",
+          "parameter": "@operationResults",
+          "type": "IReadOnlyList<IPushResult>",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 64,
+            "items": {
+              "$ref": "#/$defs/result"
+            }
+          }
+        },
+        {
+          "wire": "finalizedThrough",
+          "property": "FinalizedThrough",
+          "parameter": "@finalizedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "recovery.schema.json#/$defs/receiptRequest",
+      "sourceSchema": "recovery.schema.json#/$defs/receiptRequest",
+      "type": "RecoveryReceiptRequest",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "installationId",
+          "property": "InstallationId",
+          "parameter": "@installationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "sequence",
+          "property": "Sequence",
+          "parameter": "@sequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          }
+        },
+        {
+          "wire": "fingerprint",
+          "property": "Fingerprint",
+          "parameter": "@fingerprint",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/sha256"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "recovery.schema.json#/$defs/receiptResponse",
+      "sourceSchema": "recovery.schema.json#/$defs/receiptResponse",
+      "type": "RecoveryReceiptResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "found",
+          "property": "Found",
+          "parameter": "@found",
+          "type": "bool",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "wire": "result",
+          "property": "Result",
+          "parameter": "@result",
+          "type": "IPushFinalResult?",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "oneOf": [
+              {
+                "$ref": "push.schema.json#/$defs/finalResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "operationId",
+          "property": "OperationId",
+          "parameter": "@operationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "observedFinalizedThrough",
+          "property": "ObservedFinalizedThrough",
+          "parameter": "@observedFinalizedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "recovery.schema.json#/$defs/streamRequest",
+      "sourceSchema": "recovery.schema.json#/$defs/streamRequest",
+      "type": "RecoveryStreamRequest",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "installationId",
+          "property": "InstallationId",
+          "parameter": "@installationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "priorClientStreamId",
+          "property": "PriorClientStreamId",
+          "parameter": "@priorClientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "newClientStreamId",
+          "property": "NewClientStreamId",
+          "parameter": "@newClientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuidV7"
+          }
+        },
+        {
+          "wire": "reason",
+          "property": "Reason",
+          "parameter": "@reason",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "enum": [
+              "local_database_recreated",
+              "backup_restored",
+              "stream_identity_conflict"
+            ]
+          }
+        },
+        {
+          "wire": "recoveryId",
+          "property": "RecoveryId",
+          "parameter": "@recoveryId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuidV7"
+          }
+        },
+        {
+          "wire": "inspectionToken",
+          "property": "InspectionToken",
+          "parameter": "@inspectionToken",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "expectedFinalizedThrough",
+          "property": "ExpectedFinalizedThrough",
+          "parameter": "@expectedFinalizedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "recovery.schema.json#/$defs/streamResponse",
+      "sourceSchema": "recovery.schema.json#/$defs/streamResponse",
+      "type": "RecoveryStreamResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "priorClientStreamId",
+          "property": "PriorClientStreamId",
+          "parameter": "@priorClientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "newClientStreamId",
+          "property": "NewClientStreamId",
+          "parameter": "@newClientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "nextSequence",
+          "property": "NextSequence",
+          "parameter": "@nextSequence",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/positiveInt64",
+            "const": "1"
+          }
+        },
+        {
+          "wire": "priorFinalizedThrough",
+          "property": "PriorFinalizedThrough",
+          "parameter": "@priorFinalizedThrough",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "recoveryId",
+          "property": "RecoveryId",
+          "parameter": "@recoveryId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "recovery.schema.json#/$defs/inspectRequest",
+      "sourceSchema": "recovery.schema.json#/$defs/inspectRequest",
+      "type": "RecoveryInspectRequest",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "clientStreamId",
+          "property": "ClientStreamId",
+          "parameter": "@clientStreamId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        },
+        {
+          "wire": "installationId",
+          "property": "InstallationId",
+          "parameter": "@installationId",
+          "type": "Guid",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "recovery.schema.json#/$defs/inspectResponse",
+      "sourceSchema": "recovery.schema.json#/$defs/inspectResponse",
+      "type": "RecoveryInspectResponse",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "protocolVersion",
+          "property": "ProtocolVersion",
+          "parameter": "@protocolVersion",
+          "type": "int",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": 1
+          }
+        },
+        {
+          "wire": "streamState",
+          "property": "StreamState",
+          "parameter": "@streamState",
+          "type": "CommonStreamState",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/streamState"
+          }
+        },
+        {
+          "wire": "inspectionToken",
+          "property": "InspectionToken",
+          "parameter": "@inspectionToken",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          }
+        },
+        {
+          "wire": "expiresAt",
+          "property": "ExpiresAt",
+          "parameter": "@expiresAt",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        },
+        {
+          "wire": "serverTime",
+          "property": "ServerTime",
+          "parameter": "@serverTime",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/profileUpdatedResult",
+      "sourceSchema": "push.schema.json#/$defs/accepted/properties/result/oneOf/0",
+      "type": "PushProfileUpdatedResult",
+      "interfaces": [
+        "IPushAcceptedResult"
+      ],
+      "properties": [
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "profile_updated"
+          }
+        },
+        {
+          "wire": "profileRevision",
+          "property": "ProfileRevision",
+          "parameter": "@profileRevision",
+          "type": "long",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+          }
+        }
+      ]
+    },
+    {
+      "schema": "push.schema.json#/$defs/gameplayCompletionRecordedResult",
+      "sourceSchema": "push.schema.json#/$defs/accepted/properties/result/oneOf/1",
+      "type": "PushGameplayCompletionRecordedResult",
+      "interfaces": [
+        "IPushAcceptedResult"
+      ],
+      "properties": [
+        {
+          "wire": "kind",
+          "property": "Kind",
+          "parameter": "@kind",
+          "type": "string",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": "gameplay_completion_recorded"
+          }
+        },
+        {
+          "wire": "completionRecorded",
+          "property": "CompletionRecorded",
+          "parameter": "@completionRecorded",
+          "type": "bool",
+          "optional": false,
+          "constant": true,
+          "schema": {
+            "const": true
+          }
+        }
+      ]
+    },
+    {
+      "schema": "gameplay.schema.json#/$defs/validation",
+      "sourceSchema": "gameplay.schema.json#/$defs/completionCommand/properties/validation",
+      "type": "GameplayValidation",
+      "interfaces": [],
+      "properties": [
+        {
+          "wire": "scheme",
+          "property": "Scheme",
+          "parameter": "@scheme",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          }
+        },
+        {
+          "wire": "reference",
+          "property": "Reference",
+          "parameter": "@reference",
+          "type": "string",
+          "optional": false,
+          "constant": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      ]
+    }
+  ],
+  "unions": [
+    {
+      "type": "IProjectionSnapshotEntity",
+      "schema": "projection.schema.json#/$defs/snapshotEntity",
+      "branches": [
+        "ProjectionProfileSnapshot",
+        "ProjectionProgressionSnapshot",
+        "ProjectionInventorySnapshot",
+        "ProjectionWalletSnapshot",
+        "ProjectionEntitlementSnapshot"
+      ]
+    },
+    {
+      "type": "IProjectionChange",
+      "schema": "projection.schema.json#/$defs/change",
+      "branches": [
+        "ProjectionProfileUpsert",
+        "ProjectionProfileRemovalValue",
+        "ProjectionProgressionUpsert",
+        "ProjectionProgressionRemoval",
+        "ProjectionInventoryUpsert",
+        "ProjectionInventoryRemoval",
+        "ProjectionWalletUpsert",
+        "ProjectionWalletRemoval",
+        "ProjectionEntitlementUpsert",
+        "ProjectionEntitlementRemoval"
+      ]
+    },
+    {
+      "type": "IProjectionProfileChangeUnion",
+      "schema": "projection.schema.json#/$defs/profileChangeUnion",
+      "branches": [
+        "ProjectionProfileUpsert",
+        "ProjectionProfileRemovalValue"
+      ]
+    },
+    {
+      "type": "IProjectionProgressionChange",
+      "schema": "projection.schema.json#/$defs/progressionChange",
+      "branches": [
+        "ProjectionProgressionUpsert",
+        "ProjectionProgressionRemoval"
+      ]
+    },
+    {
+      "type": "IProjectionInventoryChange",
+      "schema": "projection.schema.json#/$defs/inventoryChange",
+      "branches": [
+        "ProjectionInventoryUpsert",
+        "ProjectionInventoryRemoval"
+      ]
+    },
+    {
+      "type": "IProjectionWalletChange",
+      "schema": "projection.schema.json#/$defs/walletChange",
+      "branches": [
+        "ProjectionWalletUpsert",
+        "ProjectionWalletRemoval"
+      ]
+    },
+    {
+      "type": "IProjectionEntitlementChange",
+      "schema": "projection.schema.json#/$defs/entitlementChange",
+      "branches": [
+        "ProjectionEntitlementUpsert",
+        "ProjectionEntitlementRemoval"
+      ]
+    },
+    {
+      "type": "IPullResponse",
+      "schema": "pull.schema.json#/$defs/response",
+      "branches": [
+        "PullPage",
+        "PullReset"
+      ]
+    },
+    {
+      "type": "IPushResult",
+      "schema": "push.schema.json#/$defs/result",
+      "branches": [
+        "PushAccepted",
+        "PushTerminalRejected",
+        "PushWaiting",
+        "PushRetryable",
+        "PushUpgradeRequired"
+      ]
+    },
+    {
+      "type": "IPushAcceptedResult",
+      "schema": "push.schema.json#/$defs/acceptedResult",
+      "branches": [
+        "PushProfileUpdatedResult",
+        "PushGameplayCompletionRecordedResult"
+      ]
+    },
+    {
+      "type": "IPushPayload",
+      "schema": "push.schema.json#/$defs/payload",
+      "branches": [
+        "ProfilePatchCommand",
+        "GameplayCompletionCommand"
+      ]
+    },
+    {
+      "type": "IPushFinalResult",
+      "schema": "push.schema.json#/$defs/finalResult",
+      "branches": [
+        "PushAccepted",
+        "PushTerminalRejected"
+      ]
+    }
+  ],
+  "aliases": {
+    "bootstrap.schema.json#/$defs/entity": "IProjectionSnapshotEntity",
+    "projection.schema.json#/$defs/profileChange": "IProjectionProfileChangeUnion",
+    "projection.schema.json#/$defs/profileRemoval": "ProjectionProfileRemovalValue",
+    "pull.schema.json#/$defs/change": "IProjectionChange"
+  }
+}
