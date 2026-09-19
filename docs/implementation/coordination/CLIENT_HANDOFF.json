@@ -2,16 +2,16 @@
   "protocol_version": 1,
   "run_id": "platform-2026-09-19",
   "track": "client_sdk_and_mrsquare",
-  "phase": "P2",
-  "observed_epoch": 2,
-  "observed_backend_state_commit": "19aef14eaa6ca428775ec7ff7a4f69cfeab0e20a",
-  "handoff_kind": "phase_complete",
-  "status": "ready_for_sync",
+  "phase": "P3",
+  "observed_epoch": 3,
+  "observed_backend_state_commit": "d876473212fef6bfdce93760440079ff18f8b2d2",
+  "handoff_kind": "progress_checkpoint",
+  "status": "in_progress",
   "quiescent": true,
-  "next_gate": "G2",
+  "next_gate": "G3",
   "implementation_commits": {
-    "sdk": "73435cccd86ca9785a46d56df1fa9bfb8ee0a10e",
-    "unity": "7375251e5302db308198b7956037c1b33e6edfb6"
+    "sdk": "6b67b1e38a90583370cf022ad482f52ce41edeee",
+    "unity": "84c2b1137a8dbde497f22495910c9117d3024c5f"
   },
   "required_repository_keys": [
     "sdk",
@@ -170,5 +170,51 @@
     "diagnostic_negatives": 39,
     "feature_runtime": "unverified",
     "phase_authority": "backend coordination/state.json; this historical P2 handoff does not itself release P3"
+  },
+  "p3_progress": {
+    "status": "in_progress_dependency_blocked",
+    "observed_backend_head": "070bb9282de847c6658b19ab24dff9d452dd3a3e",
+    "sdk_head": "6b67b1e38a90583370cf022ad482f52ce41edeee",
+    "unity_head": "84c2b1137a8dbde497f22495910c9117d3024c5f",
+    "source_commits": {
+      "CL-007": "91a67c7805ff59bc3b0ca286fddc2a5124291188",
+      "CL-008": "4de294141ea7d0f6cf062b8ce736ea0ce89fa112",
+      "CL-005": "5b7308d5537462623ef7cf6b3b53bcd1312439bf",
+      "CL-012": "010d47c07907baf86d8a1c9396f81cd5628d03d2"
+    },
+    "evidence_commits": {
+      "CL-007": "1dce23b98c425e8d5d0178b04d22deb5eba307a4",
+      "CL-008": "10a88f013639896a41a40339515918e75abeccde",
+      "CL-005": "77e522ef1815904e59413aa843c27a4b6ecda584",
+      "CL-012": "6b67b1e38a90583370cf022ad482f52ce41edeee"
+    },
+    "complete_task_ids": ["CL-012"],
+    "partial_task_ids": ["CL-005", "CL-007", "CL-008"],
+    "sdk_tests": {
+      "dotnet": 271,
+      "CL-005": 12,
+      "CL-007": 8,
+      "CL-008": 8,
+      "CL-012": 7,
+      "script": 33,
+      "manifest": 14
+    },
+    "unity_fresh_checks": {
+      "architecture_map": "29 nodes passed",
+      "documentation_tests_utf8": "57 passed",
+      "documentation_validator_utf8": "failed with 123 pre-existing stale moved paths",
+      "default_locale": "validator and one test errored on cp1252 decode before UTF-8 rerun",
+      "unity_editor": "6000.5.3f1 installed",
+      "adb": "one attached device observed; no authorization inferred and no install/device test run"
+    },
+    "unity_dependency_assessment": {
+      "INT-003": "blocked by incomplete INT-001",
+      "INT-004": "blocked by INT-003 and real executor/device acceptance",
+      "INT-005": "blocked by DEC-LEGACY-TRUST despite qualified CL-007/008 desktop slices",
+      "INT-008": "blocked by CL-102/105/107 and INT-007",
+      "INT-009": "blocked by CL-015, INT-006 and authorized Android/device workflow"
+    },
+    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "BE-016 hosted composition", "CL-015 native/AOT bundle", "actual Unity PlayMode/IL2CPP/device journey"],
+    "next_action": "Resume BE-011 committed private feed, then BE-010/012/013 and BE-016 by their actual backend dependencies; do not assess G3 or start P4."
   }
 }
