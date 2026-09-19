@@ -1,4 +1,4 @@
-# CL-001 P1 partial validation evidence
+# CL-001 P1 validation evidence
 
 Source branch: `impl/cl-001-p1`  
 Starting commit: `91929801c07c28e40610e7e4f9a25a3e5661406a`  
@@ -17,4 +17,4 @@ All commands ran from the repository root on 2026-09-19. RTK printed its local �
 | `rtk proxy dotnet vstest tests/GamePlatform.Tests/bin/Release/net9.0/GamePlatform.Tests.dll --Logger:"trx;LogFileName=cl001.trx" --ResultsDirectory:docs/implementation/evidence/CL-001` | 0 | TRX counters: total 19, executed 19, passed 19, failed 0, skipped 0. The earlier summary-free `dotnet test` invocation skipped because the baseline project does not declare `IsTestProject`; it is not evidence. |
 | `rtk git diff --check` | 0 | No diagnostics. |
 
-The Python validator suite includes a sandbox-only concrete feature/behavior-test transition and negative coverage for an unavailable feature relabel, evidence-free claim, zero/missing test report, path escape, unknown status, forbidden direct/transitive reference, direct/locked-transitive runtime package, missing module README and changed pinned contract bytes. These tests validate repository policy only. They do not satisfy A01–A13, Unity import, native/AOT/device, peer codec or feature runtime acceptance. CL-001 remains partial until coordinator API review; exact future signatures remain with their owning tasks and G1.
+The Python validator suite includes a sandbox-only concrete feature/behavior-test transition and negative coverage for an unavailable feature relabel, evidence-free claim, zero/missing test report, path escape, unknown status, forbidden direct/transitive reference, direct/locked-transitive runtime package, missing module README and changed pinned contract bytes. These tests validate repository policy only. They do not satisfy A01–A13, Unity import, native/AOT/device, peer codec or feature runtime acceptance. CL-001 design and policy are ready for coordinator API review; no target type is claimed implemented, and G1 operation bodies remain pending.
