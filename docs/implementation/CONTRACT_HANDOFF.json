@@ -102,7 +102,7 @@
     "contracts/v1/fixtures/semantic/field-mappings.json": "12dd09c8a6aa5afa7461b397012fa1ccc1b817f8baa4cfa4a32e1c422f43fa8c",
     "contracts/v1/fixtures/semantic/recovery-vectors.json": "7d48a4f059af8fdca122879cc2f83e93d68a187a4e3b586e1863be5e9450e33b"
   },
-  "digest_evidence": "Recomputed canonical bytes and exact 90-file SDK mirror during G1 epoch2 synchronization; final mirror commit pinned in a subsequent metadata commit.",
+  "digest_evidence": "Exact 90-file canonical snapshot at 0109936f0ebf232924cec70adb79c4f790b604bc copied and verified in SDK mirror commit f61931b95fc176f8f4aa9ed81aea376b76bcd038; original two policy/vector bytes unchanged.",
   "operation_schema_version": 1,
   "operation_fixture_version": 2,
   "freeze_status": "schema_approved_g1_dto_delivery_partial",
@@ -110,7 +110,7 @@
     "status": "approved",
     "gate": "G1",
     "canonical_commit": "0109936f0ebf232924cec70adb79c4f790b604bc",
-    "mirror_commit": null,
+    "mirror_commit": "f61931b95fc176f8f4aa9ed81aea376b76bcd038",
     "reviewers": [
       "Codex /root synchronization session: backend, client contract and consumer review roles; no independent reviewer or product approval claimed"
     ],
