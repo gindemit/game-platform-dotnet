@@ -2,7 +2,9 @@
 
 Date: 2026-09-19
 
-Source commit: `5b7308d5537462623ef7cf6b3b53bcd1312439bf`
+Provisioning source commit: `5b7308d5537462623ef7cf6b3b53bcd1312439bf`
+
+Private-sync provider source commit: `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de`
 
 The qualified provisioning slice now maps a semantic Core-only port to the
 frozen `POST /v1/apps/{appId}/provision` wire operation through injected neutral
@@ -61,14 +63,13 @@ exit 0
 
 ## Remaining limits
 
-Only provisioning is implemented. Account/bootstrap/push/pull/profile/recovery
-providers remain unavailable; there is no portable production codec registration,
+Provisioning and portable bootstrap/pull providers are implemented.
+Account/push/profile/receipt/recovery providers remain unavailable; there is no portable production codec registration,
 real host executor, BE-016 deployable backend composition, UnityWebRequest adapter,
 live TLS/provider sandbox, or device evidence. BE-008 cannot yet truthfully return
-the full durable provisioning response. The composition preflight below changes
-CL-005 to `blocked` while preserving its implemented provisioning slice.
+the full durable provisioning response. CL-005 remains `in_progress`.
 
-## 2026-09-20 composition preflight
+## 2026-09-20 portable bootstrap/pull provider increment
 
 At coordinated SDK head `568d945c5597f085484465ac4372e4d2e2a3b9b3`, the
 requested bootstrap/pull composition was inspected against backend
@@ -77,16 +78,17 @@ requested bootstrap/pull composition was inspected against backend
 `POST /v1/apps/{appId}/sync/pull`, preferring the v1 MessagePack media type and
 permitting only explicitly negotiated diagnostic JSON.
 
-The SDK dependency is not ready: `TypedQualificationCodec` is documented and
-implemented as a qualification-only surface, does not implement `IWireCodec`,
-and production still exposes `UnavailableMessagePackCodec`. `IHttpExecutor` is
-only a neutral interface; no qualified concrete host executor or real host
-composition exists. No qualification type was relabeled and no additional
-scripted-only HTTP provider was added. Resume CL-005 provider expansion only
-after a separately reviewed production codec and concrete executor/composition
-slice exists.
+The semantic provider was independently actionable and is now implemented over
+the injected `IWireCodec`, `IHttpExecutor` and auth-session ports. It covers the
+three frozen routes, explicit representation selection, request/response bounds,
+canonical opaque-token conversion, one coordinated 401 refresh, safe read
+cancellation/transport classification, protocol and pre-envelope errors,
+complete projection groups, final-page cursor handoff and reset envelopes. It
+never retries a failed decode as JSON.
 
-The unchanged baseline passed locked restore/build for 18 projects with zero
-warnings/errors, 32/32 focused CL-005/CL-010 tests, 296/296 full tests,
-architecture validation, 33/33 script tests, manifest validation, and 14/14
-manifest tests.
+Twenty-one new scripted boundary cases bring the combined CL-005/CL-010 focused
+selection to 53/53 and the full suite to 317/317. These cases prove portable
+orchestration only: their executor and codec are scripted, not live or production.
+`TypedQualificationCodec` remains qualification-only,
+`UnavailableMessagePackCodec` remains production-facing, and no concrete host
+executor/composition exists. No qualification type was relabeled.

@@ -23,30 +23,28 @@ foreign-stream rows, pending/in-flight rows at or below server finalization, and
 accepted/rejected rows beyond it. Push finalization remains unable to advance
 the pull checkpoint.
 
-Focused CL-010 tests passed 20/20 and combined CL-007/008/009/010 native SQLite
-regressions passed 41/41. The full SDK suite passed 296/296; locked restore/build
+Focused storage/policy CL-010 tests passed 20/20 and combined CL-007/008/009/010 native SQLite
+regressions passed 41/41. The original full SDK suite passed 296/296; locked restore/build
 covered 18 projects with zero warnings/errors, architecture validation and 33
 script tests passed, and the 52-task/16-ledger/21-wave manifest plus 14 tests
-passed. CL-010 is now `blocked` after its implemented partial slice: no authenticated pull/bootstrap HTTP
-provider, production codec/host composition, live backend transcript,
+passed. CL-010 remains `in_progress`: production codec/host composition, live backend transcript,
 process-kill/disk/corruption, migration registry integration, multi-app shared
 projection provider, Unity/AOT/device or independent review evidence was run.
 G3 was not assessed and P4 was not started. See
 [CL-010 evidence](implementation/evidence/CL-010/README.md).
 
-The 2026-09-20 authenticated HTTP/codec composition preflight at coordinated
-head `568d945c5597f085484465ac4372e4d2e2a3b9b3` stopped without runtime source
-changes. `TypedQualificationCodec` is explicitly qualification-only and does
-not implement `IWireCodec`; `UnavailableMessagePackCodec` remains the only
-production-facing codec seam. HTTP has an injectable `IHttpExecutor` contract
-but no qualified concrete host executor. Relabeling the qualification codec or
-adding more scripted-only semantic providers would not establish the requested
-production composition. The pinned backend `e1e687605e9f5d2fc51aa6be15d804c0f1248e96`
-does freeze the bootstrap/pull routes and negotiation, so the next dependency
-action is a separately reviewed production codec plus real executor/composition
-qualification before this CL-010 HTTP slice resumes. The unchanged baseline
-passed 32/32 focused CL-005/CL-010 tests, 296/296 full tests, clean locked
-18-project restore/build, 33 script tests and 14 manifest tests.
+Follow-up source `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de` corrects
+the preflight scope and implements the actionable portable semantic provider
+over injected `IWireCodec`, `IHttpExecutor` and auth-session ports. It freezes
+the authenticated bootstrap GET, bootstrap-page POST and pull POST routes,
+explicit MessagePack/diagnostic negotiation, bounded codec invocation, one
+coordinated auth refresh, read cancellation/transport mapping, protocol/pre-
+envelope errors, final-page cursor handoff and reset mapping. Twenty-one new
+scripted boundary tests bring the focused CL-005/CL-010 selection to 53/53 and
+the full SDK to 317/317. They are not live or production-composition evidence.
+`TypedQualificationCodec` remains qualification-only,
+`UnavailableMessagePackCodec` remains production-facing, and no concrete HTTP
+executor or host is registered.
 
 ## CL-009 ordered sender increment — 2026-09-19
 
@@ -85,17 +83,17 @@ the portable provisioning provider over injected neutral executor/codec/auth
 ports. Focused tests pass 12/12 and the full suite passes 264/264 with zero build
 warnings/errors. See [CL-005 evidence](implementation/evidence/CL-005/README.md).
 
-CL-005 is now `blocked` after its implemented provisioning slice: the other frozen operations, production codec and
+CL-005 remains `in_progress`: provisioning plus portable bootstrap/pull semantic
+providers are implemented, while the other frozen operations, production codec and
 host registration, BE-016 composition, Unity executor and live/device evidence
 remain unavailable. The provider does not make incomplete BE-008 provisioning
 truthful and does not enable a route, feature, G3 or P4.
 
-The 2026-09-20 composition preflight confirmed that this provider's
-`IWireCodec` and `IHttpExecutor` are consumer-owned injection seams, not an
-installed production codec or executor. The only concrete typed MessagePack
-implementation remains explicitly qualification-only. Bootstrap/pull provider
-work is therefore dependency-blocked rather than extended with another
-scripted-only path.
+The provider boundary is actionable independently of host composition. Its new
+scripted tests verify the injected-port contract only. The sole concrete typed
+MessagePack implementation remains explicitly qualification-only and no real
+executor/host is registered, so production composition and live claims remain
+blocked without changing CL-005's partial `in_progress` state.
 
 ## CL-008 atomic projection/sequence/outbox — 2026-09-19
 

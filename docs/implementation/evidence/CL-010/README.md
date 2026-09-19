@@ -2,7 +2,9 @@
 
 Initial date: 2026-09-19; corrective review finalized 2026-09-20
 
-Effective source commit: `13c36e9083a6b814896724e949f0f7f1dfd35c29`
+Effective source commit: `ebef5ae2e5efc63b897f12b1f5d53e138dfb90de`
+
+Storage/policy source commit: `13c36e9083a6b814896724e949f0f7f1dfd35c29`
 
 Initial source commit: `a9d23c611763939466f33f3817624deffe871470`
 
@@ -79,15 +81,15 @@ exit 0; 14 passed
 
 ## Limits
 
-The remote port is intentionally not a fake production provider. Authenticated
-pull/bootstrap HTTP, production codec registration, hosted backend execution,
+The remote port now has a portable authenticated pull/bootstrap semantic HTTP
+provider. Production codec registration, concrete executor/hosted backend execution,
 fixed-boundary peer transcripts, final migration registry composition,
 multi-app shared-row provider integration, physical process-kill/disk/corrupt
 faults, Unity/IL2CPP/AOT/device execution and independent review remain unrun.
 The native evidence is Windows x64 SQLite only. CL-010 and A04/A05/A07 therefore
 remain partial; G3 and P4 are unchanged.
 
-## 2026-09-20 authenticated HTTP/codec preflight
+## 2026-09-20 authenticated HTTP provider increment
 
 The dependency check ran at coordinated SDK head
 `568d945c5597f085484465ac4372e4d2e2a3b9b3` against accepted backend head
@@ -96,18 +98,17 @@ the authenticated bootstrap start/page and pull routes, fixed-boundary final
 cursor behavior, successful reset envelopes, MessagePack preference, explicit
 diagnostic JSON negotiation, bounded bodies, and protocol error mapping.
 
-No production codec/executor composition dependency exists in the SDK.
-`TypedQualificationCodec` is qualification-only and does not implement
-`IWireCodec`; `UnavailableMessagePackCodec` remains production-facing.
-`IHttpExecutor` is only an injected abstraction, with no qualified concrete
-host executor or real host registration. Using the qualification type as a
-production adapter or adding tests over another scripted codec would contradict
-the accepted CL-004/CL-005 limits. The authenticated CL-010 HTTP provider was
-therefore not implemented, and no runtime source was changed.
+The portable provider is implemented over consumer-owned interfaces without
+claiming their production composition. It sends the exact frozen methods,
+routes, query and bodies; selects MessagePack by default or diagnostic JSON only
+when explicitly constructed; bounds every top-level codec invocation; refreshes
+one rejected auth generation; maps cancellation, transport and pre-envelope
+failures; decodes protocol errors; and maps final bootstrap cursors, complete
+pull groups and reset reasons into the existing coordinator port. Decode failure
+never triggers representation fallback.
 
-Preflight verification of the unchanged baseline: locked restore/build covered
-18 projects with zero warnings/errors; focused CL-005/CL-010 tests passed 32/32;
-the full SDK passed 296/296; architecture validation, 33/33 script tests,
-manifest validation, and 14/14 manifest tests passed. CL-010 is `blocked` after
-its implemented storage/policy slice; next dependency action is explicit production codec plus concrete
-executor/composition qualification, followed by this HTTP slice.
+Twenty-one new scripted provider cases bring focused CL-005/CL-010 coverage to
+53/53 and the full suite to 317/317. They are portable boundary tests, not live
+backend or production-codec/executor evidence. `TypedQualificationCodec` remains
+qualification-only, `UnavailableMessagePackCodec` remains production-facing,
+and no concrete executor/host is registered. CL-010 remains `in_progress`.

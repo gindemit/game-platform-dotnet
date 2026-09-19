@@ -1,12 +1,13 @@
 {
   "task": "CL-005",
   "date": "2026-09-19",
-  "source_commit": "5b7308d5537462623ef7cf6b3b53bcd1312439bf",
-  "scope": "portable-scripted-executor-provisioning",
-  "status": "blocked",
+  "source_commit": "ebef5ae2e5efc63b897f12b1f5d53e138dfb90de",
+  "provisioning_source_commit": "5b7308d5537462623ef7cf6b3b53bcd1312439bf",
+  "scope": "portable-semantic-provisioning-bootstrap-pull",
+  "status": "in_progress",
   "counts": {
-    "focused_tests": 12,
-    "full_dotnet_tests": 264,
+    "focused_tests": 33,
+    "full_dotnet_tests": 317,
     "script_tests": 33,
     "manifest_tests": 14,
     "projects_restored": 18,
@@ -14,16 +15,17 @@
     "warnings": 0,
     "errors": 0
   },
-  "composition_preflight": {
+  "portable_private_sync_increment": {
     "date": "2026-09-20",
     "sdk_baseline": "568d945c5597f085484465ac4372e4d2e2a3b9b3",
     "backend_semantics": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
-    "status": "blocked_no_runtime_change",
-    "reason": "No production IWireCodec and no qualified concrete HTTP executor/host composition; qualification codec was not relabeled.",
-    "counts": {"focused_cl005_cl010": 32, "full_dotnet": 296, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
+    "source_commit": "ebef5ae2e5efc63b897f12b1f5d53e138dfb90de",
+    "status": "implemented_scripted_boundary_only",
+    "remaining_blocker": "No production IWireCodec and no qualified concrete HTTP executor/host composition; qualification codec was not relabeled.",
+    "counts": {"provider_tests": 21, "focused_cl005_cl010": 53, "full_dotnet": 317, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
   },
   "unavailable": [
-    "account/bootstrap/push/pull/profile/recovery providers",
+    "account/push/profile/receipt/recovery providers",
     "production codec registration",
     "real host and Unity executors",
     "BE-016 deployable composition",
