@@ -14,8 +14,8 @@ and tombstones, and reset replacement that preserves immutable commands and
 rebuilds overlays inside the transaction. Push finalization remains unable to
 advance the pull checkpoint.
 
-Focused CL-010 tests passed 6/6 and combined CL-007/008/009/010 native SQLite
-regressions passed 27/27. The full SDK suite passed 282/282; locked restore/build
+Focused CL-010 tests passed 8/8 and combined CL-007/008/009/010 native SQLite
+regressions passed 29/29. The full SDK suite passed 284/284; locked restore/build
 covered 18 projects with zero warnings/errors, architecture validation and 33
 script tests passed, and the 52-task/16-ledger/21-wave manifest plus 14 tests
 passed. CL-010 remains `in_progress`: no authenticated pull/bootstrap HTTP

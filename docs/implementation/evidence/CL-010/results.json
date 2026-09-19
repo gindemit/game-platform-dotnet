@@ -6,7 +6,7 @@
   "backend_be012": "048d3e427a5c78e4cdefd4a1cb82b0ee07bd695b",
   "backend_be013_correction": "ebd2bced1fbb4e34986dcabd68c644b0223825cb",
   "status": "in_progress",
-  "counts": {"focused": 6, "durability_regression": 27, "full_dotnet": 282, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0},
-  "proved": ["durable multi-page staging", "atomic final visibility and cursor", "crash rollback and reopen resume", "fixed-watermark ordered pull", "server-cursor invisible-prefix advancement", "stale revision protection", "reset preserves outbox and rebuilds overlay"],
+  "counts": {"focused": 8, "durability_regression": 29, "full_dotnet": 284, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0},
+  "proved": ["durable multi-page staging", "atomic final visibility and cursor", "crash rollback and reopen resume", "fixed-watermark ordered pull", "server-cursor invisible-prefix advancement", "stale revision protection", "reset preserves outbox and rebuilds overlay", "expired session preserves installed checkpoint", "oversized group rollback"],
   "unrun": ["authenticated HTTP provider", "production codec and host", "live backend peer", "process kill, disk full, corruption", "migration registry", "multi-app shared projection provider", "Unity/AOT/device", "independent review"]
 }

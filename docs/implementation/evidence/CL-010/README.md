@@ -28,10 +28,10 @@ the old confirmed view and staged continuation.
 
 ```text
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter FullyQualifiedName~Cl010PrivateSyncTests --no-restore
-exit 0; 6 passed, 0 failed/skipped/warnings
+exit 0; 8 passed, 0 failed/skipped/warnings
 
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~Cl007|FullyQualifiedName~Cl008AtomicOutboxTests|FullyQualifiedName~Cl009OrderedCommandSenderTests|FullyQualifiedName~Cl010PrivateSyncTests"
-exit 0; 27 passed, 0 failed/skipped/warnings
+exit 0; 29 passed, 0 failed/skipped/warnings
 
 rtk dotnet restore GamePlatform.sln --locked-mode
 exit 0; 18 projects, 0 errors/warnings
@@ -40,7 +40,7 @@ rtk dotnet build GamePlatform.sln -c Release --no-restore
 exit 0; 18 projects, 0 errors/warnings
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
-exit 0; 282 passed, 0 failed/skipped/warnings
+exit 0; 284 passed, 0 failed/skipped/warnings
 
 rtk python scripts/validate.py
 exit 0
