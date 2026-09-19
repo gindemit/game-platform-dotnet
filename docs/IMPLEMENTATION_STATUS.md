@@ -1,5 +1,21 @@
 # Implementation status
 
+## P3 dependency-ready SDK preflight — 2026-09-19
+
+The coordinated branch remains at `06ba050929117bd48cba5993c28156bbb2c6418c`.
+Fresh locked restore and Release build passed with 18 projects and zero
+warnings/errors; the full SDK suite passed 236/236. The pinned CL-006 SQLite
+candidate also passed its real Windows x64 rollback/commit/reopen probe against
+SQLite 3.50.1, preserving signed-64 value `9007199254740993`.
+
+An initial invocation with Windows PowerShell 5 failed the runner's environment
+guard because that shell does not define `$IsWindows`; the PowerShell 7
+invocation passed. This failed attempt is retained and is not an SQLite test
+failure. CL-005 and CL-007 predecessor evidence is present; their manifest
+`Await predecessor evidence` reasons are stale scheduling metadata. Both tasks
+remain planned: no HTTP or durable SQLite implementation, package, Unity import,
+native/device acceptance, feature capability, G3 result or P4 work is claimed.
+
 ## G2 verified desktop core - 2026-09-19
 
 G2 post-promotion core exchange passed: 34 cases/24 fingerprints each direction, 32 raw probes in both decoders and 39 diagnostic negatives. Backend 229 tests; SDK 236 tests. Additive receipt schema approved separately with 30 cases/six known answers; its runtime remains unverified. All service features, production/native/device, G3/G4 and product trust/reward/legacy approval remain unavailable or unverified. See [G2 evidence](implementation/evidence/G2-epoch3/README.md). Central state is published last and alone releases P3.
