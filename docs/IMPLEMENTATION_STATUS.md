@@ -2,7 +2,7 @@
 
 ## CL-010 private pull/bootstrap increment — 2026-09-19
 
-Effective source commit `a7831cc40a46a2555e9fef8fbd374871a3536f9c` (initial source
+Effective source commit `e7dd26813064d6114fe504983213d8f9eaa15d2d` (initial source
 `a9d23c611763939466f33f3817624deffe871470`) implements the bounded Windows x64
 storage and portable policy slice against
 backend BE-012 source `048d3e427a5c78e4cdefd4a1cb82b0ee07bd695b`
