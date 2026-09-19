@@ -17,6 +17,8 @@
     <ProjectReference Include="../../src/GamePlatform.Core/GamePlatform.Core.csproj" />
     <ProjectReference Include="../../src/GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.csproj" />
     <ProjectReference Include="../../src/GamePlatform.Features/GamePlatform.Features.csproj" />
+    <ProjectReference Include="../../src/GamePlatform.Features.Presentation/GamePlatform.Features.Presentation.csproj" />
+    <ProjectReference Include="../../src/GamePlatform.Navigation/GamePlatform.Navigation.csproj" />
     <ProjectReference Include="../../src/GamePlatform.Storage.Sqlite/GamePlatform.Storage.Sqlite.csproj" />
     <ProjectReference Include="../../src/GamePlatform.Transport.Http/GamePlatform.Transport.Http.csproj" />
     <ProjectReference Include="../../src/GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack.csproj" />

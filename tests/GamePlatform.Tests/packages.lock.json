@@ -150,6 +150,20 @@
           "GamePlatform.Core": "[0.1.0-draft, )"
         }
       },
+      "gameplatform.features.presentation": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Core": "[0.1.0-draft, )",
+          "GamePlatform.Features.Contracts": "[0.1.0-draft, )",
+          "GamePlatform.Navigation": "[0.1.0-draft, )"
+        }
+      },
+      "gameplatform.navigation": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Core": "[0.1.0-draft, )"
+        }
+      },
       "gameplatform.serialization.json": {
         "type": "Project",
         "dependencies": {

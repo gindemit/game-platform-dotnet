@@ -1,3 +1,7 @@
 # GamePlatform.Features.Presentation
 
-Reserves portable presenters over feature contracts/navigation/Core. Excludes Unity views, SQL and HTTP. M0 is unavailable. Gates: A07, A10.
+Provides portable CL-012 presenter ownership primitives over feature
+contracts/navigation/Core. Presenters capture an owner generation, dispose their
+subscriptions and view leases across repeated bind/unbind, reject stale callbacks,
+and never dispose borrowed account services. Pending, confirmed and save-failed
+results remain explicit. Excludes Unity views, SQL and HTTP. Gates: A07, A10.
