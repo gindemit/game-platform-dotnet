@@ -27,7 +27,7 @@ Bounds include 262144-byte bodies and fixed-capacity output buffering, strict
 local collection/string/binary limits, 32 container levels, 16384 decoded nodes,
 and 2097152 logical allocation units. Decoding reserves the raw tree plus output
 and intermediate normalization copies before normalization, including conservative
-integer-to-decimal and UUID-to-text expansion. Encoding reserves three diagnostic
+integer-to-decimal, UUID-to-text and opaque-token base64 expansion. Each normalization reservation includes decoded bytes and four UTF-16 base64-sized buffers for conversion intermediates; both reservations are charged before conversion. Encoding reserves three diagnostic
 tree equivalents; fingerprinting reserves six. This conservative retained-copy
 accounting can reject large trees before a single-tree budget would. Diagnostic
 validation itself does not copy decoded containers. Parser-created containers

@@ -35,7 +35,7 @@ namespace GamePlatform.Serialization.MessagePack
                 var wire=Read(ref reader,budget,1);
                 if(!reader.End) throw new QualificationCodecException("Trailing input.");
                 // Reserve output and one intermediate schema-branch copy before normalization.
-                // Integer-to-text/UUID expansion is charged conservatively in advance.
+                // Include integer/UUID text and base64 conversion buffers before normalization.
                 budget.Visit(wire,1,true);
                 budget.Visit(wire,1,true);
                 var diagnostic=QualificationSchemaValidator.Validate(schemaRef,wire,QualificationSchemaValidator.Direction.FromWire);
@@ -182,7 +182,7 @@ namespace GamePlatform.Serialization.MessagePack
                 Node(depth,value.Kind==K.Array || value.Kind==K.Object);
                 if(reserveDiagnosticExpansion && value.Kind==K.Integer) Units(value.IntegerValue.ToString(CultureInfo.InvariantCulture).Length*2L);
                 if(value.Kind==K.String) { if(V.Utf8.GetByteCount(value.StringValue)>8192) throw new QualificationCodecException("String exceeds limit."); Units(value.StringValue.Length*2L); }
-                if(value.Kind==K.Binary) { if(value.BinaryBytes.Length>262144) throw new QualificationCodecException("Binary exceeds limit."); Units(reserveDiagnosticExpansion?Math.Max(72,value.BinaryBytes.Length):value.BinaryBytes.Length); }
+                if(value.Kind==K.Binary) { if(value.BinaryBytes.Length>262144) throw new QualificationCodecException("Binary exceeds limit."); Units(reserveDiagnosticExpansion?Math.Max(72, checked(value.BinaryBytes.Length + 8L*((value.BinaryBytes.Length+2)/3)*2)):value.BinaryBytes.Length); }
                 if(value.Kind==K.Array) { if(value.Items.Count>1024) throw new QualificationCodecException("Array exceeds limit."); Units(value.Items.Count*8L); foreach(var v in value.Items) Visit(v,depth+1,reserveDiagnosticExpansion); }
                 if(value.Kind==K.Object) { if(value.Properties.Count>256) throw new QualificationCodecException("Map exceeds limit."); Units(value.Properties.Count*16L); foreach(var p in value.Properties) { Visit(V.String(p.Key),depth+1);Visit(p.Value,depth+1,reserveDiagnosticExpansion); } }
             }

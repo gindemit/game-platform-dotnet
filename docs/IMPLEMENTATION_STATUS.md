@@ -1,5 +1,9 @@
 # Implementation status
 
+## G2 synchronization correction — 2026-09-19
+
+Schema-directed opaque tokens now encode/decode as bin12..3072; canonical diagnostic base64url remains strict. Decoder reservation includes base64 text and intermediate conversion buffers. All 236 desktop .NET tests pass, including 14 new token/typed/resource cases. Real peer exchange is pending at this correction commit. CL-004/016 remain partial; production, AOT, service and feature acceptance remain unavailable/unverified. Frozen core pins and Unity bundle are unchanged.
+
 ## P2 epoch 2 client delivery â€” 2026-09-19
 
 G1 is passed and P2 authorized by backend `19aef14eaa6ca428775ec7ff7a4f69cfeab0e20a`.

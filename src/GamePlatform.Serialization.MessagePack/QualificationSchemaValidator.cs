@@ -31,6 +31,12 @@ namespace GamePlatform.Serialization.MessagePack
             var primitive = file == "common.schema.json" ? split[1].Substring(7) : "";
             bool uuid = primitive == "uuid" || primitive == "uuidV7";
             bool wide = primitive == "signedInt64" || primitive == "nonNegativeInt64" || primitive == "positiveInt64";
+            bool opaque = primitive == "opaqueToken";
+            if (direction == Direction.FromWire && opaque)
+            {
+                if (value.Kind != K.Binary || value.BinaryBytes.Length < 12 || value.BinaryBytes.Length > 3072) Fail();
+                value = V.String(Convert.ToBase64String(value.BinaryBytes).TrimEnd('=').Replace('+','-').Replace('/','_'));
+            }
             if (direction == Direction.FromWire && uuid)
             {
                 if (value.Kind != K.Binary || value.BinaryBytes.Length != 16) Fail();
@@ -56,6 +62,11 @@ namespace GamePlatform.Serialization.MessagePack
                 return V.OwnedBinary(bytes);
             }
             if (direction == Direction.ToWire && wide) return V.Integer(long.Parse(value.StringValue, CultureInfo.InvariantCulture));
+            if (direction == Direction.ToWire && opaque)
+            {
+                var text = value.StringValue;
+                return V.OwnedBinary(Convert.FromBase64String(text.Replace('-','+').Replace('_','/') + new string('=',(4-text.Length%4)%4)));
+            }
             return value;
         }
         private static bool Matches(V schema, string file, V value)
