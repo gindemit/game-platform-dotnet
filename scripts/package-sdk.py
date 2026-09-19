@@ -26,6 +26,13 @@ NATIVE_TARGETS = {
     'macos-universal': 'Plugins/lib/macos/libgilzoide-sqlite-net.dylib',
     'android-arm64': 'Plugins/lib/android/arm64/libgilzoide-sqlite-net.so',
 }
+REQUIRED_NOTICES = {
+    'licenses/LICENSE-NOTICE.md',
+    'licenses/LICENSE.MessagePack-CSharp.txt',
+    'licenses/LICENSE.unity-sqlite-net.txt',
+    'licenses/LICENSE.sqlite-net.txt',
+    'licenses/LICENSE.SQLite3MultipleCiphers.txt',
+}
 
 
 def run(args, capture=False, cwd=ROOT):
@@ -208,6 +215,20 @@ def validate_native_manifest(manifest, output, qualification=None, expected_pinv
         raise ValueError('aot_inventory_missing')
 
 
+def validate_licenses(output, packages):
+    for relative in sorted(REQUIRED_NOTICES):
+        if not (output / relative).is_file():
+            raise ValueError('required_license_notice_missing: ' + relative)
+    for item in packages:
+        relative = f'licenses/nuget-metadata/{item["id"]}.{item["version"]}.nuspec'
+        path = output / relative
+        if not path.is_file():
+            raise ValueError('package_license_metadata_missing: ' + item['id'])
+        license_node = ET.parse(path).find('.//{*}license')
+        if license_node is None or not (license_node.text or '').strip():
+            raise ValueError('package_license_declaration_missing: ' + item['id'])
+
+
 def verify_bundle(output, qualification=None, expected_packages=None, expected_pinvoke=None):
     manifest = json.loads((output / 'dependency-manifest.json').read_text())
     expected = {entry['path']: entry for entry in manifest['files']}
@@ -232,6 +253,7 @@ def verify_bundle(output, qualification=None, expected_packages=None, expected_p
             raise ValueError('managed_package_pin_mismatch: ' + package_id)
     if manifest.get('capabilities', {}).get('productionMessagePack') != 'unavailable':
         raise ValueError('qualification_codec_mislabeled')
+    validate_licenses(output, manifest['managedPackages'])
     validate_native_manifest(manifest, output, qualification, expected_pinvoke)
     return manifest
 

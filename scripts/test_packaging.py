@@ -79,9 +79,18 @@ class PackageTests(unittest.TestCase):
                            'importMetadata': meta.relative_to(root).as_posix(),
                            'sha256': package.digest(path),
                            'importMetadataSha256': package.digest(meta)})
+        locked = package.package_lock(package.ROOT / 'src/GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack.csproj')['dependencies']['.NETStandard,Version=v2.1']
+        for relative in package.REQUIRED_NOTICES:
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('reviewed fixture notice')
+        metadata = root / 'licenses/nuget-metadata'
+        metadata.mkdir(exist_ok=True)
+        for name, version in package.MESSAGEPACK_PACKAGES.items():
+            (metadata / f'{name}.{version}.nuspec').write_text(
+                '<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"><metadata><license type="expression">MIT</license></metadata></package>')
         files = [{'path': p.relative_to(root).as_posix(), 'sha256': package.digest(p), 'bytes': p.stat().st_size}
                  for p in sorted(root.rglob('*')) if p.is_file()]
-        locked = package.package_lock(package.ROOT / 'src/GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack.csproj')['dependencies']['.NETStandard,Version=v2.1']
         manifest = {'projects': ['A'], 'managedAssemblyNames': ['A'], 'assemblies': [assembly()],
                     'managedPackages': [{'id': name, 'version': version, 'contentHash': locked[name]['contentHash']}
                                         for name, version in package.MESSAGEPACK_PACKAGES.items()],
@@ -159,6 +168,17 @@ class PackageTests(unittest.TestCase):
             manifest['pinvoke'] = {'libraryNames': ['sqlite3'], 'entryPoints': [], 'declarationCount': 0}
             (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
             with self.assertRaisesRegex(ValueError, 'pinvoke_inventory_mismatch'):
+                self.verify(root, manifest)
+
+    def test_required_native_notice_cannot_disappear_from_manifest(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            manifest = self.bundle(root)
+            relative = 'licenses/LICENSE.SQLite3MultipleCiphers.txt'
+            (root / relative).unlink()
+            manifest['files'] = [item for item in manifest['files'] if item['path'] != relative]
+            (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, 'required_license_notice_missing'):
                 self.verify(root, manifest)
 
 
