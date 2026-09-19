@@ -25,6 +25,7 @@ internal static class Program
                 Console.WriteLine("self-test --root <repo>");
                 Console.WriteLine("produce --root <repo> --output <new.json> --sdk-commit <sha> --backend-commit <sha> --unity-commit <sha>");
                 Console.WriteLine("consume --root <repo> --input <peer.json> --sdk-commit <sha> --backend-commit <sha> --unity-commit <sha>");
+                Console.WriteLine("encode|decode --root <repo> --schema <reviewed-schema-ref> --input <file> --output <new-file>");
                 return 0;
             }
             var options = Options(args);
@@ -35,6 +36,8 @@ internal static class Program
                 case "self-test": SelfTest(root, cases); break;
                 case "produce": Produce(root, cases, options); break;
                 case "consume": Consume(root, cases, options); break;
+                case "encode": Transcode(options, true); break;
+                case "decode": Transcode(options, false); break;
                 default: throw new InvalidDataException("unsupported_mode_live_service_unavailable");
             }
             return 0;
@@ -56,7 +59,7 @@ internal static class Program
             if (!args[i].StartsWith("--", StringComparison.Ordinal) || !result.TryAdd(args[i][2..], args[i + 1]))
                 throw new ArgumentException("option_duplicate");
         }
-        string[] allowed = { "root", "output", "input", "sdk-commit", "backend-commit", "unity-commit" };
+        string[] allowed = { "root", "output", "input", "schema", "sdk-commit", "backend-commit", "unity-commit" };
         if (result.Keys.Any(k => !allowed.Contains(k))) throw new ArgumentException("unknown_option");
         return result;
     }
@@ -220,6 +223,21 @@ internal static class Program
         if (fingerprintSeen.Count == 0 || fingerprintSeen.Count != expectedFingerprints.Count) throw new InvalidDataException("missing_fingerprints");
         Console.WriteLine(JsonSerializer.Serialize(new { mode = "consume", direction = "typescript_to_csharp", cases = seen.Count,
             fingerprints = fingerprintSeen.Count, sdk, backend, unity, reverseDirection = "requires_backend_consumer", gateG2 = "not_approved_by_this_command" }));
+    }
+
+    private static void Transcode(Dictionary<string, string> options, bool encode)
+    {
+        string schema = Required(options, "schema");
+        byte[] input = ReadBounded(Required(options, "input"), 262144);
+        byte[] output = encode
+            ? Codec.Encode(schema, DiagnosticJson.Parse(input))
+            : DiagnosticJson.Write(Codec.Decode(schema, input));
+        string path = Path.GetFullPath(Required(options, "output"));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
+        stream.Write(output);
+        Console.WriteLine(JsonSerializer.Serialize(new { mode = encode ? "encode" : "decode", bytes = output.Length,
+            acceptance = "single_conversion_only_no_peer_or_gate_verdict" }));
     }
 
     private static byte[] ReadBounded(string path, long maximum)

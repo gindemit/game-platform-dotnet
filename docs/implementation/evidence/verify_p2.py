@@ -30,9 +30,17 @@ COMMANDS = [
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    selection = set(sys.argv[1:])
+    if selection - {name for name, _ in COMMANDS}:
+        raise ValueError('Unknown check selection')
     records = []
+    if selection and (OUT / 'results.json').exists():
+        previous = json.loads((OUT / 'results.json').read_text(encoding='utf-8'))
+        records = [row for row in previous['records'] if row['name'] not in selection]
     failed = False
     for name, command in COMMANDS:
+        if selection and name not in selection:
+            continue
         started = time.monotonic()
         argv = ['rtk', 'proxy', *command]
         result = subprocess.run(argv, cwd=ROOT, capture_output=True, encoding='utf-8', errors='replace')

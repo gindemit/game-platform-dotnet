@@ -39,6 +39,19 @@ the independently produced MessagePack bytes. Record that command and revision.
 
 G2 still needs both actual producer/consumer directions, independently generated
 hostile binary cases and compact integer variants, plus live-slice schema review.
+For those individual probes, `encode` accepts diagnostic JSON and writes raw
+MessagePack; `decode` accepts raw bytes and writes diagnostic JSON:
+
+```powershell
+rtk proxy dotnet run --project tests/acceptance/GamePlatform.CodecHarness -c Release -- decode --root . --schema 'common.schema.json#/$defs/signedInt64' --input artifacts/peer/ts-int.bin --output artifacts/peer/decoded-int.json
+```
+
+Use the same options with `encode` for C# primitive production. Exit 1 means
+conversion failed, creates no output, and is not by itself a passing negative
+test. The independent gate runner must assert the intended rejection and record
+the exact producer, consumer, fixture revision and command. These modes report
+only a conversion result and never an interoperability verdict.
+
 This command alone never approves G2. Later CL-016 service/fault modes remain
 unimplemented and unknown modes fail with exit 1. No health response substitutes
 for a real service journey. Logs print counts and stable failure types only.
