@@ -1,5 +1,27 @@
 # Implementation status
 
+## Coordinated P1 evidence — 2026-09-19
+
+Run `platform-2026-09-19`, P1 / epoch 0; stop gate G1. Work is on `impl/platform-coordinated-2026-09-19`, not main. The backend state observed at published commit `d65301d39000e6817ca2b737bf9c9e49af0ed3d3` is parallel P1 with every gate pending and no approved artifacts. See the [task ledger](implementation/execution-manifest.json), [client handoff](implementation/coordination/CLIENT_HANDOFF.json), [review record](implementation/evidence/P1/REVIEW.md) and [raw SDK verification](implementation/evidence/P1/results.json).
+
+- CL-001 complete as design/policy: exact current API/direct/transitive dependency inventory, reviewed schema-neutral target signatures and ownership/error rules, narrow feature-contract reference allowances, deny-by-default packages and evidence-aware validator. It rejects known unavailable feature relabels, missing/escaped reports, zero/mismatched tests, package/reference leakage and contract drift. Target transaction/snapshot/command types are explicitly future implementations; operation body/wire details require G1. This is tooling/interface evidence, not feature implementation.
+- CL-006: pinned unity-sqlite-net 1.3.2 and native inputs, single SDK-bundle acquisition decision, real Windows x64 rollback/commit/reopen probe with exact signed-64 value `9007199254740993`. Independent rerun passed. Existing databases and dirty acquisition trees are refused. SQLite remains absent from production SDK/Unity imports; other platforms, AOT and device acceptance remain unrun.
+- CL-014: implemented BCL-only safe diagnostics with enabled/deferred fields, stable code-defined event/category symbols, explicit scalar metric allowlist, default string/object redaction, immutable captured correlation/generation, bounded copied fields and failure containment. Preserves legacy IAppLog/NullAppLog. Independent review and 12 selected tests pass. No framework, queue or Unity output provider added.
+- CL-003 preparation: G1 operation/schema/fingerprint/negative-vector requirements and candidate absence findings committed. No canonical contract, mirror hash, DTO or codec implementation changed. Actual schema approval and runtime compatibility remain unverified.
+- INT-001: MrSquare exhaustive caller/save/import/asmdef/GUID/source-linked-project inventory and baseline regression evidence committed on its execution branch while preserving newer main work and original local edits. Inventory subpart is complete; the whole task remains blocked on the pinned Unity editor/effective settings and fresh UE/UP/visual evidence. [Extraction preparation](implementation/evidence/P1/EXTRACTION_PREPARATION.md) records compatibility guards; no SDK import or runtime game integration occurred.
+
+Exact SDK command vectors, exit codes and TRX counters are in `implementation/evidence/P1/results.json`; raw output is alongside it. `rtk proxy python docs/implementation/evidence/verify_p1.py` completed all checks with exit 0:
+
+- Architecture validator passed; Python validator tests 19/19 and manifest tests 14/14 passed. Manifest: 52 tasks, 16 feature ledgers, 21 conservative waves.
+- Locked restore and Release build passed with zero errors/warnings. Full .NET suite: 31 executed/passed, 0 failed/skipped; diagnostics filter: 12 executed/passed, 0 failed/skipped.
+- Package listing confirms runtime NuGet dependencies remain absent. Local packaging produced 15 NuGet files and 15 managed DLLs, no native bundle; nothing published. Diff check passed.
+- Separate `rtk proxy pwsh -NoProfile -File integration/unity/sqlite-qualification/run-desktop-probe.ps1`: exit 0, real Windows native SQLite 3.50.1 / .NET 9.0.4 x64; see CL-006 raw probe output and coordinator review.
+- MrSquare source-linked Platform 14/14 and GameplayDomain 27/27 passed; documentation unit tests 57/57 and 29-node architecture validation passed. Unity documentation validator fails on 123 pre-existing stale maintenance move-map paths; baseline validator/map content matches incorporated main. This remains an explicit failure, not a waived pass.
+
+All sixteen product features remain stubbed and MrSquare remains not_installed in the feature ledger. A01–A13 production acceptance remains pending; scoped desktop tooling/redaction/native-probe evidence above does not pass those whole gates. Unity 6000.5.3f1, EditMode/PlayMode/effective settings, IL2CPP/AOT/stripping, physical devices, real peer C#/TS codecs, PostgreSQL/live bootstrap/sync/rewards, provider sandboxes and independent reuse were not run. G1–G4 remain unpassed. No main merge, deployment, Firebase distribution, package publication, production migration, secret change or backend write occurred.
+
+## Historical M0 record
+
 Date: 2026-09-17. Milestone: M0 compatibility/tooling.
 
 ## Implemented in M0

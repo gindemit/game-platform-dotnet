@@ -51,5 +51,21 @@
   ],
   "delta_policy": "After schema freeze, record changed fields/semantics, compatibility, schema/fixture versions, actual reviewers, exact peer commits and regenerated hashes. Pause affected work for a synchronized delta checkpoint and coordinated repin. Schema review alone never passes new runtime fixtures. Mirrors are artifacts, never independent specifications.",
   "peer_plan_task_ids": ["BE-002", "BE-005", "BE-006", "BE-008", "BE-009", "BE-010", "BE-011", "BE-012", "BE-013", "BE-015", "BE-016", "BE-017", "BE-018", "BE-019", "BE-020", "BE-021", "BE-022", "BE-023", "BE-024", "BE-025", "BE-026", "BE-027", "BE-028", "BE-029", "BE-030", "BE-032", "BE-033", "BE-034", "BE-035", "BE-036", "BE-037", "BE-038", "BE-039", "BE-040", "BE-045", "BE-046"],
-  "peer_plan_note": "Mapped to backend PR #1 task cards reviewed at 83866674247a98914709c6b1ede9fcd709be296a. Mapping does not imply any implementation or gate passed. See COORDINATION.md and the canonical backend coordination protocol for staged acceptance and current execution-branch state."
+  "peer_plan_note": "Mapped to backend PR #1 task cards reviewed at 83866674247a98914709c6b1ede9fcd709be296a. Mapping does not imply any implementation or gate passed. See COORDINATION.md and the canonical backend coordination protocol for staged acceptance and current execution-branch state.",
+  "p1_client_review": {
+    "phase": "P1",
+    "epoch": 0,
+    "observed_backend_execution_commit": "d65301d39000e6817ca2b737bf9c9e49af0ed3d3",
+    "client_contract_owner": "/root",
+    "independent_reviewer": "/root/interfaces",
+    "consumer_integration_owner": "/root/unity",
+    "requirements": "docs/implementation/evidence/CL-003/G1_REQUIREMENTS.md",
+    "foundation_design": "docs/implementation/interfaces/FOUNDATION_CONTRACTS.md",
+    "consumer_commit": "bc53723a8eec3521dd7bd8e05eaa726fca29795d",
+    "candidate_finding": "No operation-schema artifact existed in contracts/ at the observed published execution commit. Review a later committed BE-002 candidate in G1; no runtime codec prerequisite.",
+    "schema_approved": false,
+    "mirror_repinned": false,
+    "existing_mirror_hashes_recomputed": true,
+    "runtime_compatibility": "unverified"
+  }
 }

@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="da0a95df-f36a-4e7d-9c36-3d2a3498573d" name="khind@POWERPC 2026-09-19 11:09:09" runUser="PowerPC\khind" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-19T11:09:09.5533720+02:00" queuing="2026-09-19T11:09:09.5533724+02:00" start="2026-09-19T11:09:09.0339979+02:00" finish="2026-09-19T11:09:09.5751730+02:00" />
+  <TestSettings name="default" id="0a619d15-7a34-467c-ba6c-d1678cd39087">
+    <Deployment runDeploymentRoot="khind_POWERPC_2026-09-19_11_09_09" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="3f660ee2-36df-4ecd-b12e-e260c6246677" testId="57476bcb-6a37-2c88-eb64-477d20029004" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.UnknownNumericSecretsAreDeniedByDefault" computerName="POWERPC" duration="00:00:00.0002591" startTime="2026-09-19T11:09:09.5100230+02:00" endTime="2026-09-19T11:09:09.5100230+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f660ee2-36df-4ecd-b12e-e260c6246677" />
+    <UnitTestResult executionId="23aee9e7-8270-4934-ae84-afb2edd38e84" testId="8e28c60f-e696-d681-db73-ecec20194706" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.SinkFailureCannotChangeCommittedResult(failEnabled: True)" computerName="POWERPC" duration="00:00:00.0001294" startTime="2026-09-19T11:09:09.5304323+02:00" endTime="2026-09-19T11:09:09.5304324+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="23aee9e7-8270-4934-ae84-afb2edd38e84" />
+    <UnitTestResult executionId="250cf636-c0a1-489d-b258-4a6da365fe9b" testId="e07aec6e-71ca-ebc4-51d5-7d6449ab5d5e" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.DisabledSinkDoesNotEvaluateFactory" computerName="POWERPC" duration="00:00:00.0001770" startTime="2026-09-19T11:09:09.5097305+02:00" endTime="2026-09-19T11:09:09.5097306+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="250cf636-c0a1-489d-b258-4a6da365fe9b" />
+    <UnitTestResult executionId="a3a22d36-154d-4aae-8503-338cb5d29335" testId="c375a1ad-f7c8-33fb-2747-582fe21d1de1" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.CapturesOwnerAndCopiesFieldsBeforeDelayedDelivery" computerName="POWERPC" duration="00:00:00.0062750" startTime="2026-09-19T11:09:09.5067704+02:00" endTime="2026-09-19T11:09:09.5068114+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a3a22d36-154d-4aae-8503-338cb5d29335" />
+    <UnitTestResult executionId="75e2cbfc-2d9b-4b49-9be4-29d00fe5353b" testId="9077c987-c5e1-88ef-8a3c-6bad53179152" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.FactoryAndEnumeratorFailuresAreContained" computerName="POWERPC" duration="00:00:00.0004249" startTime="2026-09-19T11:09:09.5123894+02:00" endTime="2026-09-19T11:09:09.5123895+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="75e2cbfc-2d9b-4b49-9be4-29d00fe5353b" />
+    <UnitTestResult executionId="4612873c-d7f5-477d-b72c-f7aaf67dc113" testId="dbf9a602-431b-7bdf-95b1-65218fb33317" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.RedactsStringsSensitiveScalarsObjectsAndExceptionsWithoutFormatting" computerName="POWERPC" duration="00:00:00.0014795" startTime="2026-09-19T11:09:09.5087234+02:00" endTime="2026-09-19T11:09:09.5087235+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4612873c-d7f5-477d-b72c-f7aaf67dc113" />
+    <UnitTestResult executionId="30498d47-060f-455b-92b5-fdf71b019760" testId="7f4a3728-960a-d7f1-c22e-6387ce1406b6" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.InvalidConstructionFailsBeforeBusinessWork" computerName="POWERPC" duration="00:00:00.0003839" startTime="2026-09-19T11:09:09.5104480+02:00" endTime="2026-09-19T11:09:09.5104481+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="30498d47-060f-455b-92b5-fdf71b019760" />
+    <UnitTestResult executionId="65d00a1d-0a95-4cbd-bde5-5b3fbdf9af85" testId="ec2771a9-b713-8f7f-473e-688045b5a284" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.NullFactoriesAreContainedAndDuplicateKeysUseLastInspectedValue" computerName="POWERPC" duration="00:00:00.0008338" startTime="2026-09-19T11:09:09.5113167+02:00" endTime="2026-09-19T11:09:09.5113168+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="65d00a1d-0a95-4cbd-bde5-5b3fbdf9af85" />
+    <UnitTestResult executionId="a9233134-f2c6-4586-bc0a-cd998533b76f" testId="0c84867d-1c67-fbe7-89b9-db9c8a144116" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.SinkFailureCannotChangeCommittedResult(failEnabled: False)" computerName="POWERPC" duration="00:00:00.0002310" startTime="2026-09-19T11:09:09.5303007+02:00" endTime="2026-09-19T11:09:09.5303008+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a9233134-f2c6-4586-bc0a-cd998533b76f" />
+    <UnitTestResult executionId="9b1dee67-5352-46e4-8165-a966a16e2356" testId="ebef77bd-1796-0c43-a4cd-7adaf3b3f310" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.LegacyCallersRemainCompatibleAndSanitized" computerName="POWERPC" duration="00:00:00.0005874" startTime="2026-09-19T11:09:09.5119311+02:00" endTime="2026-09-19T11:09:09.5119312+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9b1dee67-5352-46e4-8165-a966a16e2356" />
+    <UnitTestResult executionId="e4f71e0e-08e5-49c3-ab30-c6a0914c7200" testId="9c79f3b1-9624-8bac-02a7-2e3fbff236e2" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.BoundsValidFieldsAndRejectsInvalidMetadata" computerName="POWERPC" duration="00:00:00.0016410" startTime="2026-09-19T11:09:09.5095319+02:00" endTime="2026-09-19T11:09:09.5095320+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e4f71e0e-08e5-49c3-ab30-c6a0914c7200" />
+    <UnitTestResult executionId="fe4014fe-ef4c-4b51-9543-2a194c0be7bd" testId="5601b42f-59dd-db2f-4deb-e16e402466a8" testName="GamePlatform.Tests.Diagnostics.SafeAppLogTests.BoundsEnumerationEvenWithInvalidNames" computerName="POWERPC" duration="00:00:00.0008615" startTime="2026-09-19T11:09:09.5304803+02:00" endTime="2026-09-19T11:09:09.5304804+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fe4014fe-ef4c-4b51-9543-2a194c0be7bd" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.InvalidConstructionFailsBeforeBusinessWork" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="7f4a3728-960a-d7f1-c22e-6387ce1406b6">
+      <Execution id="30498d47-060f-455b-92b5-fdf71b019760" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="InvalidConstructionFailsBeforeBusinessWork" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.LegacyCallersRemainCompatibleAndSanitized" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="ebef77bd-1796-0c43-a4cd-7adaf3b3f310">
+      <Execution id="9b1dee67-5352-46e4-8165-a966a16e2356" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="LegacyCallersRemainCompatibleAndSanitized" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.NullFactoriesAreContainedAndDuplicateKeysUseLastInspectedValue" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="ec2771a9-b713-8f7f-473e-688045b5a284">
+      <Execution id="65d00a1d-0a95-4cbd-bde5-5b3fbdf9af85" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="NullFactoriesAreContainedAndDuplicateKeysUseLastInspectedValue" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.RedactsStringsSensitiveScalarsObjectsAndExceptionsWithoutFormatting" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="dbf9a602-431b-7bdf-95b1-65218fb33317">
+      <Execution id="4612873c-d7f5-477d-b72c-f7aaf67dc113" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="RedactsStringsSensitiveScalarsObjectsAndExceptionsWithoutFormatting" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.SinkFailureCannotChangeCommittedResult(failEnabled: True)" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="8e28c60f-e696-d681-db73-ecec20194706">
+      <Execution id="23aee9e7-8270-4934-ae84-afb2edd38e84" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="SinkFailureCannotChangeCommittedResult" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.FactoryAndEnumeratorFailuresAreContained" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="9077c987-c5e1-88ef-8a3c-6bad53179152">
+      <Execution id="75e2cbfc-2d9b-4b49-9be4-29d00fe5353b" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="FactoryAndEnumeratorFailuresAreContained" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.DisabledSinkDoesNotEvaluateFactory" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="e07aec6e-71ca-ebc4-51d5-7d6449ab5d5e">
+      <Execution id="250cf636-c0a1-489d-b258-4a6da365fe9b" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="DisabledSinkDoesNotEvaluateFactory" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.CapturesOwnerAndCopiesFieldsBeforeDelayedDelivery" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="c375a1ad-f7c8-33fb-2747-582fe21d1de1">
+      <Execution id="a3a22d36-154d-4aae-8503-338cb5d29335" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="CapturesOwnerAndCopiesFieldsBeforeDelayedDelivery" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.BoundsEnumerationEvenWithInvalidNames" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="5601b42f-59dd-db2f-4deb-e16e402466a8">
+      <Execution id="fe4014fe-ef4c-4b51-9543-2a194c0be7bd" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="BoundsEnumerationEvenWithInvalidNames" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.UnknownNumericSecretsAreDeniedByDefault" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="57476bcb-6a37-2c88-eb64-477d20029004">
+      <Execution id="3f660ee2-36df-4ecd-b12e-e260c6246677" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="UnknownNumericSecretsAreDeniedByDefault" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.SinkFailureCannotChangeCommittedResult(failEnabled: False)" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="0c84867d-1c67-fbe7-89b9-db9c8a144116">
+      <Execution id="a9233134-f2c6-4586-bc0a-cd998533b76f" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="SinkFailureCannotChangeCommittedResult" />
+    </UnitTest>
+    <UnitTest name="GamePlatform.Tests.Diagnostics.SafeAppLogTests.BoundsValidFieldsAndRejectsInvalidMetadata" storage="c:\work\git\gindemit\game-platform-dotnet\tests\gameplatform.tests\bin\release\net9.0\gameplatform.tests.dll" id="9c79f3b1-9624-8bac-02a7-2e3fbff236e2">
+      <Execution id="e4f71e0e-08e5-49c3-ab30-c6a0914c7200" />
+      <TestMethod codeBase="C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="GamePlatform.Tests.Diagnostics.SafeAppLogTests" name="BoundsValidFieldsAndRejectsInvalidMetadata" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="57476bcb-6a37-2c88-eb64-477d20029004" executionId="3f660ee2-36df-4ecd-b12e-e260c6246677" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8e28c60f-e696-d681-db73-ecec20194706" executionId="23aee9e7-8270-4934-ae84-afb2edd38e84" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e07aec6e-71ca-ebc4-51d5-7d6449ab5d5e" executionId="250cf636-c0a1-489d-b258-4a6da365fe9b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c375a1ad-f7c8-33fb-2747-582fe21d1de1" executionId="a3a22d36-154d-4aae-8503-338cb5d29335" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9077c987-c5e1-88ef-8a3c-6bad53179152" executionId="75e2cbfc-2d9b-4b49-9be4-29d00fe5353b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dbf9a602-431b-7bdf-95b1-65218fb33317" executionId="4612873c-d7f5-477d-b72c-f7aaf67dc113" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7f4a3728-960a-d7f1-c22e-6387ce1406b6" executionId="30498d47-060f-455b-92b5-fdf71b019760" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ec2771a9-b713-8f7f-473e-688045b5a284" executionId="65d00a1d-0a95-4cbd-bde5-5b3fbdf9af85" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0c84867d-1c67-fbe7-89b9-db9c8a144116" executionId="a9233134-f2c6-4586-bc0a-cd998533b76f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ebef77bd-1796-0c43-a4cd-7adaf3b3f310" executionId="9b1dee67-5352-46e4-8165-a966a16e2356" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9c79f3b1-9624-8bac-02a7-2e3fbff236e2" executionId="e4f71e0e-08e5-49c3-ab30-c6a0914c7200" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5601b42f-59dd-db2f-4deb-e16e402466a8" executionId="fe4014fe-ef4c-4b51-9543-2a194c0be7bd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="12" executed="12" passed="12" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 9.0.4)&#xD;
+[xUnit.net 00:00:00.08]   Discovering: GamePlatform.Tests&#xD;
+[xUnit.net 00:00:00.12]   Discovered:  GamePlatform.Tests&#xD;
+[xUnit.net 00:00:00.12]   Starting:    GamePlatform.Tests&#xD;
+[xUnit.net 00:00:00.18]   Finished:    GamePlatform.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

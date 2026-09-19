@@ -29,8 +29,10 @@ class ManifestTests(unittest.TestCase):
         self.assertTrue(self.changed(change))
     def test_unknown_peer(self): self.assertTrue(self.changed(lambda d:d['tasks'][0]['peer_dependencies'].append('BE-FAKE')))
     def test_false_task_completion(self):
-        def change(d): d['tasks'][0]['status']='complete'
-        self.assertTrue(self.changed(change))
+        def change(d):
+            d['tasks'][0]['status']='complete'
+            d['tasks'][0]['evidence']=[]
+        self.assertTrue(any('complete without evidence' in e for e in self.changed(change)))
     def test_false_integration(self):
         def change(d): d['feature_ledger'][0]['mrsquare_integration_status']='integrated'
         self.assertTrue(self.changed(change))

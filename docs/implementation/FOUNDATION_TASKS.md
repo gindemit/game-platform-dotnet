@@ -19,7 +19,7 @@ Every card's **Prompt** is copyable together with this common contract and its m
 
 **Read/evidence:** `architecture.json`, `features.json`, `scripts/validate.py`, `docs/ARCHITECTURE.md`, `docs/DEPENDENCIES.md`, Unity AssemblyResponsibilities/assembly-map and acceptance A10/A13/DI09. The scaffold validator currently requires all sixteen statuses to remain stubbed; several SDK edges differ from the target Unity map.
 
-**Dependencies/ownership:** independent. Own the manifest-listed shared policy files and proposed `docs/implementation/interfaces/`; no backend canonical edits or Unity runtime edits. Coordinate any central props, solution or lock changes rather than letting feature workers edit them.
+**Dependencies/ownership:** independent. Own the manifest-listed shared policy files, their companion `scripts/test_validation.py` regression tests and proposed `docs/implementation/interfaces/`; no backend canonical edits or Unity runtime edits. Coordinate any central props, solution or lock changes rather than letting feature workers edit them.
 
 **Steps:** (1) Inventory current signatures and direct/transitive references. (2) Publish a reviewed interface table for semantic remote ports, local transaction/session ports, immutable snapshots, command admission and ownership. (3) Reconcile exact graph differences, including backend/storage-to-feature contracts and codec-to-core; allow only justified edges. (4) Replace scaffold-only status checks with evidence-aware allowed transitions while retaining missing-module, boundary, lock and contract-pin checks. (5) Freeze signatures and error/ownership rules for independent tasks; record changes by delta, not timestamp precedence.
 

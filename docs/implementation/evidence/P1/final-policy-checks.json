@@ -1,0 +1,58 @@
+[
+  {
+    "command": [
+      "rtk",
+      "proxy",
+      "python",
+      "scripts/validate.py"
+    ],
+    "exit_code": 0,
+    "stdout": "Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and 2 pinned contract files.\n",
+    "stderr": "[rtk] /!\\ No hook installed \u2014 run `rtk init -g` for automatic token savings\n"
+  },
+  {
+    "command": [
+      "rtk",
+      "proxy",
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts",
+      "-p",
+      "test_*.py"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "[rtk] /!\\ No hook installed \u2014 run `rtk init -g` for automatic token savings\n...................\n----------------------------------------------------------------------\nRan 19 tests in 2.853s\n\nOK\n"
+  },
+  {
+    "command": [
+      "rtk",
+      "proxy",
+      "python",
+      "docs/implementation/validate_manifest.py"
+    ],
+    "exit_code": 0,
+    "stdout": "VALID: 52 tasks; 16 feature ledgers; 21 conservative waves\n",
+    "stderr": "[rtk] /!\\ No hook installed \u2014 run `rtk init -g` for automatic token savings\n"
+  },
+  {
+    "command": [
+      "rtk",
+      "proxy",
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "docs/implementation",
+      "-p",
+      "test_*.py"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "[rtk] /!\\ No hook installed \u2014 run `rtk init -g` for automatic token savings\n..............\n----------------------------------------------------------------------\nRan 14 tests in 0.037s\n\nOK\n"
+  }
+]

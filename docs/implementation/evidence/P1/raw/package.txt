@@ -1,0 +1,17 @@
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Diagnostics.Abstractions.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Core.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Features.Contracts.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Navigation.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Backend.Contracts.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Serialization.Json.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Wire.Contracts.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Storage.Abstractions.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Serialization.MessagePack.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Transport.Http.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Features.Presentation.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Transport.Abstractions.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Features.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Sync.0.1.0-draft.nupkg'.
+  Successfully created package 'C:\Work\git\gindemit\game-platform-dotnet\artifacts\nuget\GamePlatform.Storage.Sqlite.0.1.0-draft.nupkg'.
+Packaged 15 NuGet files and 15 managed DLLs; no native libraries; nothing published.

@@ -1,0 +1,158 @@
+{
+  "version": "0.1.0-draft",
+  "managedRuntime": "netstandard2.1",
+  "nativeLibrariesIncluded": false,
+  "published": false,
+  "files": [
+    {
+      "path": "managed/GamePlatform.Backend.Contracts.dll",
+      "sha256": "247d461862f011b23095e8fc09a3a727c5bdc284c2127877629e2240e908e4f2",
+      "bytes": 5120
+    },
+    {
+      "path": "managed/GamePlatform.Core.dll",
+      "sha256": "f6192f14b312dd1e51821e71a5842a8ef14ee1b494b031da66a4e1418ca4a076",
+      "bytes": 7168
+    },
+    {
+      "path": "managed/GamePlatform.Diagnostics.Abstractions.dll",
+      "sha256": "b334b2b5eea5cf9a049773a38e00a6ed75eab0a6fd81fde8bb40172f1c3eecf9",
+      "bytes": 10752
+    },
+    {
+      "path": "managed/GamePlatform.Features.Contracts.dll",
+      "sha256": "b294c638b3e8c8d4a8be282371ee0daf4002fed969440619919cd9707b0fd836",
+      "bytes": 5632
+    },
+    {
+      "path": "managed/GamePlatform.Features.dll",
+      "sha256": "cc545d988381937b2c4af63b168f95e563aaf41dfd841bfaf77c39c5bff5afcc",
+      "bytes": 6656
+    },
+    {
+      "path": "managed/GamePlatform.Features.Presentation.dll",
+      "sha256": "b87043bcb078a855fa9862e638dda5e1b39c473f5b0b6270b095ff770cfc0277",
+      "bytes": 4608
+    },
+    {
+      "path": "managed/GamePlatform.Navigation.dll",
+      "sha256": "82ec709e31cf50a205ab070f1b30ce7890d5828d267a01345f2ed997068b05cc",
+      "bytes": 4096
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.Json.dll",
+      "sha256": "efcd0a4a8a5d647fb07a3e8a7684545566620623ffbfd489317382ce5cfa0ae1",
+      "bytes": 5632
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.MessagePack.dll",
+      "sha256": "0a7b89f8632e9e917bf3eb70736f627d984c2a38fdc01d42fdc4d9ebcfd370ef",
+      "bytes": 5632
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Abstractions.dll",
+      "sha256": "2815e2b21b747317d8cfd90407c53b00da167cc9af02b9534b7689c030d7d8a8",
+      "bytes": 5120
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Sqlite.dll",
+      "sha256": "93a64d4a6d98ece1c8242518a52d23f44dabe985237d6c0e115c688fdc746ff4",
+      "bytes": 4608
+    },
+    {
+      "path": "managed/GamePlatform.Sync.dll",
+      "sha256": "ed7e302a8f5e51e11708575fd98910b6b876c2d181e1ee0633475ee3deec0a03",
+      "bytes": 5120
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Abstractions.dll",
+      "sha256": "56905b644e7875269b2e8e701062863f17f3fd4d4a3195fe116b2275ce0b192a",
+      "bytes": 5632
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Http.dll",
+      "sha256": "ed53da3dfa39574de66594ac0422285748e2052b39070fbf81a311371ab8e592",
+      "bytes": 4608
+    },
+    {
+      "path": "managed/GamePlatform.Wire.Contracts.dll",
+      "sha256": "933f134f3ae201c8951c63d662dd496ad1829786a3d44317e6a72ed3a0dd36cc",
+      "bytes": 5120
+    },
+    {
+      "path": "nuget/GamePlatform.Backend.Contracts.0.1.0-draft.nupkg",
+      "sha256": "3d1777c11be5448754f9e4456bc27e4164eaf8248fc2ec1a90920320583c8a9d",
+      "bytes": 4319
+    },
+    {
+      "path": "nuget/GamePlatform.Core.0.1.0-draft.nupkg",
+      "sha256": "d47fe76d75919104684d42dbfed7befcf516ab6b18ed5d16923fb9fb198d874d",
+      "bytes": 5449
+    },
+    {
+      "path": "nuget/GamePlatform.Diagnostics.Abstractions.0.1.0-draft.nupkg",
+      "sha256": "295402638c050b7ab73dbc65124f54cd90451da33c96d56ebdec36dca15c138d",
+      "bytes": 8306
+    },
+    {
+      "path": "nuget/GamePlatform.Features.0.1.0-draft.nupkg",
+      "sha256": "74660387561405be0da9434761abb791c463ce2c521d7a15a01c3c4b2dc265ac",
+      "bytes": 5157
+    },
+    {
+      "path": "nuget/GamePlatform.Features.Contracts.0.1.0-draft.nupkg",
+      "sha256": "54be60c52cb9b163ea7f174515c8bf0f8032d3150d0f4e1f460dce34381ef32b",
+      "bytes": 4476
+    },
+    {
+      "path": "nuget/GamePlatform.Features.Presentation.0.1.0-draft.nupkg",
+      "sha256": "5f2d0f661b35e117d3d352b0e5521eba3567b63586438c8e0cd700ec491c75b1",
+      "bytes": 3991
+    },
+    {
+      "path": "nuget/GamePlatform.Navigation.0.1.0-draft.nupkg",
+      "sha256": "47a085e993af9e63d139e78d6389bd537d76bbbf050202ee66e937d8e8d60c8f",
+      "bytes": 3901
+    },
+    {
+      "path": "nuget/GamePlatform.Serialization.Json.0.1.0-draft.nupkg",
+      "sha256": "326ba8edadcf3eac29da9af98394988580483c8e5c276459021612cd4336cf23",
+      "bytes": 4458
+    },
+    {
+      "path": "nuget/GamePlatform.Serialization.MessagePack.0.1.0-draft.nupkg",
+      "sha256": "d93120398cb4e6ae9bbd8aae307fd5c2189e9ad952e1e5bab6e35f9261bec14e",
+      "bytes": 4527
+    },
+    {
+      "path": "nuget/GamePlatform.Storage.Abstractions.0.1.0-draft.nupkg",
+      "sha256": "9fdb229b106f763a5dc5fdb14bdefb092f279ce8c3b419ac24dd99a0217029b8",
+      "bytes": 4343
+    },
+    {
+      "path": "nuget/GamePlatform.Storage.Sqlite.0.1.0-draft.nupkg",
+      "sha256": "2fa3378c5689fe81a3428225c3c0ae840267e3d33e4bdd10ac8d3f15612456d2",
+      "bytes": 4129
+    },
+    {
+      "path": "nuget/GamePlatform.Sync.0.1.0-draft.nupkg",
+      "sha256": "73148a1fc15791e8d5a10ea0a0b959c806b7afdf5c6e68942b723bf743c09a1d",
+      "bytes": 4432
+    },
+    {
+      "path": "nuget/GamePlatform.Transport.Abstractions.0.1.0-draft.nupkg",
+      "sha256": "2273e75ec913b11f9804cfa362e1cb2d3f8f24c10c47cf8661b61735ea7ba32f",
+      "bytes": 4331
+    },
+    {
+      "path": "nuget/GamePlatform.Transport.Http.0.1.0-draft.nupkg",
+      "sha256": "e1847e92fb08c59cdeb26e9b63c0fbcdddbb3783a2ed8f10c31b3eebc5323a59",
+      "bytes": 4147
+    },
+    {
+      "path": "nuget/GamePlatform.Wire.Contracts.0.1.0-draft.nupkg",
+      "sha256": "4256b87b408bdadfcbfda6ec9a5851ee77fecba40fca2442e4c916f4371226b1",
+      "bytes": 4102
+    }
+  ]
+}

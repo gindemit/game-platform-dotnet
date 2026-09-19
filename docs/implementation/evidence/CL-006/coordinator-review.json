@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root",
+  "source_commit": "c94aeec",
+  "command": "rtk proxy pwsh -NoProfile -File integration/unity/sqlite-qualification/run-desktop-probe.ps1",
+  "exit_code": 0,
+  "probe_output": {
+    "result": "passed",
+    "databasePath": "C:\\Users\\khind\\AppData\\Local\\Temp\\game-platform-cl006-sqlite\\423ddb8c8def45d8b3f739d241499e7a\\probe.sqlite3",
+    "rowCount": 1,
+    "sequence": "9007199254740993",
+    "payload": "committed-after-rollback",
+    "sqliteVersionNumber": 3050001,
+    "nativeLibrary": "gilzoide-sqlite-net",
+    "processArchitecture": "X64",
+    "framework": ".NET 9.0.4",
+    "os": "Microsoft Windows 10.0.26200"
+  },
+  "review": "Approved Windows native qualification only after existing-file refusal, unique probe paths, dirty-checkout rejection, checked subprocess exits and checked submodule HEAD were added. This is a real native C# probe, not production adapter or transaction scheduler acceptance.",
+  "unrun": ["Unity Editor", "macOS runtime", "Android IL2CPP build", "physical device", "native bundle notices/import acceptance"]
+}
