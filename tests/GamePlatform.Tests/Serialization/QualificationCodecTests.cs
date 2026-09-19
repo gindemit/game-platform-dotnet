@@ -67,6 +67,42 @@ public sealed class QualificationCodecTests
     [InlineData("82A16101A16102")][InlineData("81A2C08001")][InlineData("DE0101")][InlineData("DDFFFFFFFF")][InlineData("DF00010000")]
     public void RejectDuplicateUtf8AndDeclaredOversize(string hex)
     { Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().Decode("profile.schema.json#/$defs/patchCommand",Convert.FromHexString(hex))); }
+    [Theory]
+    [InlineData("01")][InlineData("CC01")][InlineData("CD0001")][InlineData("CE00000001")][InlineData("CF0000000000000001")][InlineData("D001")][InlineData("D10001")][InlineData("D200000001")][InlineData("D30000000000000001")]
+    public void CompactAndFullWidthIntegerTokensNormalize(string hex)
+    { Assert.Equal("1",new QualificationMessagePackCodec().Decode("common.schema.json#/$defs/signedInt64",Convert.FromHexString(hex)).StringValue); }
+    [Fact]
+    public void CanonicalIdentifiersRejectTrailingNewlines()
+    { Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().ValidateDiagnostic("common.schema.json#/$defs/uuid",V.String("00112233-4455-4677-8899-aabbccddeeff\n"))); }
+    [Fact]
+    public void ExtensionDepthIncludesWrapperAndOnlyContainers()
+    {
+        var codec=new QualificationMessagePackCodec(); V chain=V.String("leaf");
+        for(int i=0;i<14;i++) chain=V.Array(new[]{chain});
+        V Wrapper(V child)=>V.Object(new Dictionary<string,V>{{"schema",V.String("test")},{"version",V.Integer(1)},{"value",V.Object(new Dictionary<string,V>{{"a",child}})}});
+        codec.ValidateDiagnostic("common.schema.json#/$defs/extension",Wrapper(chain));
+        Assert.Throws<QualificationCodecException>(()=>codec.ValidateDiagnostic("common.schema.json#/$defs/extension",Wrapper(V.Array(new[]{chain}))));
+    }
+    [Fact]
+    public void ExtensionAggregateCompactJsonBytesAreBounded()
+    {
+        var extension=V.Object(new Dictionary<string,V>{{"schema",V.String("test")},{"version",V.Integer(1)},{"value",V.Object(new Dictionary<string,V>{{"a",V.String(new string('x',8100))},{"b",V.String(new string('x',8100))},{"c",V.String(new string('x',8100))}})}});
+        Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().ValidateDiagnostic("common.schema.json#/$defs/extension",extension));
+    }
+    [Fact]
+    public void ExtractedInlineSchemaPointerSupportsArraySegments()
+    {
+        var value=V.Object(new Dictionary<string,V>{{"kind",V.String("profile_updated")},{"profileRevision",V.String("1")}});
+        new QualificationMessagePackCodec().ValidateDiagnostic("push.schema.json#/$defs/accepted/properties/result/oneOf/0",value);
+    }
+    [Fact]
+    public void ReferencedPrimitiveAlsoEnforcesSiblingConst()
+    {
+        const string schema="recovery.schema.json#/$defs/streamResponse/properties/nextSequence";var codec=new QualificationMessagePackCodec();
+        codec.ValidateDiagnostic(schema,V.String("1"));
+        Assert.Throws<QualificationCodecException>(()=>codec.Encode(schema,V.String("2")));
+        Assert.Throws<QualificationCodecException>(()=>codec.Decode(schema,new byte[]{2}));
+    }
     internal static V Parse(JsonElement value) => value.ValueKind switch
     {
         JsonValueKind.Null=>V.Null,JsonValueKind.True=>V.Boolean(true),JsonValueKind.False=>V.Boolean(false),

@@ -21,7 +21,13 @@ namespace GamePlatform.Serialization.MessagePack
             if (split[0].Length != 0) file = split[0];
             if (!QualificationSchemas.Documents.TryGetValue(file, out var schema) || split.Length != 2 || !split[1].StartsWith("/$defs/", StringComparison.Ordinal)) Fail();
             schema = QualificationSchemas.Documents[file];
-            foreach (var part in split[1].Substring(1).Split('/')) schema = schema.Properties[part];
+            foreach (var encodedPart in split[1].Substring(1).Split('/'))
+            {
+                var part=encodedPart.Replace("~1","/").Replace("~0","~");
+                if(schema.Kind==K.Array && int.TryParse(part,NumberStyles.None,CultureInfo.InvariantCulture,out var index) && index>=0 && index<schema.Items.Count) schema=schema.Items[index];
+                else if(schema.Kind==K.Object && schema.Properties.TryGetValue(part,out var child)) schema=child;
+                else { Fail(); }
+            }
             var primitive = file == "common.schema.json" ? split[1].Substring(7) : "";
             bool uuid = primitive == "uuid" || primitive == "uuidV7";
             bool wide = primitive == "signedInt64" || primitive == "nonNegativeInt64" || primitive == "positiveInt64";
@@ -54,7 +60,16 @@ namespace GamePlatform.Serialization.MessagePack
         {
             if (schema.Kind == K.Boolean) { if (!schema.BooleanValue) Fail(); return input; }
             var s = schema.Properties;
-            if (s.TryGetValue("$ref", out var reference)) return Reference(reference.StringValue,file,input,direction);
+            if (s.TryGetValue("$ref", out var reference))
+            {
+                var resolved=Reference(reference.StringValue,file,input,direction);
+                if(s.Count>1)
+                {
+                    var siblings=V.OwnedObject(s.Where(p=>p.Key!="$ref").ToDictionary(p=>p.Key,p=>p.Value,StringComparer.Ordinal));
+                    Evaluate(siblings,file,direction==Direction.ToWire?input:resolved,Direction.Diagnostic);
+                }
+                return resolved;
+            }
             if (s.TryGetValue("oneOf", out var oneOf))
             {
                 V? selected = null; int matches = 0;
@@ -74,7 +89,12 @@ namespace GamePlatform.Serialization.MessagePack
                 var text = input.StringValue;
                 int scalars = 0; for (int i=0;i<text.Length;i++,scalars++) if (char.IsHighSurrogate(text[i])) i++;
                 Bound(s,"minLength",scalars,true); Bound(s,"maxLength",scalars,false);
-                if (s.TryGetValue("pattern",out var pattern) && !Regex.IsMatch(text,pattern.StringValue,RegexOptions.CultureInvariant,TimeSpan.FromMilliseconds(100))) Fail();
+                if (s.TryGetValue("pattern",out var pattern))
+                {
+                    string expression=pattern.StringValue;
+                    if(expression.EndsWith("$",StringComparison.Ordinal)) expression=expression.Substring(0,expression.Length-1)+"\\z";
+                    if(!Regex.IsMatch(text,expression,RegexOptions.CultureInvariant,TimeSpan.FromMilliseconds(100))) Fail();
+                }
                 if (s.ContainsKey("x-maximumDecimal") || s.ContainsKey("x-minimumDecimal"))
                 {
                     if (!long.TryParse(text,NumberStyles.AllowLeadingSign,CultureInfo.InvariantCulture,out var n)) Fail();
@@ -147,7 +167,7 @@ namespace GamePlatform.Serialization.MessagePack
         }
         private static void Extension(V value,int depth)
         {
-            if(depth>16 || value.Kind==K.Integer || value.Kind==K.Binary) Fail();
+            if(depth>17 || value.Kind==K.Integer || value.Kind==K.Binary) Fail();
             if(value.Kind==K.Array) foreach(var v in value.Items) Extension(v,depth+1);
             if(value.Kind==K.Object) foreach(var v in value.Properties.Values) Extension(v,depth+1);
         }
@@ -158,7 +178,7 @@ namespace GamePlatform.Serialization.MessagePack
                 return V.OwnedObject(target.Properties.ToDictionary(p=>p.Key,p=>MergeChanges(original.Properties[p.Key],changed.Properties[p.Key],p.Value),StringComparer.Ordinal));
             return changed;
         }
-        private static int Depth(V v) => v.Kind==K.Array ? 1+(v.Items.Count==0?0:v.Items.Max(Depth)) : v.Kind==K.Object ? 1+(v.Properties.Count==0?0:v.Properties.Values.Max(Depth)) : 1;
+        private static int Depth(V v) => v.Kind==K.Array ? 1+(v.Items.Count==0?0:v.Items.Max(Depth)) : v.Kind==K.Object ? 1+(v.Properties.Count==0?0:v.Properties.Values.Max(Depth)) : 0;
         private static long DiagnosticSize(V value)
         {
             switch(value.Kind)
