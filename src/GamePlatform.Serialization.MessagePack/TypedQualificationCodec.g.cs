@@ -10,9 +10,9 @@ using K = GamePlatform.Serialization.MessagePack.QualificationValueKind;
 namespace GamePlatform.Serialization.MessagePack {
 public sealed class TypedQualificationCodec {
 private readonly QualificationMessagePackCodec codec = new QualificationMessagePackCodec();
-public byte[] Encode<T>(T value) where T : class { var diagnostic=ToDiagnostic(value); new MappingBudget(4).Reserve(diagnostic); return codec.Encode(Schema<T>(), diagnostic); }
-public T Decode<T>(byte[] bytes) where T : class => FromDiagnostic<T>(codec.Decode(Schema<T>(), bytes));
-public V ToDiagnostic<T>(T value) where T : class { if(value == null) throw new ArgumentNullException(nameof(value)); var b=new MappingBudget(); switch(value) {
+public byte[] Encode<T>(T value) { var diagnostic=ToDiagnostic(value); new MappingBudget(4).Reserve(diagnostic); return codec.Encode(Schema<T>(), diagnostic); }
+public T Decode<T>(byte[] bytes) => FromDiagnostic<T>(codec.Decode(Schema<T>(), bytes));
+public V ToDiagnostic<T>(T value) { if(value is null) throw new ArgumentNullException(nameof(value)); var b=new MappingBudget(); switch(value) {
 case AccountResponse dto: return WriteAccountResponse(dto,b);
 case BootstrapCollection dto: return WriteBootstrapCollection(dto,b);
 case BootstrapStartResponse dto: return WriteBootstrapStartResponse(dto,b);
@@ -78,7 +78,7 @@ case PushProfileUpdatedResult dto: return WritePushProfileUpdatedResult(dto,b);
 case PushGameplayCompletionRecordedResult dto: return WritePushGameplayCompletionRecordedResult(dto,b);
 case GameplayValidation dto: return WriteGameplayValidation(dto,b);
 default: throw new QualificationCodecException("Unsupported DTO implementation."); } }
-public T FromDiagnostic<T>(V value) where T : class { codec.ValidateDiagnostic(Schema<T>(),value); new MappingBudget().Reserve(value); var b=new MappingBudget();
+public T FromDiagnostic<T>(V value) { codec.ValidateDiagnostic(Schema<T>(),value); new MappingBudget().Reserve(value); var b=new MappingBudget();
 if(typeof(T) == typeof(AccountResponse)) return (T)(object)ReadAccountResponse(value,b);
 if(typeof(T) == typeof(BootstrapCollection)) return (T)(object)ReadBootstrapCollection(value,b);
 if(typeof(T) == typeof(BootstrapStartResponse)) return (T)(object)ReadBootstrapStartResponse(value,b);
@@ -156,7 +156,7 @@ if(typeof(T) == typeof(IPushAcceptedResult)) return (T)(object)ReadIPushAccepted
 if(typeof(T) == typeof(IPushPayload)) return (T)(object)ReadIPushPayload(value,b);
 if(typeof(T) == typeof(IPushFinalResult)) return (T)(object)ReadIPushFinalResult(value,b);
 throw new QualificationCodecException("Unsupported DTO type."); }
-public static string Schema<T>() where T : class {
+public static string Schema<T>() {
 if(typeof(T) == typeof(AccountResponse)) return "account.schema.json#/$defs/response";
 if(typeof(T) == typeof(BootstrapCollection)) return "bootstrap.schema.json#/$defs/collection";
 if(typeof(T) == typeof(BootstrapStartResponse)) return "bootstrap.schema.json#/$defs/startResponse";
