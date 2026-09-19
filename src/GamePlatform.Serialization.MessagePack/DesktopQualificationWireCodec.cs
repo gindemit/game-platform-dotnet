@@ -8,7 +8,7 @@ namespace GamePlatform.Serialization.MessagePack
     /// port; Unity AOT, stripping, device packaging and host acceptance remain
     /// required before that port can be made available.
     /// </summary>
-    public sealed class DesktopQualificationWireCodec
+    internal sealed class DesktopQualificationWireCodec
     {
         private readonly TypedQualificationCodec typedCodec;
 

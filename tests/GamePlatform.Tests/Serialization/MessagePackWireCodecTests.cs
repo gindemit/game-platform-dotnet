@@ -21,6 +21,7 @@ namespace GamePlatform.Tests.Serialization
         public void CandidateMatchesApprovedProducerBytes()
         {
             var codec = new DesktopQualificationWireCodec();
+            Assert.DoesNotContain(typeof(IWireCodec), typeof(DesktopQualificationWireCodec).GetInterfaces());
             var request = new ProvisionRequest(
                 Guid.Parse("00112233-4455-4677-8899-aabbccddeeff"),
                 Guid.Parse("01890f3e-7a6b-7c8d-9e0f-102030405060"));
