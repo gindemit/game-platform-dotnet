@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contractVersion": "0.2.0-core-schema.1",
+  "contractVersion": "0.3.0-live-slice-schema.1",
   "algorithm": "sha256",
   "files": {
     "platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
@@ -92,7 +92,11 @@
     "v1/fixtures/invalid/opaque-token-impossible-length.json": "ebe03f03b10866ecdf99caaf9442c664d7c63d3ba10165b8657054e1668693b7",
     "v1/fixtures/invalid/opaque-token-nonzero-pad-bits.json": "47fe78ff123bd7736ffe55f7d126c4a6a91af9f7fbd2d648c2b260f366a77528",
     "v1/fixtures/semantic/field-mappings.json": "12dd09c8a6aa5afa7461b397012fa1ccc1b817f8baa4cfa4a32e1c422f43fa8c",
-    "v1/fixtures/semantic/recovery-vectors.json": "7d48a4f059af8fdca122879cc2f83e93d68a187a4e3b586e1863be5e9450e33b"
+    "v1/fixtures/semantic/recovery-vectors.json": "7d48a4f059af8fdca122879cc2f83e93d68a187a4e3b586e1863be5e9450e33b",
+    "live-slice/fixtures.json": "41c99936880fe8037526b2eb309cf1aea247dc0b39fb89d054b771ba3cdac83d",
+    "live-slice/receipt.schema.json": "edd573e64495f3ba6508105796d6fd42065ceda2368cd16b265146a022fff164",
+    "live-slice/semantics.json": "228ed7824fa915007e239b157e15aef3d74b176137b020a5c1620bb73f1b17af",
+    "live-slice/source-key-vectors.json": "45b529df35e0d26709418477f440bb4fd1902bc9a316647dd5d67a572ead5e23"
   },
   "approvalScope": "G1 core schema only; not runtime interoperability or feature/product approval"
 }

@@ -260,7 +260,7 @@ def validate(root: Path) -> list[str]:
 
     try:
         snapshot = read_json(root / "contracts" / "snapshot.json")
-        if snapshot.get("contractVersion") not in {"0.1.0-draft", "0.2.0-core-schema.1"}: errors.append("unexpected contract version")
+        if snapshot.get("contractVersion") not in {"0.1.0-draft", "0.2.0-core-schema.1", "0.3.0-live-slice-schema.1"}: errors.append("unexpected contract version")
         for relative, expected in snapshot["files"].items():
             contract = root / "contracts" / relative
             if not contract.is_file(): errors.append(f"missing contract: {relative}")

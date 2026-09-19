@@ -1,0 +1,1384 @@
+[
+  {
+    "id": "request-existing-issued-uuid",
+    "definition": "request",
+    "valid": true,
+    "value": {
+      "operationId": "01992900-0000-7000-8000-000000000001"
+    }
+  },
+  {
+    "id": "lookup-not-found",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "not_found"
+    }
+  },
+  {
+    "id": "completion-no-reward",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": null
+    }
+  },
+  {
+    "id": "currency-full-width-feed",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "repeat-source-different-operation",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000003",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "multiple-lines-same-currency",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 1,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "9223372036854775807"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "stack-line",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "item_stack",
+            "itemId": "fixture.item",
+            "quantity": "2"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "entitlement-null",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "entitlement",
+            "entitlementId": "fixture.right",
+            "expiresAt": null
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "entitlement-253402300799999",
+    "definition": "response",
+    "valid": true,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "entitlement",
+            "entitlementId": "fixture.right",
+            "expiresAt": 253402300799999
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "missing-reward",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded"
+    }
+  },
+  {
+    "id": "unknown-status",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "granted",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "schema-version",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 2,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "body-account-authority",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      },
+      "accountId": "01992900-0000-7000-8000-000000000001"
+    }
+  },
+  {
+    "id": "empty-lines",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": []
+      }
+    }
+  },
+  {
+    "id": "too-many-lines",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 1,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 2,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 3,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 4,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 5,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 6,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 7,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 8,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 9,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 10,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 11,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 12,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 13,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 14,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 15,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 16,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 17,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 18,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 19,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 20,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 21,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 22,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 23,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 24,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 25,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 26,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 27,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 28,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 29,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 30,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 31,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 32,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 33,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 34,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 35,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 36,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 37,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 38,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 39,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 40,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 41,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 42,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 43,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 44,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 45,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 46,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 47,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 48,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 49,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 50,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 51,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 52,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 53,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 54,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 55,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 56,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 57,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 58,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 59,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 60,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 61,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 62,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 63,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 64,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "quantity-overflow",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "9223372036854775808"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "quantity-number",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": 1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "quantity-zero",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "0"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "quantity-negative",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "quantity-leading-zero",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "01"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "unknown-line-kind",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "instance",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "duplicate-line-index",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          },
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "line-index-gap",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 1,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "untyped-grant-payload",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1",
+            "payload": {}
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "grant-id-not-v7",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-4000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "source-key-not-sha256",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "client-picked-source",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "plan-version-zero",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 0,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "feed-negative",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "completion_recorded",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "-1",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "request-forged-actor",
+    "definition": "request",
+    "valid": false,
+    "value": {
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "actor": "01992900-0000-7000-8000-000000000001"
+    }
+  },
+  {
+    "id": "not-found-with-reward",
+    "definition": "response",
+    "valid": false,
+    "value": {
+      "protocolVersion": 1,
+      "schemaVersion": 1,
+      "operationId": "01992900-0000-7000-8000-000000000001",
+      "status": "not_found",
+      "reward": {
+        "grantId": "01992900-0000-7000-8000-000000000002",
+        "originatingOperationId": "01992900-0000-7000-8000-000000000001",
+        "feedRevision": "9007199254740993",
+        "recordedAt": 1789776000000,
+        "source": {
+          "kind": "gameplay.completion",
+          "key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rewardSlot": "fixture.slot",
+          "policyId": "fixture.policy",
+          "policyVersion": 1
+        },
+        "planId": "fixture.plan",
+        "planVersion": 1,
+        "lines": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "fixture.coin",
+            "quantity": "1"
+          }
+        ]
+      }
+    }
+  }
+]

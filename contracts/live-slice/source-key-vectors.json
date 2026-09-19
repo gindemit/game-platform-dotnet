@@ -1,0 +1,84 @@
+{
+  "algorithm": "gsc1-array-sha256-v1",
+  "vectors": [
+    {
+      "id": "ascii",
+      "values": [
+        "gameplay.completion",
+        "fixture.policy",
+        "1",
+        "00112233-4455-4677-8899-aabbccddeeff",
+        "pocket-bloom",
+        "content:fixture-0"
+      ],
+      "canonicalHex": "6773633161363a5b7331393a67616d65706c61792e636f6d706c6574696f6e7331343a666978747572652e706f6c69637973313a317333363a30303131323233332d343435352d343637372d383839392d6161626263636464656566667331323a706f636b65742d626c6f6f6d7331373a636f6e74656e743a666978747572652d305d",
+      "sha256": "787e9e08abf9f4058f0b29276e39cce98f513e5b684ac7b00c0f0da70abdc53a"
+    },
+    {
+      "id": "unicode",
+      "values": [
+        "gameplay.completion",
+        "fixture.policy",
+        "1",
+        "00112233-4455-4677-8899-aabbccddeeff",
+        "pocket-bloom",
+        "flower:花"
+      ],
+      "canonicalHex": "6773633161363a5b7331393a67616d65706c61792e636f6d706c6574696f6e7331343a666978747572652e706f6c69637973313a317333363a30303131323233332d343435352d343637372d383839392d6161626263636464656566667331323a706f636b65742d626c6f6f6d7331303a666c6f7765723ae88ab15d",
+      "sha256": "25193f04a65f66cdc1fba7b3b3063865657fd34810b5ce6aeee7029ba59e7487"
+    },
+    {
+      "id": "delimiter",
+      "values": [
+        "gameplay.completion",
+        "fixture.policy",
+        "1",
+        "00112233-4455-4677-8899-aabbccddeeff",
+        "pocket-bloom",
+        "a:;[]"
+      ],
+      "canonicalHex": "6773633161363a5b7331393a67616d65706c61792e636f6d706c6574696f6e7331343a666978747572652e706f6c69637973313a317333363a30303131323233332d343435352d343637372d383839392d6161626263636464656566667331323a706f636b65742d626c6f6f6d73353a613a3b5b5d5d",
+      "sha256": "e2c6fc34f1aa182152c157247e6f64552f08cafe06a29bf69ec6bcdae43ce917"
+    },
+    {
+      "id": "identity-version",
+      "values": [
+        "gameplay.completion",
+        "fixture.policy",
+        "2",
+        "00112233-4455-4677-8899-aabbccddeeff",
+        "pocket-bloom",
+        "content:fixture-0"
+      ],
+      "canonicalHex": "6773633161363a5b7331393a67616d65706c61792e636f6d706c6574696f6e7331343a666978747572652e706f6c69637973313a327333363a30303131323233332d343435352d343637372d383839392d6161626263636464656566667331323a706f636b65742d626c6f6f6d7331373a636f6e74656e743a666978747572652d305d",
+      "sha256": "0b021bfeed4f6ef499f515fe873b705174876a893fcad66e100b2b5db17a156f"
+    },
+    {
+      "id": "distinct-occurrence",
+      "values": [
+        "gameplay.completion",
+        "fixture.policy",
+        "1",
+        "00112233-4455-4677-8899-aabbccddeeff",
+        "pocket-bloom",
+        "content:fixture-1"
+      ],
+      "canonicalHex": "6773633161363a5b7331393a67616d65706c61792e636f6d706c6574696f6e7331343a666978747572652e706f6c69637973313a317333363a30303131323233332d343435352d343637372d383839392d6161626263636464656566667331323a706f636b65742d626c6f6f6d7331373a636f6e74656e743a666978747572652d315d",
+      "sha256": "ed7162663b9d936f1c8837dd958baaf2062ff74b193ee76d6e1d3b40cadbd7b5"
+    },
+    {
+      "id": "max-version",
+      "values": [
+        "gameplay.completion",
+        "fixture.policy",
+        "2147483647",
+        "00112233-4455-4677-8899-aabbccddeeff",
+        "pocket-bloom",
+        "content:fixture-0"
+      ],
+      "canonicalHex": "6773633161363a5b7331393a67616d65706c61792e636f6d706c6574696f6e7331343a666978747572652e706f6c6963797331303a323134373438333634377333363a30303131323233332d343435352d343637372d383839392d6161626263636464656566667331323a706f636b65742d626c6f6f6d7331373a636f6e74656e743a666978747572652d305d",
+      "sha256": "56935b315c5b467827a1d6277e82387d92929bdae6a88f9cdbfd04e50eb149a8"
+    }
+  ],
+  "scope": "schema known answers, not runtime interoperability or reward authority"
+}

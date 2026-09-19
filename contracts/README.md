@@ -1,5 +1,7 @@
 # Reviewed backend protocol snapshot
 
+G2 additive schema **0.3.0-live-slice-schema.1** is mirrored from backend `0c3473e165ce73479c349b8fba2394274a2a833e`: 94 exact pins, preserving all 90 G1 files. [Semantics and field mappings](live-slice/semantics.json) approve only the read-only reward receipt; feature DTO/codec/runtime implementation is pending. Frozen core corpus/version remains unchanged.
+
 Current G1-reviewed schema: **0.2.0-core-schema.1**, canonical commit
 `0109936f0ebf232924cec70adb79c4f790b604bc`. Ninety exact canonical artifacts are
 pinned by snapshot.json; the original two policy/primitive files are unchanged.
