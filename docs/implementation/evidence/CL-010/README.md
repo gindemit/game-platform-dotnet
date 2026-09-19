@@ -1,8 +1,8 @@
 # CL-010 private pull, bootstrap and reset evidence
 
-Date: 2026-09-19
+Initial date: 2026-09-19; corrective review finalized 2026-09-20
 
-Effective source commit: `e7dd26813064d6114fe504983213d8f9eaa15d2d`
+Effective source commit: `13c36e9083a6b814896724e949f0f7f1dfd35c29`
 
 Initial source commit: `a9d23c611763939466f33f3817624deffe871470`
 
@@ -38,14 +38,22 @@ Expired staging is replaced only after a new remote start succeeds. Storage
 port collection inputs are defensively copied. Native cases also prove distinct
 view-removal/tombstone rows and their removal by reset replacement.
 
+The second corrective review increment applies the frozen state invariant
+directly: retired always means `nextSequence = null`; active requires a positive
+non-null successor and an exhausted active stream is rejected before staging.
+Dedicated native cases inject a foreign-stream row, pending and in-flight rows
+at/below authoritative finalization, and accepted and terminal-rejected rows
+beyond it. Every case proves transaction rollback plus preservation of the old
+Ready flag, opaque cursor, committed checkpoint and confirmed view.
+
 ## Commands and results
 
 ```text
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter FullyQualifiedName~Cl010PrivateSyncTests --no-restore
-exit 0; 14 passed, 0 failed/skipped/warnings
+exit 0; 20 passed, 0 failed/skipped/warnings
 
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~Cl007|FullyQualifiedName~Cl008AtomicOutboxTests|FullyQualifiedName~Cl009OrderedCommandSenderTests|FullyQualifiedName~Cl010PrivateSyncTests"
-exit 0; 35 passed, 0 failed/skipped/warnings
+exit 0; 41 passed, 0 failed/skipped/warnings
 
 rtk dotnet restore GamePlatform.sln --locked-mode
 exit 0; 18 projects, 0 errors/warnings
@@ -54,7 +62,7 @@ rtk dotnet build GamePlatform.sln -c Release --no-restore
 exit 0; 18 projects, 0 errors/warnings
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
-exit 0; 290 passed, 0 failed/skipped/warnings
+exit 0; 296 passed, 0 failed/skipped/warnings
 
 rtk python scripts/validate.py
 exit 0
