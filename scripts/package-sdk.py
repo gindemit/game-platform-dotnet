@@ -81,7 +81,7 @@ def verify_bundle(output):
 def build_bundle(output, allow_dirty=False, skip_build=False):
     root, output = ROOT.resolve(), output.resolve()
     # Never recursively delete all artifacts: other tasks keep evidence there.
-    if output != (root / 'artifacts/sdk').resolve():
+    if output != root / 'artifacts/sdk':
         raise ValueError('output_must_be_dedicated_artifacts_sdk_directory')
     if (root / 'artifacts/sdk').is_symlink() or (root / 'artifacts').resolve() != root / 'artifacts':
         raise ValueError('artifact_symlink_not_supported')
