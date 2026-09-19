@@ -69,6 +69,18 @@ namespace GamePlatform.Tests.Sync.Pull
             using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);var remote=new ScriptedRemote(Bootstrap(10,Token(7)),null,RemotePullPage.Reset("visibility_changed"));var coordinator=new PrivateSyncCoordinator(Store(db),remote,()=>100);Assert.Equal(PrivateSyncResult.RemoteFailure,await coordinator.PullOnceAsync(CancellationToken.None));Assert.Equal(1,await Scalar(db,"SELECT COUNT(*) FROM gp_confirmed_projection WHERE entity_key='self'"));var progress=await Store(db).GetBootstrapProgressAsync(CancellationToken.None);Assert.NotNull(progress);Assert.Equal(Token(7),progress!.CopyPageToken());await Dispose(db);
         }
 
+        [Fact]
+        public async Task ExpiredStagedSessionCannotAdvanceTheInstalledCheckpoint()
+        {
+            using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);var store=Store(db);await store.BeginBootstrapAsync(new BootstrapBoundary(Stream,10,2,Epoch,50,new[]{"profile","progression","inventory","wallet","entitlements"},Token(9),Token(7)),CancellationToken.None);var coordinator=new PrivateSyncCoordinator(store,new ScriptedRemote(Bootstrap(10,Token(7)),null,RemotePullPage.Reset("history_expired")),()=>100);Assert.Equal(PrivateSyncResult.RemoteFailure,await coordinator.BootstrapAsync(Stream,CancellationToken.None));var checkpoint=await store.GetPullCheckpointAsync(CancellationToken.None);Assert.Equal(5,checkpoint.CommittedThrough);Assert.Equal(Token(3),checkpoint.CopyCursor());await Dispose(db);
+        }
+
+        [Fact]
+        public async Task OversizedPullGroupRollsBackProjectionAndCursor()
+        {
+            using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);var store=Store(db);var oversized=new StoredProjectionMutation("inventory","large",2,StoredProjectionKind.Upsert,new byte[262_145]);await Assert.ThrowsAsync<StorageException>(()=>store.ApplyPullPageAsync(new StoredPullPage(6,new[]{new StoredPullGroup(6,new[]{oversized})},Token(4),false),CancellationToken.None));var checkpoint=await store.GetPullCheckpointAsync(CancellationToken.None);Assert.Equal(5,checkpoint.CommittedThrough);Assert.Equal(0,await Scalar(db,"SELECT COUNT(*) FROM gp_confirmed_projection WHERE entity_key='large'"));await Dispose(db);
+        }
+
         private static BootstrapBoundary Boundary(long through,byte[] first)=>new BootstrapBoundary(Stream,through,1,Epoch,1000,new[]{"profile","progression","inventory","wallet","entitlements"},Token(1),first);
         private static BootstrapStart Bootstrap(long through,byte[] first)=>new BootstrapStart(Stream,0,1,through,1,Epoch,new[]{new SnapshotCollection("profile",1,true),new SnapshotCollection("progression",1,true),new SnapshotCollection("inventory",1,true),new SnapshotCollection("wallet",1,true),new SnapshotCollection("entitlements",1,true)},Token(1),first,1000);
         private static StagedBootstrapPage Page(byte[] session,byte[] requested,long through,bool more,byte[]? next,byte[]? cursor,params StoredProjectionMutation[] entities)=>new StagedBootstrapPage(session,requested,through,entities,more,next,cursor);
