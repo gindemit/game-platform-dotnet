@@ -4,18 +4,146 @@
   "track": "client_sdk_and_mrsquare",
   "phase": "P1",
   "observed_epoch": 0,
+  "observed_backend_state_commit": "d65301d39000e6817ca2b737bf9c9e49af0ed3d3",
   "handoff_kind": "phase_complete",
-  "status": "not_started",
-  "quiescent": false,
+  "status": "ready_for_sync",
+  "quiescent": true,
   "next_gate": "G1",
-  "implementation_commits": {},
-  "required_repository_keys": ["sdk", "unity"],
-  "completed_task_ids": [],
-  "partial_task_ids": [],
-  "evidence": [],
-  "contract_proposals": [],
-  "blockers": [],
-  "unrun_gates": ["G1", "G2", "G3", "G4"],
-  "requested_sync_actions": [],
-  "note": "Template only, not a completed handoff. Record exact existing SDK and Unity commits after their implementation commits have been pushed; then commit this handoff. Never include credentials or infer peer/runtime approval."
+  "implementation_commits": {
+    "sdk": "9e8459595329eb0b289cf5e892eed55fc4e4660b",
+    "unity": "bc53723a8eec3521dd7bd8e05eaa726fca29795d"
+  },
+  "required_repository_keys": [
+    "sdk",
+    "unity"
+  ],
+  "execution_branch": "impl/platform-coordinated-2026-09-19",
+  "review_prs": {
+    "sdk": "https://github.com/gindemit/game-platform-dotnet/pull/2",
+    "unity": "https://github.com/gindemit/MrSquareUnity/pull/3"
+  },
+  "completed_task_ids": [
+    "CL-001",
+    "CL-006",
+    "CL-014"
+  ],
+  "partial_task_ids": [
+    "CL-003",
+    "INT-001"
+  ],
+  "completed_scope": {
+    "CL-001": "Schema-neutral design/API freeze, actual API/reference inventory, evidence-aware validator; target types are not implemented by the design.",
+    "CL-006": "Pinned source/native/license acquisition qualification and real Windows native transaction/reopen probe only.",
+    "CL-014": "Implemented tested bounded safe diagnostics with captured context and independent review.",
+    "INT-001": "Exhaustive caller/save/import/source-linked/asmdef/GUID inventory and actual standalone regression evidence; complete task remains blocked on Unity runtime evidence.",
+    "CL-003": "Core schema review requirements and committed candidate-absence findings, not G1 approval or mirror repin."
+  },
+  "evidence": [
+    {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/P1/results.json",
+      "command": "rtk proxy python docs/implementation/evidence/verify_p1.py",
+      "exit_code": 0,
+      "tests": {
+        "dotnet": 31,
+        "diagnostics_subset": 12,
+        "validator": 19,
+        "manifest": 14
+      },
+      "note": "Locked restore/build, package listing and 15 managed DLL/local NuGet artifacts passed. Nothing published; no native bundle."
+    },
+    {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/P1/final-policy-checks.json",
+      "exit_code": 0,
+      "note": "Final post-status-transition policy validation; 19 validator and 14 manifest cases. Explicit false-completion fixture preserved."
+    },
+    {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/CL-006/coordinator-review.json",
+      "command": "rtk proxy pwsh -NoProfile -File integration/unity/sqlite-qualification/run-desktop-probe.ps1",
+      "exit_code": 0,
+      "provider": "real Windows x64 native SQLite 3.50.1",
+      "note": "Rollback/commit/reopen and exact int64 9007199254740993; not production executor/Unity proof."
+    },
+    {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/P1/REVIEW.md",
+      "note": "Actual agent independent review and resolved findings; not external human approval."
+    },
+    {
+      "repository": "unity",
+      "path": "Reports/PlatformIntegration/INT-001/captured-checks.raw",
+      "tests": {
+        "platform": 14,
+        "gameplay_domain": 27,
+        "documentation": 57
+      },
+      "note": "Literal command stdout/stderr and exit codes; documentation validator exit 1 with 123 pre-existing stale move-map paths."
+    },
+    {
+      "repository": "unity",
+      "path": "Reports/PlatformIntegration/INT-001/inventory.json",
+      "note": "Source/asmdef/meta/source-linked/save/import inventory; pinned editor/effective settings and fresh scene runtime checks unrun."
+    }
+  ],
+  "artifact_sha256": {
+    "contracts/platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
+    "contracts/v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5",
+    "docs/implementation/interfaces/FOUNDATION_CONTRACTS.md": "9ffaccd20b45b7ea4a9a3ed41f760bb1d8469ea6bdbe9059d3838c2e53875efa",
+    "docs/implementation/evidence/CL-003/G1_REQUIREMENTS.md": "8515c0686fccdb2cbb315bdf4b1e9533794a29ab2c7e459410631c5c16fd6c2d",
+    "integration/unity/sqlite-qualification/qualification.json": "b390cb80dc4250729920f39d978edc31e59fd184ee73188ff406de4d70474e32",
+    "docs/implementation/evidence/P1/package-manifest.json": "b68372dfdda4dc0d4c01a2b85738c745961924b286c0d23b18bacb58dce91e93"
+  },
+  "contract_proposals": [
+    {
+      "path": "docs/implementation/evidence/CL-003/G1_REQUIREMENTS.md",
+      "backend_task": "BE-002",
+      "client_task": "CL-003",
+      "approval": "pending_G1",
+      "finding": "No operation-schema artifacts under contracts/ at observed published execution revision. Review later committed candidate at synchronization; do not wait for runtime codecs."
+    }
+  ],
+  "blockers": [
+    {
+      "scope": "CL-003/G1",
+      "reason": "Canonical operation schemas, semantic/negative vectors, field mappings, digests and actual candidate approval/mirror pin still required. No runtime compatibility approved."
+    },
+    {
+      "scope": "INT-001 and later Unity/device gates",
+      "reason": "Pinned Unity 6000.5.3f1 unavailable; effective settings, EditMode/PlayMode and fresh visual/device evidence unrun."
+    },
+    {
+      "scope": "Unity documentation check",
+      "reason": "123 pre-existing maintenance move-map path errors; raw failing evidence committed, not waived or reported passing."
+    },
+    {
+      "scope": "CL-015/INT-009",
+      "reason": "Full native bundle, exact SQLite3MultipleCiphers notice inclusion, macOS/Unity/AOT/Android device qualification pending."
+    },
+    {
+      "scope": "Live migration/rewards",
+      "reason": "DEC-LEGACY-TRUST and DEC-CONTENT-VALIDATION remain unresolved. No historical reward replay or live grant activation."
+    }
+  ],
+  "unrun_gates": [
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "A01-A13 full production acceptance",
+    "Unity EditMode/PlayMode/effective settings",
+    "IL2CPP/AOT/stripping and physical device",
+    "CSharp-TypeScript runtime exchange",
+    "PostgreSQL and live backend/game journey",
+    "provider sandbox and independent second-game reuse"
+  ],
+  "requested_sync_actions": [
+    "Run backend CODEX_SYNC.md only after both tracks have stopped with committed quiescent handoffs; the backend handoff at the observed revision was not yet quiescent.",
+    "Review BE-002 canonical operation candidate against committed client/Unity requirements, frozen schema-neutral foundation design and semantic/negative vectors; resolve missing fields/semantics and record actual reviewers.",
+    "Record G1 exact schema/fixture versions, field mappings, canonical/mirror commits and hashes before releasing P2. Runtime implementation references may remain null until G2.",
+    "Keep unavailable editor/device and trust-policy prerequisites explicit. No default-branch merge, publication, deployment or Android distribution is authorized.",
+    "Relaunch CODEX_CLIENT.md only after committed backend release state authorizes the next work; do not use this handoff as self-authorization."
+  ],
+  "note": "P1 review inputs are ready; ready_for_sync does not mean G1 passed or all partial tasks completed. All three GPT-5.6 Sol workers stopped, locks released, implementation/evidence commits pushed in both repositories before this handoff. No backend writes. Product features remain stubbed, MrSquare SDK not_installed. STOPPED AT G1."
 }
