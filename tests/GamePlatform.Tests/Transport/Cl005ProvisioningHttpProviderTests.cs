@@ -12,8 +12,9 @@ using GamePlatform.Wire.Contracts;
 
 namespace GamePlatform.Tests.Transport
 {
-    public sealed class Cl005ProvisioningHttpProviderTests
+    public sealed class Cl005ProvisioningHttpProviderTests : IDisposable
     {
+        private readonly List<AuthRefreshCoordinator> ownedRefresh = new List<AuthRefreshCoordinator>();
         private static readonly AppId App = new AppId(Guid.Parse("01890f3e-7a6b-7c8d-9e0f-102030405060"));
         private static readonly Guid Installation = Guid.Parse("0199f9a0-1000-7777-8888-999999999999");
         private static readonly Guid Stream = Guid.Parse("0199f9a0-2000-7777-8888-999999999999");
@@ -51,10 +52,12 @@ namespace GamePlatform.Tests.Transport
         {
             var auth = new RefreshingAuth();
             var executor = new Racing401Executor();
-            var provider = Provider(executor, auth: auth);
+            using var refresh = new AuthRefreshCoordinator();
+            var first = Provider(executor, auth: auth, refresh: refresh);
+            var second = Provider(executor, auth: auth, refresh: refresh);
             var results = await Task.WhenAll(
-                Call(provider, CancellationToken.None),
-                Call(provider, CancellationToken.None));
+                Call(first, CancellationToken.None),
+                Call(second, CancellationToken.None));
             Assert.All(results, result => Assert.True(result.IsSuccess));
             Assert.Equal(1, auth.RefreshCount);
             Assert.Equal(4, executor.Requests.Count);
@@ -136,8 +139,16 @@ namespace GamePlatform.Tests.Transport
             Assert.Equal(1, request.CopyBody()[0]);
         }
 
-        private static ProvisioningHttpProvider Provider(IHttpExecutor executor, StubCodec? codec = null, RefreshingAuth? auth = null, int maximumResponseBytes = 262_144) =>
-            new ProvisioningHttpProvider(new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test"), maximumResponseBytes), executor, codec ?? new StubCodec(), auth ?? new RefreshingAuth());
+        public void Dispose()
+        {
+            foreach (var coordinator in ownedRefresh) coordinator.Dispose();
+        }
+
+        private ProvisioningHttpProvider Provider(IHttpExecutor executor, StubCodec? codec = null, RefreshingAuth? auth = null, int maximumResponseBytes = 262_144, AuthRefreshCoordinator? refresh = null)
+        {
+            if (refresh == null) { refresh = new AuthRefreshCoordinator(); ownedRefresh.Add(refresh); }
+            return new ProvisioningHttpProvider(new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test"), maximumResponseBytes), executor, codec ?? new StubCodec(), auth ?? new RefreshingAuth(), refresh);
+        }
 
         private static Task<RemoteResult<ProvisioningSnapshot>> Call(ProvisioningHttpProvider provider, CancellationToken cancellationToken) =>
             provider.ProvisionAsync(App, Installation, new ClientStreamId(Stream), cancellationToken);

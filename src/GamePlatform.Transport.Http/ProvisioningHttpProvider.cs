@@ -17,14 +17,15 @@ namespace GamePlatform.Transport.Http
         private readonly IHttpExecutor executor;
         private readonly IWireCodec codec;
         private readonly IAuthSession auth;
-        private readonly SemaphoreSlim refresh = new SemaphoreSlim(1, 1);
+        private readonly AuthRefreshCoordinator refresh;
 
-        public ProvisioningHttpProvider(BackendHttpConfiguration configuration, IHttpExecutor executor, IWireCodec codec, IAuthSession auth)
+        public ProvisioningHttpProvider(BackendHttpConfiguration configuration, IHttpExecutor executor, IWireCodec codec, IAuthSession auth, AuthRefreshCoordinator refresh)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.executor = executor ?? throw new ArgumentNullException(nameof(executor));
             this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
             this.auth = auth ?? throw new ArgumentNullException(nameof(auth));
+            this.refresh = refresh ?? throw new ArgumentNullException(nameof(refresh));
             if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256) throw new ArgumentException("The auth session key is invalid.", nameof(auth));
         }
 
@@ -49,13 +50,7 @@ namespace GamePlatform.Transport.Http
             {
                 try
                 {
-                    await refresh.WaitAsync(cancellationToken).ConfigureAwait(false);
-                    try
-                    {
-                        var current = await auth.GetAsync(cancellationToken).ConfigureAwait(false);
-                        token = current.Generation == token.Generation ? await auth.RefreshAsync(token.Generation, cancellationToken).ConfigureAwait(false) : current;
-                    }
-                    finally { refresh.Release(); }
+                    token = await refresh.RefreshAsync(auth, null, token.Generation, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Cancelled)); }
                 catch { return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Authentication, 401)); }

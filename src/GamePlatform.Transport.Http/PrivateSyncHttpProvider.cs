@@ -23,29 +23,35 @@ namespace GamePlatform.Transport.Http
         public const string DiagnosticJsonMediaType = "application/vnd.gindemit.platform.v1+json";
 
         private readonly AppId appId;
+        private readonly PlatformUserId accountId;
         private readonly BackendHttpConfiguration configuration;
         private readonly IHttpExecutor executor;
         private readonly IWireCodec codec;
         private readonly IAuthSession auth;
         private readonly string mediaType;
-        private readonly SemaphoreSlim refresh = new SemaphoreSlim(1, 1);
+        private readonly AuthRefreshCoordinator refresh;
 
         public PrivateSyncHttpProvider(
             AppId appId,
+            PlatformUserId accountId,
             BackendHttpConfiguration configuration,
             IHttpExecutor executor,
             IWireCodec codec,
             IAuthSession auth,
+            AuthRefreshCoordinator refresh,
             BackendWireRepresentation representation = BackendWireRepresentation.MessagePack)
         {
             if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
+            if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.executor = executor ?? throw new ArgumentNullException(nameof(executor));
             this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
             this.auth = auth ?? throw new ArgumentNullException(nameof(auth));
+            this.refresh = refresh ?? throw new ArgumentNullException(nameof(refresh));
             if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256) throw new ArgumentException("The auth session key is invalid.", nameof(auth));
             if (!Enum.IsDefined(typeof(BackendWireRepresentation), representation)) throw new ArgumentOutOfRangeException(nameof(representation));
             this.appId = appId;
+            this.accountId = accountId;
             mediaType = representation == BackendWireRepresentation.MessagePack ? MessagePackMediaType : DiagnosticJsonMediaType;
         }
 
@@ -55,13 +61,13 @@ namespace GamePlatform.Transport.Http
             var path = "v1/apps/" + appId + "/bootstrap?clientStreamId=" + streamId.Value.ToString("D", CultureInfo.InvariantCulture);
             var response = await SendAuthenticatedAsync("GET", path, Array.Empty<byte>(), false, cancellationToken).ConfigureAwait(false);
             if (response.Failure.HasValue) return RemoteResult<BootstrapStart>.Failed(response.Failure.Value);
-            if (response.Response!.StatusCode != 200) return RemoteResult<BootstrapStart>.Failed(DecodeFailure(response.Response));
-            var decoded = Decode<BootstrapStartResponse>(response.Response);
+            if (response.Response!.StatusCode != 200) return RemoteResult<BootstrapStart>.Failed(DecodeFailure(response.Response, configuration.MaximumResponseBytes));
+            var decoded = Decode<BootstrapStartResponse>(response.Response, configuration.MaximumResponseBytes);
             if (!decoded.IsSuccess) return RemoteResult<BootstrapStart>.Failed(decoded.Failure);
             try
             {
                 var value = decoded.Value!;
-                if (value.ProtocolVersion != 1 || value.Membership.AppId != appId.Value || value.StreamState.ClientStreamId != streamId.Value)
+                if (value.ProtocolVersion != 1 || value.Account.PlatformUserId != accountId.Value || value.Membership.AppId != appId.Value || value.StreamState.ClientStreamId != streamId.Value)
                     return ProtocolFailure<BootstrapStart>(response.Response.StatusCode);
                 var collections = new SnapshotCollection[value.Collections.Count];
                 for (var i = 0; i < collections.Length; i++)
@@ -86,8 +92,9 @@ namespace GamePlatform.Transport.Http
             if (body.Length == 0 || body.Length > 262_144) return ProtocolFailure<BootstrapPage>();
             var response = await SendAuthenticatedAsync("POST", "v1/apps/" + appId + "/bootstrap/pages", body, true, cancellationToken).ConfigureAwait(false);
             if (response.Failure.HasValue) return RemoteResult<BootstrapPage>.Failed(response.Failure.Value);
-            if (response.Response!.StatusCode != 200) return RemoteResult<BootstrapPage>.Failed(DecodeFailure(response.Response));
-            var decoded = Decode<BootstrapPageResponse>(response.Response);
+            var responseLimit = Math.Min(configuration.MaximumResponseBytes, maximumBytes);
+            if (response.Response!.StatusCode != 200) return RemoteResult<BootstrapPage>.Failed(DecodeFailure(response.Response, responseLimit));
+            var decoded = Decode<BootstrapPageResponse>(response.Response, responseLimit);
             if (!decoded.IsSuccess) return RemoteResult<BootstrapPage>.Failed(decoded.Failure);
             try
             {
@@ -113,14 +120,15 @@ namespace GamePlatform.Transport.Http
             if (body.Length == 0 || body.Length > 262_144) return ProtocolFailure<RemotePullPage>();
             var response = await SendAuthenticatedAsync("POST", "v1/apps/" + appId + "/sync/pull", body, true, cancellationToken).ConfigureAwait(false);
             if (response.Failure.HasValue) return RemoteResult<RemotePullPage>.Failed(response.Failure.Value);
-            if (response.Response!.StatusCode != 200) return RemoteResult<RemotePullPage>.Failed(DecodeFailure(response.Response));
-            var decoded = Decode<IPullResponse>(response.Response);
+            var responseLimit = Math.Min(configuration.MaximumResponseBytes, maximumBytes);
+            if (response.Response!.StatusCode != 200) return RemoteResult<RemotePullPage>.Failed(DecodeFailure(response.Response, responseLimit));
+            var decoded = Decode<IPullResponse>(response.Response, responseLimit);
             if (!decoded.IsSuccess) return RemoteResult<RemotePullPage>.Failed(decoded.Failure);
             try
             {
                 if (decoded.Value is PullReset reset)
                 {
-                    if (!reset.ResetRequired || reset.Changes.Count != 0 || reset.NextCursor != null || reset.HasMore) return ProtocolFailure<RemotePullPage>(response.Response.StatusCode);
+                    if (!reset.ResetRequired || reset.Changes.Count != 0 || reset.NextCursor != null || reset.HasMore || !IsResetReason(reset.Reason)) return ProtocolFailure<RemotePullPage>(response.Response.StatusCode);
                     return RemoteResult<RemotePullPage>.Success(RemotePullPage.Reset(reset.Reason));
                 }
                 if (decoded.Value is PullPage page)
@@ -152,13 +160,7 @@ namespace GamePlatform.Transport.Http
             if (response.Failure.HasValue || response.Response!.StatusCode != 401) return response;
             try
             {
-                await refresh.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
-                {
-                    var current = await auth.GetAsync(cancellationToken).ConfigureAwait(false);
-                    token = current.Generation == token.Generation ? await auth.RefreshAsync(token.Generation, cancellationToken).ConfigureAwait(false) : current;
-                }
-                finally { refresh.Release(); }
+                token = await refresh.RefreshAsync(auth, accountId, token.Generation, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.Cancelled)); }
             catch { return new Attempt(new RemoteFailure(RemoteFailureKind.Authentication, 401)); }
@@ -180,29 +182,32 @@ namespace GamePlatform.Transport.Http
             catch { return new Attempt(new RemoteFailure(RemoteFailureKind.Dependency)); }
         }
 
-        private RemoteResult<T> Decode<T>(HttpResponseData response)
+        private RemoteResult<T> Decode<T>(HttpResponseData response, int responseLimit)
         {
-            if (!ValidProtocolResponse(response)) return ProtocolFailure<T>(response.StatusCode);
+            if (!ValidProtocolResponse(response, responseLimit)) return ProtocolFailure<T>(response.StatusCode);
             try { return RemoteResult<T>.Success(codec.Decode<T>(response.CopyBody())); }
             catch { return ProtocolFailure<T>(response.StatusCode); }
         }
 
-        private RemoteFailure DecodeFailure(HttpResponseData response)
+        private RemoteFailure DecodeFailure(HttpResponseData response, int responseLimit)
         {
+            if (response.BodyLength > responseLimit) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
             var mapped = MapStatus(response);
             if (!HasProtocolMediaType(response)) return mapped;
-            if (!ValidProtocolResponse(response)) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
+            if (!ValidProtocolResponse(response, responseLimit)) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
             try
             {
                 var error = codec.Decode<ErrorResponse>(response.CopyBody());
-                if (error == null || error.ProtocolVersion != 1 || string.IsNullOrWhiteSpace(error.CorrelationId)) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
+                if (error == null || error.ProtocolVersion != 1 || string.IsNullOrWhiteSpace(error.CorrelationId) ||
+                    !response.TryGetHeader("X-Correlation-Id", out var correlation) || !string.Equals(error.CorrelationId, correlation, StringComparison.Ordinal))
+                    return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
                 return new RemoteFailure(MapCategory(error.Error.Category), response.StatusCode, RetryAfter(response));
             }
             catch { return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode); }
         }
 
-        private bool ValidProtocolResponse(HttpResponseData response) =>
-            response.BodyLength > 0 && response.BodyLength <= configuration.MaximumResponseBytes &&
+        private bool ValidProtocolResponse(HttpResponseData response, int responseLimit) =>
+            response.BodyLength > 0 && response.BodyLength <= responseLimit &&
             HasProtocolMediaType(response) &&
             (!response.TryGetHeader("Content-Encoding", out var encoding) || string.Equals(encoding, "identity", StringComparison.OrdinalIgnoreCase)) &&
             response.TryGetHeader("X-Correlation-Id", out var correlation) && !string.IsNullOrWhiteSpace(correlation) && correlation.Length <= 128;
@@ -224,6 +229,9 @@ namespace GamePlatform.Transport.Http
             category == "authorization" ? RemoteFailureKind.Authorization : category == "validation" ? RemoteFailureKind.Validation :
             category == "conflict" ? RemoteFailureKind.Conflict : category == "rate_limit" ? RemoteFailureKind.RateLimited :
             category == "dependency" ? RemoteFailureKind.Dependency : category == "internal" ? RemoteFailureKind.Server : RemoteFailureKind.Protocol;
+
+        private static bool IsResetReason(string reason) => reason == "history_expired" || reason == "visibility_changed" ||
+            reason == "log_epoch_changed" || reason == "cursor_invalidated";
 
         private static TimeSpan? RetryAfter(HttpResponseData response)
         {
