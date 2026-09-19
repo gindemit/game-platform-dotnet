@@ -1,0 +1,7 @@
+ARGV: ["rtk", "proxy", "git", "diff", "--check"]
+STDOUT:
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+
+EXIT: 0

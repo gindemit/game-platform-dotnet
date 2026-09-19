@@ -1,0 +1,8 @@
+ARGV: ["rtk", "proxy", "python", "scripts/validate.py"]
+STDOUT:
+Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and 2 pinned contract files.
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+
+EXIT: 0

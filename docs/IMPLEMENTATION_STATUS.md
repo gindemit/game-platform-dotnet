@@ -1,5 +1,28 @@
 # Implementation status
 
+## P1 epoch 1 client remediation — 2026-09-19
+
+CL-003 client review inputs now include 259 field/branch C#/TS mappings, all ten
+existing GameplayOutcome fields, and explicit G1-R1–R5 consumer-preservation and
+schema acceptance expectations. Read-only review tooling verifies immutable Git
+objects and hashes without copying the unapproved mirror. Candidate.1 passes
+49 diagnostic schema fixtures and 16 independent client boundary cases; ten
+review-tool regression tests pass. These results do not resolve its semantic
+gaps. See [epoch 1 review](implementation/evidence/CL-003/epoch1/README.md).
+
+The fetched backend execution SHA remains
+`c6aa77054ec63c0ae46fe2113d3add994bf382fb` (P1/epoch 1/blocked), still publishing
+candidate.1. Review against the corrected immutable candidate is blocked until
+it is published. CL-003 remains blocked; no G1 approval, mirror repin, DTO or P2
+codec work occurred. The unchanged consumer SHA is
+`bc53723a8eec3521dd7bd8e05eaa726fca29795d`. No Unity write was needed.
+
+Exact command/exit/test evidence is recorded in the epoch-1 verification report.
+Architecture/mirror validation, 19 validator tests, manifest validation and 14
+manifest tests pass. No runtime source changed; .NET/native/Unity/device/live
+backend suites were not rerun. A01–A13, G1–G4, product-policy and existing
+consumer environment blockers remain unpassed/unresolved.
+
 ## G1 synchronization review — 2026-09-19
 
 SDK remains P1; G1 is blocked on candidate/consumer mapping, stream and

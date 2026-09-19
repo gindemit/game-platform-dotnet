@@ -68,6 +68,22 @@
     "existing_mirror_hashes_recomputed": true,
     "runtime_compatibility": "unverified"
   },
+  "epoch1_client_review": {
+    "status": "blocked_pending_revised_candidate",
+    "phase": "P1",
+    "epoch": 1,
+    "observed_backend_state_commit": "c6aa77054ec63c0ae46fe2113d3add994bf382fb",
+    "reviewed_candidate_version": "0.2.0-core-candidate.1",
+    "consumer_commit": "bc53723a8eec3521dd7bd8e05eaa726fca29795d",
+    "reviewer": "Codex /root ClientContractOwner and ConsumerIntegrationOwner; no independent review claimed",
+    "field_mapping": "docs/implementation/evidence/CL-003/epoch1/candidate-review.json",
+    "consumer_expectations": "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md",
+    "report": "docs/implementation/evidence/CL-003/epoch1/README.md",
+    "findings_remaining": ["G1-R1", "G1-R2", "G1-R3", "G1-R4", "G1-R5"],
+    "schema_approved": false,
+    "mirror_repinned": false,
+    "runtime_compatibility": "unverified"
+  },
   "g1_review": {
     "status": "blocked",
     "backend_candidate_commit": "bcd9d2436428cd965fc7739ef84d25a71dacf4dd",

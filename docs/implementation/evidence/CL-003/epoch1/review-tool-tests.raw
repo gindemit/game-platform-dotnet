@@ -1,0 +1,22 @@
+ARGV: ["rtk", "proxy", "python", "-m", "unittest", "discover", "-s", "docs/implementation/evidence/CL-003", "-p", "test_*.py", "-v"]
+STDOUT:
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+test_absence_not_collapsed_into_null (test_review_candidate.ReviewTests) ... ok
+test_candidate_digest_drift_fails (test_review_candidate.ReviewTests) ... ok
+test_conditional_and_nested_properties_are_inventoried (test_review_candidate.ReviewTests) ... ok
+test_full_width_values_do_not_map_to_ts_number (test_review_candidate.ReviewTests) ... ok
+test_int64_overflow_is_rejected_even_when_regex_matches (test_review_candidate.ReviewTests) ... ok
+test_numeric_extension_rejected_recursively (test_review_candidate.ReviewTests) ... ok
+test_reference_resolves_target_properties (test_review_candidate.ReviewTests) ... ok
+test_requires_immutable_commit (test_review_candidate.ReviewTests) ... ok
+test_unhashed_schema_fails (test_review_candidate.ReviewTests) ... ok
+test_uuid_does_not_map_to_semantic_string (test_review_candidate.ReviewTests) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.004s
+
+OK
+
+EXIT: 0
