@@ -2,6 +2,7 @@
   "schema_version": 1,
   "track": "client_sdk_and_mrsquare",
   "prepared_on": "2026-09-18",
+  "coordination_updated_on": "2026-09-19",
   "canonical_repository": "gindemit/game-platform-backend",
   "canonical_path": "contracts/",
   "reviewed_commit": "66e40558045cbe5c314119022a55ced46ad9d04e",
@@ -13,31 +14,42 @@
     "contracts/platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
     "contracts/v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5"
   },
-  "digest_evidence": "Values inspected in the existing canonical/mirror snapshot records; recompute against fetched bytes during CL-003 before repinning. This planning session did not run the repository pinning tool.",
+  "digest_evidence": "Values inspected in the existing canonical/mirror snapshot records; recompute against fetched bytes during CL-003 before repinning. Coordination documentation does not recompute or approve these existing pins.",
   "operation_schema_version": null,
   "operation_fixture_version": null,
-  "freeze_status": "blocked_missing_operation_schemas_and_real_peer_fixtures",
+  "freeze_status": "blocked_missing_operation_schema_review",
+  "schema_approval": {"status": "pending", "gate": "G1", "canonical_commit": null, "mirror_commit": null, "reviewers": [], "requires_runtime_implementations": false},
+  "core_interoperability": {"status": "unverified", "gate": "G2", "evidence": [], "required_directions": ["csharp_to_typescript", "typescript_to_csharp"]},
+  "live_slice": {"status": "unverified", "gate": "G3", "joint_backend_task": "BE-025", "joint_consumer_task": "INT-010", "backend_readiness_tasks": ["BE-016", "BE-024"], "completed_joint_task_is_readiness_prerequisite": false},
   "compatible_backend_implementation_commit": null,
   "compatible_sdk_artifact_commit": null,
   "compatible_unity_import_commit": null,
-  "owners_to_assign": {"canonical_changes":"BackendContractOwner","reviewed_mirror_and_dto_mapping":"ClientContractOwner","shared_unity_surfaces":"ConsumerIntegrationOwner"},
-  "owned_changes_this_track": ["SDK planning and client mirror review requests", "explicitly scoped MrSquare integration planning"],
-  "unowned_changes": ["backend canonical schemas and migrations", "backend deployment", "production data and secrets"],
+  "owners_to_assign": {"canonical_changes": "BackendContractOwner", "reviewed_mirror_and_dto_mapping": "ClientContractOwner", "shared_unity_surfaces": "ConsumerIntegrationOwner"},
+  "owned_changes_this_track": ["SDK implementation and reviewed client mirror", "explicitly scoped MrSquare integration"],
+  "unowned_changes": ["backend canonical schemas and migrations during parallel phases", "backend deployment", "production data and secrets"],
   "peer_requests": [
-    {"key":"PEER-CORE","client_task":"CL-003","need":"Auth/provision/membership/full bootstrap paging, profile/progression, push/pull/results/reset/error schemas, explicit unknown-field/version rules and canonical-semantic fingerprint algorithm; bidirectional C#/TS binary fixtures."},
-    {"key":"PEER-VALUE","client_tasks":["CL-103","CL-104","CL-105","CL-106","CL-107"],"need":"Catalog bindings, exact balances/instances/rights, atomic private change groups, trusted reward receipts and permanent operation plus business-source uniqueness."},
-    {"key":"PEER-OBJECTIVES","client_tasks":["CL-109","CL-110"],"need":"Definition/evaluator/occurrence versions, seven initial objective kinds, upgrade policy, claims/reward slots and duplicate-event fixtures."},
-    {"key":"PEER-COMMERCE","client_tasks":["CL-111","CL-112"],"need":"Offer/version/price/limits, virtual purchase and external receipt verification state machines; authoritative verification and replay fixtures."},
-    {"key":"PEER-SOCIAL","client_tasks":["CL-113","CL-114"],"need":"Leaderboard query/snapshot/score/season and team query/membership/contribution contracts, complete authorization/cache scope."},
-    {"key":"PEER-CONFIG-INBOX","client_tasks":["CL-115","CL-116"],"need":"Assignment-scoped remote config and player inbox read/attachment-claim contracts distinct from internal event inbox."},
-    {"key":"PEER-LIVE-SLICE","client_task":"INT-010","need":"Real nonproduction auth/PostgreSQL API, explicit seed command and fixtures, complete bootstrap/feed/receipt behavior, one allowed test-content outcome/reward policy and exact backend revision."}
+    {"key": "PEER-CORE", "client_task": "CL-003", "backend_tasks": ["BE-002"], "stage": "schema", "need": "Reviewed auth/provision/membership/full bootstrap paging, profile/progression, push/pull/results/reset/error schemas, unknown-field/version rules and canonical-semantic fingerprint algorithm, semantic/negative vectors, field mappings and hashes. Runtime binary exchange is the separate G2 gate, not a CL-003 prerequisite."},
+    {"key": "PEER-VALUE", "client_tasks": ["CL-103", "CL-104", "CL-105", "CL-106", "CL-107"], "backend_tasks": ["BE-017", "BE-019", "BE-020", "BE-021", "BE-022"], "need": "Catalog bindings, exact balances/instances/rights, atomic private change groups, trusted reward receipts and permanent operation plus business-source uniqueness. Schema approval precedes implementation; feature interoperability remains separate evidence."},
+    {"key": "PEER-OBJECTIVES", "client_tasks": ["CL-109", "CL-110"], "backend_tasks": ["BE-026", "BE-027", "BE-029"], "need": "Definition/evaluator/occurrence versions, seven initial objective kinds, upgrade policy, claims/reward slots and duplicate-event fixtures."},
+    {"key": "PEER-COMMERCE", "client_tasks": ["CL-111", "CL-112"], "backend_tasks": ["BE-028", "BE-032", "BE-033", "BE-034", "BE-035"], "need": "Offer/version/price/limits, virtual purchase and external receipt verification state machines; authoritative verification and replay fixtures. Sandbox and activation remain separate gates."},
+    {"key": "PEER-SOCIAL", "client_tasks": ["CL-113", "CL-114"], "backend_tasks": ["BE-036", "BE-037", "BE-038", "BE-039"], "need": "Leaderboard query/snapshot/score/season and team query/membership/contribution contracts, complete authorization/cache scope."},
+    {"key": "PEER-CONFIG-INBOX", "client_tasks": ["CL-115", "CL-116"], "backend_tasks": ["BE-030", "BE-040"], "need": "Assignment-scoped remote config and player inbox read/attachment-claim contracts distinct from internal event inbox."},
+    {"key": "PEER-LIVE-SLICE", "client_task": "INT-010", "backend_tasks": ["BE-016", "BE-024"], "joint_verification_backend_task": "BE-025", "need": "Implemented compatible nonproduction auth/PostgreSQL API with its real prerequisites, explicit seed/start/state-inspection commands and fixtures, complete bootstrap/feed/receipt behavior, approved test-content outcome/reward policy and exact backend revision. Completed BE-025 is not a prerequisite; BE-025 and INT-010 are the same joint G3 acceptance exercise."}
+  ],
+  "additional_peer_mappings": [
+    {"boundary": "codec", "backend_tasks": ["BE-005", "BE-015"], "client_tasks": ["CL-004", "CL-016"]},
+    {"boundary": "auth_bootstrap_sync", "backend_tasks": ["BE-006", "BE-008", "BE-009", "BE-010", "BE-011", "BE-012", "BE-013", "BE-016"], "client_tasks": ["CL-005", "CL-008", "CL-009", "CL-010", "CL-101", "INT-004", "INT-006"]},
+    {"boundary": "profiles", "backend_tasks": ["BE-018"], "client_tasks": ["CL-102", "INT-008", "INT-010"]},
+    {"boundary": "outcome_policy_progression", "backend_tasks": ["BE-023", "BE-024"], "client_tasks": ["CL-108", "INT-005", "INT-007", "INT-010"]},
+    {"boundary": "identity_linking", "backend_tasks": ["BE-046"], "client_tasks": ["CL-101", "INT-004", "INT-006"]},
+    {"boundary": "final_reuse", "backend_tasks": ["BE-045"], "client_tasks": ["INT-016", "INT-017", "INT-018", "INT-019", "INT-020"]}
   ],
   "unresolved_decisions": [
-    {"key":"DEC-LEGACY-TRUST","owner":"Product owner and backend owner","recommendation":"Preserve old progress locally as unverified import bound once to an explicitly chosen provisioned account; no replayed grants or automatic account merging."},
-    {"key":"DEC-CONTENT-VALIDATION","owner":"Game/backend owners","recommendation":"Freeze a versioned nonproduction content-validation adapter and reward-source key for the first live slice. A client checkpoint signature is not proof of trusted completion."},
-    {"key":"SQLITE-PIN","owner":"PackagingOwner via CL-006","recommendation":"Qualify the documented unity-sqlite-net candidate and use a single managed/native bundle acquisition route; record an ADR before changing driver."}
+    {"key": "DEC-LEGACY-TRUST", "owner": "Product owner and backend owner", "recommendation": "Preserve old progress locally as unverified import bound once to an explicitly chosen provisioned account; no replayed grants or automatic account merging."},
+    {"key": "DEC-CONTENT-VALIDATION", "owner": "Game/backend owners", "recommendation": "Freeze a versioned nonproduction content-validation adapter and reward-source key for the first live slice. A client checkpoint signature is not proof of trusted completion."},
+    {"key": "SQLITE-PIN", "owner": "PackagingOwner via CL-006", "recommendation": "Qualify the documented unity-sqlite-net candidate and use a single managed/native bundle acquisition route; record an ADR before changing driver."}
   ],
-  "delta_policy": "After freeze, record changed fields/semantics, compatibility, schema/fixture versions, both reviewers, exact peer commits and regenerated hashes; coordinate repinning before dependent merges. Mirrors are artifacts, never independent specifications.",
-  "peer_plan_task_ids": [],
-  "peer_plan_note": "No concrete backend implementation-plan task IDs were established in the audited main baseline. The separate planning chat must map these named requests to its own actual tasks and return a durable handoff. Do not invent BE task completion."
+  "delta_policy": "After schema freeze, record changed fields/semantics, compatibility, schema/fixture versions, actual reviewers, exact peer commits and regenerated hashes. Pause affected work for a synchronized delta checkpoint and coordinated repin. Schema review alone never passes new runtime fixtures. Mirrors are artifacts, never independent specifications.",
+  "peer_plan_task_ids": ["BE-002", "BE-005", "BE-006", "BE-008", "BE-009", "BE-010", "BE-011", "BE-012", "BE-013", "BE-015", "BE-016", "BE-017", "BE-018", "BE-019", "BE-020", "BE-021", "BE-022", "BE-023", "BE-024", "BE-025", "BE-026", "BE-027", "BE-028", "BE-029", "BE-030", "BE-032", "BE-033", "BE-034", "BE-035", "BE-036", "BE-037", "BE-038", "BE-039", "BE-040", "BE-045", "BE-046"],
+  "peer_plan_note": "Mapped to backend PR #1 task cards reviewed at 83866674247a98914709c6b1ede9fcd709be296a. Mapping does not imply any implementation or gate passed. See COORDINATION.md and the canonical backend coordination protocol for staged acceptance and current execution-branch state."
 }

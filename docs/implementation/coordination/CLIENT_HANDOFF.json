@@ -1,0 +1,21 @@
+{
+  "protocol_version": 1,
+  "run_id": "platform-2026-09-19",
+  "track": "client_sdk_and_mrsquare",
+  "phase": "P1",
+  "observed_epoch": 0,
+  "handoff_kind": "phase_complete",
+  "status": "not_started",
+  "quiescent": false,
+  "next_gate": "G1",
+  "implementation_commits": {},
+  "required_repository_keys": ["sdk", "unity"],
+  "completed_task_ids": [],
+  "partial_task_ids": [],
+  "evidence": [],
+  "contract_proposals": [],
+  "blockers": [],
+  "unrun_gates": ["G1", "G2", "G3", "G4"],
+  "requested_sync_actions": [],
+  "note": "Template only, not a completed handoff. Record exact existing SDK and Unity commits after their implementation commits have been pushed; then commit this handoff. Never include credentials or infer peer/runtime approval."
+}
