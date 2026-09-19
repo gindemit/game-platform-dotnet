@@ -1,0 +1,22 @@
+{
+  "task": "CL-012",
+  "date": "2026-09-19",
+  "source_commit": "010d47c07907baf86d8a1c9396f81cd5628d03d2",
+  "scope": "pure-sdk-navigation-and-presenter-lifetimes",
+  "status": "complete",
+  "counts": {
+    "focused_tests": 7,
+    "full_dotnet_tests": 271,
+    "script_tests": 33,
+    "manifest_tests": 14,
+    "projects_restored": 18,
+    "projects_built": 18,
+    "warnings": 0,
+    "errors": 0
+  },
+  "consumer_gates_unrun": [
+    "INT-008 Unity binding",
+    "visual and control PlayMode",
+    "device"
+  ]
+}

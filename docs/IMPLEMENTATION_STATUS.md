@@ -1,5 +1,16 @@
 # Implementation status
 
+## CL-012 minimal navigation complete — 2026-09-19
+
+Source commit `010d47c07907baf86d8a1c9396f81cd5628d03d2` completes
+the pure SDK task with 7/7 focused and 271/271 full tests passing, plus clean
+build/planning validation. See
+[CL-012 evidence](implementation/evidence/CL-012/README.md).
+
+This does not claim INT-008: no Unity scene, game binding, visual/control
+PlayMode or device execution occurred. Those consumer gates remain outstanding,
+as do G3 and P4.
+
 ## CL-005 semantic provisioning HTTP — 2026-09-19
 
 Source commit `5b7308d5537462623ef7cf6b3b53bcd1312439bf` implements
