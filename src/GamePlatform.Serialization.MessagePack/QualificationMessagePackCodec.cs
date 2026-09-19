@@ -18,9 +18,9 @@ namespace GamePlatform.Serialization.MessagePack
         public byte[] Encode(string schemaRef, V diagnosticValue)
         {
             ValidateDiagnostic(schemaRef,diagnosticValue);
+            var budget=new Budget(); budget.Visit(diagnosticValue,1); budget.Visit(diagnosticValue,1); budget.Visit(diagnosticValue,1);
             var wire=QualificationSchemaValidator.Validate(schemaRef,diagnosticValue,QualificationSchemaValidator.Direction.ToWire);
-            var budget=new Budget(); budget.Visit(diagnosticValue,1); budget.Visit(wire,1);
-            var buffer=new ArrayBufferWriter<byte>(); var writer=new MessagePackWriter(buffer);
+            var buffer=new BoundedBuffer(); var writer=new MessagePackWriter(buffer);
             Write(ref writer,wire); writer.Flush();
             if(buffer.WrittenCount>262144) throw new QualificationCodecException("Encoded body exceeds limit.");
             return buffer.WrittenSpan.ToArray();
@@ -34,8 +34,10 @@ namespace GamePlatform.Serialization.MessagePack
                 var reader=new MessagePackReader(new ReadOnlyMemory<byte>(payload)); var budget=new Budget();
                 var wire=Read(ref reader,budget,1);
                 if(!reader.End) throw new QualificationCodecException("Trailing input.");
-                // Reserve a second retained semantic copy before schema normalization allocates it.
-                budget.Visit(wire,1);
+                // Reserve output and one intermediate schema-branch copy before normalization.
+                // Integer-to-text/UUID expansion is charged conservatively in advance.
+                budget.Visit(wire,1,true);
+                budget.Visit(wire,1,true);
                 var diagnostic=QualificationSchemaValidator.Validate(schemaRef,wire,QualificationSchemaValidator.Direction.FromWire);
                 ValidateDiagnostic(schemaRef,diagnostic);
                 return diagnostic;
@@ -53,7 +55,7 @@ namespace GamePlatform.Serialization.MessagePack
         public byte[] CanonicalBytes(V input)
         {
             if(input==null || input.Kind!=K.Object) throw new QualificationCodecException("Fingerprint input must be an object.");
-            new Budget().Visit(input,1);
+            var retained=new Budget(); for(int i=0;i<6;i++) retained.Visit(input,1);
             var required=new[]{"backendNamespace","authenticatedAppId","authenticatedPlatformUserId","clientStreamId","operationId","installationId","sequence","type","schemaVersion","clientCreatedAt","payload"};
             var allowed=new HashSet<string>(required.Concat(new[]{"correlationId","requestAttemptId","transportRepresentation"}),StringComparer.Ordinal);
             if(input.Properties.Keys.Any(k=>!allowed.Contains(k)) || required.Any(k=>!input.Properties.ContainsKey(k))) throw new QualificationCodecException("Invalid fingerprint scope.");
@@ -119,12 +121,12 @@ namespace GamePlatform.Serialization.MessagePack
                 case MessagePackType.Binary:
                     var binary=reader.ReadBytes()!.Value;
                     if(binary.Length>262144) throw new QualificationCodecException("Binary exceeds limit.");
-                    budget.Units(binary.Length); return V.Binary(binary.ToArray());
+                    budget.Units(binary.Length); return V.OwnedBinary(binary.ToArray());
                 case MessagePackType.Array:
                     int count=reader.ReadArrayHeader(); if(count>1024) throw new QualificationCodecException("Array exceeds limit.");
                     budget.Units(checked(count*8L)); var list=new V[count];
                     for(int i=0;i<count;i++) list[i]=Read(ref reader,budget,depth+1);
-                    return V.Array(list);
+                    return V.OwnedArray(list);
                 case MessagePackType.Map:
                     int entries=reader.ReadMapHeader(); if(entries>256) throw new QualificationCodecException("Map exceeds limit.");
                     budget.Units(checked(entries*16L)); var map=new Dictionary<string,V>(StringComparer.Ordinal);
@@ -134,7 +136,7 @@ namespace GamePlatform.Serialization.MessagePack
                         if(key.Kind!=K.String || map.ContainsKey(key.StringValue)) throw new QualificationCodecException("Non-string or duplicate map key.");
                         map.Add(key.StringValue,Read(ref reader,budget,depth+1));
                     }
-                    return V.Object(map);
+                    return V.OwnedObject(map);
                 default: throw new QualificationCodecException("Floating-point and extension tokens are forbidden.");
             }
         }
@@ -153,14 +155,25 @@ namespace GamePlatform.Serialization.MessagePack
             private long nodes; private long units;
             internal void Node(int depth) { if(depth>32 || ++nodes>16384) throw new QualificationCodecException("Decoded node/depth budget exceeded."); Units(32); }
             internal void Units(long count) { units=checked(units+count); if(units>2097152) throw new QualificationCodecException("Decoded allocation budget exceeded."); }
-            internal void Visit(V value,int depth)
+            internal void Visit(V value,int depth,bool reserveDiagnosticExpansion=false)
             {
                 Node(depth);
+                if(reserveDiagnosticExpansion && value.Kind==K.Integer) Units(value.IntegerValue.ToString(CultureInfo.InvariantCulture).Length*2L);
                 if(value.Kind==K.String) { if(V.Utf8.GetByteCount(value.StringValue)>8192) throw new QualificationCodecException("String exceeds limit."); Units(value.StringValue.Length*2L); }
-                if(value.Kind==K.Binary) { if(value.BinaryBytes.Length>262144) throw new QualificationCodecException("Binary exceeds limit."); Units(value.BinaryBytes.Length); }
-                if(value.Kind==K.Array) { if(value.Items.Count>1024) throw new QualificationCodecException("Array exceeds limit."); Units(value.Items.Count*8L); foreach(var v in value.Items) Visit(v,depth+1); }
-                if(value.Kind==K.Object) { if(value.Properties.Count>256) throw new QualificationCodecException("Map exceeds limit."); Units(value.Properties.Count*16L); foreach(var p in value.Properties) { Visit(V.String(p.Key),depth+1);Visit(p.Value,depth+1); } }
+                if(value.Kind==K.Binary) { if(value.BinaryBytes.Length>262144) throw new QualificationCodecException("Binary exceeds limit."); Units(reserveDiagnosticExpansion?Math.Max(72,value.BinaryBytes.Length):value.BinaryBytes.Length); }
+                if(value.Kind==K.Array) { if(value.Items.Count>1024) throw new QualificationCodecException("Array exceeds limit."); Units(value.Items.Count*8L); foreach(var v in value.Items) Visit(v,depth+1,reserveDiagnosticExpansion); }
+                if(value.Kind==K.Object) { if(value.Properties.Count>256) throw new QualificationCodecException("Map exceeds limit."); Units(value.Properties.Count*16L); foreach(var p in value.Properties) { Visit(V.String(p.Key),depth+1);Visit(p.Value,depth+1,reserveDiagnosticExpansion); } }
             }
+        }
+        private sealed class BoundedBuffer : IBufferWriter<byte>
+        {
+            private readonly byte[] bytes=new byte[262144];
+            internal int WrittenCount { get; private set; }
+            internal ReadOnlySpan<byte> WrittenSpan=>bytes.AsSpan(0,WrittenCount);
+            public void Advance(int count) { if(count<0 || count>bytes.Length-WrittenCount) throw new QualificationCodecException("Encoded buffer limit exceeded."); WrittenCount+=count; }
+            public Memory<byte> GetMemory(int sizeHint=0) { Check(sizeHint);return bytes.AsMemory(WrittenCount); }
+            public Span<byte> GetSpan(int sizeHint=0) { Check(sizeHint);return bytes.AsSpan(WrittenCount); }
+            private void Check(int sizeHint) { if(sizeHint<0 || Math.Max(1,sizeHint)>bytes.Length-WrittenCount) throw new QualificationCodecException("Encoded buffer limit exceeded."); }
         }
     }
 }

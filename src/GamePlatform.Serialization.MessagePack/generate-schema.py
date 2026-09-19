@@ -1,5 +1,7 @@
 """Generate trusted schema constants from the SHA-pinned reviewed mirror; never fetch."""
 import json
+import argparse
+import hashlib
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
@@ -12,8 +14,11 @@ def emit(v):
     return 'V.Object(new KeyValuePair<string,V>[]{' + ','.join('new KeyValuePair<string,V>(' + json.dumps(k) + ',' + emit(x) + ')' for k,x in v.items()) + '})'
 
 rows = []
+pins = json.loads((root/'contracts/snapshot.json').read_text(encoding='utf-8'))['files']
 for path in sorted((root/'contracts/v1/schemas').glob('*.json')):
-    rows.append('{' + json.dumps(path.name) + ',' + emit(json.loads(path.read_text())) + '}')
+    if hashlib.sha256(path.read_bytes()).hexdigest() != pins[path.relative_to(root/'contracts').as_posix()]:
+        raise SystemExit(f'Schema pin mismatch: {path.name}')
+    rows.append('{' + json.dumps(path.name) + ',' + emit(json.loads(path.read_text(encoding='utf-8'))) + '}')
 out = '''// Generated from reviewed contracts by generate-schema.py. No runtime schema loading.
 using System.Collections.Generic;
 using V = GamePlatform.Serialization.MessagePack.QualificationValue;
@@ -21,4 +26,11 @@ namespace GamePlatform.Serialization.MessagePack {
  internal static class QualificationSchemas {
  internal static readonly IReadOnlyDictionary<string,V> Documents = new Dictionary<string,V> {
 ''' + ',\n'.join(rows) + '\n};\n}\n}\n'
-Path(__file__).with_name('QualificationSchemas.g.cs').write_text(out, encoding='utf-8')
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--check',action='store_true')
+args=parser.parse_args()
+target=Path(__file__).with_name('QualificationSchemas.g.cs')
+if args.check:
+    if target.read_text(encoding='utf-8') != out: raise SystemExit('Generated schema constants drifted; regenerate explicitly.')
+else:
+    target.write_text(out,encoding='utf-8')

@@ -41,7 +41,7 @@ namespace GamePlatform.Serialization.MessagePack
             {
                 var hex = value.StringValue.Replace("-", ""); var bytes = new byte[16];
                 for (int i = 0; i < 16; i++) bytes[i] = byte.Parse(hex.Substring(i*2,2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                return V.Binary(bytes);
+                return V.OwnedBinary(bytes);
             }
             if (direction == Direction.ToWire && wide) return V.Integer(long.Parse(value.StringValue, CultureInfo.InvariantCulture));
             return value;
@@ -50,7 +50,7 @@ namespace GamePlatform.Serialization.MessagePack
         {
             try { Evaluate(schema,file,value,Direction.Diagnostic); return true; } catch (QualificationCodecException) { return false; }
         }
-        private static V Evaluate(V schema, string file, V input, Direction direction)
+        private static V Evaluate(V schema, string file, V input, Direction direction, V? conditionContext = null)
         {
             if (schema.Kind == K.Boolean) { if (!schema.BooleanValue) Fail(); return input; }
             var s = schema.Properties;
@@ -90,7 +90,11 @@ namespace GamePlatform.Serialization.MessagePack
             if (input.Kind == K.Array)
             {
                 Bound(s,"minItems",input.Items.Count,true); Bound(s,"maxItems",input.Items.Count,false);
-                if (s.TryGetValue("items",out var itemSchema)) resultValue = V.Array(input.Items.Select(v => Evaluate(itemSchema,file,v,direction)));
+                if (s.TryGetValue("items",out var itemSchema))
+                {
+                    if(direction==Direction.Diagnostic) foreach(var child in input.Items) Evaluate(itemSchema,file,child,direction);
+                    else { var items=input.Items.Select(v=>Evaluate(itemSchema,file,v,direction)).ToArray(); if(items.Where((v,i)=>!ReferenceEquals(v,input.Items[i])).Any()) resultValue=V.OwnedArray(items); }
+                }
                 if (s.ContainsKey("uniqueItems")) for (int i=0;i<input.Items.Count;i++) for(int j=0;j<i;j++) if(Equal(input.Items[i],input.Items[j])) Fail();
                 if (s.TryGetValue("contains",out var contains) && !resultValue.Items.Any(v=>Matches(contains,file,v))) Fail();
             }
@@ -98,35 +102,39 @@ namespace GamePlatform.Serialization.MessagePack
             {
                 Bound(s,"minProperties",input.Properties.Count,true); Bound(s,"maxProperties",input.Properties.Count,false);
                 if (s.TryGetValue("required",out var required)) foreach(var name in required.Items) if(!input.Properties.ContainsKey(name.StringValue)) Fail();
-                var output = new Dictionary<string,V>(StringComparer.Ordinal);
+                Dictionary<string,V>? output = null;
                 foreach(var pair in input.Properties)
                 {
+                    V child=pair.Value;
                     if(s.TryGetValue("propertyNames",out var names)) Evaluate(names,file,V.String(pair.Key),Direction.Diagnostic);
-                    if(s.TryGetValue("properties",out var properties) && properties.Properties.TryGetValue(pair.Key,out var propertySchema)) output.Add(pair.Key,Evaluate(propertySchema,file,pair.Value,direction));
-                    else if(s.TryGetValue("additionalProperties",out var additional)) output.Add(pair.Key,Evaluate(additional,file,pair.Value,direction));
-                    else output.Add(pair.Key,pair.Value);
+                    if(s.TryGetValue("properties",out var properties) && properties.Properties.TryGetValue(pair.Key,out var propertySchema)) child=Evaluate(propertySchema,file,pair.Value,direction);
+                    else if(s.TryGetValue("additionalProperties",out var additional)) child=Evaluate(additional,file,pair.Value,direction);
+                    if(!ReferenceEquals(child,pair.Value)) { if(output==null) output=input.Properties.ToDictionary(p=>p.Key,p=>p.Value,StringComparer.Ordinal); output[pair.Key]=child; }
                 }
-                resultValue = V.Object(output);
+                if(output!=null) resultValue = V.OwnedObject(output);
             }
             var diagnostic = direction == Direction.ToWire ? input : resultValue;
             if(s.TryGetValue("allOf",out var all)) foreach(var branch in all.Items)
             {
-                var basis=direction==Direction.ToWire ? input : resultValue;
-                var branchResult=Evaluate(branch,file,basis,direction);
+                var basis=input;
+                var branchResult=Evaluate(branch,file,basis,direction,diagnostic);
                 resultValue=MergeChanges(basis,branchResult,resultValue);
             }
             diagnostic = direction == Direction.ToWire ? input : resultValue;
             if(s.TryGetValue("if",out var condition))
             {
-                string branch = Matches(condition,file,diagnostic) ? "then" : "else";
+                string branch = Matches(condition,file,conditionContext ?? diagnostic) ? "then" : "else";
                 if(s.TryGetValue(branch,out var consequence))
                 {
-                    var basis=direction==Direction.ToWire ? input : resultValue;
+                    var basis=input;
                     resultValue=MergeChanges(basis,Evaluate(consequence,file,basis,direction),resultValue);
                 }
             }
             if(s.ContainsKey("x-recursiveScalars")) Extension(diagnostic,1);
-            if(s.TryGetValue("x-maximumDepth",out var depth) && Depth(diagnostic)>depth.IntegerValue) Fail();
+            if(s.TryGetValue("x-maximumDepth",out var depth))
+            {
+                if(Depth(diagnostic)>depth.IntegerValue || DiagnosticSize(diagnostic)>16384) Fail();
+            }
             if(s.ContainsKey("x-streamSequence"))
             {
                 long finalized=long.Parse(diagnostic.Properties["finalizedThrough"].StringValue,CultureInfo.InvariantCulture);
@@ -147,10 +155,27 @@ namespace GamePlatform.Serialization.MessagePack
         {
             if(Equal(original,changed)) return target;
             if(original.Kind==K.Object && changed.Kind==K.Object && target.Kind==K.Object)
-                return V.Object(target.Properties.Select(p=>new KeyValuePair<string,V>(p.Key,MergeChanges(original.Properties[p.Key],changed.Properties[p.Key],p.Value))));
+                return V.OwnedObject(target.Properties.ToDictionary(p=>p.Key,p=>MergeChanges(original.Properties[p.Key],changed.Properties[p.Key],p.Value),StringComparer.Ordinal));
             return changed;
         }
         private static int Depth(V v) => v.Kind==K.Array ? 1+(v.Items.Count==0?0:v.Items.Max(Depth)) : v.Kind==K.Object ? 1+(v.Properties.Count==0?0:v.Properties.Values.Max(Depth)) : 1;
+        private static long DiagnosticSize(V value)
+        {
+            switch(value.Kind)
+            {
+                case K.Null:return 4; case K.Boolean:return value.BooleanValue?4:5;
+                case K.Integer:return value.IntegerValue.ToString(CultureInfo.InvariantCulture).Length;
+                case K.String:
+                    long bytes=2+V.Utf8.GetByteCount(value.StringValue);
+                    foreach(char c in value.StringValue)
+                        if(c=='"'||c=='\\') bytes++;
+                        else if(c<32) bytes+=(c=='\b'||c=='\f'||c=='\n'||c=='\r'||c=='\t')?1:5;
+                    return bytes;
+                case K.Array:return 2+Math.Max(0,value.Items.Count-1)+value.Items.Sum(DiagnosticSize);
+                case K.Object:return 2+Math.Max(0,value.Properties.Count-1)+value.Properties.Sum(p=>DiagnosticSize(V.String(p.Key))+1+DiagnosticSize(p.Value));
+                default:throw new QualificationCodecException("Diagnostic JSON does not accept binary values.");
+            }
+        }
         private static void Bound(IReadOnlyDictionary<string,V> s,string key,long value,bool minimum) { if(s.TryGetValue(key,out var n) && (minimum ? value<n.IntegerValue : value>n.IntegerValue)) Fail(); }
         internal static bool Equal(V a,V b)
         {

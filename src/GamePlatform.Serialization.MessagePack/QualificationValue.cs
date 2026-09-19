@@ -46,6 +46,9 @@ namespace GamePlatform.Serialization.MessagePack
         public string StringValue => Kind == QualificationValueKind.String ? (string)value! : throw new InvalidOperationException();
         public byte[] BinaryValue => (byte[])BinaryBytes.Clone();
         internal byte[] BinaryBytes => Kind == QualificationValueKind.Binary ? (byte[])value! : throw new InvalidOperationException();
+        internal static QualificationValue OwnedBinary(byte[] bytes) => new QualificationValue(QualificationValueKind.Binary,bytes);
+        internal static QualificationValue OwnedArray(QualificationValue[] items) => new QualificationValue(QualificationValueKind.Array,System.Array.AsReadOnly(items));
+        internal static QualificationValue OwnedObject(Dictionary<string,QualificationValue> properties) => new QualificationValue(QualificationValueKind.Object,new ReadOnlyDictionary<string,QualificationValue>(properties));
         public IReadOnlyList<QualificationValue> Items => Kind == QualificationValueKind.Array ? (IReadOnlyList<QualificationValue>)value! : throw new InvalidOperationException();
         public IReadOnlyDictionary<string, QualificationValue> Properties => Kind == QualificationValueKind.Object ? (IReadOnlyDictionary<string, QualificationValue>)value! : throw new InvalidOperationException();
     }
