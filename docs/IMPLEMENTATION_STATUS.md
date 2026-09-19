@@ -2,8 +2,9 @@
 
 ## CL-010 private pull/bootstrap increment — 2026-09-19
 
-Source commit `a9d23c611763939466f33f3817624deffe871470`
-implements the bounded Windows x64 storage and portable policy slice against
+Effective source commit `a7831cc40a46a2555e9fef8fbd374871a3536f9c` (initial source
+`a9d23c611763939466f33f3817624deffe871470`) implements the bounded Windows x64
+storage and portable policy slice against
 backend BE-012 source `048d3e427a5c78e4cdefd4a1cb82b0ee07bd695b`
 and BE-013/coordination head
 `e1e687605e9f5d2fc51aa6be15d804c0f1248e96`. Distinct remote, storage and SQL
@@ -11,11 +12,15 @@ models now support resumable all-page bootstrap staging, final atomic
 confirmed-view/cursor/Ready installation, ordered fixed-watermark pull pages,
 server-cursor-only invisible-prefix advancement, revision-aware view removal
 and tombstones, and reset replacement that preserves immutable commands and
-rebuilds overlays inside the transaction. Push finalization remains unable to
-advance the pull checkpoint.
+rebuilds overlays inside the transaction. The corrective increment rejects
+cross-page group replay at or before the durable checkpoint, reconciles active
+or retired authoritative stream state with every retained local command before
+Ready, replaces expired staging only after a newly authorized start, and makes
+storage-port collection snapshots immutable. Push finalization remains unable
+to advance the pull checkpoint.
 
-Focused CL-010 tests passed 8/8 and combined CL-007/008/009/010 native SQLite
-regressions passed 29/29. The full SDK suite passed 284/284; locked restore/build
+Focused CL-010 tests passed 14/14 and combined CL-007/008/009/010 native SQLite
+regressions passed 35/35. The full SDK suite passed 290/290; locked restore/build
 covered 18 projects with zero warnings/errors, architecture validation and 33
 script tests passed, and the 52-task/16-ledger/21-wave manifest plus 14 tests
 passed. CL-010 remains `in_progress`: no authenticated pull/bootstrap HTTP

@@ -22,6 +22,8 @@ Gates: A03, A05, A09, A13.
 CL-010 adds durable snapshot staging, a final atomic confirmed-view/cursor/Ready
 install, fixed-watermark private pull checkpoints, revision-aware view removal
 and tombstones, and transaction-borrowed overlay rebuild. Reset replacement
-does not rewrite or delete the immutable outbox. The concrete migration still
+does not rewrite or delete the immutable outbox. Bootstrap Ready additionally
+requires exact authoritative active/retired stream reconciliation with local
+terminal, uncertain and pending command continuity. The concrete migration still
 requires host registry integration; live HTTP/backend and non-Windows evidence
 remain unrun.

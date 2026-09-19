@@ -2,7 +2,9 @@
 
 Date: 2026-09-19
 
-Source commit: `a9d23c611763939466f33f3817624deffe871470`
+Effective source commit: `a7831cc40a46a2555e9fef8fbd374871a3536f9c`
+
+Initial source commit: `a9d23c611763939466f33f3817624deffe871470`
 
 Accepted backend inputs: coordination head
 `e1e687605e9f5d2fc51aa6be15d804c0f1248e96`, BE-012 corrective source
@@ -24,14 +26,26 @@ failure immediately before final installation rolls back the final page and a
 real close/reopen resumes from the prior durable token. Lost remote pages retain
 the old confirmed view and staged continuation.
 
+The corrective review increment compares every incoming feed revision to the
+durable checkpoint across pages, not only to its response neighbor. Bootstrap
+now persists and reconciles the authoritative `active`/`retired`,
+`finalizedThrough` and nullable `nextSequence` stream boundary before Ready.
+Server-ahead state, local gaps, missing terminal results, terminal-ahead state,
+and pending work on a retired stream fail atomically. Accepted, rejected,
+in-flight/uncertain and pending rows remain byte/identity stable. Retired streams
+can install a readable private view but leave command admission disabled.
+Expired staging is replaced only after a new remote start succeeds. Storage
+port collection inputs are defensively copied. Native cases also prove distinct
+view-removal/tombstone rows and their removal by reset replacement.
+
 ## Commands and results
 
 ```text
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter FullyQualifiedName~Cl010PrivateSyncTests --no-restore
-exit 0; 8 passed, 0 failed/skipped/warnings
+exit 0; 14 passed, 0 failed/skipped/warnings
 
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~Cl007|FullyQualifiedName~Cl008AtomicOutboxTests|FullyQualifiedName~Cl009OrderedCommandSenderTests|FullyQualifiedName~Cl010PrivateSyncTests"
-exit 0; 29 passed, 0 failed/skipped/warnings
+exit 0; 35 passed, 0 failed/skipped/warnings
 
 rtk dotnet restore GamePlatform.sln --locked-mode
 exit 0; 18 projects, 0 errors/warnings
@@ -40,7 +54,7 @@ rtk dotnet build GamePlatform.sln -c Release --no-restore
 exit 0; 18 projects, 0 errors/warnings
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
-exit 0; 284 passed, 0 failed/skipped/warnings
+exit 0; 290 passed, 0 failed/skipped/warnings
 
 rtk python scripts/validate.py
 exit 0
