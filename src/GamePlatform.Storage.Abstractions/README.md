@@ -6,4 +6,5 @@ serialized transaction port and neutral typed failures; SQL execution remains a
 concrete SQLite adapter concern. CL-008 adds immutable command drafts, post-
 sequence fingerprinting, admissions and one transaction-bound projection/outbox
 callback. Admission success means local durability only, never backend acceptance
-or pull-checkpoint progress. Gates: A03, A05, A09.
+or pull-checkpoint progress. CL-009 adds a narrow contiguous lease/finalization
+port; terminal delivery state never advances a pull checkpoint. Gates: A03, A05, A09.

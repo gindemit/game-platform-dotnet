@@ -1,5 +1,24 @@
 # Implementation status
 
+## CL-009 ordered sender increment — 2026-09-19
+
+Source commit `6ee33493e2919086331918210d01aa26835243ac` implements
+the dependency-ready local sender foundation over a narrow remote command port.
+Real SQLite transactions lease only the next contiguous sequence, exclude a
+competing sender, retain uncertain deliveries in-flight until lease expiry, and
+atomically persist accepted or terminally rejected results with
+`finalizedThrough`. Known non-delivery/retryable failures release only the same
+immutable operation. No push acknowledgement can touch a pull cursor.
+
+At the clean source commit, focused CL-009 tests passed 5/5 and the full SDK
+suite passed 276/276. Locked restore/build covered 18 projects with zero
+warnings/errors; architecture validation, 33 script tests and the 52-task/
+16-ledger/21-wave manifest validation passed. CL-009 remains `in_progress`:
+the frozen push/receipt HTTP provider, bounded batching/backoff, blocked-auth
+state, real backend/peer fault execution, overlay rejection rebuild,
+restart/process-kill/device/Unity evidence and independent A03/A07/A12 review
+remain open. G3 was not assessed and P4 was not started.
+
 ## CL-012 minimal navigation complete — 2026-09-19
 
 Source commit `010d47c07907baf86d8a1c9396f81cd5628d03d2` completes

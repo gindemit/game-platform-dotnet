@@ -1,0 +1,10 @@
+{
+  "task": "CL-009",
+  "date": "2026-09-19",
+  "source_commit": "6ee33493e2919086331918210d01aa26835243ac",
+  "scope": "windows-x64-real-sqlite-ordered-sender",
+  "status": "in_progress",
+  "counts": {"focused": 5, "full_dotnet": 276, "script": 33, "manifest_tasks": 52, "projects": 18, "warnings": 0, "errors": 0},
+  "proved": ["contiguous lease", "competing-sender exclusion", "durable accepted result", "terminal rejection advances sequence", "known retry releases same identity", "uncertain outcome waits for lease expiry"],
+  "unrun": ["push and receipt HTTP", "real backend peer faults", "batching and backoff", "blocked-auth persistence", "overlay rebuild", "process kill and reopen", "Unity/AOT/device"]
+}
