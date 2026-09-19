@@ -25,5 +25,8 @@ and tombstones, and transaction-borrowed overlay rebuild. Reset replacement
 does not rewrite or delete the immutable outbox. Bootstrap Ready additionally
 requires exact authoritative active/retired stream reconciliation with local
 terminal, uncertain and pending command continuity. The concrete migration still
-requires host registry integration; live HTTP/backend and non-Windows evidence
+belongs to the fixed `SqlitePlatformMigrationRegistry`: the unchanged outbox is
+version 1 and the additive private-sync schema is version 2. Hosts open both new
+and existing scope-owned databases with the complete registry; applied identities
+and checksums are never rewritten. Live HTTP/backend and non-Windows evidence
 remain unrun.

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
@@ -21,7 +22,7 @@ namespace GamePlatform.Tests.Sync.Pull
         private static readonly StorageScope Scope=new StorageScope("test-backend",new PlatformId("01890f3e-7a6b-7c8d-9e0f-102030405060"),new PlatformId("00112233-4455-4677-8899-aabbccddeeff"));
         private static readonly ClientStreamId Stream=new ClientStreamId(Guid.Parse("0199f9a0-1111-7777-8888-999999999999"));
         private static readonly Guid Epoch=Guid.Parse("0199f9a0-aaaa-7777-8888-999999999999");
-        private static readonly IReadOnlyList<SqliteMigration> Migrations=new[]{SqliteOutboxMigration.Create(1),new SqliteMigration(2,"test-overlay",new[]{"CREATE TABLE test_overlay (name TEXT PRIMARY KEY, value INTEGER NOT NULL)"}),SqlitePrivateSyncMigration.Create(3)};
+        private static readonly IReadOnlyList<SqliteMigration> Migrations=SqlitePlatformMigrationRegistry.Migrations.Concat(new[]{new SqliteMigration(3,"test-overlay",new[]{"CREATE TABLE test_overlay (name TEXT PRIMARY KEY, value INTEGER NOT NULL)"})}).ToArray();
 
         [Fact]
         public async Task MultiPageBootstrapIsInvisibleUntilFinalAtomicInstall()
