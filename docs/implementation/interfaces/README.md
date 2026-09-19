@@ -1,6 +1,6 @@
 # CL-001 interface baseline
 
-This baseline freezes responsibility, ownership and dependency direction for P1. It does not add operation schemas, feature implementations or claim Unity/runtime acceptance. Later tasks may add signatures inside these responsibilities only with a reviewed delta.
+This partial P1 baseline freezes responsibility, ownership and dependency direction. It does not add operation schemas, feature implementations or claim Unity/runtime acceptance. [CURRENT_API_INVENTORY.md](CURRENT_API_INVENTORY.md) records exact present signatures and direct/transitive references. Future production signatures are intentionally not frozen before their owning task and G1 reviews; later tasks add them only with a reviewed delta.
 
 ## Portable interface ownership
 
@@ -25,7 +25,7 @@ Every runtime package is deny-by-default in `architecture.json`. A later depende
 
 ## Current signature inventory and deltas
 
-The P1 source still contains compatibility-shaped `PlatformId`, `PlatformResult<T>`, `IFeatureCapability`, byte-only `IBackendGateway`, `IPlatformStore`, `IHttpExecutor`, `IWireCodec` and `ProtocolVersion`. These signatures are inventory, not accepted production implementations. CL-002 owns canonical IDs/results, CL-003 owns reviewed wire shapes, CL-005 owns semantic HTTP composition, CL-007/008 own storage sessions/admission, CL-011 owns snapshots, and CL-014 owns the additive diagnostics API above.
+The P1 source still contains compatibility-shaped `PlatformId`, `PlatformResult<T>`, `IFeatureCapability`, byte-only `IBackendGateway`, `IPlatformStore`, `IHttpExecutor`, `IWireCodec` and `ProtocolVersion`. Their exact declarations and all other public M0 surfaces are recorded in the current API inventory. These signatures are inventory, not accepted production implementations. CL-002 owns canonical IDs/results, CL-003 owns reviewed wire shapes, CL-005 owns semantic HTTP composition, CL-007/008 own storage sessions/admission, CL-011 owns snapshots, and CL-014 owns the additive diagnostics API above.
 
 Compared with M0, the architecture allowlist adds only `Backend.Contracts -> Features.Contracts` and `Storage.Abstractions -> Features.Contracts`. No project currently consumes either permission. The validator now checks actual direct and transitive project references, deny-by-default direct/locked runtime packages, catalog/manifest status agreement and correlated implementation evidence.
 
@@ -36,6 +36,8 @@ Feature states use `stubbed`, `planned`, `implemented`, `unverified` or `blocked
 1. `features.json`, the feature ledger and the owning task identify the same implemented/complete state.
 2. Their evidence lists are byte-for-byte equal and point beneath `docs/implementation/evidence/<task-id>/`.
 3. Each JSON report identifies the task and feature, pins a lowercase 40-character implementation commit, names existing source and test files, and records at least one passing command with a nonzero selected-test count.
+4. Every command references an existing TRX report whose total, executed and passed counters equal the claimed selection and whose failed count is zero.
+5. The catalog cannot mark a feature implemented while its known feature class still derives from `UnavailableFeature`.
 
 This is repository evidence correlation, not independent proof that the reported runtime behavior is correct. Reviewers must inspect the implementation and raw report. Unity, native, device and peer gates stay unverified until their own evidence exists.
 

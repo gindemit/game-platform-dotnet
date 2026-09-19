@@ -8,7 +8,11 @@
     {
       "command": "dotnet test GamePlatform.sln -c Release --no-restore",
       "exitCode": 0,
-      "selectedTests": 12
+      "selectedTests": 1,
+      "testNames": [
+        "GamePlatform.Tests.Features.Accounts.ProvisionTests.FirstLaunchInstallsCompleteBootstrap"
+      ],
+      "reportPath": "docs/implementation/evidence/CL-101/accounts.trx"
     }
   ]
 }
