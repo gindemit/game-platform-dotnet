@@ -1,23 +1,23 @@
 using System;
-using GamePlatform.Transport.Abstractions;
 
 namespace GamePlatform.Serialization.MessagePack
 {
     /// <summary>
-    /// Production transport adapter for the reviewed core wire DTO catalog.
-    /// Desktop qualification does not imply Unity AOT, stripping, device
-    /// packaging or concrete HTTP-host acceptance.
+    /// Desktop-only qualification candidate for the reviewed core wire DTO
+    /// catalog. It deliberately does not implement the production IWireCodec
+    /// port; Unity AOT, stripping, device packaging and host acceptance remain
+    /// required before that port can be made available.
     /// </summary>
-    public sealed class MessagePackWireCodec : IWireCodec
+    public sealed class DesktopQualificationWireCodec
     {
         private readonly TypedQualificationCodec typedCodec;
 
-        public MessagePackWireCodec()
+        public DesktopQualificationWireCodec()
             : this(new TypedQualificationCodec())
         {
         }
 
-        internal MessagePackWireCodec(TypedQualificationCodec typedCodec)
+        internal DesktopQualificationWireCodec(TypedQualificationCodec typedCodec)
         {
             this.typedCodec = typedCodec ?? throw new ArgumentNullException(nameof(typedCodec));
         }

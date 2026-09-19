@@ -12,15 +12,15 @@ using GamePlatform.Wire.Contracts;
 
 namespace GamePlatform.Tests.Serialization
 {
-    public sealed class MessagePackWireCodecTests
+    public sealed class DesktopQualificationWireCodecTests
     {
         private const string ProvisionRequestHex = "83af70726f746f636f6c56657273696f6e01ae696e7374616c6c6174696f6e4964c41000112233445546778899aabbccddeeffae636c69656e7453747265616d4964c41001890f3e7a6b7c8d9e0f102030405060";
         private const string ProvisionResponseHex = "86af70726f746f636f6c56657273696f6e01a76163636f756e7483ae706c6174666f726d557365724964c41000112233445546778899aabbccddeeffa9637265617465644174cf000001a0a9cbc960a87265766973696f6e01aa6d656d6265727368697084a56170704964c41001890f3e7a6b7c8d9e0f102030405060a6737461747573a6616374697665a9637265617465644174cf000001a0a9cbc960a87265766973696f6e01ae636c69656e7453747265616d4964c41001890f3e7a6b7c8d9e0f102030405060ac6e65787453657175656e636501aa73657276657254696d65cf000001a0a9cd53e8";
 
         [Fact]
-        public void ImplementsWirePortAndMatchesApprovedProducerBytes()
+        public void CandidateMatchesApprovedProducerBytes()
         {
-            IWireCodec codec = new MessagePackWireCodec();
+            var codec = new DesktopQualificationWireCodec();
             var request = new ProvisionRequest(
                 Guid.Parse("00112233-4455-4677-8899-aabbccddeeff"),
                 Guid.Parse("01890f3e-7a6b-7c8d-9e0f-102030405060"));
@@ -37,7 +37,7 @@ namespace GamePlatform.Tests.Serialization
         [Fact]
         public void InterfaceUnionRoundTripsWithOpaqueBinaryCursorAndSigned64Values()
         {
-            IWireCodec codec = new MessagePackWireCodec();
+            var codec = new DesktopQualificationWireCodec();
             var token = Convert.ToBase64String(Enumerable.Range(0, 16).Select(value => (byte)value).ToArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
             IPullResponse value = new PullPage(
                 new[] { new PullGroup(long.MaxValue, new IProjectionChange[]
@@ -61,7 +61,7 @@ namespace GamePlatform.Tests.Serialization
         [Fact]
         public void PreservesAbsentAndExplicitNull()
         {
-            IWireCodec codec = new MessagePackWireCodec();
+            var codec = new DesktopQualificationWireCodec();
             var value = new ProfilePatchCommand(long.MaxValue, default, WireOptional<string?>.Present(null), default);
 
             var decoded = codec.Decode<ProfilePatchCommand>(codec.Encode(value));
@@ -75,7 +75,7 @@ namespace GamePlatform.Tests.Serialization
         [Fact]
         public void RejectsUnsupportedTypesNullBodiesAndUnreviewedFields()
         {
-            IWireCodec codec = new MessagePackWireCodec();
+            var codec = new DesktopQualificationWireCodec();
             Assert.Throws<QualificationCodecException>(() => codec.Encode(42));
             Assert.Throws<ArgumentNullException>(() => codec.Decode<ProvisionResponse>(null!));
 
@@ -87,7 +87,7 @@ namespace GamePlatform.Tests.Serialization
         [Fact]
         public void RetainsHostileInputBoundsAndDuplicateKeyRejection()
         {
-            IWireCodec codec = new MessagePackWireCodec();
+            IWireCodec codec = QualificationPort();
             Assert.Throws<QualificationCodecException>(() => codec.Decode<ProvisionRequest>(new byte[262_145]));
 
             var nested = Enumerable.Repeat((byte)0x91, 33).Concat(new byte[] { 0xc0 }).ToArray();
@@ -98,9 +98,9 @@ namespace GamePlatform.Tests.Serialization
         }
 
         [Fact]
-        public async Task ComposesWithProvisioningProviderWithoutQualificationSurface()
+        public async Task TestOnlyBridgeFitsProvisioningProvider()
         {
-            IWireCodec codec = new MessagePackWireCodec();
+            IWireCodec codec = QualificationPort();
             var app = new AppId(Guid.Parse("01890f3e-7a6b-7c8d-9e0f-102030405060"));
             var installation = Guid.Parse("00112233-4455-4677-8899-aabbccddeeff");
             var stream = new ClientStreamId(Guid.Parse("019952d1-0000-7000-8000-000000000003"));
@@ -125,9 +125,10 @@ namespace GamePlatform.Tests.Serialization
         }
 
         [Fact]
-        public async Task ComposesWithPrivateBootstrapProviderWithoutJsonFallback()
+        public async Task TestOnlyBridgeFitsPrivateBootstrapWithoutJsonFallback()
         {
-            IWireCodec codec = new MessagePackWireCodec();
+            var candidate = new DesktopQualificationWireCodec();
+            IWireCodec codec = new TestOnlyQualificationPortAdapter(candidate);
             var app = new AppId(Guid.Parse("01890f3e-7a6b-7c8d-9e0f-102030405060"));
             var account = new PlatformUserId(Guid.Parse("019952d1-0000-7000-8000-000000000004"));
             var stream = new ClientStreamId(Guid.Parse("019952d1-0000-7000-8000-000000000003"));
@@ -138,7 +139,7 @@ namespace GamePlatform.Tests.Serialization
                 token, 9, 2, Guid.Parse("019952d1-0000-7000-8000-000000000005"),
                 new[] { "profile", "progression", "inventory", "wallet", "entitlements" }.Select(name => new BootstrapCollection(name)).ToArray(), token, 100, 10,
                 new CommonStreamState(stream.Value, installation, 7, 8, "active"));
-            var executor = new InlineExecutor(_ => Response(PrivateSyncHttpProvider.MessagePackMediaType, codec.Encode(response)));
+            var executor = new InlineExecutor(_ => Response(PrivateSyncHttpProvider.MessagePackMediaType, candidate.Encode(response)));
             using var refresh = new AuthRefreshCoordinator();
             var provider = new PrivateSyncHttpProvider(app, account, Configuration(), executor, codec, new StaticAuth(), refresh);
 
@@ -152,6 +153,9 @@ namespace GamePlatform.Tests.Serialization
 
         private static BackendHttpConfiguration Configuration() =>
             new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test"));
+
+        private static IWireCodec QualificationPort() =>
+            new TestOnlyQualificationPortAdapter(new DesktopQualificationWireCodec());
 
         private static HttpResponseData Response(string mediaType, byte[] body) =>
             new HttpResponseData(200, new Dictionary<string, string>
@@ -171,6 +175,18 @@ namespace GamePlatform.Tests.Serialization
                 Requests.Add(request);
                 return Task.FromResult(send(request));
             }
+        }
+
+        /// <summary>
+        /// Test-only bridge proving that the desktop candidate fits the provider
+        /// contract. Production source deliberately supplies no such registration.
+        /// </summary>
+        private sealed class TestOnlyQualificationPortAdapter : IWireCodec
+        {
+            private readonly DesktopQualificationWireCodec candidate;
+            public TestOnlyQualificationPortAdapter(DesktopQualificationWireCodec candidate) { this.candidate = candidate; }
+            public byte[] Encode<T>(T value) => candidate.Encode(value);
+            public T Decode<T>(byte[] payload) => candidate.Decode<T>(payload);
         }
 
         private sealed class StaticAuth : IAuthSession
