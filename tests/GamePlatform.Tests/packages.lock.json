@@ -194,6 +194,15 @@
           "GamePlatform.Storage.Abstractions": "[0.1.0-draft, )"
         }
       },
+      "gameplatform.sync": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Backend.Contracts": "[0.1.0-draft, )",
+          "GamePlatform.Core": "[0.1.0-draft, )",
+          "GamePlatform.Diagnostics.Abstractions": "[0.1.0-draft, )",
+          "GamePlatform.Storage.Abstractions": "[0.1.0-draft, )"
+        }
+      },
       "gameplatform.transport.abstractions": {
         "type": "Project"
       },
