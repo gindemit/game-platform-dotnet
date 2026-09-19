@@ -2,16 +2,16 @@
   "protocol_version": 1,
   "run_id": "platform-2026-09-19",
   "track": "client_sdk_and_mrsquare",
-  "phase": "P1",
-  "observed_epoch": 1,
-  "observed_backend_state_commit": "c6aa77054ec63c0ae46fe2113d3add994bf382fb",
-  "handoff_kind": "blocked",
-  "status": "blocked",
+  "phase": "P2",
+  "observed_epoch": 2,
+  "observed_backend_state_commit": "19aef14eaa6ca428775ec7ff7a4f69cfeab0e20a",
+  "handoff_kind": "phase_complete",
+  "status": "ready_for_sync",
   "quiescent": true,
-  "next_gate": "G1",
+  "next_gate": "G2",
   "implementation_commits": {
-    "sdk": "72a613a2250f7454381ec969d6ec5b42025ec4cc",
-    "unity": "bc53723a8eec3521dd7bd8e05eaa726fca29795d"
+    "sdk": "73435cccd86ca9785a46d56df1fa9bfb8ee0a10e",
+    "unity": "7375251e5302db308198b7956037c1b33e6edfb6"
   },
   "required_repository_keys": [
     "sdk",
@@ -22,114 +22,141 @@
     "sdk": "https://github.com/gindemit/game-platform-dotnet/pull/2",
     "unity": "https://github.com/gindemit/MrSquareUnity/pull/3"
   },
-  "completed_task_ids": [],
-  "partial_task_ids": [
+  "completed_task_ids": [
+    "CL-002",
     "CL-003",
-    "INT-001"
+    "CL-013"
   ],
-  "completed_scope": {
-    "CL-003": "Client preparation: 259 candidate.1 field/branch C#/TS mappings, all ten GameplayOutcome fields, G1-R1 through G1-R5 consumer preservation and schema acceptance expectations, immutable candidate/hash reviewer and independent boundary checks. Revised candidate review remains blocked.",
-    "Unity": "Read-only inspection of unchanged bc53723a8eec3521dd7bd8e05eaa726fca29795d; no Unity changes or fresh runtime acceptance. Prior INT-001 evidence and blockers retained."
-  },
-  "evidence": [
-    {
-      "repository": "sdk",
-      "path": "docs/implementation/evidence/CL-003/epoch1/verification.json",
-      "command": "rtk proxy python docs/implementation/evidence/CL-003/verify_epoch1.py",
-      "exit_code": 0,
-      "tests": {
-        "review_tool": 10,
-        "candidate_schema_cases": 49,
-        "client_boundary_cases": 16,
-        "validator": 19,
-        "manifest": 14
-      },
-      "note": "Raw argv/stdout/stderr and exits adjacent. Architecture/mirror/manifest validation passed. Diagnostic schemas/tooling only; runtime suites not rerun."
-    },
-    {
-      "repository": "sdk",
-      "path": "docs/implementation/evidence/CL-003/epoch1/candidate-review.json",
-      "note": "Immutable backend SHA, artifact digests and proposed field/branch mappings; candidate.1 remains unapproved."
-    },
-    {
-      "repository": "sdk",
-      "path": "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md",
-      "note": "Source-grounded outcome mapping, snapshot/stream/receipt recovery, KAT and aggregate allocation/compression expectations."
-    },
-    {
-      "repository": "sdk",
-      "path": "docs/implementation/evidence/CL-003/epoch1/README.md",
-      "note": "Findings and bounded next action. No revised candidate, schema approval, independent review or product approval claimed."
-    },
-    {
-      "repository": "unity",
-      "path": "Reports/PlatformIntegration/INT-001/inventory.json",
-      "note": "Prior immutable evidence at unchanged Unity SHA; not regenerated. Existing documentation/editor/device limitations retained."
-    }
-  ],
-  "artifact_sha256": {
-    "contracts/platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
-    "contracts/v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5",
-    "docs/implementation/evidence/CL-003/epoch1/candidate-review.json": "addfdf78af2c98063a1edfd6f08360dbee623ef52205e8631c595de977a0a028",
-    "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md": "0eb4ac5689818c6faef9941afc47bb4a87d34d07184ddfc74716d6230a1bd7ae",
-    "docs/implementation/evidence/CL-003/epoch1/verification.json": "f14b57276d673538277030dca079c0826e47893223cba3b473c9bb6df25289f1"
-  },
-  "contract_proposals": [
-    {
-      "path": "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md",
-      "backend_task": "BE-002",
-      "client_task": "CL-003",
-      "approval": "pending_G1",
-      "finding": "Fetched epoch 1 still publishes candidate.1. Corrected immutable candidate required before exact revised mappings and semantic acceptance can complete. G1-R1 through G1-R5 remain open."
-    }
-  ],
-  "blockers": [
-    {
-      "scope": "CL-003/G1",
-      "reason": "Corrected immutable backend candidate is not yet published on the fetched execution branch. Candidate.1 passes schema fixtures but retains G1-R1 through G1-R5 semantic gaps. No mirror approval or P2 release."
-    },
-    {
-      "scope": "INT-001 and later Unity/device gates",
-      "reason": "Pinned Unity 6000.5.3f1 unavailable; effective settings, EditMode/PlayMode and fresh visual/device evidence unrun."
-    },
-    {
-      "scope": "Unity documentation check",
-      "reason": "123 pre-existing maintenance move-map path errors; raw failing evidence committed, not waived or reported passing."
-    },
-    {
-      "scope": "CL-015/INT-009",
-      "reason": "Full native bundle, exact SQLite3MultipleCiphers notice inclusion, macOS/Unity/AOT/Android device qualification pending."
-    },
-    {
-      "scope": "Live migration/rewards",
-      "reason": "DEC-LEGACY-TRUST and DEC-CONTENT-VALIDATION remain unresolved. No historical reward replay or live grant activation."
-    }
-  ],
-  "unrun_gates": [
-    "Corrected immutable candidate review",
-    "G1",
-    "G2",
-    "G3",
-    "G4",
-    "A01-A13 full production acceptance",
-    "Unity EditMode/PlayMode/effective settings",
-    "IL2CPP/AOT/stripping and physical device",
-    "CSharp-TypeScript runtime exchange",
-    "PostgreSQL and live backend/game journey",
-    "provider sandbox and independent second-game reuse",
-    "Runtime dotnet/native suites not rerun: no runtime source change"
-  ],
-  "requested_sync_actions": [
-    "Backend owner: publish only the epoch-1 BE-002 corrected candidate and quiescent P1 handoff.",
-    "Resume CL-003 against that immutable SHA to complete exact revised mappings and schema/semantic acceptance; preserve historical candidate.1 evidence and do not repin contracts.",
-    "Run backend CODEX_SYNC.md only after BOTH tracks stop. This blocked handoff is insufficient to pass G1: inspect the corrected candidate and remaining client review first.",
-    "Keep runtime compatibility null, product/editor/device blockers explicit and P2 unreleased until actual G1 approval."
-  ],
-  "note": "Only authorized CL-003 preparation changed. No backend or Unity writes, mirror repin, DTO/codec implementation, main merge, publication, deployment or distribution. Single client owner; no subagents or independent review claimed. Locks released. STOPPED AT G1: revised-candidate review blocked.",
-  "prior_handoff_commit": "42fd2b0c5d349da0cfb2d63b8e543f194dd00bb6",
   "previous_completed_task_ids": [
     "CL-001",
     "CL-006",
     "CL-014"
-  ]
+  ],
+  "partial_task_ids": [
+    "CL-004",
+    "CL-016",
+    "INT-001",
+    "INT-002"
+  ],
+  "completed_scope": {
+    "CL-002": "Canonical typed UUID/scope primitives and compatibility-preserving outcomes/state; original 14 Platform tests pass against canonical SDK types.",
+    "CL-003": "G1 schema/mirror plus 64 immutable DTO shapes,12 unions,explicit presence and generated schema mapping. No canonical delta.",
+    "CL-013": "14-assembly managed bundle with dependency closure,symbols,notices,hashes and identical retained build inventories. Qualification MessagePack excluded pending CL-015.",
+    "CL-004": "Qualification-only bounded MessagePack,typed mapping,canonical fingerprints and hostile-input checks; actual G2 peer/AOT remains unverified.",
+    "CL-016": "Producer/consumer and raw encode/decode CLI;34 actual CSharp MessagePack fixtures plus24 fingerprints; service/fault modes unavailable.",
+    "INT-002": "Real Core/Features import and duplicate removal,exact artifact verifier,selected Unity7/7 EditMode with both scene assets; visual/control PlayMode and tested rollback remain unrun."
+  },
+  "evidence": [
+    {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/P2/results.json",
+      "command": "rtk proxy python docs/implementation/evidence/verify_p2.py",
+      "exit_code": 0,
+      "tests": {
+        "dotnet": 222,
+        "validator_and_packaging": 33,
+        "manifest": 14,
+        "schema": 73,
+        "fingerprint": 32,
+        "hostile_json": 5,
+        "cli": 6,
+        "legacy_platform": 14
+      },
+      "note": "Raw logs/TRX and exact argv; scoped CLI/planning rerun recorded after final probe addition. No skipped .NET tests."
+    },
+    {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/P2/producer.json",
+      "exit_code": 0,
+      "note": "Actual CSharp producer revision b8b60bbe1f3478274d5d2ebd9e8c4a739fdff86c. Backend revision is observed G1 release, not tested runtime."
+    },
+    {
+      "repository": "sdk",
+      "path": "docs/implementation/evidence/CL-013/results.json",
+      "note": "Two byte-identical retained manifests,33 files in each verified;11 packaging tests. Original build stdout unarchived author observation."
+    },
+    {
+      "repository": "unity",
+      "path": "Reports/PlatformIntegration/INT-002/results.json",
+      "tests": {
+        "selected_editmode_baseline": 4,
+        "selected_editmode_import": 7,
+        "platform": 14,
+        "gameplay_domain": 27,
+        "documentation": 57
+      },
+      "note": "Unity6000.5.3f1 actual runner. Headless scene loading not visual/control acceptance.123 existing documentation failures remain."
+    }
+  ],
+  "artifact_sha256": {
+    "contracts/snapshot.json": "7ec4f790219dfcde44308ad86c0fbd8b2527eb3f2116b68541020dd01422bd4b",
+    "tests/acceptance/core-corpus.json": "4c465257b09eb934b0ab8c58cd62e66f9c81480eaf3168508152f1188b117cbe",
+    "src/GamePlatform.Wire.Contracts/dto-catalog.json": "110ea411c91d342edcd3c291fdad2b2db09495bf0e2b56bd1fb76bcd6bd23592",
+    "docs/implementation/evidence/P2/csharp-corpus.json": "c4988f5a1fee3eba832cfcfeed9dc2f561f5a17d0321c5db5afc93ad8d2aabc0",
+    "docs/implementation/evidence/P2/results.json": "1cf3228297be1cd78a1601c80452049b882b5c64a4a22eec477a1cb708c42360",
+    "docs/implementation/evidence/CL-013/results.json": "d6991daedd745becf72d739340a7521b88cdcbd068f84f44b20aa2219e3e808c"
+  },
+  "approved_schema": {
+    "version": "0.2.0-core-schema.1",
+    "canonical_commit": "0109936f0ebf232924cec70adb79c4f790b604bc",
+    "runtime_compatibility": "unverified_pending_G2",
+    "mirror_unchanged": true
+  },
+  "consumer_bundle": {
+    "source_commit": "5dfac45875fa4b829e9e04729938eb4a984e1db5",
+    "source_branch": "impl/cl013-p2",
+    "manifest_sha256": "acfbf1f679b79186cf074ca6e9dc9917835dad86ff7d54af134825eb4ee092be",
+    "imported": [
+      "GamePlatform.Core",
+      "GamePlatform.Features.Contracts"
+    ]
+  },
+  "contract_proposals": [],
+  "blockers": [
+    {
+      "scope": "G2",
+      "reason": "Fetched backend handoff still P1/epoch1 while backend P2 work is active; need committed matching quiescent P2 handoff and real TypeScript codec producer/consumer."
+    },
+    {
+      "scope": "G2 live-slice schemas",
+      "reason": "Minimal catalog/value/reward/progression delta must be proposed by backend and reviewed at synchronization before P3."
+    },
+    {
+      "scope": "INT-001/INT-002",
+      "reason": "Effective-settings/full inventory acceptance,visual/control PlayMode and tested import rollback remain unrun. Existing PlayMode tests delete normal PlayerPrefs keys and were not run unsafely."
+    },
+    {
+      "scope": "Unity documentation",
+      "reason": "123 pre-existing maintenance path failures remain; populated Library also exposes a non-UTF8 scanner failure."
+    },
+    {
+      "scope": "CL-015/INT-009",
+      "reason": "Complete native/codec bundle,IL2CPP/AOT/stripping and device qualification pending."
+    },
+    {
+      "scope": "Live migration/rewards",
+      "reason": "DEC-LEGACY-TRUST and DEC-CONTENT-VALIDATION unresolved; no historical reward replay or live grants."
+    }
+  ],
+  "unrun_gates": [
+    "G2 both-direction real CSharp-TypeScript exchange",
+    "G2 live-slice schema approval",
+    "G3",
+    "G4",
+    "A01-A13 full production acceptance",
+    "Unity visual/control PlayMode and tested rollback",
+    "IL2CPP/AOT/device",
+    "live PostgreSQL/backend/game journey",
+    "provider sandboxes",
+    "independent second-game reuse"
+  ],
+  "requested_sync_actions": [
+    "After BOTH implementation tracks stop, run backend CODEX_SYNC.md; do not infer quiescence from the old backend P1 handoff.",
+    "Use tests/acceptance/README.md to produce/consume exact core corpus in both directions at actual runtime SHAs; exercise compact/extreme/hostile binary probes with raw encode/decode CLI and preserve command logs.",
+    "Review and pin proposed minimal live-slice schema deltas before P3; preserve schema approval versus runtime interoperability distinction.",
+    "Keep production codec unavailable until required acceptance; retain partial CL-004/CL-016/INT-001/INT-002 and all native/device/product blockers.",
+    "Release P3 only through committed G2 synchronization evidence. Remaining transport/storage/lifecycle work stays dependency-ready scope, not claimed completed."
+  ],
+  "prior_handoff_commit": "3992ad1358d728a9d4b9cfbde9eaac9a2273d845",
+  "note": "Three actual child agents reused across author,consumer,packaging and independent-review roles. All stopped. SDK/Unity execution branches published; no backend edits,main merge,distribution,deployment or package publication. STOPPED AT G2."
 }
