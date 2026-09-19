@@ -48,7 +48,7 @@ namespace GamePlatform.Backend.Contracts.Remote
         public BootstrapStart(ClientStreamId streamId, string streamState, long finalizedThrough, long? nextSequence, long committedThrough, long visibilityGeneration, Guid logEpoch, IReadOnlyList<SnapshotCollection> collections, byte[] session, byte[] firstPage, long expiresAt)
         {
             if (!streamId.IsValid || (streamState!="active"&&streamState!="retired") || finalizedThrough < 0 || committedThrough < 0 || visibilityGeneration < 0 || logEpoch == Guid.Empty) throw new ArgumentException("Invalid bootstrap boundary.");
-            if(finalizedThrough==long.MaxValue ? nextSequence!=null : nextSequence==null||nextSequence<=0||nextSequence!=finalizedThrough+1)throw new ArgumentException("Invalid authoritative stream sequence boundary.");
+            if(streamState=="retired" ? nextSequence!=null : finalizedThrough==long.MaxValue||nextSequence==null||nextSequence<=0||nextSequence!=finalizedThrough+1)throw new ArgumentException("Invalid authoritative stream sequence boundary.");
             ValidateToken(session, nameof(session)); ValidateToken(firstPage, nameof(firstPage));
             if (collections == null) throw new ArgumentNullException(nameof(collections));
             if (expiresAt < 0 || expiresAt > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(expiresAt));

@@ -103,8 +103,39 @@ namespace GamePlatform.Tests.Sync.Pull
         [Fact]
         public async Task RetiredStreamDisablesCommandsAndRejectsPendingWork()
         {
-            using(var files=new TemporaryDatabase()){var db=await Open(files.Path);var store=Store(db);await store.BeginBootstrapAsync(Boundary(5,Token(1),"retired",0,1),CancellationToken.None);await store.StageBootstrapPageAsync(Page(Token(1),Token(1),5,false,null,Token(3)),CancellationToken.None);Assert.Equal(0,await Scalar(db,"SELECT ready FROM gp_stream_state WHERE singleton=1"));Assert.Equal(5,(await store.GetPullCheckpointAsync(CancellationToken.None)).CommittedThrough);await Dispose(db);}
-            using(var files=new TemporaryDatabase()){var db=await Open(files.Path);await ConfigureStream(db,0,2,"pending");var store=Store(db);await store.BeginBootstrapAsync(Boundary(5,Token(1),"retired",0,1),CancellationToken.None);await Assert.ThrowsAsync<StorageException>(()=>store.StageBootstrapPageAsync(Page(Token(1),Token(1),5,false,null,Token(3)),CancellationToken.None));Assert.Equal(1,await Scalar(db,"SELECT COUNT(*) FROM gp_outbox WHERE delivery_state='pending'"));await Dispose(db);}
+            using(var files=new TemporaryDatabase()){var db=await Open(files.Path);var store=Store(db);await store.BeginBootstrapAsync(Boundary(5,Token(1),"retired",0,null),CancellationToken.None);await store.StageBootstrapPageAsync(Page(Token(1),Token(1),5,false,null,Token(3)),CancellationToken.None);Assert.Equal(0,await Scalar(db,"SELECT ready FROM gp_stream_state WHERE singleton=1"));Assert.Equal(5,(await store.GetPullCheckpointAsync(CancellationToken.None)).CommittedThrough);await Dispose(db);}
+            using(var files=new TemporaryDatabase()){var db=await Open(files.Path);await ConfigureStream(db,0,2,"pending");var store=Store(db);await store.BeginBootstrapAsync(Boundary(5,Token(1),"retired",0,null),CancellationToken.None);await Assert.ThrowsAsync<StorageException>(()=>store.StageBootstrapPageAsync(Page(Token(1),Token(1),5,false,null,Token(3)),CancellationToken.None));Assert.Equal(1,await Scalar(db,"SELECT COUNT(*) FROM gp_outbox WHERE delivery_state='pending'"));await Dispose(db);}
+        }
+
+        [Fact]
+        public async Task FrozenStreamBoundaryRejectsRetiredSuccessorAndExhaustedActive()
+        {
+            Assert.Throws<ArgumentException>(()=>new BootstrapStart(Stream,"retired",0,1,5,1,Epoch,Collections(),Token(1),Token(1),1000));
+            Assert.Throws<ArgumentException>(()=>new BootstrapStart(Stream,"active",long.MaxValue,null,5,1,Epoch,Collections(),Token(1),Token(1),1000));
+            Assert.Null(new BootstrapStart(Stream,"retired",0,null,5,1,Epoch,Collections(),Token(1),Token(1),1000).NextSequence);
+            using var files=new TemporaryDatabase();var db=await Open(files.Path);var store=Store(db);await Assert.ThrowsAsync<StorageException>(()=>store.BeginBootstrapAsync(Boundary(5,Token(1),"retired",0,1),CancellationToken.None));await Assert.ThrowsAsync<StorageException>(()=>store.BeginBootstrapAsync(Boundary(5,Token(1),"active",long.MaxValue,null),CancellationToken.None));await Dispose(db);
+        }
+
+        [Fact]
+        public async Task ForeignStreamOutboxRowRollsBackBootstrapAndPreservesInstalledState()
+        {
+            using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);await InsertCommandState(db,"0199f9a0-dddd-7777-8888-999999999999",0,2,"pending");await AssertRejectedInstallPreservesReady(db,Boundary(10,Token(7),"active",0,1));await Dispose(db);
+        }
+
+        [Theory]
+        [InlineData("pending")]
+        [InlineData("in_flight")]
+        public async Task NonterminalAtOrBelowServerFinalRollsBackAndPreservesInstalledState(string state)
+        {
+            using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);await InsertCommandState(db,Stream.ToString(),1,2,state);await AssertRejectedInstallPreservesReady(db,Boundary(10,Token(7),"active",1,2));await Dispose(db);
+        }
+
+        [Theory]
+        [InlineData("accepted")]
+        [InlineData("terminal_rejected")]
+        public async Task TerminalBeyondServerFinalRollsBackAndPreservesInstalledState(string state)
+        {
+            using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);await InsertCommandState(db,Stream.ToString(),0,2,state);await AssertRejectedInstallPreservesReady(db,Boundary(10,Token(7),"active",0,1));await Dispose(db);
         }
 
         [Fact]
@@ -121,12 +152,15 @@ namespace GamePlatform.Tests.Sync.Pull
 
         private static BootstrapBoundary Boundary(long through,byte[] first,string state="active",long finalized=0,long? next=1)=>new BootstrapBoundary(Stream,state,finalized,next,through,1,Epoch,1000,new[]{"profile","progression","inventory","wallet","entitlements"},Token(1),first);
         private static BootstrapStart Bootstrap(long through,byte[] first)=>new BootstrapStart(Stream,"active",0,1,through,1,Epoch,new[]{new SnapshotCollection("profile",1,true),new SnapshotCollection("progression",1,true),new SnapshotCollection("inventory",1,true),new SnapshotCollection("wallet",1,true),new SnapshotCollection("entitlements",1,true)},Token(1),first,1000);
+        private static IReadOnlyList<SnapshotCollection> Collections()=>new[]{new SnapshotCollection("profile",1,true),new SnapshotCollection("progression",1,true),new SnapshotCollection("inventory",1,true),new SnapshotCollection("wallet",1,true),new SnapshotCollection("entitlements",1,true)};
         private static StagedBootstrapPage Page(byte[] session,byte[] requested,long through,bool more,byte[]? next,byte[]? cursor,params StoredProjectionMutation[] entities)=>new StagedBootstrapPage(session,requested,through,entities,more,next,cursor);
         private static BootstrapPage PageRemote(byte[] session,long through,bool more,byte[]? next,byte[]? cursor,params RemoteProjectionMutation[] entities)=>new BootstrapPage(session,through,entities,more,next,cursor);
         private static StoredProjectionMutation Mutation(string collection,string key,long revision,byte value)=>new StoredProjectionMutation(collection,key,revision,StoredProjectionKind.Upsert,new[]{value});
         private static byte[] Token(byte value){var token=new byte[12];Array.Fill(token,value);return token;}
         private static async Task<SqliteDatabase> Open(string path){var db=await SqliteDatabase.OpenAsync(path,Scope,Migrations,CancellationToken.None);await db.ExecuteAsync(Scope,t=>{var s=(SqliteTransactionSession)t;if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_stream_state")==0)s.Execute("INSERT INTO gp_stream_state VALUES (1,?,?,?,?,0,1,0,0)",Scope.BackendNamespace,Scope.AppId.Value,Scope.AccountId.Value,Stream.ToString());return true;},CancellationToken.None);return db;}
         private static Task<bool> ConfigureStream(SqliteDatabase db,long finalized,long next,params string[] states)=>db.ExecuteAsync(Scope,t=>{var s=(SqliteTransactionSession)t;for(var i=0;i<states.Length;i++){var sequence=i+1;s.Execute("INSERT INTO gp_outbox(operation_id,backend_namespace,app_id,account_id,client_stream_id,sequence,business_run_id,operation_kind,schema_version,fingerprint_version,semantic_body,fingerprint,local_revision,delivery_state,leased_until,terminal_result) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",Guid.Parse($"0199f9a0-cccc-7777-8888-{sequence:D12}").ToString(),Scope.BackendNamespace,Scope.AppId.Value,Scope.AccountId.Value,Stream.ToString(),sequence,"run-"+sequence,"profile.patch",1,1,new byte[]{1},new byte[]{2},sequence,states[i],states[i]=="in_flight"?(object)999:null!,states[i]=="accepted"||states[i]=="terminal_rejected"?(object)new byte[]{3}:null!);}s.Execute("UPDATE gp_stream_state SET finalized_through=?,next_sequence=?,local_revision=? WHERE singleton=1",finalized,next,states.Length);return true;},CancellationToken.None);
+        private static Task<bool> InsertCommandState(SqliteDatabase db,string rowStream,long finalized,long next,string state)=>db.ExecuteAsync(Scope,t=>{var s=(SqliteTransactionSession)t;s.Execute("INSERT INTO gp_outbox(operation_id,backend_namespace,app_id,account_id,client_stream_id,sequence,business_run_id,operation_kind,schema_version,fingerprint_version,semantic_body,fingerprint,local_revision,delivery_state,leased_until,terminal_result) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)","0199f9a0-eeee-7777-8888-000000000001",Scope.BackendNamespace,Scope.AppId.Value,Scope.AccountId.Value,rowStream,1,"review-run","profile.patch",1,1,new byte[]{1},new byte[]{2},1,state,state=="in_flight"?(object)999:null!,state=="accepted"||state=="terminal_rejected"?(object)new byte[]{3}:null!);s.Execute("UPDATE gp_stream_state SET finalized_through=?,next_sequence=?,local_revision=1 WHERE singleton=1",finalized,next);return true;},CancellationToken.None);
+        private static async Task AssertRejectedInstallPreservesReady(SqliteDatabase db,BootstrapBoundary boundary){var store=Store(db);await store.BeginBootstrapAsync(boundary,CancellationToken.None);await Assert.ThrowsAsync<StorageException>(()=>store.StageBootstrapPageAsync(Page(Token(1),Token(7),10,false,null,Token(8),Mutation("wallet","replacement",10,10)),CancellationToken.None));var checkpoint=await store.GetPullCheckpointAsync(CancellationToken.None);Assert.Equal(5,checkpoint.CommittedThrough);Assert.Equal(Token(3),checkpoint.CopyCursor());Assert.Equal(1,await Scalar(db,"SELECT ready FROM gp_stream_state WHERE singleton=1"));Assert.Equal(1,await Scalar(db,"SELECT COUNT(*) FROM gp_confirmed_projection WHERE entity_key='self'"));Assert.Equal(0,await Scalar(db,"SELECT COUNT(*) FROM gp_confirmed_projection WHERE entity_key='replacement'"));}
         private static SqlitePrivateSyncStore Store(SqliteDatabase db)=>new SqlitePrivateSyncStore(db,Scope,_=>{});
         private static async Task<SqliteDatabase> OpenReady(string path){var db=await Open(path);var store=Store(db);await store.BeginBootstrapAsync(Boundary(5,Token(1)),CancellationToken.None);await store.StageBootstrapPageAsync(Page(Token(1),Token(1),5,false,null,Token(3),Mutation("profile","self",1,1)),CancellationToken.None);return db;}
         private static Task<int> Scalar(SqliteDatabase db,string sql)=>db.ExecuteAsync(Scope,t=>((SqliteTransactionSession)t).ExecuteScalar<int>(sql),CancellationToken.None);
