@@ -2,12 +2,21 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);SYSLIB0054</NoWarn>
 </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../GamePlatform.Core/GamePlatform.Core.csproj" />
     <ProjectReference Include="../GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Vendor/LICENSE.unity-sqlite-net.txt" Pack="true" PackagePath="licenses/" />
+    <None Update="Vendor/LICENSE.sqlite-net.txt" Pack="true" PackagePath="licenses/" />
+    <None Update="Vendor/LICENSE.SQLite3MultipleCiphers.txt" Pack="true" PackagePath="licenses/" />
+    <None Update="Vendor/README.md" Pack="true" PackagePath="licenses/" />
   </ItemGroup>
 
 </Project>
