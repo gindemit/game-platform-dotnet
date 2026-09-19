@@ -174,7 +174,7 @@
   "p3_progress": {
     "status": "in_progress",
     "observed_backend_head": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
-    "sdk_head": "c41e7aaa6539858cb333a181b0ea2271ff9fdc7b",
+    "sdk_head": "986ff67c6813e82806037486efd33bd1952fa47a",
     "unity_head": "84c2b1137a8dbde497f22495910c9117d3024c5f",
     "source_commits": {
       "CL-007": "91a67c7805ff59bc3b0ca286fddc2a5124291188",
@@ -187,10 +187,10 @@
     "evidence_commits": {
       "CL-007": "1dce23b98c425e8d5d0178b04d22deb5eba307a4",
       "CL-008": "10a88f013639896a41a40339515918e75abeccde",
-      "CL-005": "c41e7aaa6539858cb333a181b0ea2271ff9fdc7b",
+      "CL-005": "986ff67c6813e82806037486efd33bd1952fa47a",
       "CL-012": "6b67b1e38a90583370cf022ad482f52ce41edeee",
       "CL-009": "9207d5d",
-      "CL-010": "c41e7aaa6539858cb333a181b0ea2271ff9fdc7b"
+      "CL-010": "986ff67c6813e82806037486efd33bd1952fa47a"
     },
     "test_commits": {
       "CL-010": "6462d471d498eb92c4a773cd008e979924afd6dc"
