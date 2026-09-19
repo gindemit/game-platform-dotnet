@@ -5,8 +5,8 @@
     "GamePlatform.Core": [],
     "GamePlatform.Diagnostics.Abstractions": [],
     "GamePlatform.Features.Contracts": ["GamePlatform.Core"],
-    "GamePlatform.Backend.Contracts": ["GamePlatform.Core"],
-    "GamePlatform.Storage.Abstractions": ["GamePlatform.Core"],
+    "GamePlatform.Backend.Contracts": ["GamePlatform.Core", "GamePlatform.Features.Contracts"],
+    "GamePlatform.Storage.Abstractions": ["GamePlatform.Core", "GamePlatform.Features.Contracts"],
     "GamePlatform.Features": ["GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Features.Contracts", "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions"],
     "GamePlatform.Sync": ["GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions"],
     "GamePlatform.Navigation": ["GamePlatform.Core"],
@@ -18,6 +18,23 @@
     "GamePlatform.Serialization.MessagePack": ["GamePlatform.Core", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"],
     "GamePlatform.Serialization.Json": ["GamePlatform.Core", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"]
   },
+  "allowedRuntimePackages": {
+    "GamePlatform.Core": [],
+    "GamePlatform.Diagnostics.Abstractions": [],
+    "GamePlatform.Features.Contracts": [],
+    "GamePlatform.Backend.Contracts": [],
+    "GamePlatform.Storage.Abstractions": [],
+    "GamePlatform.Features": [],
+    "GamePlatform.Sync": [],
+    "GamePlatform.Navigation": [],
+    "GamePlatform.Features.Presentation": [],
+    "GamePlatform.Wire.Contracts": [],
+    "GamePlatform.Transport.Abstractions": [],
+    "GamePlatform.Transport.Http": [],
+    "GamePlatform.Storage.Sqlite": [],
+    "GamePlatform.Serialization.MessagePack": [],
+    "GamePlatform.Serialization.Json": []
+  },
   "forbiddenRuntimePackages": ["UnityEngine", "Microsoft.Data.Sqlite", "VContainer", "Cysharp.Threading.Tasks"],
-  "status": "m0_scaffold"
+  "status": "interface_baseline"
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the M0 repository topology, catalogs, references and protocol pins."""
+"""Validate repository topology, truthful feature status, references and protocol pins."""
 from __future__ import annotations
 
 import hashlib
@@ -21,6 +21,7 @@ FEATURES = {
     "remote-config", "inbox",
 }
 FEATURE_DIRS = {"reward-fulfillment": "RewardFulfillment", "remote-config": "RemoteConfig"}
+FEATURE_STATUSES = {"stubbed", "planned", "implemented", "unverified", "blocked"}
 
 
 def read_json(path: Path):
@@ -37,6 +38,115 @@ def project_references(project: Path) -> set[str]:
     return {Path(node.attrib["Include"].replace("\\", "/")).stem for node in root.findall(".//ProjectReference")}
 
 
+def package_references(project: Path) -> set[str]:
+    root = ET.parse(project).getroot()
+    return {node.attrib["Include"] for node in root.findall(".//PackageReference")}
+
+
+def locked_packages(lock_file: Path) -> set[str]:
+    lock = read_json(lock_file)
+    return {
+        package
+        for framework in lock.get("dependencies", {}).values()
+        for package, metadata in framework.items()
+        if metadata.get("type") != "Project"
+    }
+
+
+def transitive_references(project: str, graph: dict[str, set[str]]) -> set[str]:
+    result: set[str] = set()
+    pending = list(graph.get(project, set()))
+    while pending:
+        dependency = pending.pop()
+        if dependency not in result:
+            result.add(dependency)
+            pending.extend(graph.get(dependency, set()))
+    return result
+
+
+def evidence_path(root: Path, relative: object, task_id: str) -> Path | None:
+    if not isinstance(relative, str) or not relative or "\\" in relative:
+        return None
+    candidate = Path(relative)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return None
+    required_parent = Path("docs") / "implementation" / "evidence" / task_id
+    if candidate.parts[:len(required_parent.parts)] != required_parent.parts:
+        return None
+    resolved = (root / candidate).resolve()
+    try:
+        resolved.relative_to(root.resolve())
+    except ValueError:
+        return None
+    return resolved
+
+
+def existing_repository_file(root: Path, relative: object) -> bool:
+    if not isinstance(relative, str) or not relative or "\\" in relative:
+        return False
+    candidate = Path(relative)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return False
+    resolved = (root / candidate).resolve()
+    try:
+        resolved.relative_to(root.resolve())
+    except ValueError:
+        return False
+    return resolved.is_file()
+
+
+def validate_implemented_evidence(root: Path, entry: dict, ledger: dict, task: dict) -> list[str]:
+    feature_id = entry.get("id", "<unknown>")
+    task_id = ledger.get("sdk_task", "")
+    errors: list[str] = []
+    if ledger.get("sdk_status") != "implemented":
+        errors.append(f"{feature_id}: catalog implemented but manifest ledger is not implemented")
+    if task.get("status") != "complete":
+        errors.append(f"{feature_id}: implemented without completed task {task_id}")
+    catalog_evidence = entry.get("evidence")
+    ledger_evidence = ledger.get("sdk_evidence")
+    task_evidence = task.get("evidence")
+    if not isinstance(catalog_evidence, list) or not catalog_evidence:
+        errors.append(f"{feature_id}: implemented without catalog evidence")
+        return errors
+    if catalog_evidence != ledger_evidence or catalog_evidence != task_evidence:
+        errors.append(f"{feature_id}: catalog, task and ledger evidence must match exactly")
+        return errors
+    for relative in catalog_evidence:
+        path = evidence_path(root, relative, task_id)
+        if path is None:
+            errors.append(f"{feature_id}: invalid evidence path {relative!r}")
+            continue
+        if not path.is_file():
+            errors.append(f"{feature_id}: missing evidence file {relative}")
+            continue
+        try:
+            report = read_json(path)
+            if report.get("taskId") != task_id or report.get("featureId") != feature_id:
+                errors.append(f"{feature_id}: evidence identity mismatch in {relative}")
+            commit = report.get("implementationCommit")
+            if not isinstance(commit, str) or len(commit) != 40 or any(c not in "0123456789abcdef" for c in commit):
+                errors.append(f"{feature_id}: invalid implementation commit in {relative}")
+            source_paths = report.get("sourcePaths")
+            test_paths = report.get("testPaths")
+            commands = report.get("commands")
+            if not isinstance(source_paths, list) or not source_paths or not all(existing_repository_file(root, p) for p in source_paths):
+                errors.append(f"{feature_id}: evidence lacks existing source paths in {relative}")
+            if not isinstance(test_paths, list) or not test_paths or not all(existing_repository_file(root, p) for p in test_paths):
+                errors.append(f"{feature_id}: evidence lacks existing test paths in {relative}")
+            if not isinstance(commands, list) or not commands or not all(
+                isinstance(command, dict)
+                and command.get("exitCode") == 0
+                and isinstance(command.get("selectedTests"), int)
+                and command["selectedTests"] > 0
+                for command in commands
+            ):
+                errors.append(f"{feature_id}: evidence lacks passing non-empty test commands in {relative}")
+        except (OSError, AttributeError, json.JSONDecodeError) as exc:
+            errors.append(f"{feature_id}: invalid evidence report {relative}: {exc}")
+    return errors
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
     required = ["AGENTS.md", "README.md", "SECURITY.md", "LICENSE-NOTICE.md", "GamePlatform.sln",
@@ -51,25 +161,56 @@ def validate(root: Path) -> list[str]:
         if declared != PROJECTS: errors.append(f"architecture projects differ: {sorted(declared ^ PROJECTS)}")
         actual_projects = {p.parent.name for p in (root / "src").glob("*/*.csproj")}
         if actual_projects != PROJECTS: errors.append(f"runtime projects differ: {sorted(actual_projects ^ PROJECTS)}")
+        allowed_packages = architecture["allowedRuntimePackages"]
+        if set(allowed_packages) != PROJECTS:
+            errors.append(f"runtime package policy projects differ: {sorted(set(allowed_packages) ^ PROJECTS)}")
+        declared_graph = {name: set(refs) for name, refs in architecture["projects"].items()}
+        actual_graph: dict[str, set[str]] = {}
         for name in sorted(PROJECTS):
             project = root / "src" / name / f"{name}.csproj"
             tree = ET.parse(project).getroot()
             target = tree.findtext(".//TargetFramework")
             if target != "netstandard2.1": errors.append(f"{name}: target is {target!r}")
             refs = project_references(project)
+            actual_graph[name] = refs
             allowed = set(architecture["projects"][name])
             if not refs <= allowed: errors.append(f"{name}: forbidden references {sorted(refs - allowed)}")
+            packages = package_references(project) | locked_packages(project.parent / "packages.lock.json")
+            forbidden = packages & set(architecture["forbiddenRuntimePackages"])
+            undeclared = packages - set(allowed_packages.get(name, []))
+            if forbidden: errors.append(f"{name}: forbidden runtime packages {sorted(forbidden)}")
+            if undeclared: errors.append(f"{name}: undeclared runtime packages {sorted(undeclared)}")
             if not (project.parent / "README.md").is_file(): errors.append(f"{name}: missing README.md")
+        for name in sorted(PROJECTS):
+            unknown = declared_graph[name] - PROJECTS
+            if unknown: errors.append(f"{name}: unknown allowed references {sorted(unknown)}")
+            actual_transitive = transitive_references(name, actual_graph)
+            allowed_transitive = transitive_references(name, declared_graph)
+            if name in actual_transitive: errors.append(f"{name}: project reference cycle")
+            if name in allowed_transitive: errors.append(f"{name}: allowed reference graph contains a cycle")
+            if not actual_transitive <= allowed_transitive:
+                errors.append(f"{name}: forbidden transitive references {sorted(actual_transitive - allowed_transitive)}")
     except (OSError, KeyError, json.JSONDecodeError, ET.ParseError) as exc:
         errors.append(f"architecture validation failed: {exc}")
 
     try:
         catalog = read_json(root / "features.json")
+        manifest = read_json(root / "docs" / "implementation" / "execution-manifest.json")
+        tasks = {task["id"]: task for task in manifest["tasks"]}
+        ledgers = {row["feature"].lower().replace("rewardfulfillment", "reward-fulfillment").replace("remoteconfig", "remote-config"): row for row in manifest["feature_ledger"]}
         entries = catalog["features"]
         ids = [entry["id"] for entry in entries]
         if set(ids) != FEATURES or len(ids) != len(FEATURES): errors.append("feature identifiers are missing or duplicated")
         for entry in entries:
-            if entry.get("status") != "stubbed": errors.append(f"{entry.get('id')}: M0 status must be stubbed")
+            status = entry.get("status")
+            if status not in FEATURE_STATUSES: errors.append(f"{entry.get('id')}: unknown feature status {status!r}")
+            ledger = ledgers.get(entry["id"])
+            if ledger is None:
+                errors.append(f"{entry['id']}: missing feature ledger row")
+            elif ledger.get("sdk_status") != status:
+                errors.append(f"{entry['id']}: catalog status differs from manifest ledger")
+            if status == "implemented" and ledger is not None:
+                errors.extend(validate_implemented_evidence(root, entry, ledger, tasks.get(ledger.get("sdk_task"), {})))
             dirname = FEATURE_DIRS.get(entry["id"], entry["name"])
             if not (root / "src" / "GamePlatform.Features" / dirname / "README.md").is_file():
                 errors.append(f"{entry['id']}: missing module README")
@@ -95,7 +236,7 @@ def main() -> int:
         for error in errors: print(f"ERROR: {error}")
         print(f"Validation failed with {len(errors)} error(s).")
         return 1
-    print("Validation passed: 15 projects, 16 stubbed features, architecture references, module READMEs, and 2 pinned contract files.")
+    print("Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and 2 pinned contract files.")
     return 0
 
 

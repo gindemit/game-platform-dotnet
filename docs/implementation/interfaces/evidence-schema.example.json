@@ -1,0 +1,14 @@
+{
+  "taskId": "CL-101",
+  "featureId": "accounts",
+  "implementationCommit": "0123456789abcdef0123456789abcdef01234567",
+  "sourcePaths": ["src/GamePlatform.Features/Accounts/AccountsService.cs"],
+  "testPaths": ["tests/GamePlatform.Tests/Features/Accounts/AccountsServiceTests.cs"],
+  "commands": [
+    {
+      "command": "dotnet test GamePlatform.sln -c Release --no-restore",
+      "exitCode": 0,
+      "selectedTests": 12
+    }
+  ]
+}
