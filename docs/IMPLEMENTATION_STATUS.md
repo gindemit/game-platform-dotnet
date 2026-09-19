@@ -1,10 +1,8 @@
 # Implementation status
 
-G2 additive review mirrors 94 files at backend `0c3473e165ce73479c349b8fba2394274a2a833e`, with unchanged frozen core and schema-only receipt/source-key mappings. Baseline real core exchange passed; final post-promotion rerun is pending. No feature, production codec, AOT or product approval is inferred.
+## G2 verified desktop core - 2026-09-19
 
-## G2 synchronization correction — 2026-09-19
-
-Schema-directed opaque tokens now encode/decode as bin12..3072; canonical diagnostic base64url remains strict. Decoder reservation includes base64 text and intermediate conversion buffers. All 236 desktop .NET tests pass, including 14 new token/typed/resource cases. Real peer exchange is pending at this correction commit. CL-004/016 remain partial; production, AOT, service and feature acceptance remain unavailable/unverified. Frozen core pins and Unity bundle are unchanged.
+G2 post-promotion core exchange passed: 34 cases/24 fingerprints each direction, 32 raw probes in both decoders and 39 diagnostic negatives. Backend 229 tests; SDK 236 tests. Additive receipt schema approved separately with 30 cases/six known answers; its runtime remains unverified. All service features, production/native/device, G3/G4 and product trust/reward/legacy approval remain unavailable or unverified. See [G2 evidence](implementation/evidence/G2-epoch3/README.md). Central state is published last and alone releases P3.
 
 ## P2 epoch 2 client delivery â€” 2026-09-19
 

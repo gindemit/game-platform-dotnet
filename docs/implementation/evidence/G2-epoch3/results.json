@@ -1,0 +1,42 @@
+{
+  "diagnosticRejections": 39,
+  "commits": {
+    "sdk": "ba27743a12c74f76a9e8d65667945f1f05d293c9",
+    "backend": "88c35203d57329acf6c02575020800b776870876",
+    "unity": "ed7c8f9c7269064a3d6aa2064fabbc5a3dff693b"
+  },
+  "forward": {
+    "mode": "consume",
+    "direction": "typescript_to_csharp",
+    "cases": 34,
+    "fingerprints": 24,
+    "sdk": "ba27743a12c74f76a9e8d65667945f1f05d293c9",
+    "backend": "88c35203d57329acf6c02575020800b776870876",
+    "unity": "ed7c8f9c7269064a3d6aa2064fabbc5a3dff693b",
+    "reverseDirection": "requires_backend_consumer",
+    "gateG2": "not_approved_by_this_command"
+  },
+  "reverse": {
+    "direction": "csharp_to_typescript",
+    "cases": 34,
+    "fingerprints": 24,
+    "declaredPeerProducerCommits": {
+      "sdk": "ba27743a12c74f76a9e8d65667945f1f05d293c9",
+      "backend": "88c35203d57329acf6c02575020800b776870876",
+      "unity": "ed7c8f9c7269064a3d6aa2064fabbc5a3dff693b"
+    },
+    "peerProvenance": "requires_command_and_artifact_review",
+    "actualBackendConsumerCommit": "88c35203d57329acf6c02575020800b776870876",
+    "reverseDirection": "unverified",
+    "gateG2": "not_approved"
+  },
+  "rawProbes": 32,
+  "peerCommands": 89,
+  "artifacts": {
+    "typescript": "4795c06ad034082a4d85b4b744cf8824928cc80ba10c868ab1d0a5d6fed64b28",
+    "csharp": "7aba5617b108b8fba0cb986bd73cda0df73dd61fcc629f6efb6c33828a8ded0c",
+    "peerAssembly": "d18fa9c91d7bbc7eb47f28fe56e632921d0894f3396e2d1ee580b4fca6557151"
+  },
+  "runtimeByteExchange": "passed",
+  "gateG2": "requires_separate_schema_and_synchronization_review"
+}

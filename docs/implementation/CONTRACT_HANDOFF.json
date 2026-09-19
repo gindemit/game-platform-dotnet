@@ -572,5 +572,18 @@
     "source_key_vectors": "contracts/live-slice/source-key-vectors.json",
     "reviewer": "Codex /root synchronization session in backend/client/consumer roles; no independent reviewer or product approval",
     "scope": "One read-only receipt lookup; original core DTO/codecs unchanged. Feature runtime interoperability pending."
+  },
+  "g2_runtime_review": {
+    "status": "core_exchange_passed_additive_schema_approved",
+    "backend_source": "88c35203d57329acf6c02575020800b776870876",
+    "sdk_source": "ba27743a12c74f76a9e8d65667945f1f05d293c9",
+    "unity_source": "ed7c8f9c7269064a3d6aa2064fabbc5a3dff693b",
+    "core_cases_each_direction": 34,
+    "fingerprints_each_direction": 24,
+    "raw_probes": 32,
+    "diagnostic_negatives": 39,
+    "feature_runtime": "unverified",
+    "phase_authority": "backend coordination/state.json; this historical P2 handoff does not itself release P3",
+    "backend_evidence_commit": "473ee999dcd4cb454978e6f136f7a04039b11cc5"
   }
 }
