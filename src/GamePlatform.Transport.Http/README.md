@@ -19,9 +19,9 @@ owner disposes it only after all borrowing providers and admitted requests have
 quiesced. Page and pull responses are bounded by both the global cap and their
 requested budget; error correlation and reset reasons are closed protocol data.
 
-The semantic providers are portable boundary implementations, not production
-composition. `UnavailableMessagePackCodec` remains production-facing and no
-concrete HTTP executor is registered. Push, receipt, account, profile and
-recovery operations remain unsupported. A production codec, real host executor,
-backend BE-016 composition, UnityWebRequest adapter and device execution remain
-separate gates. Gates: A02, A11, A12.
+The semantic providers now compose on .NET desktop with the deliberate
+`MessagePackWireCodec` production adapter. No concrete HTTP executor or complete
+host is registered. Push, receipt, account, profile and recovery operations
+remain unsupported. Real host execution, backend BE-016 composition,
+UnityWebRequest, codec/native packaging, IL2CPP/AOT/stripping and device execution
+remain separate gates. Gates: A02, A11, A12.

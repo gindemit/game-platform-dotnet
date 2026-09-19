@@ -144,3 +144,14 @@ Focused storage/migration coverage is 25/25, the combined native durability
 selection is 46/46, and the full SDK suite is 328/328. This closes only the
 migration-registry composition gap; live peer, production transport, physical
 fault, shared-row multi-app, Unity/AOT/device and independent review gates remain.
+
+## 2026-09-20 production-codec desktop composition
+
+CL-004 source `83caf64596869fc7a1dc35ac6440e21ac97a7d68` supplies the
+deliberate production `IWireCodec`. A real-codec private-bootstrap test decodes a
+bounded named-field MessagePack response, including opaque bin tokens, through
+the portable provider with MessagePack-only negotiation. The combined
+CL-005/CL-010/codec boundary selection passes 46/46 and the full suite passes
+335/335. This removes the production-codec blocker only. Concrete executor/host,
+fixed-boundary live peer, shared-row multi-app, Unity/AOT/device and independent
+review evidence remain unavailable; CL-010 stays `in_progress`.

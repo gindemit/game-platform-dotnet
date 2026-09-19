@@ -9,10 +9,12 @@ versions and content hashes are recorded in generated NuGet lockfiles.
 
 Use only explicit bounded reader/writer paths. No typeless resolver, reflection
 serializer, runtime code generation, compression or serializer annotations in
-portable contracts are authorized. Production registration remains unavailable;
-the separate qualification API enables G2 peer testing. IL2CPP, stripping,
-device execution and complete transitive bundle/license delivery remain CL-015
-and INT-009 work. No package is published or automatically installed in Unity.
+portable contracts are authorized. `MessagePackWireCodec` is the deliberate
+production `IWireCodec` registration over the same generated mapping and bounded
+reader/writer path; the separate qualification API remains for G2 diagnostics.
+This qualification is .NET desktop only. IL2CPP, stripping, device execution and
+complete transitive bundle/license delivery remain CL-015 and INT-009 work. No
+package is published or automatically installed in Unity.
 
 Diagnostic JSON parsing for the peer CLI uses the .NET 9 test host's BCL. It
 does not select a JSON library for the portable JSON adapter.

@@ -21,7 +21,12 @@ explicit null, nullable integer timestamps and decimal-string diagnostic int64s.
 `generate-dto-mapper.py --check` verifies its checked-in mapping. Mapping reserves
 three logical copies before DTO materialization; combined typed encode and
 diagnostic roundtrips reserve four, including the still-retained input graph.
-These explicit qualifications do not register a production `IWireCodec`.
+`MessagePackWireCodec` is the deliberate production `IWireCodec` adapter. It
+delegates only to the generated reviewed DTO/union catalog and the bounded
+reader/writer path above; arbitrary generic values, unknown union
+implementations and unreviewed top-level DTOs fail closed. The older
+qualification surfaces remain available for schema diagnostics, fingerprints
+and the peer harness, but callers no longer need them to compose CL-005/CL-010.
 
 Bounds include 262144-byte bodies and fixed-capacity output buffering, strict
 local collection/string/binary limits, 32 container levels, 16384 decoded nodes,
@@ -45,8 +50,9 @@ vectors, compact/full-width integer tokens, RFC UUID bytes, hostile UTF-8,
 duplicate keys, reference siblings, actual depth/node/allocation limits,
 extension boundaries and aggregate feed groups.
 
-`UnavailableMessagePackCodec` remains the production-facing unavailable seam.
-Desktop qualification is not A01/A02/A09 approval, Unity integration, IL2CPP/AOT
-or physical-device evidence. The cross-repository executable harness and actual
-peer evidence are tracked separately; this adapter never authenticates, grants,
-acknowledges synchronization or advances checkpoints.
+`UnavailableMessagePackCodec` is retained only as the historical fail-closed M0
+seam. The production adapter is qualified on .NET desktop against the approved
+core corpus and HTTP provider boundaries. This is not Unity integration,
+IL2CPP/AOT/stripping, physical-device, native-bundle, concrete HTTP executor or
+host acceptance. The adapter never authenticates, grants, acknowledges
+synchronization or advances checkpoints.

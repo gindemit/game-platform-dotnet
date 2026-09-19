@@ -22,15 +22,21 @@
     "backend_semantics": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
     "source_commit": "6462d471d498eb92c4a773cd008e979924afd6dc",
     "status": "implemented_scripted_boundary_only",
-    "remaining_blocker": "No production IWireCodec and no qualified concrete HTTP executor/host composition; qualification codec was not relabeled.",
+    "remaining_blocker": "Superseded for the codec by CL-004 source 83caf64596869fc7a1dc35ac6440e21ac97a7d68; no qualified concrete HTTP executor/host composition exists.",
     "counts": {"provider_tests": 27, "focused_cl005_cl010": 59, "full_dotnet": 323, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0},
     "hardening": ["expected account ownership", "shared session/account refresh single-flight", "error correlation binding", "requested response caps", "bounded pre-envelope errors", "closed reset reasons"]
   },
   "unavailable": [
     "account/push/profile/receipt/recovery providers",
-    "production codec registration",
+    "Unity/AOT/device codec packaging",
     "real host and Unity executors",
     "BE-016 deployable composition",
     "live TLS/provider/device evidence"
-  ]
+  ],
+  "production_codec_increment": {
+    "date": "2026-09-20",
+    "source_commit": "83caf64596869fc7a1dc35ac6440e21ac97a7d68",
+    "status": "desktop_composition_passed",
+    "counts": {"production_codec": 7, "focused_cl005_cl010_codec": 46, "full_dotnet": 335}
+  }
 }

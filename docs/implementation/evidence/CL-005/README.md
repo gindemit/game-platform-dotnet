@@ -104,3 +104,13 @@ errors require exact header/envelope correlation, requested page/pull budgets
 bound responses and pre-envelopes, and reset reasons use the frozen closed set.
 Six additional cases bring focused CL-005/CL-010 coverage to 59/59 and the full
 suite to 323/323.
+
+## 2026-09-20 production-codec desktop composition
+
+CL-004 source `83caf64596869fc7a1dc35ac6440e21ac97a7d68` supplies the
+deliberate production `IWireCodec`. A real-codec provisioning provider test
+decodes the emitted request and encodes/decodes the response through the bounded
+named-field MessagePack path. The combined CL-005/CL-010/codec boundary selection
+passes 46/46 and the full suite passes 335/335. This removes the production-codec
+blocker only. The concrete executor/host, remaining providers, BE-016, Unity and
+live/device evidence remain unavailable; CL-005 stays `in_progress`.
