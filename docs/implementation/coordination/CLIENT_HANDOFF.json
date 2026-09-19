@@ -10,7 +10,7 @@
   "quiescent": true,
   "next_gate": "G3",
   "implementation_commits": {
-    "sdk": "b1d3f9a",
+    "sdk": "c35d6e3",
     "unity": "84c2b1137a8dbde497f22495910c9117d3024c5f"
   },
   "required_repository_keys": [
@@ -174,7 +174,7 @@
   "p3_progress": {
     "status": "in_progress",
     "observed_backend_head": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
-    "sdk_head": "b1d3f9af2065025fde613a6647b849535e3b1826",
+    "sdk_head": "c35d6e3bff41ddf2abfbea1dbf59c49636cef1a7",
     "unity_head": "84c2b1137a8dbde497f22495910c9117d3024c5f",
     "source_commits": {
       "CL-007": "91a67c7805ff59bc3b0ca286fddc2a5124291188",
@@ -182,7 +182,7 @@
       "CL-005": "5b7308d5537462623ef7cf6b3b53bcd1312439bf",
       "CL-012": "010d47c07907baf86d8a1c9396f81cd5628d03d2",
       "CL-009": "6ee33493e2919086331918210d01aa26835243ac",
-      "CL-010": "a7831cc40a46a2555e9fef8fbd374871a3536f9c"
+      "CL-010": "e7dd26813064d6114fe504983213d8f9eaa15d2d"
     },
     "evidence_commits": {
       "CL-007": "1dce23b98c425e8d5d0178b04d22deb5eba307a4",
@@ -190,10 +190,10 @@
       "CL-005": "77e522ef1815904e59413aa843c27a4b6ecda584",
       "CL-012": "6b67b1e38a90583370cf022ad482f52ce41edeee",
       "CL-009": "9207d5d",
-      "CL-010": "b1d3f9af2065025fde613a6647b849535e3b1826"
+      "CL-010": "c35d6e3bff41ddf2abfbea1dbf59c49636cef1a7"
     },
     "test_commits": {
-      "CL-010": "a7831cc40a46a2555e9fef8fbd374871a3536f9c"
+      "CL-010": "e7dd26813064d6114fe504983213d8f9eaa15d2d"
     },
     "complete_task_ids": ["CL-012"],
     "partial_task_ids": ["CL-005", "CL-007", "CL-008", "CL-009", "CL-010"],
