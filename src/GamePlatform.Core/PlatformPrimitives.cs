@@ -50,6 +50,8 @@ namespace GamePlatform.Core
         public static PlatformResult<T> Error(PlatformFailure failure, string diagnostic = "")
         {
             if (failure == PlatformFailure.None) throw new ArgumentException("An error requires a failure code.", nameof(failure));
+            if (!Enum.IsDefined(typeof(PlatformFailure), failure)) throw new ArgumentOutOfRangeException(nameof(failure));
+            if (diagnostic != null && diagnostic.Length > 512) throw new ArgumentOutOfRangeException(nameof(diagnostic));
             return new PlatformResult<T>(default, failure, diagnostic ?? string.Empty);
         }
     }
