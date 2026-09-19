@@ -224,8 +224,9 @@ def validate_licenses(output, packages):
         path = output / relative
         if not path.is_file():
             raise ValueError('package_license_metadata_missing: ' + item['id'])
-        license_node = ET.parse(path).find('.//{*}license')
-        if license_node is None or not (license_node.text or '').strip():
+        document = ET.parse(path)
+        declarations = [document.find('.//{*}license'), document.find('.//{*}licenseUrl')]
+        if not any(node is not None and (node.text or '').strip() for node in declarations):
             raise ValueError('package_license_declaration_missing: ' + item['id'])
 
 
