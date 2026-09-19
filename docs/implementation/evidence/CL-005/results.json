@@ -1,0 +1,24 @@
+{
+  "task": "CL-005",
+  "date": "2026-09-19",
+  "source_commit": "5b7308d5537462623ef7cf6b3b53bcd1312439bf",
+  "scope": "portable-scripted-executor-provisioning",
+  "status": "in_progress",
+  "counts": {
+    "focused_tests": 12,
+    "full_dotnet_tests": 264,
+    "script_tests": 33,
+    "manifest_tests": 14,
+    "projects_restored": 18,
+    "projects_built": 18,
+    "warnings": 0,
+    "errors": 0
+  },
+  "unavailable": [
+    "account/bootstrap/push/pull/profile/recovery providers",
+    "production codec registration",
+    "real host and Unity executors",
+    "BE-016 deployable composition",
+    "live TLS/provider/device evidence"
+  ]
+}

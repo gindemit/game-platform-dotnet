@@ -1,5 +1,17 @@
 # Implementation status
 
+## CL-005 semantic provisioning HTTP — 2026-09-19
+
+Source commit `5b7308d5537462623ef7cf6b3b53bcd1312439bf` implements
+the portable provisioning provider over injected neutral executor/codec/auth
+ports. Focused tests pass 12/12 and the full suite passes 264/264 with zero build
+warnings/errors. See [CL-005 evidence](implementation/evidence/CL-005/README.md).
+
+CL-005 remains `in_progress`: the other frozen operations, production codec and
+host registration, BE-016 composition, Unity executor and live/device evidence
+remain unavailable. The provider does not make incomplete BE-008 provisioning
+truthful and does not enable a route, feature, G3 or P4.
+
 ## CL-008 atomic projection/sequence/outbox — 2026-09-19
 
 Source commit `4de294141ea7d0f6cf062b8ce736ea0ce89fa112` implements
