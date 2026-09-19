@@ -7,4 +7,6 @@ concrete SQLite adapter concern. CL-008 adds immutable command drafts, post-
 sequence fingerprinting, admissions and one transaction-bound projection/outbox
 callback. Admission success means local durability only, never backend acceptance
 or pull-checkpoint progress. CL-009 adds a narrow contiguous lease/finalization
-port; terminal delivery state never advances a pull checkpoint. Gates: A03, A05, A09.
+port; terminal delivery state never advances a pull checkpoint. CL-010 adds
+distinct bootstrap, projection-mutation and fixed-boundary pull storage values;
+these remain separate from remote DTOs and SQL rows. Gates: A03, A05, A09.
