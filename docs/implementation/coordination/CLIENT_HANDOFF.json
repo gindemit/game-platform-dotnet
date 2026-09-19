@@ -3,14 +3,14 @@
   "run_id": "platform-2026-09-19",
   "track": "client_sdk_and_mrsquare",
   "phase": "P1",
-  "observed_epoch": 0,
-  "observed_backend_state_commit": "d65301d39000e6817ca2b737bf9c9e49af0ed3d3",
-  "handoff_kind": "phase_complete",
-  "status": "ready_for_sync",
+  "observed_epoch": 1,
+  "observed_backend_state_commit": "c6aa77054ec63c0ae46fe2113d3add994bf382fb",
+  "handoff_kind": "blocked",
+  "status": "blocked",
   "quiescent": true,
   "next_gate": "G1",
   "implementation_commits": {
-    "sdk": "9e8459595329eb0b289cf5e892eed55fc4e4660b",
+    "sdk": "72a613a2250f7454381ec969d6ec5b42025ec4cc",
     "unity": "bc53723a8eec3521dd7bd8e05eaa726fca29795d"
   },
   "required_repository_keys": [
@@ -22,92 +22,71 @@
     "sdk": "https://github.com/gindemit/game-platform-dotnet/pull/2",
     "unity": "https://github.com/gindemit/MrSquareUnity/pull/3"
   },
-  "completed_task_ids": [
-    "CL-001",
-    "CL-006",
-    "CL-014"
-  ],
+  "completed_task_ids": [],
   "partial_task_ids": [
     "CL-003",
     "INT-001"
   ],
   "completed_scope": {
-    "CL-001": "Schema-neutral design/API freeze, actual API/reference inventory, evidence-aware validator; target types are not implemented by the design.",
-    "CL-006": "Pinned source/native/license acquisition qualification and real Windows native transaction/reopen probe only.",
-    "CL-014": "Implemented tested bounded safe diagnostics with captured context and independent review.",
-    "INT-001": "Exhaustive caller/save/import/source-linked/asmdef/GUID inventory and actual standalone regression evidence; complete task remains blocked on Unity runtime evidence.",
-    "CL-003": "Core schema review requirements and committed candidate-absence findings, not G1 approval or mirror repin."
+    "CL-003": "Client preparation: 259 candidate.1 field/branch C#/TS mappings, all ten GameplayOutcome fields, G1-R1 through G1-R5 consumer preservation and schema acceptance expectations, immutable candidate/hash reviewer and independent boundary checks. Revised candidate review remains blocked.",
+    "Unity": "Read-only inspection of unchanged bc53723a8eec3521dd7bd8e05eaa726fca29795d; no Unity changes or fresh runtime acceptance. Prior INT-001 evidence and blockers retained."
   },
   "evidence": [
     {
       "repository": "sdk",
-      "path": "docs/implementation/evidence/P1/results.json",
-      "command": "rtk proxy python docs/implementation/evidence/verify_p1.py",
+      "path": "docs/implementation/evidence/CL-003/epoch1/verification.json",
+      "command": "rtk proxy python docs/implementation/evidence/CL-003/verify_epoch1.py",
       "exit_code": 0,
       "tests": {
-        "dotnet": 31,
-        "diagnostics_subset": 12,
+        "review_tool": 10,
+        "candidate_schema_cases": 49,
+        "client_boundary_cases": 16,
         "validator": 19,
         "manifest": 14
       },
-      "note": "Locked restore/build, package listing and 15 managed DLL/local NuGet artifacts passed. Nothing published; no native bundle."
+      "note": "Raw argv/stdout/stderr and exits adjacent. Architecture/mirror/manifest validation passed. Diagnostic schemas/tooling only; runtime suites not rerun."
     },
     {
       "repository": "sdk",
-      "path": "docs/implementation/evidence/P1/final-policy-checks.json",
-      "exit_code": 0,
-      "note": "Final post-status-transition policy validation; 19 validator and 14 manifest cases. Explicit false-completion fixture preserved."
+      "path": "docs/implementation/evidence/CL-003/epoch1/candidate-review.json",
+      "note": "Immutable backend SHA, artifact digests and proposed field/branch mappings; candidate.1 remains unapproved."
     },
     {
       "repository": "sdk",
-      "path": "docs/implementation/evidence/CL-006/coordinator-review.json",
-      "command": "rtk proxy pwsh -NoProfile -File integration/unity/sqlite-qualification/run-desktop-probe.ps1",
-      "exit_code": 0,
-      "provider": "real Windows x64 native SQLite 3.50.1",
-      "note": "Rollback/commit/reopen and exact int64 9007199254740993; not production executor/Unity proof."
+      "path": "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md",
+      "note": "Source-grounded outcome mapping, snapshot/stream/receipt recovery, KAT and aggregate allocation/compression expectations."
     },
     {
       "repository": "sdk",
-      "path": "docs/implementation/evidence/P1/REVIEW.md",
-      "note": "Actual agent independent review and resolved findings; not external human approval."
-    },
-    {
-      "repository": "unity",
-      "path": "Reports/PlatformIntegration/INT-001/captured-checks.raw",
-      "tests": {
-        "platform": 14,
-        "gameplay_domain": 27,
-        "documentation": 57
-      },
-      "note": "Literal command stdout/stderr and exit codes; documentation validator exit 1 with 123 pre-existing stale move-map paths."
+      "path": "docs/implementation/evidence/CL-003/epoch1/README.md",
+      "note": "Findings and bounded next action. No revised candidate, schema approval, independent review or product approval claimed."
     },
     {
       "repository": "unity",
       "path": "Reports/PlatformIntegration/INT-001/inventory.json",
-      "note": "Source/asmdef/meta/source-linked/save/import inventory; pinned editor/effective settings and fresh scene runtime checks unrun."
+      "note": "Prior immutable evidence at unchanged Unity SHA; not regenerated. Existing documentation/editor/device limitations retained."
     }
   ],
   "artifact_sha256": {
     "contracts/platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
     "contracts/v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5",
-    "docs/implementation/interfaces/FOUNDATION_CONTRACTS.md": "9ffaccd20b45b7ea4a9a3ed41f760bb1d8469ea6bdbe9059d3838c2e53875efa",
-    "docs/implementation/evidence/CL-003/G1_REQUIREMENTS.md": "8515c0686fccdb2cbb315bdf4b1e9533794a29ab2c7e459410631c5c16fd6c2d",
-    "integration/unity/sqlite-qualification/qualification.json": "b390cb80dc4250729920f39d978edc31e59fd184ee73188ff406de4d70474e32",
-    "docs/implementation/evidence/P1/package-manifest.json": "b68372dfdda4dc0d4c01a2b85738c745961924b286c0d23b18bacb58dce91e93"
+    "docs/implementation/evidence/CL-003/epoch1/candidate-review.json": "addfdf78af2c98063a1edfd6f08360dbee623ef52205e8631c595de977a0a028",
+    "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md": "0eb4ac5689818c6faef9941afc47bb4a87d34d07184ddfc74716d6230a1bd7ae",
+    "docs/implementation/evidence/CL-003/epoch1/verification.json": "f14b57276d673538277030dca079c0826e47893223cba3b473c9bb6df25289f1"
   },
   "contract_proposals": [
     {
-      "path": "docs/implementation/evidence/CL-003/G1_REQUIREMENTS.md",
+      "path": "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md",
       "backend_task": "BE-002",
       "client_task": "CL-003",
       "approval": "pending_G1",
-      "finding": "No operation-schema artifacts under contracts/ at observed published execution revision. Review later committed candidate at synchronization; do not wait for runtime codecs."
+      "finding": "Fetched epoch 1 still publishes candidate.1. Corrected immutable candidate required before exact revised mappings and semantic acceptance can complete. G1-R1 through G1-R5 remain open."
     }
   ],
   "blockers": [
     {
       "scope": "CL-003/G1",
-      "reason": "Canonical operation schemas, semantic/negative vectors, field mappings, digests and actual candidate approval/mirror pin still required. No runtime compatibility approved."
+      "reason": "Corrected immutable backend candidate is not yet published on the fetched execution branch. Candidate.1 passes schema fixtures but retains G1-R1 through G1-R5 semantic gaps. No mirror approval or P2 release."
     },
     {
       "scope": "INT-001 and later Unity/device gates",
@@ -127,6 +106,7 @@
     }
   ],
   "unrun_gates": [
+    "Corrected immutable candidate review",
     "G1",
     "G2",
     "G3",
@@ -136,14 +116,20 @@
     "IL2CPP/AOT/stripping and physical device",
     "CSharp-TypeScript runtime exchange",
     "PostgreSQL and live backend/game journey",
-    "provider sandbox and independent second-game reuse"
+    "provider sandbox and independent second-game reuse",
+    "Runtime dotnet/native suites not rerun: no runtime source change"
   ],
   "requested_sync_actions": [
-    "Run backend CODEX_SYNC.md only after both tracks have stopped with committed quiescent handoffs; the backend handoff at the observed revision was not yet quiescent.",
-    "Review BE-002 canonical operation candidate against committed client/Unity requirements, frozen schema-neutral foundation design and semantic/negative vectors; resolve missing fields/semantics and record actual reviewers.",
-    "Record G1 exact schema/fixture versions, field mappings, canonical/mirror commits and hashes before releasing P2. Runtime implementation references may remain null until G2.",
-    "Keep unavailable editor/device and trust-policy prerequisites explicit. No default-branch merge, publication, deployment or Android distribution is authorized.",
-    "Relaunch CODEX_CLIENT.md only after committed backend release state authorizes the next work; do not use this handoff as self-authorization."
+    "Backend owner: publish only the epoch-1 BE-002 corrected candidate and quiescent P1 handoff.",
+    "Resume CL-003 against that immutable SHA to complete exact revised mappings and schema/semantic acceptance; preserve historical candidate.1 evidence and do not repin contracts.",
+    "Run backend CODEX_SYNC.md only after BOTH tracks stop. This blocked handoff is insufficient to pass G1: inspect the corrected candidate and remaining client review first.",
+    "Keep runtime compatibility null, product/editor/device blockers explicit and P2 unreleased until actual G1 approval."
   ],
-  "note": "P1 review inputs are ready; ready_for_sync does not mean G1 passed or all partial tasks completed. All three GPT-5.6 Sol workers stopped, locks released, implementation/evidence commits pushed in both repositories before this handoff. No backend writes. Product features remain stubbed, MrSquare SDK not_installed. STOPPED AT G1."
+  "note": "Only authorized CL-003 preparation changed. No backend or Unity writes, mirror repin, DTO/codec implementation, main merge, publication, deployment or distribution. Single client owner; no subagents or independent review claimed. Locks released. STOPPED AT G1: revised-candidate review blocked.",
+  "prior_handoff_commit": "42fd2b0c5d349da0cfb2d63b8e543f194dd00bb6",
+  "previous_completed_task_ids": [
+    "CL-001",
+    "CL-006",
+    "CL-014"
+  ]
 }
