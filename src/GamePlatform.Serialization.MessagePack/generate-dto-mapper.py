@@ -52,16 +52,16 @@ lines = ['// Generated from the reviewed DTO catalog. Do not edit by hand.', '#n
  'namespace GamePlatform.Serialization.MessagePack {',
  'public sealed class TypedQualificationCodec {',
  'private readonly QualificationMessagePackCodec codec = new QualificationMessagePackCodec();',
- 'public byte[] Encode<T>(T value) { var diagnostic=ToDiagnostic(value); new MappingBudget(4).Reserve(diagnostic); return codec.Encode(Schema<T>(), diagnostic); }',
- 'public T Decode<T>(byte[] bytes) => FromDiagnostic<T>(codec.Decode(Schema<T>(), bytes));',
- 'public V ToDiagnostic<T>(T value) { if(value is null) throw new ArgumentNullException(nameof(value)); var b=new MappingBudget(); switch(value) {']
+ 'public byte[] Encode<T>(T value) where T : class { var diagnostic=ToDiagnostic(value); new MappingBudget(4).Reserve(diagnostic); return codec.Encode(Schema<T>(), diagnostic); }',
+ 'public T Decode<T>(byte[] bytes) where T : class => FromDiagnostic<T>(codec.Decode(Schema<T>(), bytes));',
+ 'public V ToDiagnostic<T>(T value) where T : class { if(value == null) throw new ArgumentNullException(nameof(value)); var b=new MappingBudget(); switch(value) {']
 for typ in objects:
     lines.append(f'case {typ} dto: return Write{typ}(dto,b);')
 lines += ['default: throw new QualificationCodecException("Unsupported DTO implementation."); } }',
- 'public T FromDiagnostic<T>(V value) { codec.ValidateDiagnostic(Schema<T>(),value); new MappingBudget().Reserve(value); var b=new MappingBudget();']
+ 'public T FromDiagnostic<T>(V value) where T : class { codec.ValidateDiagnostic(Schema<T>(),value); new MappingBudget().Reserve(value); var b=new MappingBudget();']
 for typ in [*objects, *unions]:
     lines.append(f'if(typeof(T) == typeof({typ})) return (T)(object)Read{typ}(value,b);')
-lines += ['throw new QualificationCodecException("Unsupported DTO type."); }', 'public static string Schema<T>() {']
+lines += ['throw new QualificationCodecException("Unsupported DTO type."); }', 'public static string Schema<T>() where T : class {']
 for typ, obj in objects.items():
     lines.append(f'if(typeof(T) == typeof({typ})) return {literal(obj["sourceSchema"])};')
 for typ, union in unions.items():

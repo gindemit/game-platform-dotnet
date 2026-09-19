@@ -77,7 +77,7 @@ namespace GamePlatform.Tests.Serialization
         public void RejectsUnsupportedTypesNullBodiesAndUnreviewedFields()
         {
             var codec = new DesktopQualificationWireCodec();
-            Assert.Throws<QualificationCodecException>(() => codec.Encode(42));
+            Assert.Throws<QualificationCodecException>(() => codec.Encode(new UnsupportedDto()));
             Assert.Throws<ArgumentNullException>(() => codec.Decode<ProvisionResponse>(null!));
 
             var original = Convert.FromHexString(ProvisionRequestHex);
@@ -186,9 +186,26 @@ namespace GamePlatform.Tests.Serialization
         {
             private readonly DesktopQualificationWireCodec candidate;
             public TestOnlyQualificationPortAdapter(DesktopQualificationWireCodec candidate) { this.candidate = candidate; }
-            public byte[] Encode<T>(T value) => candidate.Encode(value);
-            public T Decode<T>(byte[] payload) => candidate.Decode<T>(payload);
+            public byte[] Encode<T>(T value)
+            {
+                return value switch
+                {
+                    ProvisionRequest item => candidate.Encode(item),
+                    ProvisionResponse item => candidate.Encode(item),
+                    BootstrapStartResponse item => candidate.Encode(item),
+                    _ => throw new QualificationCodecException("Unsupported test bridge DTO.")
+                };
+            }
+            public T Decode<T>(byte[] payload)
+            {
+                if (typeof(T) == typeof(ProvisionRequest)) return (T)(object)candidate.Decode<ProvisionRequest>(payload);
+                if (typeof(T) == typeof(ProvisionResponse)) return (T)(object)candidate.Decode<ProvisionResponse>(payload);
+                if (typeof(T) == typeof(BootstrapStartResponse)) return (T)(object)candidate.Decode<BootstrapStartResponse>(payload);
+                throw new QualificationCodecException("Unsupported test bridge DTO.");
+            }
         }
+
+        private sealed class UnsupportedDto { }
 
         private sealed class StaticAuth : IAuthSession
         {

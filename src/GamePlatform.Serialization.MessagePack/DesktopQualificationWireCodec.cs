@@ -22,9 +22,9 @@ namespace GamePlatform.Serialization.MessagePack
             this.typedCodec = typedCodec ?? throw new ArgumentNullException(nameof(typedCodec));
         }
 
-        public byte[] Encode<T>(T value) => typedCodec.Encode(value);
+        public byte[] Encode<T>(T value) where T : class => typedCodec.Encode(value);
 
-        public T Decode<T>(byte[] payload)
+        public T Decode<T>(byte[] payload) where T : class
         {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
             return typedCodec.Decode<T>(payload);
