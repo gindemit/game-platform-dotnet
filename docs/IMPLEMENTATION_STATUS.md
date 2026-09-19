@@ -1,5 +1,21 @@
 # Implementation status
 
+## G1 synchronization review — 2026-09-19
+
+SDK remains P1; G1 is blocked on candidate/consumer mapping, stream and
+receipt recovery semantics, full fingerprint known-answer vectors and decoded
+allocation/compression policy (G1-R1–R5). No runtime behavior, canonical/mirror
+pins or product authority changed. BE-002/CL-003 remain partial/blocked; P2 is
+not released. A01–A13 and G2–G4 remain unpassed. The coordinator reviewed all
+three immutable input heads; original Unity settings edits are preserved.
+
+Review and next work: [G1 client findings](implementation/evidence/CL-003/G1_REVIEW.md).
+SDK planning validation and 14 manifest tests passed; architecture validation,
+19 validator tests and existing mirror pins passed. Raw results are preserved
+in the backend G1 evidence. Older CL-003/runbook codec prerequisites were
+corrected to schema-only G1 acceptance; no runtime suite was needed for these
+documentation edits. Unity/editor/device and runtime peer exchange were not run.
+
 ## Coordinated P1 evidence — 2026-09-19
 
 Run `platform-2026-09-19`, P1 / epoch 0; stop gate G1. Work is on `impl/platform-coordinated-2026-09-19`, not main. The backend state observed at published commit `d65301d39000e6817ca2b737bf9c9e49af0ed3d3` is parallel P1 with every gate pending and no approved artifacts. See the [task ledger](implementation/execution-manifest.json), [client handoff](implementation/coordination/CLIENT_HANDOFF.json), [review record](implementation/evidence/P1/REVIEW.md) and [raw SDK verification](implementation/evidence/P1/results.json).

@@ -17,7 +17,7 @@
   "digest_evidence": "Values inspected in the existing canonical/mirror snapshot records; recompute against fetched bytes during CL-003 before repinning. Coordination documentation does not recompute or approve these existing pins.",
   "operation_schema_version": null,
   "operation_fixture_version": null,
-  "freeze_status": "blocked_missing_operation_schema_review",
+  "freeze_status": "blocked_G1_candidate_revision_required",
   "schema_approval": {"status": "pending", "gate": "G1", "canonical_commit": null, "mirror_commit": null, "reviewers": [], "requires_runtime_implementations": false},
   "core_interoperability": {"status": "unverified", "gate": "G2", "evidence": [], "required_directions": ["csharp_to_typescript", "typescript_to_csharp"]},
   "live_slice": {"status": "unverified", "gate": "G3", "joint_backend_task": "BE-025", "joint_consumer_task": "INT-010", "backend_readiness_tasks": ["BE-016", "BE-024"], "completed_joint_task_is_readiness_prerequisite": false},
@@ -66,6 +66,22 @@
     "schema_approved": false,
     "mirror_repinned": false,
     "existing_mirror_hashes_recomputed": true,
+    "runtime_compatibility": "unverified"
+  },
+  "g1_review": {
+    "status": "blocked",
+    "backend_candidate_commit": "bcd9d2436428cd965fc7739ef84d25a71dacf4dd",
+    "candidate_version": "0.2.0-core-candidate.1",
+    "reviewer": "Codex /root synchronization session",
+    "evidence": "docs/implementation/evidence/CL-003/G1_REVIEW.md",
+    "findings": [
+      "G1-R1",
+      "G1-R2",
+      "G1-R3",
+      "G1-R4",
+      "G1-R5"
+    ],
+    "mirror_repinned": false,
     "runtime_compatibility": "unverified"
   }
 }
