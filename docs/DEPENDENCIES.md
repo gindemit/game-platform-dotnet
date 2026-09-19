@@ -1,6 +1,6 @@
 # Dependencies
 
-The MessagePack adapter pins MessagePack-CSharp 3.1.8 and its
+The P2 MessagePack qualification adapter pins MessagePack-CSharp 3.1.8 and its
 exact transitive closure in generated lockfiles. Other runtime projects remain
 package-free. See [the dependency review](implementation/dependencies/CL-004-messagepack.md).
 Test packages are centrally pinned in `Directory.Packages.props`.

@@ -2,6 +2,7 @@
   "task": "CL-004",
   "date": "2026-09-20",
   "source_commit": "83caf64596869fc7a1dc35ac6440e21ac97a7d68",
+  "qualification_correction_commit": "2e46b6f90ed60492d77114c655fb9788d4112e25",
   "status": "in_progress",
   "environment": {
     "runtime": ".NET desktop",
@@ -10,7 +11,7 @@
     "unity": null
   },
   "verification": {
-    "production_codec": 7,
+    "desktop_candidate": 7,
     "serialization": 171,
     "codec_http_boundary": 46,
     "full_dotnet": 335,
@@ -28,6 +29,7 @@
     "lockfiles_unchanged": true,
     "new_runtime_dependency": false
   },
+  "production_iwirecodec": "unavailable_pending_aot_device_acceptance",
   "unrun": [
     "Unity import",
     "IL2CPP/AOT/stripping",

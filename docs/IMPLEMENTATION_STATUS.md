@@ -1,18 +1,18 @@
 # Implementation status
 
-## CL-004 production wire adapter desktop checkpoint — 2026-09-20
+## CL-004 desktop wire candidate checkpoint — 2026-09-20; corrected
 
-Source `83caf64596869fc7a1dc35ac6440e21ac97a7d68` adds the deliberate
-`MessagePackWireCodec` implementation of `IWireCodec`. It exposes the already
-reviewed generated DTO/union mapping and bounded MessagePack reader/writer to
-portable production composition without exposing qualification trees to CL-005
-or CL-010. Unsupported generic types and union implementations fail closed; named
+Source `83caf64596869fc7a1dc35ac6440e21ac97a7d68`, corrected by
+`2e46b6f90ed60492d77114c655fb9788d4112e25`, adds the internal
+`DesktopQualificationWireCodec`. It deliberately does not implement `IWireCodec`;
+production composition remains unavailable pending required AOT acceptance.
+Unsupported generic types and union implementations fail closed; named
 maps, UUID bin16 RFC order, signed-64 values, opaque-token binary encoding,
 absent/null semantics, duplicate-key rejection and body/depth/string/collection/
 allocation bounds remain unchanged. No JSON, typeless, reflection or runtime-code
 generation fallback was added, and dependency pins/lockfiles are unchanged.
 
-Focused production-adapter tests pass 7/7, serialization tests 171/171, combined
+Focused desktop-candidate tests pass 7/7, serialization tests 171/171, combined
 CL-005/CL-010/codec provider-boundary tests 46/46, and the full SDK 335/335. The
 existing codec harness self-test passes 73 schema cases, 32 fingerprint cases and
 five hostile JSON cases. Locked restore/build cover 18 projects with zero warnings
@@ -20,11 +20,12 @@ or errors; validation, 33 script tests, the 52-task/16-ledger/21-wave manifest a
 14 manifest tests pass. Packaging still emits the intentional 14-assembly early
 bundle and publishes nothing.
 
-CL-004 remains `in_progress`: desktop qualification does not supply CL-015
-transitive codec packaging, Unity import, IL2CPP/AOT/stripping, device, concrete
-HTTP executor/host, live transcript or independent-review evidence. CL-005 and
-CL-010 lose only their production-codec blocker; their other recorded blockers
-remain. G3 was not assessed and P4 was not started. See
+CL-004 remains `in_progress`: desktop qualification does not supply production
+`IWireCodec`, CL-015 transitive codec packaging, Unity import,
+IL2CPP/AOT/stripping, device, concrete
+HTTP executor/host, live transcript or independent-review evidence. Production
+codec availability remains a CL-005/CL-010 blocker. G3 was not assessed and P4
+was not started. See
 [CL-004 evidence](implementation/evidence/CL-004/README.md).
 
 ## CL-010 private pull/bootstrap increment — 2026-09-19; corrected 2026-09-20
@@ -54,8 +55,8 @@ Focused storage/policy CL-010 tests passed 20/20 and combined CL-007/008/009/010
 regressions passed 41/41. The original full SDK suite passed 296/296; locked restore/build
 covered 18 projects with zero warnings/errors, architecture validation and 33
 script tests passed, and the 52-task/16-ledger/21-wave manifest plus 14 tests
-passed. CL-010 remains `in_progress`: concrete executor/host composition, live
-backend transcript, process-kill/disk/corruption, multi-app shared projection
+passed. CL-010 remains `in_progress`: production codec and concrete executor/host
+composition, live backend transcript, process-kill/disk/corruption, multi-app shared projection
 provider, Unity/AOT/device and independent-review evidence remain unrun.
 G3 was not assessed and P4 was not started. See
 [CL-010 evidence](implementation/evidence/CL-010/README.md).
@@ -69,8 +70,9 @@ coordinated auth refresh, read cancellation/transport mapping, protocol/pre-
 envelope errors, final-page cursor handoff and reset mapping. Twenty-one new
 scripted boundary tests bring the focused CL-005/CL-010 selection to 53/53 and
 the full SDK to 317/317. At that checkpoint they were not live or production-
-composition evidence; the later CL-004 section records desktop production-codec
-composition. No concrete HTTP executor or host is registered.
+composition evidence; the later CL-004 section records only a desktop candidate
+behind a test-local port adapter. No production codec, concrete HTTP executor or
+host is registered.
 
 Hardening source `6462d471d498eb92c4a773cd008e979924afd6dc`
 scopes private sync to the expected platform account, shares externally owned
@@ -129,16 +131,15 @@ ports. Focused tests pass 12/12 and the full suite passes 264/264 with zero buil
 warnings/errors. See [CL-005 evidence](implementation/evidence/CL-005/README.md).
 
 CL-005 remains `in_progress`: provisioning plus portable bootstrap/pull semantic
-providers are implemented, while the other frozen operations, concrete executor/
-host registration, BE-016 composition, Unity codec packaging and live/device evidence
+providers are implemented, while the other frozen operations, production codec,
+host registration, BE-016 composition, Unity executor and live/device evidence
 remain unavailable. The provider does not make incomplete BE-008 provisioning
 truthful and does not enable a route, feature, G3 or P4.
 
 The provider boundary is actionable independently of host composition. Its
 original scripted tests verify the injected-port contract only. The later CL-004
-checkpoint supplies desktop production-codec composition; no real executor/host
-is registered, so live claims remain blocked without changing CL-005's partial
-`in_progress` state.
+checkpoint supplies a desktop candidate behind a test-local port adapter; no
+production codec or real executor/host is registered. CL-005 remains partial.
 
 ## CL-008 atomic projection/sequence/outbox — 2026-09-19
 

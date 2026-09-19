@@ -19,9 +19,10 @@ owner disposes it only after all borrowing providers and admitted requests have
 quiesced. Page and pull responses are bounded by both the global cap and their
 requested budget; error correlation and reset reasons are closed protocol data.
 
-The semantic providers now compose on .NET desktop with the deliberate
-`MessagePackWireCodec` production adapter. No concrete HTTP executor or complete
-host is registered. Push, receipt, account, profile and recovery operations
-remain unsupported. Real host execution, backend BE-016 composition,
-UnityWebRequest, codec/native packaging, IL2CPP/AOT/stripping and device execution
-remain separate gates. Gates: A02, A11, A12.
+The semantic providers remain portable boundaries, not production composition.
+Desktop tests exercise the `DesktopQualificationWireCodec` only through an
+explicit test-local `IWireCodec` bridge. Production remains fail-closed through
+the unavailable codec seam, and no concrete HTTP executor or host is registered.
+Push, receipt, account, profile and recovery operations remain unsupported.
+Backend BE-016, UnityWebRequest, codec/native packaging, IL2CPP/AOT/stripping and
+device execution remain separate gates. Gates: A02, A11, A12.

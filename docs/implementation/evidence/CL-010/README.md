@@ -145,13 +145,12 @@ selection is 46/46, and the full SDK suite is 328/328. This closes only the
 migration-registry composition gap; live peer, production transport, physical
 fault, shared-row multi-app, Unity/AOT/device and independent review gates remain.
 
-## 2026-09-20 production-codec desktop composition
+## 2026-09-20 desktop-candidate provider-fit check
 
-CL-004 source `83caf64596869fc7a1dc35ac6440e21ac97a7d68` supplies the
-deliberate production `IWireCodec`. A real-codec private-bootstrap test decodes a
-bounded named-field MessagePack response, including opaque bin tokens, through
-the portable provider with MessagePack-only negotiation. The combined
-CL-005/CL-010/codec boundary selection passes 46/46 and the full suite passes
-335/335. This removes the production-codec blocker only. Concrete executor/host,
+CL-004 correction `2e46b6f90ed60492d77114c655fb9788d4112e25`
+keeps `DesktopQualificationWireCodec` outside `IWireCodec`. A private-bootstrap
+test uses an explicit test-local bridge to decode bounded named-field MessagePack,
+including opaque bin tokens. The combined selection passes 46/46 and the full
+suite passes 335/335. Production `IWireCodec`, concrete executor/host,
 fixed-boundary live peer, shared-row multi-app, Unity/AOT/device and independent
 review evidence remain unavailable; CL-010 stays `in_progress`.

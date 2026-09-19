@@ -105,12 +105,12 @@ bound responses and pre-envelopes, and reset reasons use the frozen closed set.
 Six additional cases bring focused CL-005/CL-010 coverage to 59/59 and the full
 suite to 323/323.
 
-## 2026-09-20 production-codec desktop composition
+## 2026-09-20 desktop-candidate provider-fit check
 
-CL-004 source `83caf64596869fc7a1dc35ac6440e21ac97a7d68` supplies the
-deliberate production `IWireCodec`. A real-codec provisioning provider test
-decodes the emitted request and encodes/decodes the response through the bounded
-named-field MessagePack path. The combined CL-005/CL-010/codec boundary selection
-passes 46/46 and the full suite passes 335/335. This removes the production-codec
-blocker only. The concrete executor/host, remaining providers, BE-016, Unity and
-live/device evidence remain unavailable; CL-005 stays `in_progress`.
+CL-004 correction `2e46b6f90ed60492d77114c655fb9788d4112e25`
+keeps `DesktopQualificationWireCodec` outside `IWireCodec`. A provisioning test
+uses an explicit test-local bridge to prove provider fit through the bounded
+named-field MessagePack path. The combined selection passes 46/46 and the full
+suite passes 335/335. This is qualification evidence only: production `IWireCodec`,
+concrete executor/host, remaining providers, BE-016, Unity and live/device evidence
+remain unavailable. CL-005 stays `in_progress`.

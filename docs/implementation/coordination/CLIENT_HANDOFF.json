@@ -174,10 +174,10 @@
   "p3_progress": {
     "status": "in_progress",
     "observed_backend_head": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
-    "sdk_head": "83caf64596869fc7a1dc35ac6440e21ac97a7d68",
+    "sdk_head": "2e46b6f90ed60492d77114c655fb9788d4112e25",
     "unity_head": "84c2b1137a8dbde497f22495910c9117d3024c5f",
     "source_commits": {
-      "CL-004": "83caf64596869fc7a1dc35ac6440e21ac97a7d68",
+      "CL-004": "2e46b6f90ed60492d77114c655fb9788d4112e25",
       "CL-007": "91a67c7805ff59bc3b0ca286fddc2a5124291188",
       "CL-008": "4de294141ea7d0f6cf062b8ce736ea0ce89fa112",
       "CL-005": "6462d471d498eb92c4a773cd008e979924afd6dc",
@@ -200,7 +200,7 @@
     "partial_task_ids": ["CL-004", "CL-005", "CL-007", "CL-008", "CL-009", "CL-010"],
     "sdk_tests": {
       "dotnet": 335,
-      "CL-004_production_codec": 7,
+      "CL-004_desktop_candidate": 7,
       "CL-004_serialization": 171,
       "CL-004_005_010_codec_boundary": 46,
       "CL-005": 39,
@@ -230,14 +230,14 @@
       "INT-008": "blocked by CL-102/105/107 and INT-007",
       "INT-009": "blocked by CL-015, INT-006 and authorized Android/device workflow"
     },
-    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 codec/native/AOT bundle", "actual Unity PlayMode/IL2CPP/device journey"],
+    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "CL-004 production IWireCodec after required AOT acceptance", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 codec/native/AOT bundle", "actual Unity PlayMode/IL2CPP/device journey"],
     "cl010_http_increment": {
       "date": "2026-09-20",
       "sdk_baseline": "568d945c5597f085484465ac4372e4d2e2a3b9b3",
       "backend_semantics": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
       "source_commit": "6462d471d498eb92c4a773cd008e979924afd6dc",
       "status": "portable_provider_implemented_scripted_boundary_only",
-      "remaining_blocker": "MessagePackWireCodec is now production-facing and desktop-qualified; IHttpExecutor still has no qualified concrete host implementation/composition, and Unity/AOT/device codec packaging remains open.",
+      "remaining_blocker": "DesktopQualificationWireCodec is qualification-only and production IWireCodec remains unavailable pending AOT/device acceptance; IHttpExecutor also has no qualified concrete host implementation/composition.",
       "hardening": ["expected account ownership", "shared session/account refresh single-flight", "error correlation binding", "requested response caps", "bounded pre-envelope errors", "closed reset reasons"],
       "verification": {"provider_boundary": 27, "focused_cl005_cl010": 59, "full_dotnet": 323, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
     },
@@ -248,6 +248,6 @@
       "versions": {"platform_outbox": 1, "platform_private_sync": 2},
       "verification": {"migration_native": 5, "focused_storage_and_migration": 25, "durability_regression": 46, "full_dotnet": 328, "script": 33, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0}
     },
-    "next_action": "Continue with concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript when their environments exist. Retain CL-015/Unity/AOT/device gates and do not assess G3 or start P4."
+    "next_action": "Qualify the codec through CL-015/Unity IL2CPP/AOT/device before production IWireCodec availability; then continue concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript. Do not assess G3 or start P4."
   }
 }
