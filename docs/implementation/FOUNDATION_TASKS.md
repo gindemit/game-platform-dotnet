@@ -32,6 +32,11 @@ Every card's **Prompt** is copyable together with this common contract and its m
 <a id="cl-002"></a>
 ## CL-002 — One canonical core and compatibility-preserving extraction
 
+P2 ownership: `sdk-core-contracts` covers this task's existing disjoint Core and
+compatibility paths; CL-003 uses `sdk-wire-contracts`. The coordinator serializes
+public API integration. INT-001's committed inventory subpart supplies extraction
+readiness; its remaining Unity acceptance is not claimed complete.
+
 **Scope/value:** SDK; M1/A; P0. Establish portable IDs/results/outcomes without an incompatible second platform. No Unity behavior change in this PR.
 
 **Read/evidence:** Core source, Features/Backend contract stubs, `integration/unity/EXTRACTION.md`, Unity PlatformContracts.cs/PlatformRuntime.cs/FakeProviders.cs and migration matrix. Current SDK PlatformId is an ordinal string; current game has richer result guards, enums and generic outcomes. Typed UUIDs are target behavior, not already implemented.
@@ -48,6 +53,9 @@ Every card's **Prompt** is copyable together with this common contract and its m
 
 <a id="cl-003"></a>
 ## CL-003 — First operation-schema freeze and reviewed mirror pin
+
+P2 ownership: `sdk-wire-contracts` covers the reviewed mirror and wire DTO paths;
+the coordinator alone integrates shared manifests and project changes.
 
 G1 epoch 2: schema/mirror review delivered as `0.2.0-core-schema.1`; see
 [review and mappings](evidence/CL-003/G1-epoch2/README.md). The attribute-free DTO

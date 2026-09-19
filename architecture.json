@@ -32,7 +32,7 @@
     "GamePlatform.Transport.Abstractions": [],
     "GamePlatform.Transport.Http": [],
     "GamePlatform.Storage.Sqlite": [],
-    "GamePlatform.Serialization.MessagePack": [],
+    "GamePlatform.Serialization.MessagePack": ["MessagePack", "MessagePack.Annotations", "MessagePackAnalyzer", "Microsoft.NET.StringTools", "System.Collections.Immutable", "System.Memory", "System.Runtime.CompilerServices.Unsafe", "System.Buffers", "System.Numerics.Vectors"],
     "GamePlatform.Serialization.Json": []
   },
   "forbiddenRuntimePackages": ["UnityEngine", "Microsoft.Data.Sqlite", "VContainer", "Cysharp.Threading.Tasks"],
