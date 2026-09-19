@@ -106,7 +106,7 @@ namespace GamePlatform.Serialization.MessagePack
         }
         private static V Read(ref MessagePackReader reader,Budget budget,int depth)
         {
-            budget.Node(depth);
+            budget.Node(depth,reader.NextMessagePackType==MessagePackType.Array || reader.NextMessagePackType==MessagePackType.Map);
             switch(reader.NextMessagePackType)
             {
                 case MessagePackType.Nil: reader.ReadNil(); return V.Null;
@@ -153,11 +153,11 @@ namespace GamePlatform.Serialization.MessagePack
         private sealed class Budget
         {
             private long nodes; private long units;
-            internal void Node(int depth) { if(depth>32 || ++nodes>16384) throw new QualificationCodecException("Decoded node/depth budget exceeded."); Units(32); }
+            internal void Node(int depth,bool container=false) { if(depth>33 || (container && depth>32) || ++nodes>16384) throw new QualificationCodecException("Decoded node/depth budget exceeded."); Units(32); }
             internal void Units(long count) { units=checked(units+count); if(units>2097152) throw new QualificationCodecException("Decoded allocation budget exceeded."); }
             internal void Visit(V value,int depth,bool reserveDiagnosticExpansion=false)
             {
-                Node(depth);
+                Node(depth,value.Kind==K.Array || value.Kind==K.Object);
                 if(reserveDiagnosticExpansion && value.Kind==K.Integer) Units(value.IntegerValue.ToString(CultureInfo.InvariantCulture).Length*2L);
                 if(value.Kind==K.String) { if(V.Utf8.GetByteCount(value.StringValue)>8192) throw new QualificationCodecException("String exceeds limit."); Units(value.StringValue.Length*2L); }
                 if(value.Kind==K.Binary) { if(value.BinaryBytes.Length>262144) throw new QualificationCodecException("Binary exceeds limit."); Units(reserveDiagnosticExpansion?Math.Max(72,value.BinaryBytes.Length):value.BinaryBytes.Length); }

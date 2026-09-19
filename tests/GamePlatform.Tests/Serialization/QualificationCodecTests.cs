@@ -30,7 +30,7 @@ public sealed class QualificationCodecTests
         Assert.False(string.IsNullOrWhiteSpace(name)); using var doc=JsonDocument.Parse(json);var v=doc.RootElement;
         using var source=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(Root,v.GetProperty("instancePath").GetString()!)));
         var schema=Path.GetFileName(v.GetProperty("schemaPath").GetString()!)+v.GetProperty("schemaFragment").GetString();var codec=new QualificationMessagePackCodec();
-        if(!v.GetProperty("expectedValid").GetBoolean()) { Assert.ThrowsAny<Exception>(()=>codec.Encode(schema,Parse(source.RootElement)));return; }
+        if(!v.GetProperty("expectedValid").GetBoolean()) { Assert.ThrowsAny<FormatException>(()=>codec.Encode(schema,Parse(source.RootElement)));return; }
         var value=Parse(source.RootElement);var bytes=codec.Encode(schema,value);var back=codec.Decode(schema,bytes);
         Assert.Equal(Convert.ToHexString(bytes),Convert.ToHexString(codec.Encode(schema,back)));
     }
@@ -39,7 +39,7 @@ public sealed class QualificationCodecTests
     {
         Assert.False(string.IsNullOrWhiteSpace(name));
         using var doc=JsonDocument.Parse(json); var vector=doc.RootElement; var codec=new QualificationMessagePackCodec();
-        if(!vector.GetProperty("valid").GetBoolean()) { Assert.ThrowsAny<Exception>(()=>codec.Fingerprint(Parse(vector.GetProperty("input"))));return; }
+        if(!vector.GetProperty("valid").GetBoolean()) { Assert.ThrowsAny<FormatException>(()=>codec.Fingerprint(Parse(vector.GetProperty("input"))));return; }
         var value=Parse(vector.GetProperty("input"));
         Assert.Equal(vector.GetProperty("canonicalHex").GetString(),Convert.ToHexString(codec.CanonicalBytes(value)).ToLowerInvariant());
         Assert.Equal(vector.GetProperty("sha256").GetString(),codec.Fingerprint(value));
@@ -88,6 +88,48 @@ public sealed class QualificationCodecTests
     {
         var extension=V.Object(new Dictionary<string,V>{{"schema",V.String("test")},{"version",V.Integer(1)},{"value",V.Object(new Dictionary<string,V>{{"a",V.String(new string('x',8100))},{"b",V.String(new string('x',8100))},{"c",V.String(new string('x',8100))}})}});
         Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().ValidateDiagnostic("common.schema.json#/$defs/extension",extension));
+    }
+    [Fact]
+    public void NearLimitExtensionRemainsValidWithRetainedCopies()
+    {
+        var extension=V.Object(new Dictionary<string,V>{{"schema",V.String("test")},{"version",V.Integer(1)},{"value",V.Object(new Dictionary<string,V>{{"a",V.String(new string('x',8100))},{"b",V.String(new string('x',8100))}})}});
+        var codec=new QualificationMessagePackCodec();var bytes=codec.Encode("common.schema.json#/$defs/extension",extension);
+        Assert.True(bytes.Length>16000);codec.Decode("common.schema.json#/$defs/extension",bytes);
+    }
+    [Fact]
+    public void DecoderRejectsNestedInputBeforeSchemaEvaluation()
+    {
+        var bytes=Enumerable.Repeat((byte)0x91,33).Concat(new byte[]{0xc0}).ToArray();
+        var error=Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().Decode("common.schema.json#/$defs/extension",bytes));
+        Assert.Contains("depth budget",error.Message);
+        var maximum=Enumerable.Repeat((byte)0x91,32).Concat(new byte[]{0xc0}).ToArray();
+        var schemaError=Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().Decode("common.schema.json#/$defs/extension",maximum));
+        Assert.Contains("reviewed core schema",schemaError.Message);
+    }
+    [Fact]
+    public void DecoderEnforcesTotalNodesAcrossLocallyBoundedArrays()
+    {
+        var bytes=new List<byte>{0xdc,0,16};
+        for(int i=0;i<16;i++) {bytes.AddRange(new byte[]{0xdc,4,0});bytes.AddRange(Enumerable.Repeat((byte)0xc0,1024));}
+        var error=Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().Decode("common.schema.json#/$defs/extension",bytes.ToArray()));
+        Assert.Contains("node/depth budget",error.Message);
+    }
+    [Fact]
+    public void DecoderChargesExpansionAndRetainedCopiesBeforeSchemaNormalization()
+    {
+        // All local limits and 3-copy node count fit; text/container copies exceed 2 Mi logical units.
+        var bytes=new List<byte>{0x9a};
+        for(int map=0;map<10;map++)
+        {
+            bytes.AddRange(new byte[]{0xde,1,0});
+            for(int key=0;key<256;key++)
+            {
+                bytes.Add(0xa3);bytes.AddRange(System.Text.Encoding.ASCII.GetBytes(key.ToString("x3")));
+                bytes.AddRange(new byte[]{0xd9,94});bytes.AddRange(Enumerable.Repeat((byte)'x',94));
+            }
+        }
+        var error=Assert.Throws<QualificationCodecException>(()=>new QualificationMessagePackCodec().Decode("common.schema.json#/$defs/extension",bytes.ToArray()));
+        Assert.Contains("allocation budget",error.Message);
     }
     [Fact]
     public void ExtractedInlineSchemaPointerSupportsArraySegments()
