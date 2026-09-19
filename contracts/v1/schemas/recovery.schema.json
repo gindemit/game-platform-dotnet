@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/v1/schemas/recovery.schema.json",
+  "$defs": {
+    "receiptRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "clientStreamId",
+        "operationId",
+        "installationId",
+        "sequence",
+        "fingerprint"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "clientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "operationId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "installationId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "sequence": {
+          "$ref": "common.schema.json#/$defs/positiveInt64"
+        },
+        "fingerprint": {
+          "$ref": "common.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "receiptResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "clientStreamId",
+        "found",
+        "result",
+        "serverTime",
+        "operationId",
+        "observedFinalizedThrough"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "clientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "found": {
+          "type": "boolean"
+        },
+        "result": {
+          "oneOf": [
+            {
+              "$ref": "push.schema.json#/$defs/accepted"
+            },
+            {
+              "$ref": "push.schema.json#/$defs/terminalRejected"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "operationId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "observedFinalizedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "found": {
+                "const": true
+              }
+            },
+            "required": [
+              "found"
+            ]
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "oneOf": [
+                  {
+                    "$ref": "push.schema.json#/$defs/accepted"
+                  },
+                  {
+                    "$ref": "push.schema.json#/$defs/terminalRejected"
+                  }
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "result": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "streamRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "installationId",
+        "priorClientStreamId",
+        "newClientStreamId",
+        "reason",
+        "recoveryId",
+        "inspectionToken",
+        "expectedFinalizedThrough"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "installationId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "priorClientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "newClientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "reason": {
+          "enum": [
+            "local_database_recreated",
+            "backup_restored",
+            "stream_identity_conflict"
+          ]
+        },
+        "recoveryId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "inspectionToken": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "expectedFinalizedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      },
+      "x-distinctProperties": [
+        "priorClientStreamId",
+        "newClientStreamId"
+      ]
+    },
+    "streamResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "priorClientStreamId",
+        "newClientStreamId",
+        "nextSequence",
+        "priorFinalizedThrough",
+        "serverTime",
+        "recoveryId"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "priorClientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "newClientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "nextSequence": {
+          "$ref": "common.schema.json#/$defs/positiveInt64",
+          "const": "1"
+        },
+        "priorFinalizedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "recoveryId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        }
+      }
+    },
+    "inspectRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "clientStreamId",
+        "installationId"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "clientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "installationId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        }
+      }
+    },
+    "inspectResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "streamState",
+        "inspectionToken",
+        "expiresAt",
+        "serverTime"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "streamState": {
+          "$ref": "common.schema.json#/$defs/streamState"
+        },
+        "inspectionToken": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "expiresAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        }
+      }
+    }
+  }
+}

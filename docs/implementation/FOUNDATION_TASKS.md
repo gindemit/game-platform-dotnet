@@ -49,6 +49,11 @@ Every card's **Prompt** is copyable together with this common contract and its m
 <a id="cl-003"></a>
 ## CL-003 — First operation-schema freeze and reviewed mirror pin
 
+G1 epoch 2: schema/mirror review delivered as `0.2.0-core-schema.1`; see
+[review and mappings](evidence/CL-003/G1-epoch2/README.md). The attribute-free DTO
+subpart in Steps remains P2 work, so CL-003 is partial/in_progress. Do not infer
+runtime compatibility or skip this delivery before dependent codecs.
+
 **Scope/value:** SDK client contract owner; M1/A; P0. Turn draft primitive policy into a usable peer agreement. No independent backend protocol fork.
 
 **Read/evidence:** `contracts/README.md`, policy/vectors/snapshot, pin/sync scripts, Wire.Contracts, CONTRACT_HANDOFF.json; PlatformContracts identity, ordering, bootstrap and sync sections. Baseline has only draft policy/primitive vectors, no complete operation DTO set.

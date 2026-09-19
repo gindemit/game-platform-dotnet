@@ -1,5 +1,22 @@
 # Implementation status
 
+## G1 epoch 2 schema review — 2026-09-19
+
+G1-R1–R5 are resolved at schema level against canonical
+`0109936f0ebf232924cec70adb79c4f790b604bc`, version `0.2.0-core-schema.1`.
+The exact reviewed 90-file mirror is installed, with all original policy/primitive
+bytes preserved. Client review validates 73 schema cases and 16 independent
+boundary cases and supplies 290 property/branch mappings. Review tooling now
+enforces new token/stream/distinctness/depth constraints; no DTO or codec is
+implemented by this work. See [review evidence](implementation/evidence/CL-003/G1-epoch2/README.md).
+
+CL-003 remains partial for attribute-free DTO delivery during P2; schema/mirror
+review is complete. Other tasks/features retain their actual status. Central
+backend state releases P2 only after cross-repository publication. Runtime
+C#/TS compatibility, A01–A13, native/device, product trust/legacy/reward decisions
+and the existing Unity documentation path failures remain unverified/unresolved.
+Historical candidate.1 observations below are preserved as dated evidence.
+
 ## P1 epoch 1 client remediation — 2026-09-19
 
 CL-003 client review inputs now include 259 field/branch C#/TS mappings, all ten

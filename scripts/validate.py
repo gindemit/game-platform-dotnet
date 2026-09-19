@@ -260,7 +260,7 @@ def validate(root: Path) -> list[str]:
 
     try:
         snapshot = read_json(root / "contracts" / "snapshot.json")
-        if snapshot.get("contractVersion") != "0.1.0-draft": errors.append("unexpected contract version")
+        if snapshot.get("contractVersion") not in {"0.1.0-draft", "0.2.0-core-schema.1"}: errors.append("unexpected contract version")
         for relative, expected in snapshot["files"].items():
             contract = root / "contracts" / relative
             if not contract.is_file(): errors.append(f"missing contract: {relative}")
@@ -277,7 +277,7 @@ def main() -> int:
         for error in errors: print(f"ERROR: {error}")
         print(f"Validation failed with {len(errors)} error(s).")
         return 1
-    print("Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and 2 pinned contract files.")
+    print("Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and reviewed contract pins.")
     return 0
 
 

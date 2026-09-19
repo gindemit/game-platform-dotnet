@@ -1,0 +1,9 @@
+{
+  "protocolVersion": 1,
+  "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+  "found": true,
+  "result": null,
+  "serverTime": 1789555201000,
+  "operationId": "019952d1-0000-7000-8000-000000000003",
+  "observedFinalizedThrough": "155"
+}

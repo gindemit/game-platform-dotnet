@@ -1,0 +1,55 @@
+{
+  "protocolVersion": 1,
+  "account": {
+    "platformUserId": "00112233-4455-4677-8899-aabbccddeeff",
+    "createdAt": 1,
+    "revision": "1"
+  },
+  "membership": {
+    "appId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+    "status": "active",
+    "createdAt": 1,
+    "revision": "1"
+  },
+  "snapshotSession": "c25hcHNob3Qtc2Vzc2lvbi0x",
+  "committedThrough": "1",
+  "visibilityGeneration": "1",
+  "logEpoch": "00112233-4455-4677-8899-aabbccddeeff",
+  "collections": [
+    {
+      "name": "profile",
+      "schemaVersion": 1,
+      "required": true
+    },
+    {
+      "name": "progression",
+      "schemaVersion": 1,
+      "required": true
+    },
+    {
+      "name": "inventory",
+      "schemaVersion": 1,
+      "required": true
+    },
+    {
+      "name": "entitlements",
+      "schemaVersion": 1,
+      "required": true
+    },
+    {
+      "name": "config",
+      "schemaVersion": 1,
+      "required": true
+    }
+  ],
+  "firstPageToken": "c25hcHNob3QtcGFnZS0x",
+  "expiresAt": 100,
+  "serverTime": 1,
+  "streamState": {
+    "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+    "installationId": "00112233-4455-4677-8899-aabbccddeeff",
+    "finalizedThrough": "154",
+    "nextSequence": "155",
+    "state": "active"
+  }
+}

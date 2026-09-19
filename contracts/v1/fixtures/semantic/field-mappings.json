@@ -1,0 +1,4256 @@
+{
+  "fixtureSchemaVersion": 2,
+  "candidateVersion": "0.2.0-core-schema.1",
+  "columns": [
+    "MessagePack",
+    "diagnostic JSON",
+    "C#",
+    "TypeScript"
+  ],
+  "presenceRule": "Required flags apply within each containing branch; evaluate complete schema and resolve referenced definitions. Optional does not imply nullable; null requires explicit schema permission.",
+  "fields": [
+    {
+      "location": "schemas/account.schema.json#/$defs/response/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/account.schema.json#/$defs/response/properties/account",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/account"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account"
+      ]
+    },
+    {
+      "location": "schemas/account.schema.json#/$defs/response/properties/memberships",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "maxItems": 128,
+        "items": {
+          "$ref": "common.schema.json#/$defs/membership"
+        }
+      },
+      "representations": [
+        "array<reference: common.schema.json#/$defs/membership>",
+        "array<reference: common.schema.json#/$defs/membership>",
+        "IReadOnlyList<reference: common.schema.json#/$defs/membership>",
+        "ReadonlyArray<reference: common.schema.json#/$defs/membership>"
+      ]
+    },
+    {
+      "location": "schemas/account.schema.json#/$defs/response/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/account.schema.json#/$defs/response/properties/memberships/items",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/membership"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/collection/properties/name",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "profile",
+          "progression",
+          "inventory",
+          "wallet",
+          "entitlements"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/collection/properties/schemaVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "const": 1
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/collection/properties/required",
+      "requiredInContainer": true,
+      "shape": {
+        "const": true
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/account",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/account"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/membership",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/membership"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/snapshotSession",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/committedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/visibilityGeneration",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/logEpoch",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/collections",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "minItems": 5,
+        "maxItems": 64,
+        "uniqueItems": true,
+        "items": {
+          "$ref": "#/$defs/collection"
+        },
+        "allOf": [
+          {
+            "contains": {
+              "properties": {
+                "name": {
+                  "const": "profile"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          },
+          {
+            "contains": {
+              "properties": {
+                "name": {
+                  "const": "progression"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          },
+          {
+            "contains": {
+              "properties": {
+                "name": {
+                  "const": "inventory"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          },
+          {
+            "contains": {
+              "properties": {
+                "name": {
+                  "const": "wallet"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          },
+          {
+            "contains": {
+              "properties": {
+                "name": {
+                  "const": "entitlements"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          }
+        ]
+      },
+      "representations": [
+        "array<reference: #/$defs/collection>",
+        "array<reference: #/$defs/collection>",
+        "IReadOnlyList<reference: #/$defs/collection>",
+        "ReadonlyArray<reference: #/$defs/collection>"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/firstPageToken",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/expiresAt",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/streamState",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/streamState"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/streamState",
+        "reference: common.schema.json#/$defs/streamState",
+        "reference: common.schema.json#/$defs/streamState",
+        "reference: common.schema.json#/$defs/streamState"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/collections/items",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "#/$defs/collection"
+      },
+      "representations": [
+        "reference: #/$defs/collection",
+        "reference: #/$defs/collection",
+        "reference: #/$defs/collection",
+        "reference: #/$defs/collection"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/collections/allOf/0/contains/properties/name",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "profile"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/collections/allOf/1/contains/properties/name",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "progression"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/collections/allOf/2/contains/properties/name",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "inventory"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/collections/allOf/3/contains/properties/name",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "wallet"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startResponse/properties/collections/allOf/4/contains/properties/name",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "entitlements"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageRequest/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageRequest/properties/snapshotSession",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageRequest/properties/pageToken",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageRequest/properties/maxBytes",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "integer",
+        "minimum": 65536,
+        "maximum": 262144
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/snapshotSession",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/committedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/entities",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "maxItems": 1024,
+        "items": {
+          "$ref": "#/$defs/entity"
+        }
+      },
+      "representations": [
+        "array<reference: #/$defs/entity>",
+        "array<reference: #/$defs/entity>",
+        "IReadOnlyList<reference: #/$defs/entity>",
+        "ReadonlyArray<reference: #/$defs/entity>"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/hasMore",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "boolean"
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/nextPageToken",
+      "requiredInContainer": true,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "bin 12..3072 bytes | nil",
+        "canonical unpadded base64url | null",
+        "byte[] | explicit null",
+        "Uint8Array | null"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/initialPullCursor",
+      "requiredInContainer": true,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "common.schema.json#/$defs/opaqueToken"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "bin 12..3072 bytes | nil",
+        "canonical unpadded base64url | null",
+        "byte[] | explicit null",
+        "Uint8Array | null"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/properties/entities/items",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "#/$defs/entity"
+      },
+      "representations": [
+        "reference: #/$defs/entity",
+        "reference: #/$defs/entity",
+        "reference: #/$defs/entity",
+        "reference: #/$defs/entity"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/allOf/0/if/properties/hasMore",
+      "requiredInContainer": false,
+      "shape": {
+        "const": true
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/allOf/0/then/properties/nextPageToken",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/allOf/0/then/properties/initialPullCursor",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "null"
+      },
+      "representations": [
+        "nil",
+        "null",
+        "explicit null",
+        "null"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/allOf/0/else/properties/nextPageToken",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "null"
+      },
+      "representations": [
+        "nil",
+        "null",
+        "explicit null",
+        "null"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/pageResponse/allOf/0/else/properties/initialPullCursor",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/bootstrap.schema.json#/$defs/startQuery/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/properties/code",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/semanticKey"
+      },
+      "representations": [
+        "reference: #/$defs/semanticKey",
+        "reference: #/$defs/semanticKey",
+        "reference: #/$defs/semanticKey",
+        "reference: #/$defs/semanticKey"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/properties/category",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "authentication",
+          "authorization",
+          "validation",
+          "conflict",
+          "rate_limit",
+          "dependency",
+          "protocol",
+          "internal"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/properties/message",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/properties/retryable",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "boolean"
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/properties/retryAfterMilliseconds",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 86400000
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/properties/details",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "object",
+        "maxProperties": 32,
+        "additionalProperties": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 512
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "representations": [
+        "named map (definition/branches constrain fields)",
+        "object",
+        "typed record or bounded ordinal dictionary",
+        "typed object or bounded map"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/properties/details/additionalProperties",
+      "requiredInContainer": false,
+      "shape": {
+        "oneOf": [
+          {
+            "type": "string",
+            "maxLength": 512
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "UTF-8 string | bool | bounded integer | nil",
+        "string | boolean | integer token | null",
+        "string | bool | int | explicit null",
+        "string | boolean | number (safe integer) | null"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/allOf/0/if/properties/retryable",
+      "requiredInContainer": false,
+      "shape": {
+        "const": false
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/error/allOf/0/then/properties/retryAfterMilliseconds",
+      "requiredInContainer": false,
+      "shape": false,
+      "representations": [
+        "forbidden",
+        "forbidden",
+        "forbidden",
+        "forbidden"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/extension/properties/schema",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/semanticKey"
+      },
+      "representations": [
+        "reference: #/$defs/semanticKey",
+        "reference: #/$defs/semanticKey",
+        "reference: #/$defs/semanticKey",
+        "reference: #/$defs/semanticKey"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/extension/properties/version",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 2147483647
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/extension/properties/value",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "object",
+        "maxProperties": 128,
+        "x-recursiveScalars": [
+          "null",
+          "boolean",
+          "string"
+        ]
+      },
+      "representations": [
+        "named map (definition/branches constrain fields)",
+        "object",
+        "typed record or bounded ordinal dictionary",
+        "typed object or bounded map"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/actor/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "player",
+          "service",
+          "administrator",
+          "provider"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/actor/properties/id",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/account/properties/platformUserId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/account/properties/createdAt",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/account/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/membership/properties/appId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/membership/properties/status",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "active",
+          "suspended",
+          "revoked"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/membership/properties/createdAt",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/membership/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/properties/installationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/properties/finalizedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/properties/nextSequence",
+      "requiredInContainer": true,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "common.schema.json#/$defs/positiveInt64"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds | nil",
+        "minimal decimal string | null",
+        "long | explicit null",
+        "bigint | null"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/properties/state",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "active",
+          "retired"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/allOf/0/if/properties/finalizedThrough",
+      "requiredInContainer": false,
+      "shape": {
+        "const": "9223372036854775807"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/allOf/0/then/properties/nextSequence",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "null"
+      },
+      "representations": [
+        "nil",
+        "null",
+        "explicit null",
+        "null"
+      ]
+    },
+    {
+      "location": "schemas/common.schema.json#/$defs/streamState/allOf/0/else/properties/nextSequence",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/error.schema.json#/$defs/response/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/error.schema.json#/$defs/response/properties/correlationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/correlationId"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/correlationId",
+        "reference: common.schema.json#/$defs/correlationId",
+        "reference: common.schema.json#/$defs/correlationId",
+        "reference: common.schema.json#/$defs/correlationId"
+      ]
+    },
+    {
+      "location": "schemas/error.schema.json#/$defs/response/properties/error",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/error"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error"
+      ]
+    },
+    {
+      "location": "schemas/error.schema.json#/$defs/response/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/contentId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/consumerId"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/contentVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 2147483647
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/mode",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/consumerId"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/difficulty",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/consumerId"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/success",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "boolean"
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/score",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/signedInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/validation",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scheme",
+          "reference"
+        ],
+        "properties": {
+          "scheme": {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 512
+          }
+        }
+      },
+      "representations": [
+        "named map (definition/branches constrain fields)",
+        "object",
+        "typed record or bounded ordinal dictionary",
+        "typed object or bounded map"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/extension",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/extension"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/extension",
+        "reference: common.schema.json#/$defs/extension",
+        "reference: common.schema.json#/$defs/extension",
+        "reference: common.schema.json#/$defs/extension"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/session",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/consumerId"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId",
+        "reference: common.schema.json#/$defs/consumerId"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/durationTicks",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/ticksPerSecond",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000000
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/metrics",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "object",
+        "maxProperties": 256,
+        "propertyNames": {
+          "$ref": "common.schema.json#/$defs/consumerId"
+        },
+        "additionalProperties": {
+          "$ref": "common.schema.json#/$defs/signedInt64"
+        }
+      },
+      "representations": [
+        "named map (definition/branches constrain fields)",
+        "object",
+        "typed record or bounded ordinal dictionary",
+        "typed object or bounded map"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/validation/properties/scheme",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/semanticKey"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/validation/properties/reference",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "string",
+        "maxLength": 512
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/gameplay.schema.json#/$defs/completionCommand/properties/metrics/additionalProperties",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/signedInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/profile/properties/displayName",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/profile/properties/avatarKey",
+      "requiredInContainer": false,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/semanticKey | nil",
+        "reference: common.schema.json#/$defs/semanticKey | null",
+        "reference: common.schema.json#/$defs/semanticKey | explicit null",
+        "reference: common.schema.json#/$defs/semanticKey | null"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/profile/properties/locale",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "string",
+        "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$",
+        "maxLength": 35
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/profile/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/profile/properties/updatedAt",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/response/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/response/properties/profile",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/profile"
+      },
+      "representations": [
+        "reference: #/$defs/profile",
+        "reference: #/$defs/profile",
+        "reference: #/$defs/profile",
+        "reference: #/$defs/profile"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/response/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/patchCommand/properties/expectedRevision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/patchCommand/properties/displayName",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/patchCommand/properties/avatarKey",
+      "requiredInContainer": false,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "common.schema.json#/$defs/semanticKey"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/semanticKey | nil",
+        "reference: common.schema.json#/$defs/semanticKey | null",
+        "reference: common.schema.json#/$defs/semanticKey | explicit null",
+        "reference: common.schema.json#/$defs/semanticKey | null"
+      ]
+    },
+    {
+      "location": "schemas/profile.schema.json#/$defs/patchCommand/properties/locale",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "string",
+        "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$",
+        "maxLength": 35
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileKey/properties/profile",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "self"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionKey/properties/stateKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/semanticKey"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryKey/properties/itemId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/semanticKey"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletKey/properties/currencyId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/semanticKey"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementKey/properties/entitlementId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/semanticKey"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey",
+        "reference: common.schema.json#/$defs/semanticKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionData/properties/value",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryData/properties/quantity",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletData/properties/balance",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementData/properties/active",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "boolean"
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementData/properties/expiresAt",
+      "requiredInContainer": true,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "integer Unix milliseconds | nil",
+        "integer token | null",
+        "long | explicit null",
+        "number (safe integer) | null"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileSnapshot/properties/collection",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "profile"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileSnapshot/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/profileKey"
+      },
+      "representations": [
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileSnapshot/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileSnapshot/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "profile.schema.json#/$defs/profile"
+      },
+      "representations": [
+        "reference: profile.schema.json#/$defs/profile",
+        "reference: profile.schema.json#/$defs/profile",
+        "reference: profile.schema.json#/$defs/profile",
+        "reference: profile.schema.json#/$defs/profile"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionSnapshot/properties/collection",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "progression"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionSnapshot/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/progressionKey"
+      },
+      "representations": [
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionSnapshot/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionSnapshot/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/progressionData"
+      },
+      "representations": [
+        "reference: #/$defs/progressionData",
+        "reference: #/$defs/progressionData",
+        "reference: #/$defs/progressionData",
+        "reference: #/$defs/progressionData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventorySnapshot/properties/collection",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "inventory"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventorySnapshot/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/inventoryKey"
+      },
+      "representations": [
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventorySnapshot/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventorySnapshot/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/inventoryData"
+      },
+      "representations": [
+        "reference: #/$defs/inventoryData",
+        "reference: #/$defs/inventoryData",
+        "reference: #/$defs/inventoryData",
+        "reference: #/$defs/inventoryData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletSnapshot/properties/collection",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "wallet"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletSnapshot/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/walletKey"
+      },
+      "representations": [
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletSnapshot/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletSnapshot/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/walletData"
+      },
+      "representations": [
+        "reference: #/$defs/walletData",
+        "reference: #/$defs/walletData",
+        "reference: #/$defs/walletData",
+        "reference: #/$defs/walletData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementSnapshot/properties/collection",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "entitlements"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementSnapshot/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/entitlementKey"
+      },
+      "representations": [
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementSnapshot/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementSnapshot/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/entitlementData"
+      },
+      "representations": [
+        "reference: #/$defs/entitlementData",
+        "reference: #/$defs/entitlementData",
+        "reference: #/$defs/entitlementData",
+        "reference: #/$defs/entitlementData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileUpsert/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "profile"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileUpsert/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/profileKey"
+      },
+      "representations": [
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileUpsert/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileUpsert/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "upsert"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileUpsert/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "profile.schema.json#/$defs/profile"
+      },
+      "representations": [
+        "reference: profile.schema.json#/$defs/profile",
+        "reference: profile.schema.json#/$defs/profile",
+        "reference: profile.schema.json#/$defs/profile",
+        "reference: profile.schema.json#/$defs/profile"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionUpsert/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "progression"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionUpsert/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/progressionKey"
+      },
+      "representations": [
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionUpsert/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionUpsert/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "upsert"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionUpsert/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/progressionData"
+      },
+      "representations": [
+        "reference: #/$defs/progressionData",
+        "reference: #/$defs/progressionData",
+        "reference: #/$defs/progressionData",
+        "reference: #/$defs/progressionData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryUpsert/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "inventory"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryUpsert/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/inventoryKey"
+      },
+      "representations": [
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryUpsert/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryUpsert/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "upsert"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryUpsert/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/inventoryData"
+      },
+      "representations": [
+        "reference: #/$defs/inventoryData",
+        "reference: #/$defs/inventoryData",
+        "reference: #/$defs/inventoryData",
+        "reference: #/$defs/inventoryData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletUpsert/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "wallet"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletUpsert/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/walletKey"
+      },
+      "representations": [
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletUpsert/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletUpsert/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "upsert"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletUpsert/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/walletData"
+      },
+      "representations": [
+        "reference: #/$defs/walletData",
+        "reference: #/$defs/walletData",
+        "reference: #/$defs/walletData",
+        "reference: #/$defs/walletData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementUpsert/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "entitlements"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementUpsert/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/entitlementKey"
+      },
+      "representations": [
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementUpsert/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementUpsert/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "upsert"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementUpsert/properties/data",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/entitlementData"
+      },
+      "representations": [
+        "reference: #/$defs/entitlementData",
+        "reference: #/$defs/entitlementData",
+        "reference: #/$defs/entitlementData",
+        "reference: #/$defs/entitlementData"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileRemovalValue/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "profile"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileRemovalValue/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/profileKey"
+      },
+      "representations": [
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey",
+        "reference: #/$defs/profileKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileRemovalValue/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/profileRemovalValue/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "tombstone",
+          "view_remove",
+          "invalidation"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionRemoval/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "progression"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionRemoval/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/progressionKey"
+      },
+      "representations": [
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey",
+        "reference: #/$defs/progressionKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionRemoval/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/progressionRemoval/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "tombstone",
+          "view_remove",
+          "invalidation"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryRemoval/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "inventory"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryRemoval/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/inventoryKey"
+      },
+      "representations": [
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey",
+        "reference: #/$defs/inventoryKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryRemoval/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/inventoryRemoval/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "tombstone",
+          "view_remove",
+          "invalidation"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletRemoval/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "wallet"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletRemoval/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/walletKey"
+      },
+      "representations": [
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey",
+        "reference: #/$defs/walletKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletRemoval/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/walletRemoval/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "tombstone",
+          "view_remove",
+          "invalidation"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementRemoval/properties/entityType",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "entitlements"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementRemoval/properties/entityKey",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "#/$defs/entitlementKey"
+      },
+      "representations": [
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey",
+        "reference: #/$defs/entitlementKey"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementRemoval/properties/revision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/projection.schema.json#/$defs/entitlementRemoval/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "tombstone",
+          "view_remove",
+          "invalidation"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/request/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/request/properties/installationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/request/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuidV7"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/response/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/response/properties/account",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/account"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account",
+        "reference: common.schema.json#/$defs/account"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/response/properties/membership",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/membership"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership",
+        "reference: common.schema.json#/$defs/membership"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/response/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/response/properties/nextSequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/provision.schema.json#/$defs/response/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/request/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/request/properties/cursor",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/request/properties/maxBytes",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "integer",
+        "minimum": 131072,
+        "maximum": 262144
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/group/properties/feedRevision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/group/properties/changes",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 1024,
+        "items": {
+          "$ref": "#/$defs/change"
+        }
+      },
+      "representations": [
+        "array<reference: #/$defs/change>",
+        "array<reference: #/$defs/change>",
+        "IReadOnlyList<reference: #/$defs/change>",
+        "ReadonlyArray<reference: #/$defs/change>"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/group/properties/changes/items",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "#/$defs/change"
+      },
+      "representations": [
+        "reference: #/$defs/change",
+        "reference: #/$defs/change",
+        "reference: #/$defs/change",
+        "reference: #/$defs/change"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/changes",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "maxItems": 1024,
+        "items": {
+          "$ref": "#/$defs/group"
+        }
+      },
+      "representations": [
+        "array<reference: #/$defs/group>",
+        "array<reference: #/$defs/group>",
+        "IReadOnlyList<reference: #/$defs/group>",
+        "ReadonlyArray<reference: #/$defs/group>"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/nextCursor",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/hasMore",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "boolean"
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/resetRequired",
+      "requiredInContainer": true,
+      "shape": {
+        "const": false
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/committedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/page/properties/changes/items",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "#/$defs/group"
+      },
+      "representations": [
+        "reference: #/$defs/group",
+        "reference: #/$defs/group",
+        "reference: #/$defs/group",
+        "reference: #/$defs/group"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/reset/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/reset/properties/changes",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "maxItems": 0
+      },
+      "representations": [
+        "array<constraint-only; resolve parent schema>",
+        "array<constraint-only; resolve parent schema>",
+        "IReadOnlyList<constraint-only; resolve parent schema>",
+        "ReadonlyArray<constraint-only; resolve parent schema>"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/reset/properties/nextCursor",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "null"
+      },
+      "representations": [
+        "nil",
+        "null",
+        "explicit null",
+        "null"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/reset/properties/hasMore",
+      "requiredInContainer": true,
+      "shape": {
+        "const": false
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/reset/properties/resetRequired",
+      "requiredInContainer": true,
+      "shape": {
+        "const": true
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/reset/properties/reason",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "history_expired",
+          "visibility_changed",
+          "log_epoch_changed",
+          "cursor_invalidated"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/pull.schema.json#/$defs/reset/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/properties/installationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/properties/sequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/properties/type",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "profile.patch",
+          "gameplay.session.completed"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/properties/schemaVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "const": 1
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/properties/clientCreatedAt",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/properties/payload",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "object"
+      },
+      "representations": [
+        "named map (definition/branches constrain fields)",
+        "object",
+        "typed record or bounded ordinal dictionary",
+        "typed object or bounded map"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/allOf/0/if/properties/type",
+      "requiredInContainer": false,
+      "shape": {
+        "const": "profile.patch"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/allOf/0/then/properties/payload",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "profile.schema.json#/$defs/patchCommand"
+      },
+      "representations": [
+        "reference: profile.schema.json#/$defs/patchCommand",
+        "reference: profile.schema.json#/$defs/patchCommand",
+        "reference: profile.schema.json#/$defs/patchCommand",
+        "reference: profile.schema.json#/$defs/patchCommand"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/allOf/1/if/properties/type",
+      "requiredInContainer": false,
+      "shape": {
+        "const": "gameplay.session.completed"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/operation/allOf/1/then/properties/payload",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "gameplay.schema.json#/$defs/completionCommand"
+      },
+      "representations": [
+        "reference: gameplay.schema.json#/$defs/completionCommand",
+        "reference: gameplay.schema.json#/$defs/completionCommand",
+        "reference: gameplay.schema.json#/$defs/completionCommand",
+        "reference: gameplay.schema.json#/$defs/completionCommand"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/request/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/request/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/request/properties/operations",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 64,
+        "items": {
+          "$ref": "#/$defs/operation"
+        }
+      },
+      "representations": [
+        "array<reference: #/$defs/operation>",
+        "array<reference: #/$defs/operation>",
+        "IReadOnlyList<reference: #/$defs/operation>",
+        "ReadonlyArray<reference: #/$defs/operation>"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/request/properties/operations/items",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "#/$defs/operation"
+      },
+      "representations": [
+        "reference: #/$defs/operation",
+        "reference: #/$defs/operation",
+        "reference: #/$defs/operation",
+        "reference: #/$defs/operation"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/sequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/status",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "accepted"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/feedRevision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/result",
+      "requiredInContainer": true,
+      "shape": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "profileRevision"
+            ],
+            "properties": {
+              "kind": {
+                "const": "profile_updated"
+              },
+              "profileRevision": {
+                "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "completionRecorded"
+            ],
+            "properties": {
+              "kind": {
+                "const": "gameplay_completion_recorded"
+              },
+              "completionRecorded": {
+                "const": true
+              }
+            }
+          }
+        ]
+      },
+      "representations": [
+        "named map (definition/branches constrain fields) | named map (definition/branches constrain fields)",
+        "object | object",
+        "typed record or bounded ordinal dictionary | typed record or bounded ordinal dictionary",
+        "typed object or bounded map | typed object or bounded map"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/result/oneOf/0/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "profile_updated"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/result/oneOf/0/properties/profileRevision",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/result/oneOf/1/properties/kind",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "gameplay_completion_recorded"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/accepted/properties/result/oneOf/1/properties/completionRecorded",
+      "requiredInContainer": true,
+      "shape": {
+        "const": true
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/terminalRejected/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/terminalRejected/properties/sequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/terminalRejected/properties/status",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "terminal_rejected"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/terminalRejected/properties/error",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/error"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/terminalRejected/allOf/0/properties/error",
+      "requiredInContainer": false,
+      "shape": {
+        "properties": {
+          "retryable": {
+            "const": false
+          }
+        }
+      },
+      "representations": [
+        "constraint-only; resolve parent schema",
+        "constraint-only; resolve parent schema",
+        "constraint-only; resolve parent schema",
+        "constraint-only; resolve parent schema"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/terminalRejected/allOf/0/properties/error/properties/retryable",
+      "requiredInContainer": false,
+      "shape": {
+        "const": false
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/waiting/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/waiting/properties/sequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/waiting/properties/status",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "waiting_for_sequence"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/waiting/properties/expectedSequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/retryable/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/retryable/properties/sequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/retryable/properties/status",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "retryable"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/retryable/properties/error",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/error"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/retryable/allOf/0/properties/error",
+      "requiredInContainer": false,
+      "shape": {
+        "properties": {
+          "retryable": {
+            "const": true
+          }
+        }
+      },
+      "representations": [
+        "constraint-only; resolve parent schema",
+        "constraint-only; resolve parent schema",
+        "constraint-only; resolve parent schema",
+        "constraint-only; resolve parent schema"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/retryable/allOf/0/properties/error/properties/retryable",
+      "requiredInContainer": false,
+      "shape": {
+        "const": true
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/upgradeRequired/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/upgradeRequired/properties/sequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/upgradeRequired/properties/status",
+      "requiredInContainer": true,
+      "shape": {
+        "const": "upgrade_required"
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/upgradeRequired/properties/minimumProtocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "integer",
+        "minimum": 2
+      },
+      "representations": [
+        "bounded integer",
+        "integer token",
+        "int",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/upgradeRequired/properties/error",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/error"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error",
+        "reference: common.schema.json#/$defs/error"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/response/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/response/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/response/properties/operationResults",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 64,
+        "items": {
+          "$ref": "#/$defs/result"
+        }
+      },
+      "representations": [
+        "array<reference: #/$defs/result>",
+        "array<reference: #/$defs/result>",
+        "IReadOnlyList<reference: #/$defs/result>",
+        "ReadonlyArray<reference: #/$defs/result>"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/response/properties/finalizedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/response/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/push.schema.json#/$defs/response/properties/operationResults/items",
+      "requiredInContainer": false,
+      "shape": {
+        "$ref": "#/$defs/result"
+      },
+      "representations": [
+        "reference: #/$defs/result",
+        "reference: #/$defs/result",
+        "reference: #/$defs/result",
+        "reference: #/$defs/result"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptRequest/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptRequest/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptRequest/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptRequest/properties/installationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptRequest/properties/sequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptRequest/properties/fingerprint",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/sha256"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/sha256",
+        "reference: common.schema.json#/$defs/sha256",
+        "reference: common.schema.json#/$defs/sha256",
+        "reference: common.schema.json#/$defs/sha256"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/properties/found",
+      "requiredInContainer": true,
+      "shape": {
+        "type": "boolean"
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/properties/result",
+      "requiredInContainer": true,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "push.schema.json#/$defs/accepted"
+          },
+          {
+            "$ref": "push.schema.json#/$defs/terminalRejected"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "representations": [
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected | nil",
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected | null",
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected | explicit null",
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected | null"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/properties/operationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/properties/observedFinalizedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/allOf/0/if/properties/found",
+      "requiredInContainer": true,
+      "shape": {
+        "const": true
+      },
+      "representations": [
+        "bool",
+        "boolean",
+        "bool",
+        "boolean"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/allOf/0/then/properties/result",
+      "requiredInContainer": false,
+      "shape": {
+        "oneOf": [
+          {
+            "$ref": "push.schema.json#/$defs/accepted"
+          },
+          {
+            "$ref": "push.schema.json#/$defs/terminalRejected"
+          }
+        ]
+      },
+      "representations": [
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected",
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected",
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected",
+        "reference: push.schema.json#/$defs/accepted | reference: push.schema.json#/$defs/terminalRejected"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/receiptResponse/allOf/0/else/properties/result",
+      "requiredInContainer": false,
+      "shape": {
+        "type": "null"
+      },
+      "representations": [
+        "nil",
+        "null",
+        "explicit null",
+        "null"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/installationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/priorClientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/newClientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuidV7"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/reason",
+      "requiredInContainer": true,
+      "shape": {
+        "enum": [
+          "local_database_recreated",
+          "backup_restored",
+          "stream_identity_conflict"
+        ]
+      },
+      "representations": [
+        "UTF-8 string",
+        "string",
+        "string",
+        "string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/recoveryId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuidV7"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/inspectionToken",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamRequest/properties/expectedFinalizedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamResponse/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamResponse/properties/priorClientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamResponse/properties/newClientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamResponse/properties/nextSequence",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/positiveInt64",
+        "const": "1"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamResponse/properties/priorFinalizedThrough",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+      },
+      "representations": [
+        "exact integer within schema signed64 bounds",
+        "minimal decimal string",
+        "long",
+        "bigint"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamResponse/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/streamResponse/properties/recoveryId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectRequest/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectRequest/properties/clientStreamId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectRequest/properties/installationId",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/uuid"
+      },
+      "representations": [
+        "bin16 RFC order",
+        "canonical lowercase UUID string",
+        "Guid (explicit RFC bytes)",
+        "validated UUID string"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectResponse/properties/protocolVersion",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/protocolVersion"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion",
+        "reference: common.schema.json#/$defs/protocolVersion"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectResponse/properties/streamState",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/streamState"
+      },
+      "representations": [
+        "reference: common.schema.json#/$defs/streamState",
+        "reference: common.schema.json#/$defs/streamState",
+        "reference: common.schema.json#/$defs/streamState",
+        "reference: common.schema.json#/$defs/streamState"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectResponse/properties/inspectionToken",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/opaqueToken"
+      },
+      "representations": [
+        "bin 12..3072 bytes",
+        "canonical unpadded base64url",
+        "byte[]",
+        "Uint8Array"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectResponse/properties/expiresAt",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    },
+    {
+      "location": "schemas/recovery.schema.json#/$defs/inspectResponse/properties/serverTime",
+      "requiredInContainer": true,
+      "shape": {
+        "$ref": "common.schema.json#/$defs/timestamp"
+      },
+      "representations": [
+        "integer Unix milliseconds",
+        "integer token",
+        "long",
+        "number (safe integer)"
+      ]
+    }
+  ]
+}

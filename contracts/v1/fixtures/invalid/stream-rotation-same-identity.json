@@ -1,0 +1,10 @@
+{
+  "protocolVersion": 1,
+  "installationId": "00112233-4455-4677-8899-aabbccddeeff",
+  "priorClientStreamId": "019952d1-0000-7000-8000-000000000004",
+  "newClientStreamId": "019952d1-0000-7000-8000-000000000004",
+  "reason": "local_database_recreated",
+  "recoveryId": "019952d1-0000-7000-8000-000000000005",
+  "inspectionToken": "c3ludGhldGljLWluc3BlY3Rpb24",
+  "expectedFinalizedThrough": "155"
+}

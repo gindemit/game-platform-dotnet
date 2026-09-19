@@ -1,0 +1,5 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://contracts.gindemit.invalid/v1/schemas/error.schema.json","$defs":{
+    "response":{"type":"object","additionalProperties":false,"required":["protocolVersion","correlationId","error","serverTime"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"correlationId":{"$ref":"common.schema.json#/$defs/correlationId"},"error":{"$ref":"common.schema.json#/$defs/error"},"serverTime":{"$ref":"common.schema.json#/$defs/timestamp"}}}
+  }
+}

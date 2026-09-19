@@ -1,0 +1,1 @@
+{"protocolVersion":1,"changes":[{"feedRevision":"922","changes":[{"entityType":"wallet","entityKey":{"currencyId":"coins"},"revision":"12","kind":"upsert","data":{"balance":"900"}}]}],"nextCursor":"cHVsbC1jdXJzb3ItYWZ0ZXItOTIy","hasMore":false,"resetRequired":false,"committedThrough":"922","serverTime":1789555201000}

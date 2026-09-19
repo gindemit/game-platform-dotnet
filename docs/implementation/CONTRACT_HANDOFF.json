@@ -5,52 +5,387 @@
   "coordination_updated_on": "2026-09-19",
   "canonical_repository": "gindemit/game-platform-backend",
   "canonical_path": "contracts/",
-  "reviewed_commit": "66e40558045cbe5c314119022a55ced46ad9d04e",
+  "reviewed_commit": "0109936f0ebf232924cec70adb79c4f790b604bc",
   "client_baseline_commit": "f446101574e11c9885583ea184af583303b74ba1",
   "consumer_baseline_commit": "a3dc3f00aea334cdf538cc34d49c2e8a92b8cbd9",
   "policy_version": "0.1.0-draft",
   "policy_schema_version": 1,
   "digests": {
     "contracts/platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
-    "contracts/v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5"
+    "contracts/v1/primitive-vectors.json": "d76ccd7aa7e26a4a8b2603061f2709e6391dcc9abfe85bd5739fb58138da30a5",
+    "contracts/v1/operations.json": "619adc7befca289ce452e45fc12d0d458153303c477ff5da91f07452e625ee65",
+    "contracts/v1/schemas/account.schema.json": "0f8a3dff287a76e3f852f20a3fb6d0722d9eb8d7af207697ca236650841075bf",
+    "contracts/v1/schemas/bootstrap.schema.json": "01c967fcf63e42c10c1a3de88209203bc8a0848df88d0c19ed4710446f615774",
+    "contracts/v1/schemas/common.schema.json": "ee0196dd9adae91c621048ef8dfd66db5e56e892410da74948b195cb6d0d02b2",
+    "contracts/v1/schemas/error.schema.json": "6856fdfb984f1616a00d6be1208b506fcaf4696069fe267e0526fbd2546227ed",
+    "contracts/v1/schemas/gameplay.schema.json": "3f1b3242e8817b529303b79ed4177769c0ddda0304d268f7947c1543d546368e",
+    "contracts/v1/schemas/profile.schema.json": "13f012ae923ba4080a2b98049c9d66f6dd72ff8a582dd7b1a250e0d35c292a7c",
+    "contracts/v1/schemas/provision.schema.json": "6b8b8a7671e65dd313988c3462fbd3f378a2df4e30b7854937c80d79d687719b",
+    "contracts/v1/schemas/projection.schema.json": "a70ce394af28221395b19b1efbc496568e1c6bf72c5116d2bccb359b824dadf0",
+    "contracts/v1/schemas/pull.schema.json": "19fe5c36aef3b76f1921c8c7080079e62e531e56ec18b15dc8ef381be2e9eea3",
+    "contracts/v1/schemas/push.schema.json": "75ee127ed13c44bb88a3f50a79e1667dc1ddfa75ce62c34e58eaef44fc0a3b8b",
+    "contracts/v1/schemas/recovery.schema.json": "d77f93c061b73c060712383bef1f9f540221223b56d0711b1c74855dd18c0568",
+    "contracts/v1/fixtures/semantic/fingerprint-vectors.json": "e301e794cc5f36ef6a4d1bb15f6c6c0247a19d8b87c7acb5edb7bdec06008628",
+    "contracts/v1/fixtures/valid/account-response.json": "7accffa797af826b899fb7b49b60c9ed92808654ae0a3fe44f5d32182f1fce98",
+    "contracts/v1/fixtures/valid/bootstrap-continuation-page.json": "1f93caac1396985a16a39172b4e1918188bd21a696ffb34c2823b009b51c8c86",
+    "contracts/v1/fixtures/valid/bootstrap-final-page.json": "426d1fdd92c61e0282435bd1ac41a4568dd4c457ad8583cda80fc0d1c0b380c2",
+    "contracts/v1/fixtures/valid/bootstrap-page-request.json": "e9eb09c8c0408d3efec2c4b34f8b7422157ddf50f64b2a2302a6e76e950bb3ee",
+    "contracts/v1/fixtures/valid/bootstrap-start-response.json": "f2eb568421351a0b6e4dd50401d60a1f270161bbb8924b177950931b82123e4a",
+    "contracts/v1/fixtures/valid/error-response.json": "bbee0c32dc409a24222f92dd33e8829e4aa78ed83e3d3f73f877eb7d9feca53b",
+    "contracts/v1/fixtures/valid/profile-response.json": "f1c5610801c9de51b5e94a6b8a1e2242c17999e57e465afb1c08a3104c5d92be",
+    "contracts/v1/fixtures/valid/change-view-remove.json": "e18d801d51bd9ac89344ddbab7e783f88f46225ddefff67f2617cf6d1f5cea29",
+    "contracts/v1/fixtures/valid/projection-entitlement.json": "ab070c72acc6286bc38f9e8f7d15f0bad8c993e0774cbc381cd6bc28d038f42c",
+    "contracts/v1/fixtures/valid/projection-inventory.json": "ad6a7ab04438a82b173408bf94e056ae8418e11d1f37ec5711a2c7940c7c29a2",
+    "contracts/v1/fixtures/valid/projection-profile.json": "e157e5d1a66130d3c1247b955dcf0dfeff44e4ac067c4f8ca3f7a103ddfc7299",
+    "contracts/v1/fixtures/valid/projection-progression.json": "58b2a9001b1080b99ed9cb14a2f7e384085bf9be80cfc9a4e3277e408f761934",
+    "contracts/v1/fixtures/valid/projection-wallet.json": "976d3d776ce03a7914967657bc4dffe79de6ce1681c42b9b1c424127d3d9ff84",
+    "contracts/v1/fixtures/valid/provision-request.json": "d8b7701a8acbe8cae8501ef4666df5f430348fb652f2b0f9b49683998de489e3",
+    "contracts/v1/fixtures/valid/provision-response.json": "a2ebe55a50d5b540d4290f0fec06a152d3afef8744b4d1a1788f722f49e8d7de",
+    "contracts/v1/fixtures/valid/pull-request.json": "7edaa16afc868a1ddc5756d064162b575fe6721c882fb6eb0a714d4632b8c3ff",
+    "contracts/v1/fixtures/valid/pull-reset.json": "2c542027baf55759ff6ab62256f45ca83be55176a380f5f9d8dc59b86a8f49a8",
+    "contracts/v1/fixtures/valid/pull-response.json": "2f12f061de148435dda8c47d856b371eedcc87b410bd4ea565df40ecb188a1f8",
+    "contracts/v1/fixtures/valid/push-request.json": "a79e56739d2ef8090918a8c99c35ebbe3978b3a9695a40cc1406b17920044043",
+    "contracts/v1/fixtures/valid/push-response.json": "b75a73f5b74f297e54735880a4f17dd4c68d6d64dda15a97e91f35ee7220ba01",
+    "contracts/v1/fixtures/valid/push-retryable-response.json": "bad49622b92d65b59cb8c66d3ea42b19a283c2fa8105e4c7645c9e00f1c75c65",
+    "contracts/v1/fixtures/valid/push-terminal-response.json": "7275f1b6bdf95690295f6236b1611dabfe4a1ae24d6bd74ae12b963c4fb23c22",
+    "contracts/v1/fixtures/valid/push-upgrade-response.json": "e338944a029113084df7c623e1d8f78399048daf0bd6aa22525455ada16edd72",
+    "contracts/v1/fixtures/valid/push-waiting-response.json": "815448a03b7c293402f158c336c1e16dc8a297e4c72a0427ec8adfbf6c06967c",
+    "contracts/v1/fixtures/valid/receipt-found.json": "ad705a74b632fd2b9e4eaa313b635851322d894f1a38ac5eaf8ae01cb6d7b246",
+    "contracts/v1/fixtures/valid/receipt-not-found.json": "99dd1b3073714d16a1e66eefac33ae1e5b132c900c767c6523f5bad07f53f958",
+    "contracts/v1/fixtures/valid/receipt-request.json": "119e97718495f2000635e7e64ac1911a0bc58c52484fdfd58b4bee29b70ec8a3",
+    "contracts/v1/fixtures/valid/stream-recovery-request.json": "2b3d22f202c4c95ac70746d0e4b3ebf5f3d2fb8f1116f21f6c6446af5b6897e0",
+    "contracts/v1/fixtures/valid/stream-recovery-response.json": "b22f0fe80ea73a0c1fc0113455925cfbe989d9a8be8b28c91af9d3ef68814246",
+    "contracts/v1/fixtures/invalid/bootstrap-duplicate-collection.json": "bec6c7f2d457b295a5f41353eed666b7c69f2a497f92481f145ba8f7af1a77bb",
+    "contracts/v1/fixtures/invalid/bootstrap-incomplete-checkpoint.json": "d005348d51d69909495fe9989f9c3738fb21a2998102df5b9c060c719d260ff7",
+    "contracts/v1/fixtures/invalid/bootstrap-missing-wallet.json": "d784a9824a7f8ab00409853e2cdb5976d863ddf962a56f9d9b7417fec5eaa430",
+    "contracts/v1/fixtures/invalid/gameplay-extension-number.json": "612f852edc23c85c7f4415c5843ef48d162bc62e08ebe308ff5fe6b4145fda46",
+    "contracts/v1/fixtures/invalid/profile-unknown-field.json": "ecd7a8019ecf94d2a78f54bb2d901fd87531f223b293bdcc5a98a95cedcf40ed",
+    "contracts/v1/fixtures/invalid/provision-zero-next-sequence.json": "ca348f0dec2c9e588c6694f19a291652eed2d2e3ff433f3d6e6cc65278633404",
+    "contracts/v1/fixtures/invalid/bootstrap-unknown-version.json": "707386f5397eac1fdb75c1376869c978fc85895b952bb29ffbf515eafe25eace",
+    "contracts/v1/fixtures/invalid/change-removal-with-data.json": "07fb456425ec89753588b57273ca9f0604e72b10fe1b4e5532da5ed73a4c1819",
+    "contracts/v1/fixtures/invalid/projection-mismatched-data.json": "ce976a29f3b9cf49f83bb63a08bdcceb368670d6b154fa4d008b6239f8886f93",
+    "contracts/v1/fixtures/invalid/projection-mismatched-key.json": "30d28dac4be17e05b9b7bedbf50a361ac3e91526d257b971e296a9ec2034ab37",
+    "contracts/v1/fixtures/invalid/projection-unknown-family.json": "f5657e6165e3b1f43a05d6575ac42409302ed30cb8b8ff53ff0f08589d666733",
+    "contracts/v1/fixtures/invalid/pull-push-checkpoint.json": "d4c9fe913ef21a2e667d972ee098dc6bb7c04ac07a19b6be3d5b3aa7c981479d",
+    "contracts/v1/fixtures/invalid/pull-too-small.json": "4392793ccadd4e73c56584fe4dc51879528d6738573938e85db8ced5d606520b",
+    "contracts/v1/fixtures/invalid/push-body-actor.json": "cc6cdb8ad2a3deb49cbe9b0672e38155d156a1aec62bc636fbcd7e19fbf85b9f",
+    "contracts/v1/fixtures/invalid/push-client-grant.json": "681d08752c4bd4aab34a8531586d23833f7111938da298a9992f4489c532e9a9",
+    "contracts/v1/fixtures/invalid/push-negative-zero.json": "997761f76f1a88d2d59c76719522ef586f37fa1914fbe3f8a733750187a1c8d8",
+    "contracts/v1/fixtures/invalid/push-null-payload.json": "f0681160a253ebe7741c5b558f73bd5c93b9eaaf5641f94a8fd89f8733cea55e",
+    "contracts/v1/fixtures/invalid/push-sequence-overflow.json": "1d2753230d474914f5599205484f6770e670116ab66cf27f2ea223bb747b3e9d",
+    "contracts/v1/fixtures/invalid/push-timestamp-overflow.json": "4b8fa095f19b59092bea6ef7ee6b94bfd85db8d66b027e7214bbb5d62d15b55d",
+    "contracts/v1/fixtures/invalid/push-zero-sequence.json": "1ddca611f51dc4f4f2e3e8ba7f7f18526327cb40666c4cd13b6d08b696eb20f1",
+    "contracts/v1/fixtures/valid/bootstrap-stream-query.json": "8bd2c9fbc1eff95abb50764bc48de62a0002a631b1872483174f981f9c968d65",
+    "contracts/v1/fixtures/valid/stream-inspect-request.json": "9bd8bd227cf7d553c497bfbf29d31447b69f7584dd22f46be6e1839f2ee8b9e2",
+    "contracts/v1/fixtures/valid/stream-inspect-response.json": "a429bbc84c1e2150c64e1a8ac739605dde7f28e013895e211e331be856e6caa0",
+    "contracts/v1/fixtures/invalid/gameplay-duration-negative.json": "9f9db46adffd14afe0f18f181cdb210f1ee57ec6a8ead6e7ecfb132313f6ab7a",
+    "contracts/v1/fixtures/invalid/gameplay-tick-rate-zero.json": "b3e72cc6606cffd523920ba89821dc8cf860f2f463bfbc4355a98b0032fb0a9a",
+    "contracts/v1/fixtures/invalid/gameplay-tick-rate-overflow.json": "6ece300056941749f566ce92c1cd0059e4f4f8bd6f9d46b68bf70f1cca5bc0cf",
+    "contracts/v1/fixtures/invalid/gameplay-metric-overflow.json": "d26bd90487c2f2fca5958522e9cdb20cb99722f3a3541f35fa3d87bf7e5b82e1",
+    "contracts/v1/fixtures/invalid/gameplay-metric-fraction.json": "5be50e279bd1874d58b269552e4453f10fcf3a03f14f3ec5ea46c8fc43ea40fb",
+    "contracts/v1/fixtures/invalid/gameplay-metric-limit.json": "d2a0c5be028cd3657e5030784bd7b1dff0024fc223859b4503da29c22195ede0",
+    "contracts/v1/fixtures/invalid/gameplay-blank-session.json": "146bd03aa432ee6749acb34de1f7c415862ac7aec348e28f158f3f1cc2a1f4bc",
+    "contracts/v1/fixtures/invalid/gameplay-long-session.json": "f05da9ab70c6a4ded680b29f4c1d3541fc910260f168b998631eac7936144009",
+    "contracts/v1/fixtures/invalid/gameplay-missing-session.json": "9e71a9000a0567371ace6042c321f2ed6a2544027e6da0ba68dc1b0d96dd3147",
+    "contracts/v1/fixtures/valid/gameplay-extrema-preserved.json": "1ff660b402fc30ee487c4fc104807ee8c323a5dcf502d8197ddb765043b82a3d",
+    "contracts/v1/fixtures/invalid/bootstrap-missing-stream-state.json": "19425eec974a707dc6d5c968391702d7afba13721cbd311a6ddf229f7c2600ec",
+    "contracts/v1/fixtures/valid/stream-sequence-exhausted.json": "543fe0c92e69999694dbcce514093dcf2961319867e4aa926ec6d141389a5b81",
+    "contracts/v1/fixtures/invalid/stream-sequence-exhausted-wrap.json": "725af7017c998752871c2dac12239e1ff7b710a0bfeaba0e9a6dc632c20baf89",
+    "contracts/v1/fixtures/invalid/recovery-without-inspection.json": "1cd94afe41b693779d49b6806cf2a6a7f11ec0923a81210ad282ce4e1db2b33d",
+    "contracts/v1/fixtures/invalid/receipt-missing-fingerprint.json": "8c4f4e7ab21f1369d4ec46d71116aef04e1fbf618c2905d6d582f445eca3b34e",
+    "contracts/v1/fixtures/invalid/receipt-terminal-result-lost.json": "82a75409b812c606582ef04448e3ed994eb31936d8fa9aff2e5d377ff05594a0",
+    "contracts/v1/fixtures/invalid/receipt-compaction-forbidden.json": "6324edb06c63c729370bf42fd881d38a603b8725562c340572660dcb1d355bb8",
+    "contracts/v1/fixtures/invalid/stream-watermark-sequence-mismatch.json": "eefcb7aea68e480d8804f84e26bd418cf03307dea50b5ee3004b557d65cf2bb1",
+    "contracts/v1/fixtures/invalid/stream-rotation-same-identity.json": "f4d5c180e79775ffd531f6f696dd2f183f9b398c913dd8dcf26bfef8dfd5a5f7",
+    "contracts/v1/fixtures/invalid/opaque-token-impossible-length.json": "ebe03f03b10866ecdf99caaf9442c664d7c63d3ba10165b8657054e1668693b7",
+    "contracts/v1/fixtures/invalid/opaque-token-nonzero-pad-bits.json": "47fe78ff123bd7736ffe55f7d126c4a6a91af9f7fbd2d648c2b260f366a77528",
+    "contracts/v1/fixtures/semantic/field-mappings.json": "12dd09c8a6aa5afa7461b397012fa1ccc1b817f8baa4cfa4a32e1c422f43fa8c",
+    "contracts/v1/fixtures/semantic/recovery-vectors.json": "7d48a4f059af8fdca122879cc2f83e93d68a187a4e3b586e1863be5e9450e33b"
   },
-  "digest_evidence": "Values inspected in the existing canonical/mirror snapshot records; recompute against fetched bytes during CL-003 before repinning. Coordination documentation does not recompute or approve these existing pins.",
-  "operation_schema_version": null,
-  "operation_fixture_version": null,
-  "freeze_status": "blocked_G1_candidate_revision_required",
-  "schema_approval": {"status": "pending", "gate": "G1", "canonical_commit": null, "mirror_commit": null, "reviewers": [], "requires_runtime_implementations": false},
-  "core_interoperability": {"status": "unverified", "gate": "G2", "evidence": [], "required_directions": ["csharp_to_typescript", "typescript_to_csharp"]},
-  "live_slice": {"status": "unverified", "gate": "G3", "joint_backend_task": "BE-025", "joint_consumer_task": "INT-010", "backend_readiness_tasks": ["BE-016", "BE-024"], "completed_joint_task_is_readiness_prerequisite": false},
+  "digest_evidence": "Recomputed canonical bytes and exact 90-file SDK mirror during G1 epoch2 synchronization; final mirror commit pinned in a subsequent metadata commit.",
+  "operation_schema_version": 1,
+  "operation_fixture_version": 2,
+  "freeze_status": "schema_approved_g1_dto_delivery_partial",
+  "schema_approval": {
+    "status": "approved",
+    "gate": "G1",
+    "canonical_commit": "0109936f0ebf232924cec70adb79c4f790b604bc",
+    "mirror_commit": null,
+    "reviewers": [
+      "Codex /root synchronization session: backend, client contract and consumer review roles; no independent reviewer or product approval claimed"
+    ],
+    "requires_runtime_implementations": false,
+    "evidence": "docs/implementation/evidence/CL-003/G1-epoch2/README.md"
+  },
+  "core_interoperability": {
+    "status": "unverified",
+    "gate": "G2",
+    "evidence": [],
+    "required_directions": [
+      "csharp_to_typescript",
+      "typescript_to_csharp"
+    ]
+  },
+  "live_slice": {
+    "status": "unverified",
+    "gate": "G3",
+    "joint_backend_task": "BE-025",
+    "joint_consumer_task": "INT-010",
+    "backend_readiness_tasks": [
+      "BE-016",
+      "BE-024"
+    ],
+    "completed_joint_task_is_readiness_prerequisite": false
+  },
   "compatible_backend_implementation_commit": null,
   "compatible_sdk_artifact_commit": null,
   "compatible_unity_import_commit": null,
-  "owners_to_assign": {"canonical_changes": "BackendContractOwner", "reviewed_mirror_and_dto_mapping": "ClientContractOwner", "shared_unity_surfaces": "ConsumerIntegrationOwner"},
-  "owned_changes_this_track": ["SDK implementation and reviewed client mirror", "explicitly scoped MrSquare integration"],
-  "unowned_changes": ["backend canonical schemas and migrations during parallel phases", "backend deployment", "production data and secrets"],
+  "owners_to_assign": {
+    "canonical_changes": "BackendContractOwner",
+    "reviewed_mirror_and_dto_mapping": "ClientContractOwner",
+    "shared_unity_surfaces": "ConsumerIntegrationOwner"
+  },
+  "owned_changes_this_track": [
+    "SDK implementation and reviewed client mirror",
+    "explicitly scoped MrSquare integration"
+  ],
+  "unowned_changes": [
+    "backend canonical schemas and migrations during parallel phases",
+    "backend deployment",
+    "production data and secrets"
+  ],
   "peer_requests": [
-    {"key": "PEER-CORE", "client_task": "CL-003", "backend_tasks": ["BE-002"], "stage": "schema", "need": "Reviewed auth/provision/membership/full bootstrap paging, profile/progression, push/pull/results/reset/error schemas, unknown-field/version rules and canonical-semantic fingerprint algorithm, semantic/negative vectors, field mappings and hashes. Runtime binary exchange is the separate G2 gate, not a CL-003 prerequisite."},
-    {"key": "PEER-VALUE", "client_tasks": ["CL-103", "CL-104", "CL-105", "CL-106", "CL-107"], "backend_tasks": ["BE-017", "BE-019", "BE-020", "BE-021", "BE-022"], "need": "Catalog bindings, exact balances/instances/rights, atomic private change groups, trusted reward receipts and permanent operation plus business-source uniqueness. Schema approval precedes implementation; feature interoperability remains separate evidence."},
-    {"key": "PEER-OBJECTIVES", "client_tasks": ["CL-109", "CL-110"], "backend_tasks": ["BE-026", "BE-027", "BE-029"], "need": "Definition/evaluator/occurrence versions, seven initial objective kinds, upgrade policy, claims/reward slots and duplicate-event fixtures."},
-    {"key": "PEER-COMMERCE", "client_tasks": ["CL-111", "CL-112"], "backend_tasks": ["BE-028", "BE-032", "BE-033", "BE-034", "BE-035"], "need": "Offer/version/price/limits, virtual purchase and external receipt verification state machines; authoritative verification and replay fixtures. Sandbox and activation remain separate gates."},
-    {"key": "PEER-SOCIAL", "client_tasks": ["CL-113", "CL-114"], "backend_tasks": ["BE-036", "BE-037", "BE-038", "BE-039"], "need": "Leaderboard query/snapshot/score/season and team query/membership/contribution contracts, complete authorization/cache scope."},
-    {"key": "PEER-CONFIG-INBOX", "client_tasks": ["CL-115", "CL-116"], "backend_tasks": ["BE-030", "BE-040"], "need": "Assignment-scoped remote config and player inbox read/attachment-claim contracts distinct from internal event inbox."},
-    {"key": "PEER-LIVE-SLICE", "client_task": "INT-010", "backend_tasks": ["BE-016", "BE-024"], "joint_verification_backend_task": "BE-025", "need": "Implemented compatible nonproduction auth/PostgreSQL API with its real prerequisites, explicit seed/start/state-inspection commands and fixtures, complete bootstrap/feed/receipt behavior, approved test-content outcome/reward policy and exact backend revision. Completed BE-025 is not a prerequisite; BE-025 and INT-010 are the same joint G3 acceptance exercise."}
+    {
+      "key": "PEER-CORE",
+      "client_task": "CL-003",
+      "backend_tasks": [
+        "BE-002"
+      ],
+      "stage": "schema",
+      "need": "Reviewed auth/provision/membership/full bootstrap paging, profile/progression, push/pull/results/reset/error schemas, unknown-field/version rules and canonical-semantic fingerprint algorithm, semantic/negative vectors, field mappings and hashes. Runtime binary exchange is the separate G2 gate, not a CL-003 prerequisite."
+    },
+    {
+      "key": "PEER-VALUE",
+      "client_tasks": [
+        "CL-103",
+        "CL-104",
+        "CL-105",
+        "CL-106",
+        "CL-107"
+      ],
+      "backend_tasks": [
+        "BE-017",
+        "BE-019",
+        "BE-020",
+        "BE-021",
+        "BE-022"
+      ],
+      "need": "Catalog bindings, exact balances/instances/rights, atomic private change groups, trusted reward receipts and permanent operation plus business-source uniqueness. Schema approval precedes implementation; feature interoperability remains separate evidence."
+    },
+    {
+      "key": "PEER-OBJECTIVES",
+      "client_tasks": [
+        "CL-109",
+        "CL-110"
+      ],
+      "backend_tasks": [
+        "BE-026",
+        "BE-027",
+        "BE-029"
+      ],
+      "need": "Definition/evaluator/occurrence versions, seven initial objective kinds, upgrade policy, claims/reward slots and duplicate-event fixtures."
+    },
+    {
+      "key": "PEER-COMMERCE",
+      "client_tasks": [
+        "CL-111",
+        "CL-112"
+      ],
+      "backend_tasks": [
+        "BE-028",
+        "BE-032",
+        "BE-033",
+        "BE-034",
+        "BE-035"
+      ],
+      "need": "Offer/version/price/limits, virtual purchase and external receipt verification state machines; authoritative verification and replay fixtures. Sandbox and activation remain separate gates."
+    },
+    {
+      "key": "PEER-SOCIAL",
+      "client_tasks": [
+        "CL-113",
+        "CL-114"
+      ],
+      "backend_tasks": [
+        "BE-036",
+        "BE-037",
+        "BE-038",
+        "BE-039"
+      ],
+      "need": "Leaderboard query/snapshot/score/season and team query/membership/contribution contracts, complete authorization/cache scope."
+    },
+    {
+      "key": "PEER-CONFIG-INBOX",
+      "client_tasks": [
+        "CL-115",
+        "CL-116"
+      ],
+      "backend_tasks": [
+        "BE-030",
+        "BE-040"
+      ],
+      "need": "Assignment-scoped remote config and player inbox read/attachment-claim contracts distinct from internal event inbox."
+    },
+    {
+      "key": "PEER-LIVE-SLICE",
+      "client_task": "INT-010",
+      "backend_tasks": [
+        "BE-016",
+        "BE-024"
+      ],
+      "joint_verification_backend_task": "BE-025",
+      "need": "Implemented compatible nonproduction auth/PostgreSQL API with its real prerequisites, explicit seed/start/state-inspection commands and fixtures, complete bootstrap/feed/receipt behavior, approved test-content outcome/reward policy and exact backend revision. Completed BE-025 is not a prerequisite; BE-025 and INT-010 are the same joint G3 acceptance exercise."
+    }
   ],
   "additional_peer_mappings": [
-    {"boundary": "codec", "backend_tasks": ["BE-005", "BE-015"], "client_tasks": ["CL-004", "CL-016"]},
-    {"boundary": "auth_bootstrap_sync", "backend_tasks": ["BE-006", "BE-008", "BE-009", "BE-010", "BE-011", "BE-012", "BE-013", "BE-016"], "client_tasks": ["CL-005", "CL-008", "CL-009", "CL-010", "CL-101", "INT-004", "INT-006"]},
-    {"boundary": "profiles", "backend_tasks": ["BE-018"], "client_tasks": ["CL-102", "INT-008", "INT-010"]},
-    {"boundary": "outcome_policy_progression", "backend_tasks": ["BE-023", "BE-024"], "client_tasks": ["CL-108", "INT-005", "INT-007", "INT-010"]},
-    {"boundary": "identity_linking", "backend_tasks": ["BE-046"], "client_tasks": ["CL-101", "INT-004", "INT-006"]},
-    {"boundary": "final_reuse", "backend_tasks": ["BE-045"], "client_tasks": ["INT-016", "INT-017", "INT-018", "INT-019", "INT-020"]}
+    {
+      "boundary": "codec",
+      "backend_tasks": [
+        "BE-005",
+        "BE-015"
+      ],
+      "client_tasks": [
+        "CL-004",
+        "CL-016"
+      ]
+    },
+    {
+      "boundary": "auth_bootstrap_sync",
+      "backend_tasks": [
+        "BE-006",
+        "BE-008",
+        "BE-009",
+        "BE-010",
+        "BE-011",
+        "BE-012",
+        "BE-013",
+        "BE-016"
+      ],
+      "client_tasks": [
+        "CL-005",
+        "CL-008",
+        "CL-009",
+        "CL-010",
+        "CL-101",
+        "INT-004",
+        "INT-006"
+      ]
+    },
+    {
+      "boundary": "profiles",
+      "backend_tasks": [
+        "BE-018"
+      ],
+      "client_tasks": [
+        "CL-102",
+        "INT-008",
+        "INT-010"
+      ]
+    },
+    {
+      "boundary": "outcome_policy_progression",
+      "backend_tasks": [
+        "BE-023",
+        "BE-024"
+      ],
+      "client_tasks": [
+        "CL-108",
+        "INT-005",
+        "INT-007",
+        "INT-010"
+      ]
+    },
+    {
+      "boundary": "identity_linking",
+      "backend_tasks": [
+        "BE-046"
+      ],
+      "client_tasks": [
+        "CL-101",
+        "INT-004",
+        "INT-006"
+      ]
+    },
+    {
+      "boundary": "final_reuse",
+      "backend_tasks": [
+        "BE-045"
+      ],
+      "client_tasks": [
+        "INT-016",
+        "INT-017",
+        "INT-018",
+        "INT-019",
+        "INT-020"
+      ]
+    }
   ],
   "unresolved_decisions": [
-    {"key": "DEC-LEGACY-TRUST", "owner": "Product owner and backend owner", "recommendation": "Preserve old progress locally as unverified import bound once to an explicitly chosen provisioned account; no replayed grants or automatic account merging."},
-    {"key": "DEC-CONTENT-VALIDATION", "owner": "Game/backend owners", "recommendation": "Freeze a versioned nonproduction content-validation adapter and reward-source key for the first live slice. A client checkpoint signature is not proof of trusted completion."},
-    {"key": "SQLITE-PIN", "owner": "PackagingOwner via CL-006", "recommendation": "Qualify the documented unity-sqlite-net candidate and use a single managed/native bundle acquisition route; record an ADR before changing driver."}
+    {
+      "key": "DEC-LEGACY-TRUST",
+      "owner": "Product owner and backend owner",
+      "recommendation": "Preserve old progress locally as unverified import bound once to an explicitly chosen provisioned account; no replayed grants or automatic account merging."
+    },
+    {
+      "key": "DEC-CONTENT-VALIDATION",
+      "owner": "Game/backend owners",
+      "recommendation": "Freeze a versioned nonproduction content-validation adapter and reward-source key for the first live slice. A client checkpoint signature is not proof of trusted completion."
+    },
+    {
+      "key": "SQLITE-PIN",
+      "owner": "PackagingOwner via CL-006",
+      "recommendation": "Qualify the documented unity-sqlite-net candidate and use a single managed/native bundle acquisition route; record an ADR before changing driver."
+    }
   ],
   "delta_policy": "After schema freeze, record changed fields/semantics, compatibility, schema/fixture versions, actual reviewers, exact peer commits and regenerated hashes. Pause affected work for a synchronized delta checkpoint and coordinated repin. Schema review alone never passes new runtime fixtures. Mirrors are artifacts, never independent specifications.",
-  "peer_plan_task_ids": ["BE-002", "BE-005", "BE-006", "BE-008", "BE-009", "BE-010", "BE-011", "BE-012", "BE-013", "BE-015", "BE-016", "BE-017", "BE-018", "BE-019", "BE-020", "BE-021", "BE-022", "BE-023", "BE-024", "BE-025", "BE-026", "BE-027", "BE-028", "BE-029", "BE-030", "BE-032", "BE-033", "BE-034", "BE-035", "BE-036", "BE-037", "BE-038", "BE-039", "BE-040", "BE-045", "BE-046"],
+  "peer_plan_task_ids": [
+    "BE-002",
+    "BE-005",
+    "BE-006",
+    "BE-008",
+    "BE-009",
+    "BE-010",
+    "BE-011",
+    "BE-012",
+    "BE-013",
+    "BE-015",
+    "BE-016",
+    "BE-017",
+    "BE-018",
+    "BE-019",
+    "BE-020",
+    "BE-021",
+    "BE-022",
+    "BE-023",
+    "BE-024",
+    "BE-025",
+    "BE-026",
+    "BE-027",
+    "BE-028",
+    "BE-029",
+    "BE-030",
+    "BE-032",
+    "BE-033",
+    "BE-034",
+    "BE-035",
+    "BE-036",
+    "BE-037",
+    "BE-038",
+    "BE-039",
+    "BE-040",
+    "BE-045",
+    "BE-046"
+  ],
   "peer_plan_note": "Mapped to backend PR #1 task cards reviewed at 83866674247a98914709c6b1ede9fcd709be296a. Mapping does not imply any implementation or gate passed. See COORDINATION.md and the canonical backend coordination protocol for staged acceptance and current execution-branch state.",
   "p1_client_review": {
     "phase": "P1",
@@ -79,7 +414,13 @@
     "field_mapping": "docs/implementation/evidence/CL-003/epoch1/candidate-review.json",
     "consumer_expectations": "docs/implementation/evidence/CL-003/epoch1/CONSUMER_EXPECTATIONS.md",
     "report": "docs/implementation/evidence/CL-003/epoch1/README.md",
-    "findings_remaining": ["G1-R1", "G1-R2", "G1-R3", "G1-R4", "G1-R5"],
+    "findings_remaining": [
+      "G1-R1",
+      "G1-R2",
+      "G1-R3",
+      "G1-R4",
+      "G1-R5"
+    ],
     "schema_approved": false,
     "mirror_repinned": false,
     "runtime_compatibility": "unverified"
@@ -99,5 +440,22 @@
     ],
     "mirror_repinned": false,
     "runtime_compatibility": "unverified"
+  },
+  "contract_version": "0.2.0-core-schema.1",
+  "g1_epoch2_review": {
+    "status": "schema_approved",
+    "candidate_review_commit": "a891020d8a33f70c2cdbf5bef9a756992c6e7c1a",
+    "canonical_commit": "0109936f0ebf232924cec70adb79c4f790b604bc",
+    "version": "0.2.0-core-schema.1",
+    "mapping": "docs/implementation/evidence/CL-003/G1-epoch2/reviewed-schema.json",
+    "resolved_findings": [
+      "G1-R1",
+      "G1-R2",
+      "G1-R3",
+      "G1-R4",
+      "G1-R5"
+    ],
+    "runtime_compatibility": "unverified",
+    "DTO_delivery": "partial_P2"
   }
 }

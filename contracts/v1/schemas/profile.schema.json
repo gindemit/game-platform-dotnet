@@ -1,0 +1,7 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://contracts.gindemit.invalid/v1/schemas/profile.schema.json","$defs":{
+    "profile":{"type":"object","additionalProperties":false,"required":["displayName","revision","updatedAt"],"properties":{"displayName":{"type":"string","minLength":1,"maxLength":64},"avatarKey":{"oneOf":[{"$ref":"common.schema.json#/$defs/semanticKey"},{"type":"null"}]},"locale":{"type":"string","pattern":"^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$","maxLength":35},"revision":{"$ref":"common.schema.json#/$defs/nonNegativeInt64"},"updatedAt":{"$ref":"common.schema.json#/$defs/timestamp"}}},
+    "response":{"type":"object","additionalProperties":false,"required":["protocolVersion","profile","serverTime"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"profile":{"$ref":"#/$defs/profile"},"serverTime":{"$ref":"common.schema.json#/$defs/timestamp"}}},
+    "patchCommand":{"type":"object","additionalProperties":false,"minProperties":2,"required":["expectedRevision"],"properties":{"expectedRevision":{"$ref":"common.schema.json#/$defs/nonNegativeInt64"},"displayName":{"type":"string","minLength":1,"maxLength":64},"avatarKey":{"oneOf":[{"$ref":"common.schema.json#/$defs/semanticKey"},{"type":"null"}]},"locale":{"type":"string","pattern":"^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$","maxLength":35}}}
+  }
+}

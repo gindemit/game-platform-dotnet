@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/v1/schemas/gameplay.schema.json",
+  "$defs": {
+    "completionCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "contentId",
+        "contentVersion",
+        "mode",
+        "difficulty",
+        "success",
+        "score",
+        "durationTicks",
+        "ticksPerSecond",
+        "metrics",
+        "validation"
+      ],
+      "properties": {
+        "contentId": {
+          "$ref": "common.schema.json#/$defs/consumerId"
+        },
+        "contentVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "mode": {
+          "$ref": "common.schema.json#/$defs/consumerId"
+        },
+        "difficulty": {
+          "$ref": "common.schema.json#/$defs/consumerId"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "score": {
+          "$ref": "common.schema.json#/$defs/signedInt64"
+        },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scheme",
+            "reference"
+          ],
+          "properties": {
+            "scheme": {
+              "$ref": "common.schema.json#/$defs/semanticKey"
+            },
+            "reference": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        },
+        "extension": {
+          "$ref": "common.schema.json#/$defs/extension"
+        },
+        "session": {
+          "$ref": "common.schema.json#/$defs/consumerId"
+        },
+        "durationTicks": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "ticksPerSecond": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "metrics": {
+          "type": "object",
+          "maxProperties": 256,
+          "propertyNames": {
+            "$ref": "common.schema.json#/$defs/consumerId"
+          },
+          "additionalProperties": {
+            "$ref": "common.schema.json#/$defs/signedInt64"
+          }
+        }
+      }
+    }
+  }
+}

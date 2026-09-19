@@ -7,6 +7,31 @@ from review_candidate import SchemaValidator, field_rows, load_candidate, type_m
 
 
 class ReviewTests(unittest.TestCase):
+    def test_opaque_token_is_binary_not_text_on_wire(self):
+        value = type_mapping({}, '', {'$ref':'common.schema.json#/$defs/opaqueToken'})
+        self.assertEqual('Uint8Array', value[1])
+        self.assertIn('binary', value[2])
+
+    def test_token_canonicality(self):
+        validator = SchemaValidator({'type':'string','x-canonicalBase64Url':True})
+        self.assertTrue(validator.is_valid('AAAAAAAAAAAAAAAA'))
+        self.assertFalse(validator.is_valid('AAAAAAAAAAAAAAAAA'))
+        self.assertFalse(validator.is_valid('AAAAAAAAAAAAAAAAAB'))
+
+    def test_stream_sequence_is_checked_without_float(self):
+        validator = SchemaValidator({'x-streamSequence':True})
+        self.assertTrue(validator.is_valid({'finalizedThrough':'9007199254740993','nextSequence':'9007199254740994'}))
+        self.assertFalse(validator.is_valid({'finalizedThrough':'154','nextSequence':'154'}))
+        self.assertTrue(validator.is_valid({'finalizedThrough':'9223372036854775807','nextSequence':None}))
+
+    def test_rotation_cannot_reuse_prior_id(self):
+        validator = SchemaValidator({'x-distinctProperties':['prior','new']})
+        self.assertFalse(validator.is_valid({'prior':'a','new':'a'}))
+        self.assertTrue(validator.is_valid({'prior':'a','new':'b'}))
+
+    def test_depth_bound_is_not_silently_ignored(self):
+        self.assertFalse(SchemaValidator({'x-maximumDepth':2}).is_valid({'a':{'b':{}}}))
+
     def test_requires_immutable_commit(self):
         with self.assertRaises(ValueError):
             load_candidate("unused", "origin/main")

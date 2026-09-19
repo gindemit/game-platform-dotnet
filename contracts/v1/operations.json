@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "0.2.0-core-schema.1",
+  "status": "schema_approved_g1",
+  "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "representations": {
+    "primary": "application/vnd.gindemit.platform.v1+msgpack",
+    "diagnostic": "application/vnd.gindemit.platform.v1+json",
+    "requestContentTypeRequired": "required_for_requests_with_nonempty_bodies_only",
+    "acceptRequired": true,
+    "decodeErrorFallback": false,
+    "unsupportedMediaStatus": 415,
+    "notAcceptableStatus": 406
+  },
+  "scope": {
+    "actorSource": "verified_authentication_context_only",
+    "pathAppIdMustEqualAuthorizedMembership": true,
+    "bodyActorSelection": false,
+    "correlationIdExcludedFromCommandFingerprint": true
+  },
+  "http": {
+    "protocolVersionPlacement": "The v1 route prefix and negotiated vendor media type select protocol v1 for bodyless GET requests. Requests with bodies require protocolVersion. Every application success or error response body requires protocolVersion.",
+    "correlationRequestHeader": "X-Correlation-Id optional bounded caller value; gateway may replace invalid values",
+    "correlationResponseHeader": "X-Correlation-Id required and equal to error envelope correlationId when an envelope exists",
+    "errorSchema": "schemas/error.schema.json#/$defs/response",
+    "successStatuses": {
+      "provisionMembership": 200,
+      "getAccount": 200,
+      "getBootstrap": 200,
+      "getBootstrapPage": 200,
+      "pushCommands": 200,
+      "getReceipt": 200,
+      "recoverStream": 200,
+      "pullChanges": 200,
+      "getProfile": 200,
+      "inspectStream": 200
+    },
+    "categoryStatuses": {
+      "authentication": 401,
+      "authorization": 403,
+      "validation": 400,
+      "conflict": 409,
+      "rate_limit": 429,
+      "dependency": 503,
+      "protocol": 400,
+      "internal": 500
+    },
+    "retryAfter": "HTTP Retry-After is required for rate_limit and may accompany dependency; envelope retryAfterMilliseconds is the precise client delay and must agree after rounding Retry-After seconds upward",
+    "preEnvelopeFailures": "TLS, proxy, gateway, body-size, media-negotiation and authentication rejection may lack an application envelope; clients map the HTTP/network condition to a local transport outcome and never treat it as a terminal command receipt",
+    "gatewayStatuses": {
+      "body_too_large": 413,
+      "unsupported_media": 415,
+      "not_acceptable": 406,
+      "gateway_authentication": 401,
+      "rate_limit": 429,
+      "gateway_unavailable": 502
+    }
+  },
+  "operations": [
+    {
+      "id": "provisionMembership",
+      "method": "POST",
+      "path": "/v1/apps/{appId}/provision",
+      "requestSchema": "schemas/provision.schema.json#/$defs/request",
+      "successSchema": "schemas/provision.schema.json#/$defs/response",
+      "idempotency": "authenticated_provider_principal_plus_app"
+    },
+    {
+      "id": "getAccount",
+      "method": "GET",
+      "path": "/v1/account",
+      "successSchema": "schemas/account.schema.json#/$defs/response"
+    },
+    {
+      "id": "getBootstrap",
+      "method": "GET",
+      "path": "/v1/apps/{appId}/bootstrap",
+      "successSchema": "schemas/bootstrap.schema.json#/$defs/startResponse",
+      "querySchema": "schemas/bootstrap.schema.json#/$defs/startQuery"
+    },
+    {
+      "id": "getBootstrapPage",
+      "method": "POST",
+      "path": "/v1/apps/{appId}/bootstrap/pages",
+      "requestSchema": "schemas/bootstrap.schema.json#/$defs/pageRequest",
+      "successSchema": "schemas/bootstrap.schema.json#/$defs/pageResponse"
+    },
+    {
+      "id": "pushCommands",
+      "method": "POST",
+      "path": "/v1/apps/{appId}/sync/push",
+      "requestSchema": "schemas/push.schema.json#/$defs/request",
+      "successSchema": "schemas/push.schema.json#/$defs/response"
+    },
+    {
+      "id": "getReceipt",
+      "method": "POST",
+      "path": "/v1/apps/{appId}/sync/receipts/lookup",
+      "requestSchema": "schemas/recovery.schema.json#/$defs/receiptRequest",
+      "successSchema": "schemas/recovery.schema.json#/$defs/receiptResponse"
+    },
+    {
+      "id": "inspectStream",
+      "method": "POST",
+      "path": "/v1/apps/{appId}/sync/streams/inspect",
+      "requestSchema": "schemas/recovery.schema.json#/$defs/inspectRequest",
+      "successSchema": "schemas/recovery.schema.json#/$defs/inspectResponse"
+    },
+    {
+      "id": "recoverStream",
+      "method": "POST",
+      "path": "/v1/apps/{appId}/sync/streams/recover",
+      "requestSchema": "schemas/recovery.schema.json#/$defs/streamRequest",
+      "successSchema": "schemas/recovery.schema.json#/$defs/streamResponse"
+    },
+    {
+      "id": "pullChanges",
+      "method": "POST",
+      "path": "/v1/apps/{appId}/sync/pull",
+      "requestSchema": "schemas/pull.schema.json#/$defs/request",
+      "successSchema": "schemas/pull.schema.json#/$defs/response"
+    },
+    {
+      "id": "getProfile",
+      "method": "GET",
+      "path": "/v1/apps/{appId}/profile",
+      "successSchema": "schemas/profile.schema.json#/$defs/response"
+    }
+  ],
+  "commandTypes": [
+    {
+      "type": "profile.patch",
+      "schemaVersion": 1,
+      "payloadSchema": "schemas/profile.schema.json#/$defs/patchCommand",
+      "unsupportedPolicy": "terminal_rejected"
+    },
+    {
+      "type": "gameplay.session.completed",
+      "schemaVersion": 1,
+      "payloadSchema": "schemas/gameplay.schema.json#/$defs/completionCommand",
+      "unsupportedPolicy": "upgrade_required_nonterminal"
+    }
+  ],
+  "compatibility": {
+    "unknownOptionalResponseFields": "rejected_at_protocol_v1_schema; a later negotiated compatible minor may declare bounded ignorable fields",
+    "unknownRequiredCollectionOrChange": "reject_without_checkpoint_advance",
+    "unknownCommandType": "upgrade_required_nonterminal",
+    "explicitNull": "rejected_unless_schema_lists_null",
+    "duplicateMapKeys": "reject_before_object_materialization"
+  },
+  "changeSemantics": {
+    "upsert": "replace the typed entity projection at its revision",
+    "tombstone": "the canonical entity was authoritatively deleted; remove canonical entity and view membership",
+    "view_remove": "the entity still may exist canonically but is no longer visible in this authorized view; remove view membership and do not delete a shared canonical cache entry solely for this change",
+    "invalidation": "discard the named cached projection and refetch through its authorized query/read operation; it is not evidence of canonical deletion"
+  },
+  "limits": {
+    "requestBytes": 262144,
+    "pushOperations": 64,
+    "pullRequestedMaximumBytesMinimum": 131072,
+    "pullRequestedMaximumBytesMaximum": 262144,
+    "mapEntries": 256,
+    "arrayItems": 1024,
+    "stringBytes": 8192,
+    "binaryBytes": 262144,
+    "nestingDepth": 32,
+    "extensionBytes": 16384,
+    "extensionDepth": 16,
+    "atomicFeedGroupBytes": 65536,
+    "targetPageBytes": 131072,
+    "hardResponseBytes": 262144,
+    "decodedNodes": 16384,
+    "decodedAllocationUnits": 2097152,
+    "decodedBudgetAccounting": "Every value and map key costs one node and 32 units; add 8 units per array slot or 16 per map pair, 2 units per UTF-16 code unit for text (keys included), and binary byte length. Charge declared lengths before allocation; include all nested values and all envelope fields. Units are a deterministic logical allocation cap, not measured heap bytes. Reject if either budget is exceeded; also enforce each local bound.",
+    "compression": "Content-Encoding absent or identity only; reject compressed request bodies with 415 before decompression; response Content-Encoding identity or absent. Do not advertise Accept-Encoding compression; gateways must not transparently decompress requests.",
+    "unicode": "Strict UTF-8 scalar values only; reject malformed UTF-8/unpaired surrogates and duplicate keys before lossy materialization; no Unicode normalization. Schema maxLength counts Unicode scalars; also enforce global stringBytes.",
+    "encodedInputBufferBytes": 262144,
+    "temporaryParserBufferBytes": 262144,
+    "retainedCopies": "Charge every concurrently retained decoded copy using the same logical allocation formula; no uncharged copy."
+  },
+  "fingerprint": {
+    "version": 1,
+    "algorithm": "sha-256",
+    "semanticEncoding": "gindemit-canonical-command-v1",
+    "included": [
+      "backendNamespace",
+      "authenticatedAppId",
+      "authenticatedPlatformUserId",
+      "clientStreamId",
+      "operationId",
+      "installationId",
+      "sequence",
+      "type",
+      "schemaVersion",
+      "clientCreatedAt",
+      "payload"
+    ],
+    "excluded": [
+      "correlationId",
+      "requestAttemptId",
+      "transportRepresentation"
+    ],
+    "normalization": {
+      "objects": "keys sorted by unsigned lexicographic comparison of their UTF-8 byte sequences",
+      "arrays": "preserve_order",
+      "uuid": "Validate canonical lowercase diagnostic UUID or decode exactly 16 RFC-order bytes, then encode canonical lowercase UUID text with string tag; never use Guid.ToByteArray native layout.",
+      "int64": "Schema-declared signed64 diagnostic decimal strings or exact MessagePack integers normalize to a checked signed integer then integer tag. Compact safe integers have the same tag; unsafe rounded numbers are rejected before conversion.",
+      "timestamp": "base10 integer encoded with integer tag",
+      "strings": "Unicode scalar sequence encoded as UTF-8 with no implicit normalization",
+      "absent": "omitted",
+      "null": "null tag only where schema allows",
+      "numbers": "Schema integer fields normalize exact integer tokens, never floating point tokens, fractions, negative zero or diagnostic exponent notation. JSON integer lexical validation precedes object materialization.",
+      "extensions": "numeric tokens rejected recursively in core v1; values contain only null, boolean, string, arrays and objects"
+    },
+    "framing": "ASCII gsc1 followed by exactly one value. value := n | f | t | i<minimal-decimal>; | s<unsigned-byte-count>:<UTF-8-bytes> | a<unsigned-count>:[<value><value>...] | o<unsigned-count>:{<key-string>,<value><key-string>,<value>...}. The literal delimiters are i, semicolon, s, colon, a, brackets, o, braces, and one comma between each object key and value; there is no comma between pairs or array items and no whitespace. An object key is a string frame. Counts and lengths are unsigned minimal decimal. Object pairs use the declared UTF-8 key ordering.",
+    "note": "C03 remains a G1 review choice: approve this tagged grammar or replace it with another fully specified mechanism. The paired vectors cover this proposal; it is not yet a frozen compatibility promise."
+  },
+  "remediationSemantics": {
+    "repositoryPath": "docs/implementation/contract-deltas/BE-002-epoch1-semantics.md",
+    "status": "normative_part_of_unapproved_candidate"
+  },
+  "receiptRetention": {
+    "terminalResults": "permanent_for_account_lifetime_including_full_typed_result_and_fingerprint",
+    "compaction": "forbidden_in_v1",
+    "absence": "observation_at_authorized_primary_read_only_never_proves_no_commit_or_permits_reidentity",
+    "accountErasure": "out_of_scope_no_identity_reuse_or_replay_permission"
+  },
+  "conflictCodes": {
+    "operation_identity_conflict": "409: scoped operationId exists with changed immutable tuple or fingerprint",
+    "stream_sequence_conflict": "409: scoped sequence belongs to a different operation",
+    "stream_binding_conflict": "409: installation or successor registration mismatch",
+    "recovery_identity_conflict": "409: recoveryId reused with changed request",
+    "stream_changed": "409: inspection compare-and-set no longer matches",
+    "stream_retired": "409: unseen command on retired stream; exact terminal replay still returns stored result",
+    "receipt_integrity_unavailable": "503: required retained result missing; never found:false below finalizedThrough"
+  }
+}

@@ -4,6 +4,7 @@ Requires the already available jsonschema 4.17.3 for diagnostic schema checks.
 This is G1 schema tooling, not a MessagePack codec or runtime acceptance test.
 """
 import argparse
+import base64
 import hashlib
 import json
 import posixpath
@@ -15,7 +16,7 @@ from jsonschema import Draft202012Validator, RefResolver, ValidationError, valid
 
 
 def git_bytes(repo, *args):
-    return subprocess.check_output(["git", "-C", str(repo), *args])
+    return subprocess.check_output(["rtk", "proxy", "git", "-C", str(repo), *args], stderr=subprocess.DEVNULL)
 
 
 def load_candidate(repo, commit):
@@ -66,6 +67,8 @@ def type_mapping(docs, path, node):
         return "Guid (role-specific wrapper at domain boundary)", "UUID role value", "RFC-order bin16", "lowercase UUID string"
     if name == "timestamp":
         return "long (bounded Unix milliseconds)", "number (bounded safe integer)", "integer", "integer"
+    if name == "opaqueToken":
+        return "byte[] (bounded opaque token)", "Uint8Array", "binary 12..3072 bytes", "canonical unpadded base64url"
     path, node = resolve(docs, path, node)
     if ref and (node.get("type") == "object" or "oneOf" in node):
         label = Path(path).name.split(".")[0].title() + name[0].upper() + name[1:] + "Dto"
@@ -162,10 +165,48 @@ def recursive_scalars(validator, allowed, instance, schema):
         yield from recursive_scalars(validator, allowed, value, schema)
 
 
+def canonical_base64(validator, enabled, instance, schema):
+    if enabled and isinstance(instance, str):
+        try:
+            decoded = base64.urlsafe_b64decode(instance + '=' * (-len(instance) % 4))
+            if base64.urlsafe_b64encode(decoded).decode().rstrip('=') != instance:
+                yield ValidationError('Noncanonical base64url')
+        except ValueError:
+            yield ValidationError('Invalid base64url')
+
+
+def stream_sequence(validator, enabled, instance, schema):
+    if enabled and isinstance(instance, dict):
+        try:
+            finalized = int(instance['finalizedThrough'])
+            expected = None if finalized == 9223372036854775807 else str(finalized + 1)
+            if instance.get('nextSequence') != expected:
+                yield ValidationError('Stream nextSequence does not follow finalizedThrough')
+        except (KeyError, ValueError, TypeError):
+            yield ValidationError('Invalid stream watermark')
+
+
+def distinct_properties(validator, names, instance, schema):
+    if isinstance(instance, dict) and len({instance.get(n) for n in names}) != len(names):
+        yield ValidationError('Rotation identities must differ')
+
+
+def maximum_depth(validator, limit, instance, schema):
+    def depth(value):
+        children = list(value.values()) if isinstance(value, dict) else value if isinstance(value, list) else None
+        return 0 if children is None else 1 + max([0] + [depth(x) for x in children])
+    if depth(instance) > limit:
+        yield ValidationError('Maximum depth exceeded')
+
+
 SchemaValidator = validators.extend(Draft202012Validator, {
     "x-maximumDecimal": decimal_bound("maximum", lambda a, b: a > b),
     "x-minimumDecimal": decimal_bound("minimum", lambda a, b: a < b),
     "x-recursiveScalars": recursive_scalars,
+    "x-canonicalBase64Url": canonical_base64,
+    "x-streamSequence": stream_sequence,
+    "x-distinctProperties": distinct_properties,
+    "x-maximumDepth": maximum_depth,
 })
 
 

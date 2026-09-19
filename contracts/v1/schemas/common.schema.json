@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json",
+  "title": "Game platform core protocol common types",
+  "$defs": {
+    "protocolVersion": {
+      "const": 1
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "uuidV7": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "nonNegativeInt64": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,18})$",
+      "x-maximumDecimal": "9223372036854775807"
+    },
+    "positiveInt64": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,18}$",
+      "x-maximumDecimal": "9223372036854775807"
+    },
+    "signedInt64": {
+      "type": "string",
+      "pattern": "^(0|-?[1-9][0-9]{0,18})$",
+      "x-minimumDecimal": "-9223372036854775808",
+      "x-maximumDecimal": "9223372036854775807"
+    },
+    "timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 253402300799999
+    },
+    "opaqueToken": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 4096,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "x-canonicalBase64Url": true
+    },
+    "semanticKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "category",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/semanticKey"
+        },
+        "category": {
+          "enum": [
+            "authentication",
+            "authorization",
+            "validation",
+            "conflict",
+            "rate_limit",
+            "dependency",
+            "protocol",
+            "internal"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "retryAfterMilliseconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400000
+        },
+        "details": {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer",
+                "minimum": -2147483648,
+                "maximum": 2147483647
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "retryable": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "retryAfterMilliseconds": false
+            }
+          }
+        }
+      ]
+    },
+    "extension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "version",
+        "value"
+      ],
+      "properties": {
+        "schema": {
+          "$ref": "#/$defs/semanticKey"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "value": {
+          "type": "object",
+          "maxProperties": 128,
+          "x-recursiveScalars": [
+            "null",
+            "boolean",
+            "string"
+          ]
+        }
+      },
+      "x-maximumDepth": 16
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "player",
+            "service",
+            "administrator",
+            "provider"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platformUserId",
+        "createdAt",
+        "revision"
+      ],
+      "properties": {
+        "platformUserId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "revision": {
+          "$ref": "#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "appId",
+        "status",
+        "createdAt",
+        "revision"
+      ],
+      "properties": {
+        "appId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "suspended",
+            "revoked"
+          ]
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "revision": {
+          "$ref": "#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "consumerId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "\\S"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "streamState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clientStreamId",
+        "installationId",
+        "finalizedThrough",
+        "nextSequence",
+        "state"
+      ],
+      "properties": {
+        "clientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "installationId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "finalizedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "nextSequence": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/positiveInt64"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "active",
+            "retired"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "finalizedThrough": {
+                "const": "9223372036854775807"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "nextSequence": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "nextSequence": {
+                "$ref": "common.schema.json#/$defs/positiveInt64"
+              }
+            }
+          }
+        }
+      ],
+      "x-streamSequence": true
+    }
+  }
+}

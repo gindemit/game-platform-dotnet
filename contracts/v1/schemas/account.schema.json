@@ -1,0 +1,5 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://contracts.gindemit.invalid/v1/schemas/account.schema.json","$defs":{
+    "response":{"type":"object","additionalProperties":false,"required":["protocolVersion","account","memberships","serverTime"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"account":{"$ref":"common.schema.json#/$defs/account"},"memberships":{"type":"array","maxItems":128,"items":{"$ref":"common.schema.json#/$defs/membership"}},"serverTime":{"$ref":"common.schema.json#/$defs/timestamp"}}}
+  }
+}
