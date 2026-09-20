@@ -88,7 +88,7 @@ namespace GamePlatform.Features.Entitlements
             var payload = codec.EncodeConfirmed(confirmed);
             // An empty byte payload is the valid canonical encoding of a server-confirmed empty app-visible projection.
             if (payload == null || payload.Length > 262_144) throw new EntitlementProjectionConflictException("The entitlement codec produced an invalid projection payload.");
-            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, ToStorageRevision(confirmed.Revision),
+            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmed.Revision,
                 confirmed.ConfirmedAtMilliseconds, payload, Array.Empty<byte>()));
         }
 
@@ -114,9 +114,8 @@ namespace GamePlatform.Features.Entitlements
             var stored = await state.ReadAsync(exactOwner, Namespace, ConfirmedKey, cancellationToken).ConfigureAwait(false);
             if (stored == null) return null;
             codec.ValidateSupportedExtensions(stored.CopyExtensions());
-            var semanticRevision = FromStorageRevision(stored.Revision);
-            var decoded = codec.DecodeConfirmed(semanticRevision, stored.ConfirmedAtMilliseconds, stored.CopyPayload(), stored.CopyExtensions());
-            if (decoded == null || decoded.Revision != semanticRevision || decoded.ConfirmedAtMilliseconds != stored.ConfirmedAtMilliseconds)
+            var decoded = codec.DecodeConfirmed(stored.Revision, stored.ConfirmedAtMilliseconds, stored.CopyPayload(), stored.CopyExtensions());
+            if (decoded == null || decoded.Revision != stored.Revision || decoded.ConfirmedAtMilliseconds != stored.ConfirmedAtMilliseconds)
                 throw new EntitlementProjectionConflictException("The entitlement codec returned an invalid confirmed projection.");
             return decoded;
         }
@@ -179,9 +178,5 @@ namespace GamePlatform.Features.Entitlements
             return difference == 0;
         }
 
-        // gp_feature_state reserves positive row revisions for durable-record identity. This v5-local envelope is
-        // temporary until the v6 storage contract can represent semantic zero directly; no public/codec revision changes.
-        private static long ToStorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new EntitlementProjectionConflictException("The entitlement revision is exhausted.") : checked(semanticRevision + 1);
-        private static long FromStorageRevision(long storageRevision) => storageRevision <= 0 ? throw new EntitlementProjectionConflictException("The entitlement storage revision is invalid.") : storageRevision - 1;
     }
 }

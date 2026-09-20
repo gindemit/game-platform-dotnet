@@ -16,7 +16,5 @@ the same or a later authoritative projection removes it from every durable read,
 including after a borrowed-transaction restart. See
 `docs/implementation/evidence/CL-104`.
 
-SQLite's current `gp_feature_state` constraint reserves positive row revisions,
-so this module uses a private `semantic + 1` envelope. Public snapshots and
-codecs retain semantic revision `0`; a v6 storage-contract migration must remove
-this temporary envelope with compatibility coverage.
+Platform migration v6 permits zero directly, so confirmed inventory rows store
+the exact semantic revision, including zero and the signed-64 maximum.

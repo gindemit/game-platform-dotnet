@@ -75,7 +75,7 @@ namespace GamePlatform.Tests.Features.Inventory
             Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
             var zero = Snapshot(0, 2, false);
             await service.ApplyConfirmedAsync(Context, zero, Catalog(true), CancellationToken.None);
-            Assert.Equal(1L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='inventory' AND entity_key='confirmed'"), CancellationToken.None));
+            Assert.Equal(0L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='inventory' AND entity_key='confirmed'"), CancellationToken.None));
             var installed = await service.ReadCachedAsync(Context, CancellationToken.None);
             Assert.Equal(0, installed.Revision); Assert.Equal(0, installed.Value!.Confirmed!.Revision);
             await service.ApplyConfirmedAsync(Context, zero, Catalog(true), CancellationToken.None);
@@ -249,13 +249,15 @@ namespace GamePlatform.Tests.Features.Inventory
         }
 
         [Fact]
-        public async Task SemanticRevisionMaximumFailsClosedWithoutPersistingAnOverflowingEnvelope()
+        public async Task SemanticRevisionMaximumPersistsExactly()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
             var exhausted = new InventoryConfirmedSnapshot(long.MaxValue, 100,
                 new[] { new InventoryStack(Definition, 1, long.MaxValue) }, Array.Empty<InventoryInstance>());
-            await Assert.ThrowsAsync<InventoryProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, exhausted, Catalog(true), CancellationToken.None));
-            Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
+            await service.ApplyConfirmedAsync(Context, exhausted, Catalog(true), CancellationToken.None);
+            var cached = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(long.MaxValue, cached.Revision); Assert.Equal(long.MaxValue, cached.Value!.Confirmed!.Revision);
+            Assert.Equal(long.MaxValue, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='inventory' AND entity_key='confirmed'"), CancellationToken.None));
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 

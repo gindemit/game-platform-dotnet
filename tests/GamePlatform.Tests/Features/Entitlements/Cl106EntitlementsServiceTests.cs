@@ -64,7 +64,7 @@ namespace GamePlatform.Tests.Features.Entitlements
             Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
             var zero = Snapshot(0, EntitlementRightState.Active, null, new byte[] { 1 });
             await service.ApplyConfirmedAsync(Context, zero, Catalog(Context, true), CancellationToken.None);
-            Assert.Equal(1L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='entitlements' AND entity_key='confirmed'"), CancellationToken.None));
+            Assert.Equal(0L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='entitlements' AND entity_key='confirmed'"), CancellationToken.None));
             var installed = await service.ReadCachedAsync(Context, CancellationToken.None);
             Assert.Equal(0, installed.Revision); Assert.Equal(0, installed.Value!.Confirmed!.Revision);
             await service.ApplyConfirmedAsync(Context, zero, Catalog(Context, true), CancellationToken.None);
@@ -135,7 +135,7 @@ namespace GamePlatform.Tests.Features.Entitlements
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl106_cursor_sentinel VALUES (?)", 1);
                 return true;
             }, CancellationToken.None);
-            Assert.Equal(1L, (await new SqliteDurableFeatureStateStore(database, Scope).ReadAsync(Context, "entitlements", "confirmed", CancellationToken.None))!.Revision);
+            Assert.Equal(0L, (await new SqliteDurableFeatureStateStore(database, Scope).ReadAsync(Context, "entitlements", "confirmed", CancellationToken.None))!.Revision);
             var afterCommit = await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl106_cursor_sentinel"), CancellationToken.None);
             Assert.Equal(1, afterCommit);
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
@@ -147,13 +147,15 @@ namespace GamePlatform.Tests.Features.Entitlements
         }
 
         [Fact]
-        public async Task SemanticRevisionMaximumFailsClosedWithoutPersistingAnOverflowingEnvelope()
+        public async Task SemanticRevisionMaximumPersistsExactly()
         {
             using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
             var exhausted = new EntitlementConfirmedSnapshot(long.MaxValue, 100,
                 new[] { Right(RightId, ReceiptId, long.MaxValue, EntitlementRightState.Active, null, new byte[] { 1 }) });
-            await Assert.ThrowsAsync<EntitlementProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, exhausted, Catalog(Context, true), CancellationToken.None));
-            Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
+            await service.ApplyConfirmedAsync(Context, exhausted, Catalog(Context, true), CancellationToken.None);
+            var cached = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(long.MaxValue, cached.Revision); Assert.Equal(long.MaxValue, cached.Value!.Confirmed!.Revision);
+            Assert.Equal(long.MaxValue, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='entitlements' AND entity_key='confirmed'"), CancellationToken.None));
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 

@@ -92,7 +92,7 @@ namespace GamePlatform.Features.Inventory
             if (durablePriorRevision.HasValue && confirmed.Revision <= durablePriorRevision.Value) throw new InventoryProjectionConflictException("A borrowed inventory projection must advance its durable revision.");
             ValidateCatalog(exactOwner, confirmed, catalog);
             var payload = codec.EncodeConfirmed(confirmed); ValidatePayload(payload, "confirmed inventory");
-            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, ToStorageRevision(confirmed.Revision),
+            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmed.Revision,
                 confirmed.ConfirmedAtMilliseconds, payload, Array.Empty<byte>()));
         }
 
@@ -209,9 +209,8 @@ namespace GamePlatform.Features.Inventory
             if (confirmed != null)
             {
                 codec.ValidateInstanceExtensions(confirmed.CopyExtensions());
-                var semanticRevision = FromStorageRevision(confirmed.Revision);
-                decoded = codec.DecodeConfirmed(semanticRevision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
-                if (decoded == null || decoded.Revision != semanticRevision) throw new InventoryProjectionConflictException("The inventory codec returned an invalid confirmed state.");
+                decoded = codec.DecodeConfirmed(confirmed.Revision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
+                if (decoded == null || decoded.Revision != confirmed.Revision) throw new InventoryProjectionConflictException("The inventory codec returned an invalid confirmed state.");
             }
             if (pending == null || pending.PayloadLength == 0) return (decoded, Array.Empty<InventoryIntent>(), pending?.Revision ?? 0);
             var decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
@@ -241,10 +240,6 @@ namespace GamePlatform.Features.Inventory
 
         private ScopedOwnerContext EnsureOwner(ScopedOwnerContext requested) { if (disposed) throw new ObjectDisposedException(nameof(InventoryService)); if (requested != owner) throw new InventoryOwnerMismatchException(); return requested; }
         private long Now() { var value = nowMilliseconds(); if (value < 0 || value > 253_402_300_799_999L) throw new InvalidOperationException("Inventory clock is out of bounds."); return value; }
-        // gp_feature_state reserves positive row revisions for durable-record identity. This v5-local envelope is
-        // temporary until the v6 storage contract can represent semantic zero directly; no public/codec revision changes.
-        private static long ToStorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new InventoryProjectionConflictException("The inventory revision is exhausted.") : checked(semanticRevision + 1);
-        private static long FromStorageRevision(long storageRevision) => storageRevision <= 0 ? throw new InventoryProjectionConflictException("The inventory storage revision is invalid.") : storageRevision - 1;
         private static bool Matches(StorageScope scope, OwnerScope owner) => string.Equals(scope.BackendNamespace, owner.Backend.Value, StringComparison.Ordinal) && string.Equals(scope.AppId.Value, owner.AppId.ToString(), StringComparison.Ordinal) && string.Equals(scope.AccountId.Value, owner.UserId.ToString(), StringComparison.Ordinal);
         private static void ValidatePayload(byte[]? payload, string label) { if (payload == null || payload.Length == 0 || payload.Length > 262_144) throw new InvalidOperationException("The " + label + " payload is invalid."); }
         private void ValidateCatalog(ScopedOwnerContext exactOwner, InventoryConfirmedSnapshot confirmed, CatalogSnapshot catalog)
