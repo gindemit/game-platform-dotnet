@@ -40,7 +40,7 @@ namespace GamePlatform.Features.Contracts.Entitlements
             EntitlementOriginReceipt originReceipt, long? expiresAtServerMilliseconds, ReadOnlySpan<byte> payload)
         {
             if (!entitlementId.IsValid) throw new ArgumentException("An entitlement identity is required.", nameof(entitlementId));
-            if (revision <= 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             if (!Enum.IsDefined(typeof(EntitlementRightState), state)) throw new ArgumentOutOfRangeException(nameof(state));
             OriginReceipt = originReceipt ?? throw new ArgumentNullException(nameof(originReceipt));
             if (expiresAtServerMilliseconds.HasValue && (expiresAtServerMilliseconds.Value < 0 || expiresAtServerMilliseconds.Value > 253_402_300_799_999L))
@@ -70,7 +70,7 @@ namespace GamePlatform.Features.Contracts.Entitlements
 
         public EntitlementConfirmedSnapshot(long revision, long confirmedAtMilliseconds, IEnumerable<EntitlementRight> rights)
         {
-            if (revision <= 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             if (confirmedAtMilliseconds < 0 || confirmedAtMilliseconds > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(confirmedAtMilliseconds));
             if (rights == null) throw new ArgumentNullException(nameof(rights));
             this.rights = rights.ToArray();

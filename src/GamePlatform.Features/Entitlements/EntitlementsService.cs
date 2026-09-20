@@ -62,7 +62,7 @@ namespace GamePlatform.Features.Entitlements
 
                 await transactions.ExecuteAsync(scope, transaction =>
                 {
-                    ApplyConfirmedInTransaction(transaction, exactOwner, current?.Revision ?? 0, confirmed, catalog);
+                    ApplyConfirmedInTransaction(transaction, exactOwner, current == null ? (long?)null : current.Revision, confirmed, catalog);
                     return true;
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -72,23 +72,23 @@ namespace GamePlatform.Features.Entitlements
         /// <summary>
         /// Adds this projection to an already-open caller-owned transaction, so a private-feed adapter can commit it with
         /// its cursor and sibling effects. The caller supplies the projection revision read from that same group transaction;
-        /// it must advance before this service can mutate durable state.
+        /// null means absent while zero is a real server revision, and an existing projection must advance.
         /// </summary>
         public void ApplyConfirmedInTransaction(ILocalStorageTransaction transaction, ScopedOwnerContext requestedOwner,
-            long durablePriorRevision, EntitlementConfirmedSnapshot confirmed, CatalogSnapshot catalog)
+            long? durablePriorRevision, EntitlementConfirmedSnapshot confirmed, CatalogSnapshot catalog)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             var exactOwner = EnsureOwner(requestedOwner);
             if (!transaction.Scope.Equals(scope)) throw new EntitlementOwnerMismatchException();
-            if (durablePriorRevision < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
             if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
-            if (confirmed.Revision <= durablePriorRevision)
+            if (durablePriorRevision.HasValue && confirmed.Revision <= durablePriorRevision.Value)
                 throw new EntitlementProjectionConflictException("A borrowed entitlement projection must advance its durable prior revision.");
             ValidateCatalog(exactOwner, confirmed, catalog);
             var payload = codec.EncodeConfirmed(confirmed);
             // An empty byte payload is the valid canonical encoding of a server-confirmed empty app-visible projection.
             if (payload == null || payload.Length > 262_144) throw new EntitlementProjectionConflictException("The entitlement codec produced an invalid projection payload.");
-            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmed.Revision,
+            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, ToStorageRevision(confirmed.Revision),
                 confirmed.ConfirmedAtMilliseconds, payload, Array.Empty<byte>()));
         }
 
@@ -114,8 +114,9 @@ namespace GamePlatform.Features.Entitlements
             var stored = await state.ReadAsync(exactOwner, Namespace, ConfirmedKey, cancellationToken).ConfigureAwait(false);
             if (stored == null) return null;
             codec.ValidateSupportedExtensions(stored.CopyExtensions());
-            var decoded = codec.DecodeConfirmed(stored.Revision, stored.ConfirmedAtMilliseconds, stored.CopyPayload(), stored.CopyExtensions());
-            if (decoded == null || decoded.Revision != stored.Revision || decoded.ConfirmedAtMilliseconds != stored.ConfirmedAtMilliseconds)
+            var semanticRevision = FromStorageRevision(stored.Revision);
+            var decoded = codec.DecodeConfirmed(semanticRevision, stored.ConfirmedAtMilliseconds, stored.CopyPayload(), stored.CopyExtensions());
+            if (decoded == null || decoded.Revision != semanticRevision || decoded.ConfirmedAtMilliseconds != stored.ConfirmedAtMilliseconds)
                 throw new EntitlementProjectionConflictException("The entitlement codec returned an invalid confirmed projection.");
             return decoded;
         }
@@ -177,5 +178,10 @@ namespace GamePlatform.Features.Entitlements
             for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index];
             return difference == 0;
         }
+
+        // gp_feature_state reserves positive row revisions for durable-record identity. This v5-local envelope is
+        // temporary until the v6 storage contract can represent semantic zero directly; no public/codec revision changes.
+        private static long ToStorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new EntitlementProjectionConflictException("The entitlement revision is exhausted.") : checked(semanticRevision + 1);
+        private static long FromStorageRevision(long storageRevision) => storageRevision <= 0 ? throw new EntitlementProjectionConflictException("The entitlement storage revision is invalid.") : storageRevision - 1;
     }
 }
