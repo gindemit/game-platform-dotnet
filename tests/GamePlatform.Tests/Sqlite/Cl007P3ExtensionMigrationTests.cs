@@ -158,7 +158,6 @@ namespace GamePlatform.Tests.Sqlite
         [Fact]
         public async Task ConcurrentOpenUsesOneExtensionJournalAndChecksumsIncludeDescriptorIdentity()
         {
-            using var files = new TemporaryDatabase();
             var extension = Extension(1);
             var first = extension.GetChecksum(extension.Migrations[0]);
             var renamed = new SqliteExtensionDescriptor("consumer.other", 5, extension.Migrations);
@@ -166,11 +165,28 @@ namespace GamePlatform.Tests.Sqlite
             Assert.NotEqual(first, renamed.GetChecksum(renamed.Migrations[0]));
             Assert.NotEqual(first, minimumChanged.GetChecksum(minimumChanged.Migrations[0]));
 
-            var opens = Enumerable.Range(0, 4).Select(_ => SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { extension }, CancellationToken.None)).ToArray();
-            var databases = await Task.WhenAll(opens);
-            var observed = await databases[0].ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_extension_migrations"), CancellationToken.None);
-            Assert.Equal(1, observed);
-            foreach (var database in databases) Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            // Exercise both platform and extension journals from fresh files. The
+            // barrier deliberately releases all initializers together; this
+            // regresses the historical platform DDL race without sleeps.
+            for (var iteration = 0; iteration < 16; iteration++)
+            {
+                using var files = new TemporaryDatabase();
+                using var start = new Barrier(8);
+                var opens = Enumerable.Range(0, 8).Select(_ => Task.Run(async () =>
+                {
+                    start.SignalAndWait();
+                    return await SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { extension }, CancellationToken.None);
+                })).ToArray();
+                var databases = await Task.WhenAll(opens);
+                var observed = await databases[0].ExecuteAsync(Scope, transaction =>
+                {
+                    var session = (SqliteTransactionSession)transaction;
+                    return (Platform: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"), Extensions: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_extension_migrations"));
+                }, CancellationToken.None);
+                Assert.Equal(5, observed.Platform);
+                Assert.Equal(1, observed.Extensions);
+                foreach (var database in databases) Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            }
         }
 
         private static SqliteExtensionDescriptor Extension(int version) => new SqliteExtensionDescriptor("consumer.example", 5, version == 1
