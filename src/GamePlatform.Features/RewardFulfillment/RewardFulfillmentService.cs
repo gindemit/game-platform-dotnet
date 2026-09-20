@@ -20,17 +20,19 @@ namespace GamePlatform.Features.RewardFulfillment
         private readonly IDurableFeatureStateStore state;
         private readonly ISerializedStorageExecutor transactions;
         private readonly IRewardFulfillmentStateCodec codec;
+        private readonly IRewardPresentationClaimStore claims;
         private readonly Func<long> nowMilliseconds;
         private readonly SemaphoreSlim mutation = new SemaphoreSlim(1, 1);
         private bool disposed;
 
         public RewardFulfillmentService(ScopedOwnerContext owner, StorageScope scope, IDurableFeatureStateStore state,
-            ISerializedStorageExecutor transactions, IRewardFulfillmentStateCodec codec, Func<long> nowMilliseconds)
+            ISerializedStorageExecutor transactions, IRewardFulfillmentStateCodec codec, IRewardPresentationClaimStore claims, Func<long> nowMilliseconds)
         {
             if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
             if (!Matches(scope, owner.Owner)) throw new ArgumentException("The reward presentation scope does not match the captured owner.", nameof(scope));
             this.owner = owner; this.scope = scope; this.state = state ?? throw new ArgumentNullException(nameof(state));
             this.transactions = transactions ?? throw new ArgumentNullException(nameof(transactions)); this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
+            this.claims = claims ?? throw new ArgumentNullException(nameof(claims));
             this.nowMilliseconds = nowMilliseconds ?? throw new ArgumentNullException(nameof(nowMilliseconds));
         }
 
@@ -96,7 +98,7 @@ namespace GamePlatform.Features.RewardFulfillment
                 }
                 var existingEvidence = await ReadEvidenceAsync(group.Owner, group.GrantId, cancellationToken).ConfigureAwait(false);
                 if (existingEvidence != null && !SameGroup(existingEvidence.Value.Group, group)) throw new RewardFulfillmentConflictException("A grant cannot have conflicting projection groups.");
-                if (existingEvidence == null) await WriteGroupAsync(group, group.FeedRevision, cancellationToken).ConfigureAwait(false);
+                if (existingEvidence == null) await transactions.ExecuteAsync(scope, transaction => { StageProjectionGroup(transaction, group); return true; }, cancellationToken).ConfigureAwait(false);
                 if (current != null && current.Value.Record.Receipt != null)
                 {
                     if (current.Value.Record.Status == RewardPresentationStatus.AcceptedAwaitingPull)
@@ -108,6 +110,17 @@ namespace GamePlatform.Features.RewardFulfillment
             }
             finally { mutation.Release(); }
             return await ReadAsync(new RewardPresentationQuery(group.Owner, group.OperationId), cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>Stages validated feed-group evidence in the caller's projection/cursor transaction. It never advances a cursor or mutates value projections itself.</summary>
+        public void StageProjectionGroup(ILocalStorageTransaction transaction, RewardProjectionGroup group)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (group == null) throw new ArgumentNullException(nameof(group));
+            EnsureOwner(group.Owner);
+            if (!transaction.Scope.Equals(scope)) throw new RewardFulfillmentOwnerMismatchException();
+            var payload = codec.EncodeGroup(group); ValidatePayload(payload);
+            state.Upsert(transaction, new DurableFeatureMutation(group.Owner, Namespace, EvidenceKey(group.GrantId), group.FeedRevision, Now(), payload, Array.Empty<byte>()));
         }
 
         public async Task<FeatureSnapshot<RewardPresentationRecord>> ObserveRejectedAsync(RewardRejection rejection, CancellationToken cancellationToken)
@@ -141,16 +154,12 @@ namespace GamePlatform.Features.RewardFulfillment
                 var current = await ReadOperationAsync(exact, cancellationToken).ConfigureAwait(false);
                 if (current == null || current.Value.Record.Status != RewardPresentationStatus.Confirmed || current.Value.Record.Presented) return null;
                 var presented = new RewardPresentationRecord(current.Value.Record.OperationId, current.Value.Record.BusinessSource, RewardPresentationStatus.Confirmed, current.Value.Record.Receipt, null, true);
-                var presentationKey = PresentationKey(current.Value.Record.Receipt!.GrantId);
-                if (await state.ReadAsync(exact.Owner, Namespace, presentationKey, cancellationToken).ConfigureAwait(false) != null) return null;
-                await transactions.ExecuteAsync(scope, transaction =>
+                var claimed = await claims.TryClaimAsync(exact.Owner, current.Value.Record.Receipt!.GrantId, transaction =>
                 {
                     var recordPayload = codec.EncodeRecord(presented); ValidatePayload(recordPayload);
                     state.Upsert(transaction, new DurableFeatureMutation(exact.Owner, Namespace, OperationKey(presented.OperationId), NextRevision(current.Value.Revision, 0), Now(), recordPayload, Array.Empty<byte>()));
-                    state.Upsert(transaction, new DurableFeatureMutation(exact.Owner, Namespace, presentationKey, 1, Now(), recordPayload, Array.Empty<byte>()));
-                    return true;
                 }, cancellationToken).ConfigureAwait(false);
-                return presented;
+                return claimed ? presented : null;
             }
             finally { mutation.Release(); }
         }
@@ -175,8 +184,6 @@ namespace GamePlatform.Features.RewardFulfillment
         }
         private Task WriteRecordAsync(ScopedOwnerContext exactOwner, RewardPresentationRecord record, long revision, CancellationToken cancellationToken) =>
             transactions.ExecuteAsync(scope, transaction => { var payload = codec.EncodeRecord(record); ValidatePayload(payload); state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, OperationKey(record.OperationId), revision, Now(), payload, Array.Empty<byte>())); return true; }, cancellationToken);
-        private Task WriteGroupAsync(RewardProjectionGroup group, long revision, CancellationToken cancellationToken) =>
-            transactions.ExecuteAsync(scope, transaction => { var payload = codec.EncodeGroup(group); ValidatePayload(payload); state.Upsert(transaction, new DurableFeatureMutation(group.Owner, Namespace, EvidenceKey(group.GrantId), revision, Now(), payload, Array.Empty<byte>())); return true; }, cancellationToken);
         private RewardPresentationQuery EnsureQuery(RewardPresentationQuery query) { if (query == null) throw new ArgumentNullException(nameof(query)); EnsureOwner(query.Owner); return query; }
         private void EnsureOwner(ScopedOwnerContext requested) { if (disposed) throw new ObjectDisposedException(nameof(RewardFulfillmentService)); if (requested != owner) throw new RewardFulfillmentOwnerMismatchException(); }
         private long Now() { var value = nowMilliseconds(); if (value < 0 || value > 253_402_300_799_999L) throw new ArgumentOutOfRangeException("nowMilliseconds"); return value; }
@@ -190,7 +197,6 @@ namespace GamePlatform.Features.RewardFulfillment
         private static bool SameReceipt(RewardReceipt left, RewardReceipt right) => left.GrantId == right.GrantId && left.OriginatingOperationId == right.OriginatingOperationId && left.FeedRevision == right.FeedRevision && left.RecordedAtMilliseconds == right.RecordedAtMilliseconds && string.Equals(left.BusinessSource, right.BusinessSource, StringComparison.Ordinal) && string.Equals(left.PlanId, right.PlanId, StringComparison.Ordinal) && left.PlanVersion == right.PlanVersion && left.Lines.Count == right.Lines.Count && left.Lines.All(line => right.Lines.Any(value => value.LineIndex == line.LineIndex && value.Kind == line.Kind && value.DefinitionVersion == line.DefinitionVersion && value.ResourceId.Equals(line.ResourceId) && value.Quantity == line.Quantity && value.ExpiresAtServerMilliseconds == line.ExpiresAtServerMilliseconds));
         private static string OperationKey(OperationId operationId) => "operation/" + operationId.ToString();
         private static string EvidenceKey(Guid grantId) => "evidence/" + grantId.ToString("N");
-        private static string PresentationKey(Guid grantId) => "presentation/" + grantId.ToString("N");
         private static void ValidatePayload(byte[] payload) { if (payload == null || payload.Length == 0 || payload.Length > 262_144) throw new RewardFulfillmentConflictException("The reward state codec produced an invalid payload."); }
         private static void ValidateBusinessSource(string value, string parameter)
         {

@@ -109,7 +109,50 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
-        private static RewardFulfillmentService Create(SqliteDatabase database, ScopedOwnerContext owner) => new RewardFulfillmentService(owner, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new Codec(), () => 1_000);
+        [Fact]
+        public async Task BorrowedProjectionTransactionRollsBackOrCommitsWithCursorSentinelThenReconcilesLaterReceipt()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database, Context); var receipt = Receipt(Operation, Grant, Source); var group = Group(Context, Operation, receipt);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                session.Execute("INSERT INTO gp_sync_state VALUES (1,?,1,?,0,NULL,0,NULL)", "0199f9a0-0700-7000-8000-000000000020", new byte[] { 1 });
+                service.StageProjectionGroup(transaction, group);
+                throw new InvalidOperationException("simulate cursor transaction rollback");
+            }, CancellationToken.None));
+            Assert.Equal(0, await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='reward-fulfillment'"), CancellationToken.None));
+            Assert.Equal(0, await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state"), CancellationToken.None));
+
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                session.Execute("INSERT INTO gp_sync_state VALUES (1,?,1,?,10,NULL,0,NULL)", "0199f9a0-0700-7000-8000-000000000020", new byte[] { 2 });
+                service.StageProjectionGroup(transaction, group);
+                return true;
+            }, CancellationToken.None);
+            Assert.Equal(10, await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<long>("SELECT committed_through FROM gp_sync_state WHERE singleton=1"), CancellationToken.None));
+            var laterReceipt = await service.ObserveAcceptedReceiptAsync(new RewardReceiptObservation(Context, Operation, receipt), CancellationToken.None);
+            Assert.Equal(RewardPresentationStatus.Confirmed, laterReceipt.Value!.Status);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task TwoServiceInstancesRaceForOneSqliteClaimAndReopenCannotClaimAgain()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var one = Create(database, Context); var two = Create(database, Context); var receipt = Receipt(Operation, Grant, Source);
+            await one.ObserveAcceptedReceiptAsync(new RewardReceiptObservation(Context, Operation, receipt), CancellationToken.None);
+            await one.ObserveProjectionGroupAsync(Group(Context, Operation, receipt), CancellationToken.None);
+            var query = new RewardPresentationQuery(Context, Operation);
+            var claims = await Task.WhenAll(one.TryClaimPresentationAsync(query, CancellationToken.None), two.TryClaimPresentationAsync(query, CancellationToken.None));
+            Assert.Single(claims, value => value != null);
+            one.Dispose(); two.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            database = await OpenAsync(files.Path); var reopened = Create(database, Context);
+            Assert.Null(await reopened.TryClaimPresentationAsync(query, CancellationToken.None));
+            reopened.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        private static RewardFulfillmentService Create(SqliteDatabase database, ScopedOwnerContext owner) => new RewardFulfillmentService(owner, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new Codec(), new SqliteClaimStore(database), () => 1_000);
         private static Task<SqliteDatabase> OpenAsync(string path) => SqliteDatabase.OpenAsync(path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
         private static RewardReceipt Receipt(OperationId originating, Guid grant, string source) => new RewardReceipt(grant, originating, 10, 100, source, "mrsquare.test.coin", 1, new RewardReceiptLine[]
         {
@@ -146,6 +189,25 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             private static RewardReceiptLine ParseLine(string value) { var p = value.Split(','); return new RewardReceiptLine(int.Parse(p[0]), int.Parse(p[1]), (RewardReceiptLineKind)int.Parse(p[2]), new PlatformId(p[3]), string.IsNullOrEmpty(p[4]) ? null : long.Parse(p[4]), string.IsNullOrEmpty(p[5]) ? null : long.Parse(p[5])); }
             private static byte[] Encode(IEnumerable<string> values) => Encoding.UTF8.GetBytes(string.Join("|", values.Select(value => Convert.ToBase64String(Encoding.UTF8.GetBytes(value)))));
             private static string[] Decode(ReadOnlySpan<byte> value) => Encoding.UTF8.GetString(value).Split('|').Select(item => Encoding.UTF8.GetString(Convert.FromBase64String(item))).ToArray();
+        }
+        /// <summary>Concrete test composition for the feature-owned conditional-claim port. It deliberately uses INSERT OR IGNORE, not feature-state Upsert.</summary>
+        private sealed class SqliteClaimStore : IRewardPresentationClaimStore
+        {
+            private readonly SqliteDatabase database;
+            public SqliteClaimStore(SqliteDatabase database) { this.database = database ?? throw new ArgumentNullException(nameof(database)); }
+            public Task<bool> TryClaimAsync(ScopedOwnerContext owner, Guid grantId, Action<ILocalStorageTransaction> onClaim, CancellationToken cancellationToken)
+            {
+                if (!owner.IsValid || grantId == Guid.Empty || onClaim == null) throw new ArgumentException("Invalid presentation claim.");
+                return database.ExecuteAsync(Scope, transaction =>
+                {
+                    var session = (SqliteTransactionSession)transaction;
+                    var inserted = session.Execute("INSERT OR IGNORE INTO gp_feature_state(view_key,feature_namespace,entity_key,revision,confirmed_at,payload,extensions) VALUES (?,?,?,?,?,?,?)",
+                        owner.ViewKey.Value, "reward-fulfillment", "presentation/" + grantId.ToString("N"), 1L, 1_000L, new byte[] { 1 }, Array.Empty<byte>());
+                    if (inserted != 1) return false;
+                    onClaim(transaction);
+                    return true;
+                }, cancellationToken);
+            }
         }
         private sealed class TemporaryDatabase : IDisposable
         {
