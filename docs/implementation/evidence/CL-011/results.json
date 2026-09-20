@@ -1,0 +1,40 @@
+{
+  "task": "CL-011",
+  "date": "2026-09-20",
+  "source_commit": "978f87435b8d2c22f594af05fd9d857467fb9825",
+  "schema_checkpoint": "0.4.0-g3-schema-checkpoint.1",
+  "status": "in_progress",
+  "environment": "Windows x64; pinned gilzoide SQLite native library; .NET SDK 9.0.203",
+  "counts": {
+    "focused_cl011": 9,
+    "storage_regression": 30,
+    "full_dotnet": 368,
+    "projects": 18,
+    "script_tests": 51,
+    "manifest_tests": 14,
+    "warnings": 0,
+    "errors": 0
+  },
+  "proved": [
+    "immutable explicit snapshot states",
+    "backend/app/account/view/generation/query cache isolation",
+    "bounded disposable cache lifetime",
+    "single-flight refresh with independent waiter cancellation",
+    "late-result fencing after invalidation",
+    "real SQLite caller-owned transaction commit and rollback",
+    "durable reopen",
+    "typed SQL row conversion",
+    "revision regression rejection",
+    "bounded defensive payload copies",
+    "opaque extension preservation"
+  ],
+  "unrun": [
+    "feature-specific extension schema/depth codecs",
+    "public/shared catalog query composition",
+    "multi-database shared-row composition",
+    "physical process kill, disk full and corruption",
+    "macOS native execution",
+    "Unity, IL2CPP, AOT and device execution",
+    "independent review"
+  ]
+}

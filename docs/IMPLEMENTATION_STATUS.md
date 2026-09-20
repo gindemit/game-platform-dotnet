@@ -1,5 +1,28 @@
 # Implementation status
 
+## CL-011 snapshot, durable-state and query-cache foundation — 2026-09-20
+
+Source `978f87435b8d2c22f594af05fd9d857467fb9825` adds captured-owner
+immutable feature snapshots, bounded canonical private query keys, and a
+disposable single-flight cache with independent waiter cancellation, late-result
+fencing and owner/generation validation. SQLite immutable migration version 3
+adds a narrow durable feature-state adapter using caller-owned transactions and
+an internal typed SQL row distinct from storage, feature and wire models. It
+rejects revision/owner/view conflicts, defensively copies bounded bytes and
+preserves opaque supported extension bytes across known-field read-modify-write.
+
+Focused real Windows x64 SQLite/cache tests pass 9/9; the bounded CL-007/008/010/
+011 storage regression passes 30/30. Release build covers 18 projects with zero
+warnings/errors and the full SDK passes 368/368. Architecture/contract validation
+passes; 51 script tests and the 52-task/16-ledger/21-wave manifest pass.
+
+No catalog wire route, remote provider, reactive framework, Unity type, reward,
+gameplay or legacy composition was added. Feature-specific authority/freshness
+policy and extension shape/depth codecs, public/shared cache composition,
+multi-database shared-row integration, physical fault, other native targets,
+Unity/device and independent review remain unrun. CL-011 remains `in_progress`;
+A07/A08 remain unpassed. See [evidence](implementation/evidence/CL-011/README.md).
+
 ## P3 same-phase G3 schema mirror and carrier checkpoint — 2026-09-20
 
 The SDK exactly mirrors backend canonical commit
