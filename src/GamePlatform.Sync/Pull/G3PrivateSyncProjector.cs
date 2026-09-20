@@ -79,7 +79,7 @@ namespace GamePlatform.Sync.Pull
 
         private static IProjectionChange Removal(StoredProjectionMutation value)
         {
-            var kind=value.Kind==StoredProjectionKind.RemoveFromView?"view_remove":value.Kind==StoredProjectionKind.Tombstone?"tombstone":throw new InvalidOperationException("The G3 removal kind is unsupported.");
+            var kind=value.Kind==StoredProjectionKind.RemoveFromView?"view_remove":value.Kind==StoredProjectionKind.Tombstone?"tombstone":value.Kind==StoredProjectionKind.Invalidation?"invalidation":throw new InvalidOperationException("The G3 removal kind is unsupported.");
             switch(value.Collection)
             {
                 case "profile":return new ProjectionProfileRemovalValue(new ProjectionProfileKey(),value.Revision,kind);

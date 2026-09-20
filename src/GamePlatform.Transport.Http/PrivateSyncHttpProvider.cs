@@ -284,7 +284,10 @@ namespace GamePlatform.Transport.Http
         }
         private static RemoteProjectionMutation Removal(string collection, string key, long revision, string kind) =>
             new RemoteProjectionMutation(collection, key, revision,
-                kind == "view_remove" ? ProjectionMutationKind.RemoveFromView : kind == "tombstone" ? ProjectionMutationKind.Tombstone : throw new InvalidOperationException("Unknown removal kind."), null);
+                kind == "view_remove" ? ProjectionMutationKind.RemoveFromView :
+                kind == "tombstone" ? ProjectionMutationKind.Tombstone :
+                kind == "invalidation" ? ProjectionMutationKind.Invalidation :
+                throw new InvalidOperationException("Unknown removal kind."), null);
 
         private static string EncodeToken(byte[] value) => Convert.ToBase64String((byte[])value.Clone()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
         private static byte[] DecodeToken(string value)
