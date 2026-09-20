@@ -15,6 +15,27 @@ def assembly(name='A', refs=()):
 
 
 class PackageTests(unittest.TestCase):
+    def test_canonical_source_link_is_checkout_independent_and_revision_bound(self):
+        revision = 'a' * 40
+        source_link = package.canonical_source_link(revision)
+        self.assertEqual(
+            {'documents': {'/_/*':
+             'https://raw.githubusercontent.com/gindemit/game-platform-dotnet/' + revision + '/*'}},
+            json.loads(source_link))
+        with self.assertRaisesRegex(ValueError, 'source_revision_not_full_sha'):
+            package.canonical_source_link('HEAD')
+
+    def test_deterministic_build_arguments_pin_repository_and_debug_inputs(self):
+        root = Path('C:/one/checkout')
+        source_link = root / 'artifacts/build-inputs/source-link.json'
+        arguments = package.deterministic_build_arguments(root, 'b' * 40, source_link)
+        self.assertIn('-p:PathMap=C:\\one\\checkout=/_/', arguments)
+        self.assertIn('-p:ContinuousIntegrationBuild=true', arguments)
+        self.assertIn('-p:DeterministicSourcePaths=true', arguments)
+        self.assertIn('-p:RepositoryUrl=' + package.CANONICAL_REPOSITORY_URL, arguments)
+        self.assertIn('-p:SourceRevisionId=' + ('b' * 40), arguments)
+        self.assertIn('-p:SourceLink=' + str(source_link), arguments)
+
     def test_dependency_closure_accepts_only_bundled_and_framework(self):
         package.validate_closure([assembly('A', ['B', 'netstandard']), assembly('B')], ['A', 'B'])
 

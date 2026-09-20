@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+CANONICAL_REPOSITORY_URL = 'https://github.com/gindemit/game-platform-dotnet'
 MESSAGEPACK_PROJECT = 'GamePlatform.Serialization.MessagePack'
 MESSAGEPACK_PACKAGES = {
     'MessagePack': '3.1.8', 'MessagePack.Annotations': '3.1.8',
@@ -50,6 +51,30 @@ def run(args, capture=False, cwd=ROOT):
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def canonical_source_link(revision):
+    if not re.fullmatch(r'[0-9a-f]{40}', revision):
+        raise ValueError('source_revision_not_full_sha')
+    return json.dumps({
+        'documents': {
+            '/_/*': f'https://raw.githubusercontent.com/gindemit/game-platform-dotnet/{revision}/*'
+        }
+    }, separators=(',', ':'), sort_keys=True) + '\n'
+
+
+def deterministic_build_arguments(root, revision, source_link):
+    return [
+        'dotnet', 'build', 'GamePlatform.sln', '-c', 'Release', '--no-restore', '-t:Rebuild',
+        '-p:PathMap=' + str(root) + '=/_/',
+        '-p:ContinuousIntegrationBuild=true',
+        '-p:DeterministicSourcePaths=true',
+        '-p:RepositoryUrl=' + CANONICAL_REPOSITORY_URL,
+        '-p:SourceRevisionId=' + revision,
+        '-p:IncludeSourceRevisionInInformationalVersion=true',
+        '-p:EmbedUntrackedSources=false',
+        '-p:SourceLink=' + str(source_link),
+    ]
 
 
 def inspect(assemblies):
@@ -363,8 +388,11 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
     validate_inputs(root, projects)
     if not skip_build:
         run(['dotnet', 'restore', 'GamePlatform.sln', '--locked-mode'])
-        run(['dotnet', 'build', 'GamePlatform.sln', '-c', 'Release', '--no-restore', '-t:Rebuild',
-             '-p:PathMap=' + str(root) + '=/_/'])
+        build_inputs = root / 'artifacts/build-inputs'
+        build_inputs.mkdir(parents=True, exist_ok=True)
+        source_link = build_inputs / 'source-link.json'
+        source_link.write_text(canonical_source_link(revision), encoding='utf-8', newline='\n')
+        run(deterministic_build_arguments(root, revision, source_link))
     runtime_assets, packages, package_root = resolve_package_assets(root / f'src/{MESSAGEPACK_PROJECT}/{MESSAGEPACK_PROJECT}.csproj')
     qualification = acquire_sqlite(sqlite_source.resolve())
     artifacts = root / 'artifacts'
@@ -429,6 +457,9 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
                 'aotAndDevice': 'unverified', 'liveBackendIntegration': 'unverified'},
             'features': json.loads((root / 'features.json').read_text()),
             'build': {'configuration': 'Release', 'pathMap': '/_/', 'sdkVersion': run(['dotnet', '--version'], capture=True),
+                      'repositoryUrl': CANONICAL_REPOSITORY_URL,
+                      'sourceLinkSha256': hashlib.sha256(canonical_source_link(revision).encode()).hexdigest(),
+                      'continuousIntegrationBuild': True, 'deterministicSourcePaths': True,
                       'buildSkipped': skip_build}, 'files': files,
         }
         (stage / 'dependency-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
