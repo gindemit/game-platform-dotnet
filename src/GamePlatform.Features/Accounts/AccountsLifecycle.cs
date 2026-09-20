@@ -106,7 +106,7 @@ namespace GamePlatform.Features.Accounts
                 var lease = await scopes.ReopenOfflineAsync(entry, request, token).ConfigureAwait(false);
                 if (!Current(request)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Late(request); }
                 if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Finish(request, AccountsReadiness.UnavailableOffline, entry); }
-                SetActive(request, lease, entry, AccountsReadiness.Ready); return Snapshot;
+                SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
             finally { activation.Release(); }
@@ -147,7 +147,7 @@ namespace GamePlatform.Features.Accounts
                 var bootstrap = await lease.BootstrapAsync(token).ConfigureAwait(false);
                 if (!Current(request)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Late(request); }
                 if (bootstrap != AccountBootstrapResult.Complete || !await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Finish(request, AccountsReadiness.Bootstrapping, entry); }
-                SetActive(request, lease, entry, AccountsReadiness.Ready); return Snapshot;
+                SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
             finally { activation.Release(); }
@@ -156,16 +156,37 @@ namespace GamePlatform.Features.Accounts
         private async Task<bool> RetireActiveAsync(long request, CancellationToken token)
         {
             IAccountScopeLease? old;
-            lock (gate) { if (generation != request) return false; old = active; active = null; }
+            lock (gate) { if (generation != request) return false; old = active; }
             if (old == null) return true;
-            try { await old.StopAdmissionsAsync(token).ConfigureAwait(false); await old.DrainAndRetireAsync(token).ConfigureAwait(false); return true; }
-            catch (OperationCanceledException) when (token.IsCancellationRequested) { return false; }
+            try
+            {
+                await old.StopAdmissionsAsync(token).ConfigureAwait(false);
+                await old.DrainAndRetireAsync(token).ConfigureAwait(false);
+                lock (gate)
+                {
+                    if (ReferenceEquals(active, old)) active = null;
+                    return generation == request;
+                }
+            }
+            catch { return false; }
         }
         private static async Task RetireLateLeaseAsync(IAccountScopeLease lease, CancellationToken token) { await lease.StopAdmissionsAsync(token).ConfigureAwait(false); await lease.DrainAndRetireAsync(token).ConfigureAwait(false); }
         private long Begin(AccountsReadiness next) { lock (gate) { generation = checked(generation + 1); readiness = next; current = null; return generation; } }
         private bool Current(long request) { lock (gate) return generation == request; }
-        private AccountsLifecycleSnapshot Late(long request) { lock (gate) return new AccountsLifecycleSnapshot(AccountsReadiness.LateResultRejected, current, request); }
-        private AccountsLifecycleSnapshot Finish(long request, AccountsReadiness next, AccountDirectoryEntry? entry) { Set(request, next, entry); return Snapshot; }
+        private AccountsLifecycleSnapshot Late(long request) => new AccountsLifecycleSnapshot(AccountsReadiness.LateResultRejected, null, request);
+        private AccountsLifecycleSnapshot Capture(long request, AccountsReadiness next, AccountDirectoryEntry? entry)
+        {
+            lock (gate) return generation == request ? new AccountsLifecycleSnapshot(next, entry, request) : Late(request);
+        }
+        private AccountsLifecycleSnapshot Finish(long request, AccountsReadiness next, AccountDirectoryEntry? entry)
+        {
+            lock (gate)
+            {
+                if (generation != request) return Late(request);
+                readiness = next; current = entry;
+                return new AccountsLifecycleSnapshot(next, entry, request);
+            }
+        }
         private void Set(long request, AccountsReadiness next, AccountDirectoryEntry? entry) { lock (gate) { if (generation == request) { readiness = next; current = entry; } } }
         private void SetActive(long request, IAccountScopeLease lease, AccountDirectoryEntry entry, AccountsReadiness next) { lock (gate) { if (generation == request) { active = lease; current = entry; readiness = next; } } }
     }
