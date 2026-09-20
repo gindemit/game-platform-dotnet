@@ -1,5 +1,23 @@
 # Implementation status
 
+## G3 receipt schema bridge prepared for cross-runtime evidence — 2026-09-20
+
+The bounded qualification MessagePack schema engine now loads the two approved
+additive receipt schemas without changing any of the 90 frozen core or four G2
+contract bytes. Absolute canonical references normalize only to the pinned
+common, live-slice receipt and G3 receipt documents. The ordered reward-line
+index invariant is enforced, and focused C# tests cover required-null versus
+absent reward, the exact `client_trusted_unvalidated` authority, unknown
+authority rejection and signed64 overflow. Focused tests pass 2/2 and the full
+SDK passes 370/370.
+
+This is a qualification/exchange bridge, not an HTTP provider or feature. The
+generated G3 carriers remain intentionally outside the production typed mapper;
+source/business idempotency and the catalog/visibility bridge have no additional
+wire fixture and must not acquire an invented client route. Cross-runtime output
+is recorded separately after both clean repository revisions are committed.
+Central G3 state and A01–A13 remain unchanged.
+
 ## CL-011 snapshot, durable-state and query-cache foundation — 2026-09-20
 
 Source `978f87435b8d2c22f594af05fd9d857467fb9825` adds captured-owner

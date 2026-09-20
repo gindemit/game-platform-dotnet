@@ -15,10 +15,15 @@ def emit(v):
 
 rows = []
 pins = json.loads((root/'contracts/snapshot.json').read_text(encoding='utf-8'))['files']
-for path in sorted((root/'contracts/v1/schemas').glob('*.json')):
+paths = [*sorted((root/'contracts/v1/schemas').glob('*.json')),
+         root/'contracts/live-slice/receipt.schema.json',
+         root/'contracts/g3/reward-receipt.schema.json']
+for path in paths:
     if hashlib.sha256(path.read_bytes()).hexdigest() != pins[path.relative_to(root/'contracts').as_posix()]:
         raise SystemExit(f'Schema pin mismatch: {path.name}')
-    rows.append('{' + json.dumps(path.name) + ',' + emit(json.loads(path.read_text(encoding='utf-8'))) + '}')
+    key = path.relative_to(root/'contracts').as_posix()
+    if key.startswith('v1/schemas/'): key = key[len('v1/schemas/'):]
+    rows.append('{' + json.dumps(key) + ',' + emit(json.loads(path.read_text(encoding='utf-8'))) + '}')
 out = '''// Generated from reviewed contracts by generate-schema.py. No runtime schema loading.
 using System.Collections.Generic;
 using V = GamePlatform.Serialization.MessagePack.QualificationValue;

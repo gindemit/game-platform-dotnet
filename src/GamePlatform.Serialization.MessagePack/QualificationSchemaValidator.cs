@@ -19,6 +19,7 @@ namespace GamePlatform.Serialization.MessagePack
         {
             var split = reference.Split('#');
             if (split[0].Length != 0) file = split[0];
+            file = NormalizeFile(file);
             if (!QualificationSchemas.Documents.TryGetValue(file, out var schema) || split.Length != 2 || !split[1].StartsWith("/$defs/", StringComparison.Ordinal)) Fail();
             schema = QualificationSchemas.Documents[file];
             foreach (var encodedPart in split[1].Substring(1).Split('/'))
@@ -68,6 +69,14 @@ namespace GamePlatform.Serialization.MessagePack
                 return V.OwnedBinary(Convert.FromBase64String(text.Replace('-','+').Replace('_','/') + new string('=',(4-text.Length%4)%4)));
             }
             return value;
+        }
+        private static string NormalizeFile(string file)
+        {
+            const string v1 = "https://contracts.gindemit.invalid/v1/schemas/";
+            if (file.StartsWith(v1, StringComparison.Ordinal)) return file.Substring(v1.Length);
+            if (file == "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json") return "live-slice/receipt.schema.json";
+            if (file == "https://contracts.gindemit.invalid/g3/reward-receipt.2.schema.json") return "g3/reward-receipt.schema.json";
+            return file;
         }
         private static bool Matches(V schema, string file, V value)
         {
@@ -177,6 +186,13 @@ namespace GamePlatform.Serialization.MessagePack
                 long finalized=long.Parse(diagnostic.Properties["finalizedThrough"].StringValue,CultureInfo.InvariantCulture);
                 var next=diagnostic.Properties["nextSequence"];
                 if(finalized==long.MaxValue ? next.Kind!=K.Null : next.Kind!=K.String || long.Parse(next.StringValue,CultureInfo.InvariantCulture)!=checked(finalized+1)) Fail();
+            }
+            if(s.ContainsKey("x-orderedLineIndices"))
+            {
+                if(diagnostic.Kind!=K.Object || !diagnostic.Properties.TryGetValue("lines",out var lines)) { Fail(); return resultValue; }
+                if(lines.Kind!=K.Array) Fail();
+                for(int i=0;i<lines.Items.Count;i++)
+                    if(lines.Items[i].Kind!=K.Object || !lines.Items[i].Properties.TryGetValue("lineIndex",out var lineIndex) || lineIndex.Kind!=K.Integer || lineIndex.IntegerValue!=i) Fail();
             }
             if(s.TryGetValue("x-distinctProperties",out var distinct))
                 for(int i=0;i<distinct.Items.Count;i++) for(int j=0;j<i;j++) if(Equal(diagnostic.Properties[distinct.Items[i].StringValue],diagnostic.Properties[distinct.Items[j].StringValue])) Fail();

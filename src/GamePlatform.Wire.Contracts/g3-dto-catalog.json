@@ -1,7 +1,7 @@
 {
   "canonicalCommit": "0518ad565efdfe16df13e78e2acbb92033e8bd30",
   "contractVersion": "0.4.0-g3-schema-checkpoint.1",
-  "codecStatus": "unimplemented_unverified",
+  "codecStatus": "bounded_schema_bridge_enabled_typed_carrier_mapping_unimplemented",
   "types": [
     {
       "type": "G3RewardReceiptRequest",
