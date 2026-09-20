@@ -1,0 +1,27 @@
+{
+  "task": "CL-103",
+  "status": "dependency_ready_sdk_implemented",
+  "scope": "validated versioned catalog and app-binding snapshots",
+  "tests": {
+    "focused_dotnet": 5,
+    "full_dotnet": 375,
+    "script": 51,
+    "release_projects": 18,
+    "warnings": 0,
+    "errors": 0
+  },
+  "implemented": [
+    "stable definition IDs separate from semantic keys and immutable definition versions",
+    "per-app bindings with independent presentation payload and explicit permissions",
+    "owner/version/locale/audience cache isolation",
+    "offline stale reads of prior validated snapshots",
+    "fail-closed unsupported, incomplete, duplicate, mis-scoped and corrupt handling"
+  ],
+  "unrun_or_unavailable": [
+    "public catalog wire schema and HTTP provider",
+    "production durable SQLite catalog adapter and migration",
+    "backend-host/runtime interoperability",
+    "Unity INT-011 consumption",
+    "A07/A08 and G3 acceptance"
+  ]
+}
