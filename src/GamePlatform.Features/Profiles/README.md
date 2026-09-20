@@ -14,10 +14,14 @@ the pending edit clears. A newer unreceipted profile revision is a visible confl
 there is no automatic merge.
 
 Private-feed composition may call `ApplyConfirmedProjection` inside its own
-`ILocalStorageTransaction`, supplying the durable revision read in that same
-transaction. The borrowed method validates exact owner/scope, codec/extensions and
-strict advancement, writes only the confirmed projection, and never advances a cursor
-or acknowledges a command. On durable reads, a confirmed revision reaching an accepted
+`ILocalStorageTransaction`, supplying the nullable durable revision read in that same
+transaction: absence is `null`, while revision `0` is a real confirmed profile. The
+borrowed method validates exact owner/scope, codec/extensions and strict advancement,
+writes only the confirmed projection, and never advances a cursor or acknowledges a
+command. The current `gp_feature_state` positive-revision constraint is isolated behind
+a private `semantic + 1` storage envelope; public snapshots and codec calls retain
+semantic revision `0` exactly. Any v6 storage change may remove that envelope only if it
+preserves existing encoded rows and this zero round-trip. On durable reads, a confirmed revision reaching an accepted
 pending edit's receipt revision suppresses that pending edit even after restart; an
 unreceipted edit displaced by a newer revision remains a conflict.
 
