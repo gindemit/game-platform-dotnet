@@ -10,11 +10,14 @@ generation. It persists server-confirmed `long` balances under a wallet-scoped
 feature namespace, carrying a stable definition ID and semantic key. It has no
 local credit, grant, balance arithmetic or offline purchase authority.
 
-Every installed, refreshed and read balance requires the exact captured owner's
+Every installed, refreshed and public-read balance requires the exact captured owner's
 catalog snapshot to bind the same definition ID and semantic key as a visible
 `Currency`; spend admission additionally requires that binding's `Spend`
 permission. Missing/revoked, wrong-kind and foreign-owner catalog data fails
-closed before a projection install, balance exposure or outbox admission.
+closed before a projection install, balance exposure or outbox admission. A
+matching retained terminal receipt remains reconcilable after a binding is
+revoked: the owner/operation-fenced mutation preserves terminal state but does
+not debit, credit, expose a new catalog read or admit another command.
 
 An immutable spend intent carries operation, stream, business-source, expected
 confirmed revision, currency and positive exact amount. The service calls its
@@ -38,10 +41,10 @@ rtk dotnet build GamePlatform.sln -c Release --no-restore
 exit 0; 18 projects, zero warnings/errors
 
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter FullyQualifiedName~Cl105WalletServiceTests
-exit 0; 6 passed, 0 failed/skipped/warnings
+exit 0; 7 passed, 0 failed/skipped/warnings
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
-exit 0; 404 passed, 0 failed/skipped/warnings
+exit 0; 405 passed, 0 failed/skipped/warnings
 ```
 
 The real pinned SQLite cases prove confirmed/pending/outbox atomicity and reopen,
@@ -52,6 +55,8 @@ two-device divergent accepted/rejected outcomes, rejection visibility, and
 same-currency view namespace/owner fencing. The additional catalog case proves
 missing/unavailable and subsequently revoked bindings, wrong resource kind,
 foreign owner, and spend-disabled binding rejection before outbox admission.
+It also proves a post-admission revocation cannot suppress a matching accepted
+or rejected terminal receipt, and neither receipt changes the confirmed balance.
 
 ## Remaining limits
 

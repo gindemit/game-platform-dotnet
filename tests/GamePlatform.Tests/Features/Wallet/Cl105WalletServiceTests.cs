@@ -75,8 +75,8 @@ namespace GamePlatform.Tests.Features.Wallet
             var request = Spend("0199f9a0-3333-7777-8888-999999999991", Coin, 10, 5, "wallet-receipt-1");
             await service.SubmitSpendIntentAsync(request, Catalog(), CancellationToken.None);
             var acceptance = new WalletSpendAcceptance(Context, request.OperationId, 12);
-            var accepted = await service.MarkAcceptedAwaitingPullAsync(acceptance, Coin, Catalog(), CancellationToken.None);
-            var duplicate = await service.MarkAcceptedAwaitingPullAsync(acceptance, Coin, Catalog(), CancellationToken.None);
+            var accepted = await service.MarkAcceptedAwaitingPullAsync(acceptance, Coin, CancellationToken.None);
+            var duplicate = await service.MarkAcceptedAwaitingPullAsync(acceptance, Coin, CancellationToken.None);
             Assert.Equal(WalletPendingStatus.AcceptedAwaitingPull, accepted.Value!.Pending!.Status);
             Assert.Equal(100, duplicate.Value!.Confirmed!.Balance); // receipt has not become a local debit.
 
@@ -124,9 +124,9 @@ namespace GamePlatform.Tests.Features.Wallet
             await one.SubmitSpendIntentAsync(oneRequest, Catalog(), CancellationToken.None);
             await two.SubmitSpendIntentAsync(twoRequest, Catalog(), CancellationToken.None);
 
-            await one.MarkAcceptedAwaitingPullAsync(new WalletSpendAcceptance(Context, oneRequest.OperationId, 6), Coin, Catalog(), CancellationToken.None);
+            await one.MarkAcceptedAwaitingPullAsync(new WalletSpendAcceptance(Context, oneRequest.OperationId, 6), Coin, CancellationToken.None);
             await one.ApplyConfirmedAsync(Context, Confirmed(Coin, 5, 6), Catalog(), CancellationToken.None);
-            var rejected = await two.MarkRejectedAsync(new WalletSpendRejection(Context, twoRequest.OperationId, "insufficient_funds"), Coin, Catalog(), CancellationToken.None);
+            var rejected = await two.MarkRejectedAsync(new WalletSpendRejection(Context, twoRequest.OperationId, "insufficient_funds"), Coin, CancellationToken.None);
             var oneState = await one.ReadCachedAsync(new WalletBalanceRequest(Context, Coin), Catalog(), CancellationToken.None);
             Assert.Null(oneState.Value!.Pending); Assert.Equal(5, oneState.Value.Confirmed!.Balance);
             Assert.Equal(FeatureSnapshotState.Error, rejected.State);
@@ -175,6 +175,32 @@ namespace GamePlatform.Tests.Features.Wallet
             var outbox = await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox"), CancellationToken.None);
             Assert.Equal(0, outbox);
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task PostAdmissionRevocationStillRetainsAcceptedAndRejectedReceiptsWithoutChangingBalance()
+        {
+            using var acceptedFiles = new TemporaryDatabase(); using var rejectedFiles = new TemporaryDatabase();
+            var acceptedDatabase = await OpenReady(acceptedFiles.Path); var rejectedDatabase = await OpenReady(rejectedFiles.Path);
+            var accepted = Create(acceptedDatabase, Context, new TestRemote()); var rejected = Create(rejectedDatabase, Context, new TestRemote());
+            await accepted.ApplyConfirmedAsync(Context, Confirmed(Coin, 10, 1), Catalog(), CancellationToken.None);
+            await rejected.ApplyConfirmedAsync(Context, Confirmed(Coin, 10, 1), Catalog(), CancellationToken.None);
+            var acceptedRequest = Spend("0199f9a0-7777-7777-8888-999999999991", Coin, 1, 2, "wallet-revoked-accepted");
+            var rejectedRequest = Spend("0199f9a0-7777-7777-8888-999999999992", Coin, 1, 2, "wallet-revoked-rejected");
+            await accepted.SubmitSpendIntentAsync(acceptedRequest, Catalog(), CancellationToken.None);
+            await rejected.SubmitSpendIntentAsync(rejectedRequest, Catalog(), CancellationToken.None);
+
+            await Assert.ThrowsAsync<WalletCatalogException>(() => accepted.ReadCachedAsync(new WalletBalanceRequest(Context, Coin), Catalog(included: false), CancellationToken.None));
+            await Assert.ThrowsAsync<WalletCatalogException>(() => rejected.ReadCachedAsync(new WalletBalanceRequest(Context, Coin), Catalog(included: false), CancellationToken.None));
+            var acceptedTerminal = await accepted.MarkAcceptedAwaitingPullAsync(new WalletSpendAcceptance(Context, acceptedRequest.OperationId, 2), Coin, CancellationToken.None);
+            var rejectedTerminal = await rejected.MarkRejectedAsync(new WalletSpendRejection(Context, rejectedRequest.OperationId, "catalog_revoked"), Coin, CancellationToken.None);
+
+            Assert.Equal(WalletPendingStatus.AcceptedAwaitingPull, acceptedTerminal.Value!.Pending!.Status);
+            Assert.Equal(10, acceptedTerminal.Value.Confirmed!.Balance);
+            Assert.Equal(WalletPendingStatus.Rejected, rejectedTerminal.Value!.Pending!.Status);
+            Assert.Equal(10, rejectedTerminal.Value.Confirmed!.Balance);
+            accepted.Dispose(); rejected.Dispose();
+            Assert.True(await acceptedDatabase.DisposeAsync(TimeSpan.FromSeconds(5))); Assert.True(await rejectedDatabase.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         private static WalletService Create(SqliteDatabase database, ScopedOwnerContext owner, IWalletRemote remote) => new WalletService(owner, Scope,
