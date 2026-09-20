@@ -25,7 +25,7 @@ namespace GamePlatform.Tests.Sync.Push
         private static readonly StorageScope Scope=new StorageScope("test-backend",new PlatformId(App.ToString()),new PlatformId(User.ToString()));
         private static readonly ClientStreamId Stream=new ClientStreamId(Guid.Parse("0199f9a0-1111-7777-8888-999999999999"));
         private static readonly Guid Installation=Guid.Parse("0199f9a0-1212-7777-8888-999999999999");
-        private static readonly IReadOnlyList<SqliteMigration> Migrations=SqlitePlatformMigrationRegistry.Migrations.Concat(new[]{new SqliteMigration(7,"test-projection",new[]{"CREATE TABLE test_projection (name TEXT PRIMARY KEY, value INTEGER NOT NULL)"})}).ToArray();
+        private static readonly IReadOnlyList<SqliteMigration> Migrations=SqlitePlatformMigrationRegistry.Migrations.Concat(new[]{new SqliteMigration(8,"test-projection",new[]{"CREATE TABLE test_projection (name TEXT PRIMARY KEY, value INTEGER NOT NULL)"})}).ToArray();
 
         [Fact] public async Task AcceptedOutcomeIsDurableBeforeLaterSequenceRuns(){using var files=new TemporaryDatabase();var db=await Open(files.Path);await Admit(db,"0199f9a0-2222-7777-8888-999999999999","one");var remote=new ScriptedRemote(RemoteResult<RemoteCommandOutcome>.Success(new RemoteCommandOutcome(RemoteCommandStatus.Accepted,new byte[]{4,5})));var sender=Sender(db,remote,()=>100);Assert.Equal(SendCycleResult.Finalized,await sender.RunOnceAsync(CancellationToken.None));Assert.Equal(SendCycleResult.Idle,await sender.RunOnceAsync(CancellationToken.None));var state=await Inspect(db);Assert.Equal(1,state.Item1);Assert.Equal("accepted",state.Item2);Assert.Equal(new byte[]{4,5},state.Item3);Assert.Single(remote.Commands);Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));}
 

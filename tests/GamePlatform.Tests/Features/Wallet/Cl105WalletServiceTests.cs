@@ -36,7 +36,7 @@ namespace GamePlatform.Tests.Features.Wallet
         private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations;
         private static readonly IReadOnlyList<SqliteMigration> AtomicMigrations = SqlitePlatformMigrationRegistry.Migrations.Concat(new[]
         {
-            new SqliteMigration(7, "wallet-atomic-cursor-sentinel", new[] { "CREATE TABLE wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
+            new SqliteMigration(8, "wallet-atomic-cursor-sentinel", new[] { "CREATE TABLE wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
         }).ToArray();
 
         [Fact]

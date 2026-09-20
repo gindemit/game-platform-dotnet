@@ -29,7 +29,7 @@ namespace GamePlatform.Tests.Features.Wallet
         private static readonly SemanticId Coin = new SemanticId("test.coin");
         private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations.Concat(new[]
         {
-            new SqliteMigration(7, "g3-wallet-cursor-sentinel", new[] { "CREATE TABLE g3_wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
+            new SqliteMigration(8, "g3-wallet-cursor-sentinel", new[] { "CREATE TABLE g3_wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
         }).ToArray();
 
         [Fact]

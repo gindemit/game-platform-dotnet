@@ -25,7 +25,7 @@ namespace GamePlatform.Tests.Sync.Pull
         private static readonly ClientStreamId Stream=new ClientStreamId(Guid.Parse("0199f9a0-1111-7777-8888-999999999999"));
         private static readonly Guid Installation=Guid.Parse("0199f9a0-1212-7777-8888-999999999999");
         private static readonly Guid Epoch=Guid.Parse("0199f9a0-aaaa-7777-8888-999999999999");
-        private static readonly IReadOnlyList<SqliteMigration> Migrations=SqlitePlatformMigrationRegistry.Migrations.Concat(new[]{new SqliteMigration(7,"test-overlay",new[]{"CREATE TABLE test_overlay (name TEXT PRIMARY KEY, value INTEGER NOT NULL)"})}).ToArray();
+        private static readonly IReadOnlyList<SqliteMigration> Migrations=SqlitePlatformMigrationRegistry.Migrations.Concat(new[]{new SqliteMigration(8,"test-overlay",new[]{"CREATE TABLE test_overlay (name TEXT PRIMARY KEY, value INTEGER NOT NULL)"})}).ToArray();
 
         [Fact]
         public async Task MultiPageBootstrapIsInvisibleUntilFinalAtomicInstall()

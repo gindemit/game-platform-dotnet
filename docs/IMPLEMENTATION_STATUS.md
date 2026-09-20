@@ -32,6 +32,21 @@ composition. It also does not supply the owner-assigned invalidation migration,
 SDK bundle/Unity runtime evidence, INT-007, BE-025/INT-010, or G3 acceptance.
 See [evidence](implementation/evidence/P3-live-composition/README.md).
 
+## P3 SQLite confirmed-projection invalidation migration — 2026-09-20
+
+The immutable platform migration registry now appends v7,
+`platform-confirmed-projection-invalidation-v1`. It atomically rebuilds only
+`gp_confirmed_projection`, preserving its existing rows and constraints while
+adding the frozen `invalidation` state as distinct from `visible`, `removed`
+and `tombstone`. v1--v6 migration identities, SQL and checksums are unchanged.
+
+Real Windows x64 SQLite tests cover fresh install, v6 upgrade, all four durable
+states, v7 rollback before its marker, registry drift, reopen/idempotence and
+barrier-based concurrent opens. Focused registry and extension suites pass
+9/9 each; Release build has zero warnings/errors and the full SDK suite passes
+469/469. This is migration-only: no wire/feature enum, projector mapping or
+live composition is claimed. See [v7 evidence](implementation/evidence/CL-007/P3-platform-migration-v7-invalidation-2026-09-20.md).
+
 ## G3 receipt schema bridge prepared for cross-runtime evidence — 2026-09-20
 
 The bounded qualification MessagePack schema engine now loads the two approved
