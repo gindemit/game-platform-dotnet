@@ -98,13 +98,13 @@ namespace GamePlatform.Tests.Features.Entitlements
         }
 
         [Fact]
-        public async Task BorrowedTransactionCommitsEntitlementsWithCursorSideEffectAndRollsBothBack()
+        public async Task BorrowedTransactionRejectsNonAdvancingReplacementAndRollsBackCursorSideEffect()
         {
             using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
             await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cl106_cursor_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
             await Assert.ThrowsAsync<InjectedFailure>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
-                service.ApplyConfirmedInTransaction(transaction, Context, Snapshot(1, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true));
+                service.ApplyConfirmedInTransaction(transaction, Context, 0, Snapshot(2, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true));
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl106_cursor_sentinel VALUES (?)", 1);
                 throw new InjectedFailure();
             }, CancellationToken.None));
@@ -114,13 +114,31 @@ namespace GamePlatform.Tests.Features.Entitlements
 
             await database.ExecuteAsync(Scope, transaction =>
             {
-                service.ApplyConfirmedInTransaction(transaction, Context, Snapshot(1, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true));
+                service.ApplyConfirmedInTransaction(transaction, Context, 0, Snapshot(2, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true));
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl106_cursor_sentinel VALUES (?)", 1);
                 return true;
             }, CancellationToken.None);
             Assert.NotNull(await new SqliteDurableFeatureStateStore(database, Scope).ReadAsync(Context, "entitlements", "confirmed", CancellationToken.None));
             var afterCommit = await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl106_cursor_sentinel"), CancellationToken.None);
             Assert.Equal(1, afterCommit);
+
+            await Assert.ThrowsAsync<EntitlementProjectionConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl106_cursor_sentinel VALUES (?)", 2);
+                service.ApplyConfirmedInTransaction(transaction, Context, 2, Snapshot(2, EntitlementRightState.Active, null, new byte[] { 9 }), Catalog(Context, true));
+                return true;
+            }, CancellationToken.None));
+            await Assert.ThrowsAsync<EntitlementProjectionConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl106_cursor_sentinel VALUES (?)", 3);
+                service.ApplyConfirmedInTransaction(transaction, Context, 2, Snapshot(1, EntitlementRightState.Active, null, new byte[] { 9 }), Catalog(Context, true));
+                return true;
+            }, CancellationToken.None));
+            var afterRejected = await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl106_cursor_sentinel"), CancellationToken.None);
+            Assert.Equal(1, afterRejected);
+            var preserved = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(2, preserved.Revision);
+            Assert.Equal(new byte[] { 1 }, Assert.Single(preserved.Value!.Rights).Right.CopyPayload());
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
