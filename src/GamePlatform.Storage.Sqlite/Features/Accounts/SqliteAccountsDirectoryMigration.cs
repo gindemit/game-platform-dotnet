@@ -2,7 +2,7 @@ using GamePlatform.Storage.Sqlite.Migrations;
 
 namespace GamePlatform.Storage.Sqlite.Features.Accounts
 {
-    /// <summary>Proposed additive migration. The shared platform registry intentionally does not register it in this task.</summary>
+    /// <summary>Immutable platform migration v4 for the portable Accounts directory.</summary>
     public static class SqliteAccountsDirectoryMigration
     {
         public static SqliteMigration Create(int version) => new SqliteMigration(version, "accounts-directory-v1", new[]

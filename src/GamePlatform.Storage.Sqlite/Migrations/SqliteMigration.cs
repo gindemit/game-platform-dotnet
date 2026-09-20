@@ -50,4 +50,10 @@ namespace GamePlatform.Storage.Sqlite.Migrations
         EffectsApplied,
         MarkerInserted
     }
+
+    internal enum ExtensionMigrationCheckpoint
+    {
+        EffectsApplied,
+        MarkerInserted
+    }
 }
