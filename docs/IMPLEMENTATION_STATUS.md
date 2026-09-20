@@ -3,14 +3,15 @@
 ## P3 current SDK/SQLite Unity bundle refresh — 2026-09-20
 
 The current coordinated SDK head `686721a` was packaged in an isolated clean
-worktree with a packaging-only metadata correction at `0b180ac`: the manifest
-and normal verifier now require the already-promoted production
-`MessagePackWireCodec` instead of mislabeling it unavailable. The unpublished
+worktree with packaging-only corrections at `b494b6d`: the manifest, normal
+verifier and generated bundle README now require and accurately describe the
+already-promoted production `MessagePackWireCodec` instead of mislabeling it
+unavailable. The unpublished
 bundle contains all 15 current SDK assemblies, the exact eight-DLL MessagePack
 runtime closure (nine package records; analyzer build-only), three reviewed
 SQLite native targets, 38 P/Invoke declarations and 100 files including its
 manifest. It is source-clean and has manifest SHA-256
-`3eae6d4e278b9162101f566df25520542616619c480482e2ecce6c4d18155230`.
+`c911e88c0d2ebd083c59ece912b792bdc97882b1866f9b61d89064ae7a3bb4fb`.
 
 Locked restore/Release package build and normal inventory/hash/closure/license/
 native/AOT verification pass with zero warnings/errors. Packaging tests pass

@@ -2,9 +2,9 @@
   "task": "CL-015",
   "date": "2026-09-20",
   "requestedCoordinatedHead": "686721a6a5f0fcd3525d4b6a0002406abbad061a",
-  "artifactSourceCommit": "0b180ac07bdcbb4362c62412ec8e65c9b1533a9b",
+  "artifactSourceCommit": "b494b6dd0dc9a9cf1692337ba18ce7490838aec6",
   "artifactPath": "C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920/artifacts/sdk",
-  "manifestSha256": "3eae6d4e278b9162101f566df25520542616619c480482e2ecce6c4d18155230",
+  "manifestSha256": "c911e88c0d2ebd083c59ece912b792bdc97882b1866f9b61d89064ae7a3bb4fb",
   "inventory": {
     "sdkAssemblies": 15,
     "managedAssemblies": 23,
@@ -31,7 +31,7 @@
     "independentCleanClones": 2,
     "manifestsByteEqual": true,
     "completeArtifactsByteEqual": true,
-    "reproductionSummary": "C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920/reproducibility-summary.json"
+    "reproductionSummary": "C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920-r2/reproducibility-summary.json"
   },
   "commands": [
     "python -m unittest discover -s scripts -p test_packaging.py",
@@ -40,6 +40,6 @@
     "dotnet test GamePlatform.sln -c Release --no-build --no-restore --nologo",
     "python scripts/validate.py",
     "python scripts/test_validation.py",
-    "python scripts/verify-package-reproducibility.py --source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920 --revision 0b180ac07bdcbb4362c62412ec8e65c9b1533a9b --sqlite-source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920/artifacts/acquisition/unity-sqlite-net --evidence-output C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920"
+    "python scripts/verify-package-reproducibility.py --source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920 --revision b494b6dd0dc9a9cf1692337ba18ce7490838aec6 --sqlite-source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920/artifacts/acquisition/unity-sqlite-net --evidence-output C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920-r2"
   ]
 }

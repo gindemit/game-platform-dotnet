@@ -143,17 +143,17 @@ No runtime behavior, dependency pin, protocol or Unity import changed.
 ## G3 current-bundle refresh — 2026-09-20
 
 The G3 SDK-head refresh starts from requested coordinated-branch source
-`686721a6a5f0fcd3525d4b6a0002406abbad061a`. Its packaging-only correction is
-source commit `0b180ac07bdcbb4362c62412ec8e65c9b1533a9b`: the package manifest
-and verifier now accurately require the already-promoted production
-`MessagePackWireCodec`, rather than incorrectly declaring it unavailable. This
-does not add a package, a serializer fallback, a Unity dependency, or a protocol
-change.
+`686721a6a5f0fcd3525d4b6a0002406abbad061a`. Its packaging-only corrections
+are source commit `b494b6dd0dc9a9cf1692337ba18ce7490838aec6`: the package
+manifest/verifier and the generated bundle README now accurately require and
+describe the already-promoted production `MessagePackWireCodec`, rather than
+incorrectly declaring it unavailable. This does not add a package, a serializer
+fallback, a Unity dependency, or a protocol change.
 
 The unpublished artifact at
 `C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920/artifacts/sdk`
 has manifest SHA-256
-`3eae6d4e278b9162101f566df25520542616619c480482e2ecce6c4d18155230`.
+`c911e88c0d2ebd083c59ece912b792bdc97882b1866f9b61d89064ae7a3bb4fb`.
 It contains 23 managed assemblies (all 15 current SDK assemblies and the exact
 eight runtime MessagePack closure assemblies; MessagePackAnalyzer remains
 build-only), three pinned SQLite native targets, nine pinned package records,
@@ -170,7 +170,7 @@ positive/negative tests, 485 SDK tests, architecture/contract validation and
 clean clones with deliberately different origin metadata rebuilt and normally
 verified byte-identical complete artifacts (100 files including manifest); the
 external retained reproduction summary is
-`C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920/reproducibility-summary.json`.
+`C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920-r2/reproducibility-summary.json`.
 See `g3-current-bundle-2026-09-20.json` for exact command and inventory facts.
 
 This is packaging evidence only. The refreshed bundle still needs the real
