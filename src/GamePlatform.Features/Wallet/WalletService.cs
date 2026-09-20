@@ -110,7 +110,6 @@ namespace GamePlatform.Features.Wallet
             return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <summary>Moves only the matching local intent to receipt-accepted. The balance changes only when a confirming pull arrives.</summary>
         /// <summary>Records a matching retained receipt even after presentation visibility was revoked. This never changes a balance.</summary>
         public async Task<FeatureSnapshot<WalletSnapshot>> MarkAcceptedAwaitingPullAsync(WalletSpendAcceptance acceptance, WalletCurrency currency, CancellationToken cancellationToken)
         {
@@ -167,21 +166,14 @@ namespace GamePlatform.Features.Wallet
             {
                 var current = await ReadDurableAsync(exactOwner, confirmed.Currency, cancellationToken).ConfigureAwait(false);
                 if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision) return;
-                if (current.Confirmed != null && confirmed.Revision == current.Confirmed.Revision && !Equivalent(current.Confirmed, confirmed))
-                    throw new WalletConflictException("The server supplied different wallet contents for the same revision.");
-                var clearPending = current.Pending != null && current.Pending.Status == WalletPendingStatus.AcceptedAwaitingPull &&
-                    confirmed.Revision >= current.Pending.AcceptedRevision!.Value;
+                if (current.Confirmed != null && confirmed.Revision == current.Confirmed.Revision)
+                {
+                    if (!Equivalent(current.Confirmed, confirmed)) throw new WalletConflictException("The server supplied different wallet contents for the same revision.");
+                    return;
+                }
                 await transactions.ExecuteAsync(storageScope, transaction =>
                 {
-                    if (current.Confirmed == null || confirmed.Revision > current.Confirmed.Revision)
-                    {
-                        var encoded = codec.EncodeConfirmed(confirmed); ValidatePayload(encoded, "confirmed wallet");
-                        state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, ConfirmedKey(confirmed.Currency),
-                            confirmed.Revision, confirmed.ConfirmedAtMilliseconds, encoded, confirmed.CopyExtensions()));
-                    }
-                    if (clearPending)
-                        state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, PendingKey(confirmed.Currency),
-                            current.Pending!.LocalRevision, Now(), Array.Empty<byte>(), Array.Empty<byte>()));
+                    ApplyConfirmed(transaction, current.Confirmed == null ? 0 : current.Confirmed.Revision, exactOwner, confirmed, catalog);
                     return true;
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -189,6 +181,29 @@ namespace GamePlatform.Features.Wallet
         }
 
         public void Dispose() { if (disposed) return; disposed = true; reads.Dispose(); mutation.Dispose(); }
+
+        /// <summary>
+        /// Stages one strictly advancing confirmed balance in a caller-owned private projection/cursor transaction.
+        /// The caller supplies the exact durable prior revision observed in that same transaction; equal/lower revisions
+        /// are rejected rather than treated as an idempotent payload replacement.
+        /// </summary>
+        public void ApplyConfirmed(ILocalStorageTransaction transaction, long durablePriorRevision, ScopedOwnerContext requestedOwner,
+            WalletConfirmedBalance confirmed, CatalogSnapshot catalog)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            var exactOwner = EnsureOwner(requestedOwner);
+            if (!transaction.Scope.Equals(storageScope)) throw new WalletOwnerMismatchException();
+            if (durablePriorRevision < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            ValidateVisibleCatalog(exactOwner, confirmed.Currency, catalog);
+            codec.ValidateExtensions(confirmed.CopyExtensions());
+            if (confirmed.Revision <= durablePriorRevision)
+                throw new WalletConflictException("A borrowed confirmed wallet mutation must strictly advance the durable revision.");
+            var payload = codec.EncodeConfirmed(confirmed);
+            ValidatePayload(payload, "confirmed wallet");
+            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, ConfirmedKey(confirmed.Currency),
+                confirmed.Revision, confirmed.ConfirmedAtMilliseconds, payload, confirmed.CopyExtensions()));
+        }
 
         /// <summary>A null catalog is reserved for owner/operation-fenced receipt reconciliation output; public display reads always supply one.</summary>
         private async Task<FeatureSnapshot<WalletSnapshot>> ReadSnapshotAsync(WalletBalanceRequest exact, CatalogSnapshot? catalog, SnapshotFreshness freshness, CancellationToken cancellationToken)
@@ -227,6 +242,11 @@ namespace GamePlatform.Features.Wallet
                 decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
                 if (decodedPending == null || decodedPending.LocalRevision != pending.Revision || !SameCurrency(decodedPending.Intent.Currency, currency))
                     throw new InvalidOperationException("The wallet state codec returned an invalid pending record.");
+                // Accepted receipt state is a local overlay. A transaction-borrowed projection mutation cannot safely
+                // rewrite this independent row, so a durable confirming revision suppresses it on every read/reopen.
+                if (decodedPending.Status == WalletPendingStatus.AcceptedAwaitingPull && decodedConfirmed != null &&
+                    decodedConfirmed.Revision >= decodedPending.AcceptedRevision!.Value)
+                    decodedPending = null;
             }
             return (decodedConfirmed, decodedPending);
         }

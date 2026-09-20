@@ -32,6 +32,11 @@ namespace GamePlatform.Tests.Features.Wallet
         private static readonly ScopedOwnerContext Context = new ScopedOwnerContext(Owner, new SemanticId("private"), 7);
         private static readonly WalletCurrency Coin = new WalletCurrency(new PlatformId("test-coin"), new SemanticId("test.coin"));
         private static readonly IReadOnlyList<SqliteMigration> Migrations = new[] { SqliteOutboxMigration.Create(1), SqliteFeatureStateMigration.Create(2) };
+        private static readonly IReadOnlyList<SqliteMigration> AtomicMigrations = new[]
+        {
+            SqliteOutboxMigration.Create(1), SqliteFeatureStateMigration.Create(2),
+            new SqliteMigration(3, "wallet-atomic-cursor-sentinel", new[] { "CREATE TABLE wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
+        };
 
         [Fact]
         public async Task RealSqliteConfirmedIntentAndOutboxCommitTogetherAndSurviveReopenWithSigned64Extrema()
@@ -203,6 +208,78 @@ namespace GamePlatform.Tests.Features.Wallet
             Assert.True(await acceptedDatabase.DisposeAsync(TimeSpan.FromSeconds(5))); Assert.True(await rejectedDatabase.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
+        [Fact]
+        public async Task BorrowedConfirmedMutationSharesCursorRollbackCommitAndReopenWhileSuppressingAcceptedOverlay()
+        {
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path, true, AtomicMigrations);
+            var service = Create(database, Context, new TestRemote());
+            await service.ApplyConfirmedAsync(Context, Confirmed(Coin, 10, 1), Catalog(), CancellationToken.None);
+            var request = Spend("0199f9a0-8888-7777-8888-999999999991", Coin, 1, 2, "wallet-atomic-accepted");
+            await service.SubmitSpendIntentAsync(request, Catalog(), CancellationToken.None);
+            await service.MarkAcceptedAwaitingPullAsync(new WalletSpendAcceptance(Context, request.OperationId, 2), Coin, CancellationToken.None);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                session.Execute("INSERT INTO wallet_cursor_sentinel VALUES (1,1)");
+                service.ApplyConfirmed(transaction, 1, Context, Confirmed(Coin, 8, 2), Catalog());
+                throw new InvalidOperationException("simulate projection/cursor rollback");
+            }, CancellationToken.None));
+            var afterRollback = await service.ReadCachedAsync(new WalletBalanceRequest(Context, Coin), Catalog(), CancellationToken.None);
+            Assert.Equal(10, afterRollback.Value!.Confirmed!.Balance);
+            Assert.Equal(WalletPendingStatus.AcceptedAwaitingPull, afterRollback.Value.Pending!.Status);
+            var sentinelAfterRollback = await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<int>("SELECT COUNT(*) FROM wallet_cursor_sentinel"), CancellationToken.None);
+            Assert.Equal(0, sentinelAfterRollback);
+
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                service.ApplyConfirmed(transaction, 1, Context, Confirmed(Coin, 8, 2), Catalog());
+                session.Execute("INSERT INTO wallet_cursor_sentinel VALUES (1,2)");
+                return true;
+            }, CancellationToken.None);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            var reopenedDatabase = await OpenReady(files.Path, false, AtomicMigrations);
+            var reopened = Create(reopenedDatabase, Context, new TestRemote());
+            var afterCommit = await reopened.ReadCachedAsync(new WalletBalanceRequest(Context, Coin), Catalog(), CancellationToken.None);
+            Assert.Equal(8, afterCommit.Value!.Confirmed!.Balance);
+            Assert.Equal(2, afterCommit.Value.Confirmed.Revision);
+            Assert.Null(afterCommit.Value.Pending);
+            var sentinelAfterCommit = await reopenedDatabase.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<int>("SELECT value FROM wallet_cursor_sentinel WHERE singleton=1"), CancellationToken.None);
+            Assert.Equal(2, sentinelAfterCommit);
+            reopened.Dispose(); Assert.True(await reopenedDatabase.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task BorrowedConfirmedMutationRejectsEqualOrLowerRevisionAndInvalidScopeOrCatalogWithoutOverwrite()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path);
+            var service = Create(database, Context, new TestRemote());
+            await service.ApplyConfirmedAsync(Context, Confirmed(Coin, 10, 2), Catalog(), CancellationToken.None);
+            await Assert.ThrowsAsync<WalletConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                service.ApplyConfirmed(transaction, 2, Context, Confirmed(Coin, 999, 2), Catalog()); return true;
+            }, CancellationToken.None));
+            await Assert.ThrowsAsync<WalletConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                service.ApplyConfirmed(transaction, 2, Context, Confirmed(Coin, 999, 1), Catalog()); return true;
+            }, CancellationToken.None));
+            await Assert.ThrowsAsync<WalletCatalogException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                service.ApplyConfirmed(transaction, 2, Context, Confirmed(Coin, 999, 3), Catalog(included: false)); return true;
+            }, CancellationToken.None));
+            var foreign = new ScopedOwnerContext(Owner, new SemanticId("wallet-atomic-foreign"), 7);
+            await Assert.ThrowsAsync<WalletOwnerMismatchException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                service.ApplyConfirmed(transaction, 2, foreign, Confirmed(Coin, 999, 3), Catalog(foreign)); return true;
+            }, CancellationToken.None));
+            var persisted = await service.ReadCachedAsync(new WalletBalanceRequest(Context, Coin), Catalog(), CancellationToken.None);
+            Assert.Equal(10, persisted.Value!.Confirmed!.Balance); Assert.Equal(2, persisted.Value.Confirmed.Revision);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
         private static WalletService Create(SqliteDatabase database, ScopedOwnerContext owner, IWalletRemote remote) => new WalletService(owner, Scope,
             new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new TestFingerprint()),
             new TestCodec(), remote, 8, TimeSpan.FromMinutes(1), () => 1_000);
@@ -213,9 +290,9 @@ namespace GamePlatform.Tests.Features.Wallet
                     new CatalogAppBinding(Coin.DefinitionId, 1, true, false, false, spend, false, Array.Empty<byte>())) } : Array.Empty<CatalogEntry>());
         private static WalletSpendRequest Spend(string operation, WalletCurrency currency, long expected, long amount, string source) => new WalletSpendRequest(Context,
             new OperationId(Guid.Parse(operation)), Stream, source, new WalletSpendIntent(currency, expected, amount));
-        private static async Task<SqliteDatabase> OpenReady(string path, bool seed = true)
+        private static async Task<SqliteDatabase> OpenReady(string path, bool seed = true, IReadOnlyList<SqliteMigration>? migrations = null)
         {
-            var database = await SqliteDatabase.OpenAsync(path, Scope, Migrations, CancellationToken.None);
+            var database = await SqliteDatabase.OpenAsync(path, Scope, migrations ?? Migrations, CancellationToken.None);
             if (seed) await database.ExecuteAsync(Scope, tx =>
             {
                 ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString());
