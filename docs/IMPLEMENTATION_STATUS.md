@@ -12,8 +12,13 @@ resolution, notices, hashes and duplicate-acquisition checks are unchanged.
 The original `runtime_package_requires_bundle_license_review` failure was
 reproduced at `94b70628eedff9d1b4da3e05b0fb83447b7f6464`. Focused packaging
 regressions pass 29/29, including the real input graph and nine rejected HTTP
-dependency mutations. A fresh ordinary package/verify is the next check after
-this source commit. CL-015 remains `in_progress` under M2/C, A09/A13; independent
+dependency mutations. Source `81376de9c0375da7091c59797283678ae527a29d`
+passes a fresh ordinary package and verification with the pinned SQLite source:
+23 managed assemblies, three native targets, clean source, no skipped build and
+manifest SHA-256 `538c133332a91b136758027f7a7dda0ddc78b05583b0607e86f17bfa6b993fce`.
+Locked restore/Release rebuild pass with zero warnings/errors; all 51 script
+tests and architecture/contract validation pass. CL-015 remains `in_progress`
+under M2/C, A09/A13; independent
 reproduction, macOS native execution and new HTTP Unity/device/live acceptance
 remain unverified. No runtime dependency pin or Unity import changed.
 
