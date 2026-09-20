@@ -1,5 +1,12 @@
 # GamePlatform.Storage.Sqlite
 
+CL-011 adds immutable migration version 3 and a narrow durable feature-state
+adapter. An internal typed SQL row is converted to copied storage values, keeping
+SQL, feature and wire models distinct. Rows are isolated by the scope-owned
+database and authorized view key, reject revision regression, and preserve
+bounded opaque extension bytes. Disposable TTL query caches remain outside
+SQLite and cannot evict durable records.
+
 Implements the CL-007 file-backed adapter with one scope-bound connection,
 serialized outer transactions, borrowed sessions, immutable migration
 checksums, owner validation, foreign keys, WAL and bounded busy handling. It

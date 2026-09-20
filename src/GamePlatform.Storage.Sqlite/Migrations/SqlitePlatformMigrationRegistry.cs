@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using GamePlatform.Storage.Sqlite.Outbox;
 using GamePlatform.Storage.Sqlite.Sync;
+using GamePlatform.Storage.Sqlite.Cache;
 
 namespace GamePlatform.Storage.Sqlite.Migrations
 {
@@ -15,7 +16,8 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             new ReadOnlyCollection<SqliteMigration>(new[]
             {
                 SqliteOutboxMigration.Create(1),
-                SqlitePrivateSyncMigration.Create(2)
+                SqlitePrivateSyncMigration.Create(2),
+                SqliteFeatureStateMigration.Create(3)
             });
 
         public static IReadOnlyList<SqliteMigration> Migrations => migrations;

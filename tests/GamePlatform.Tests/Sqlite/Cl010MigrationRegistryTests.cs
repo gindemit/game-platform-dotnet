@@ -38,7 +38,7 @@ namespace GamePlatform.Tests.Sqlite
                     Bootstrap: TableExists(session, "gp_bootstrap_state"));
             }, CancellationToken.None);
 
-            Assert.Equal(2, observed.Migrations);
+            Assert.Equal(3, observed.Migrations);
             Assert.Equal(1, observed.Outbox);
             Assert.Equal(1, observed.Sync);
             Assert.Equal(1, observed.Bootstrap);
@@ -73,7 +73,7 @@ namespace GamePlatform.Tests.Sqlite
 
             Assert.Equal(1, observed.Ready);
             Assert.Equal(new byte[] { 1, 2 }, observed.Body);
-            Assert.Equal(2, observed.Migrations);
+            Assert.Equal(3, observed.Migrations);
             Assert.Equal(1, observed.Sync);
             Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
@@ -106,7 +106,7 @@ namespace GamePlatform.Tests.Sqlite
                     Staged: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_entities") + session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_pages"));
             }, CancellationToken.None);
 
-            Assert.Equal(2, observed.Migrations);
+            Assert.Equal(3, observed.Migrations);
             Assert.Equal(new byte[] { 8 }, observed.Cursor);
             Assert.Equal(new byte[] { 10 }, observed.View);
             Assert.Equal(2, observed.Staged);
@@ -125,7 +125,8 @@ namespace GamePlatform.Tests.Sqlite
             var changed = new[]
             {
                 SqlitePlatformMigrationRegistry.Migrations[0],
-                new SqliteMigration(current.Version, current.Id, changedStatements)
+                new SqliteMigration(current.Version, current.Id, changedStatements),
+                SqlitePlatformMigrationRegistry.Migrations[2]
             };
 
             var error = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, changed, CancellationToken.None));

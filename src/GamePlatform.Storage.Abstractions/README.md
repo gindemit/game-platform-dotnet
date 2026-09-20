@@ -1,5 +1,10 @@
 # GamePlatform.Storage.Abstractions
 
+CL-011 adds a narrow transaction-borrowing durable feature-state port. Its
+defensively copied payload and bounded extension bytes are storage values, not
+feature read models or wire DTOs. A null extension mutation preserves existing
+unknown extension bytes during read-modify-write; it never means cache expiry.
+
 Owns meaningful local atomic-use-case ports, depending only on Core. Excludes
 SQL strings, native types and universal CRUD. CL-007 adds a scope-bound
 serialized transaction port and neutral typed failures; SQL execution remains a
