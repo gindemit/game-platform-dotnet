@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Core;
+using GamePlatform.Storage.Abstractions;
 
 namespace GamePlatform.Storage.Abstractions.Sync
 {
@@ -27,6 +28,14 @@ namespace GamePlatform.Storage.Abstractions.Sync
         private static IReadOnlyList<StoredProjectionMutation> Copy(IReadOnlyList<StoredProjectionMutation> values){if(values==null)throw new ArgumentNullException(nameof(values));var copy=new StoredProjectionMutation[values.Count];for(var i=0;i<copy.Length;i++)copy[i]=values[i]??throw new ArgumentException("An entity is null.",nameof(values));return Array.AsReadOnly(copy);}
     }
     public sealed class StoredPullGroup{public StoredPullGroup(long revision,IReadOnlyList<StoredProjectionMutation> changes){Revision=revision;Changes=Copy(changes);}public long Revision{get;}public IReadOnlyList<StoredProjectionMutation> Changes{get;}private static IReadOnlyList<StoredProjectionMutation> Copy(IReadOnlyList<StoredProjectionMutation> values){if(values==null)throw new ArgumentNullException(nameof(values));var copy=new StoredProjectionMutation[values.Count];for(var i=0;i<copy.Length;i++)copy[i]=values[i]??throw new ArgumentException("A change is null.",nameof(values));return Array.AsReadOnly(copy);}}
+    /// <summary>Projects confirmed private-feed data in the SQLite transaction that changed its raw rows.</summary>
+    public interface IPrivateSyncProjectionProjector
+    {
+        /// <summary>The group is supplied in exact feed order and its revision remains its feed correlation.</summary>
+        void ProjectConfirmedGroup(ILocalStorageTransaction transaction,StoredPullGroup group);
+        /// <summary>Replaces consumer-owned confirmed projections from the whole authoritative snapshot before Ready is published.</summary>
+        void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction,IReadOnlyList<StoredProjectionMutation> snapshot);
+    }
     public sealed class StoredPullPage{private readonly byte[] cursor;public StoredPullPage(long committedThrough,IReadOnlyList<StoredPullGroup> groups,byte[] cursor,bool hasMore){CommittedThrough=committedThrough;Groups=Copy(groups);this.cursor=(byte[])cursor.Clone();HasMore=hasMore;}public long CommittedThrough{get;}public IReadOnlyList<StoredPullGroup> Groups{get;}public bool HasMore{get;}public byte[] CopyNextCursor()=>(byte[])cursor.Clone();private static IReadOnlyList<StoredPullGroup> Copy(IReadOnlyList<StoredPullGroup> values){if(values==null)throw new ArgumentNullException(nameof(values));var copy=new StoredPullGroup[values.Count];for(var i=0;i<copy.Length;i++)copy[i]=values[i]??throw new ArgumentException("A group is null.",nameof(values));return Array.AsReadOnly(copy);}}
     public sealed class BootstrapProgress{private readonly byte[] session,pageToken;public BootstrapProgress(ClientStreamId streamId,long committedThrough,long visibilityGeneration,Guid logEpoch,long expiresAt,byte[] session,byte[] pageToken){StreamId=streamId;CommittedThrough=committedThrough;VisibilityGeneration=visibilityGeneration;LogEpoch=logEpoch;ExpiresAt=expiresAt;this.session=(byte[])session.Clone();this.pageToken=(byte[])pageToken.Clone();}public ClientStreamId StreamId{get;}public long CommittedThrough{get;}public long VisibilityGeneration{get;}public Guid LogEpoch{get;}public long ExpiresAt{get;}public byte[] CopySession()=>(byte[])session.Clone();public byte[] CopyPageToken()=>(byte[])pageToken.Clone();}
     public sealed class PullCheckpoint{private readonly byte[] cursor;public PullCheckpoint(ClientStreamId streamId,byte[] cursor,long committedThrough,long? fixedThrough){StreamId=streamId;this.cursor=(byte[])cursor.Clone();CommittedThrough=committedThrough;FixedThrough=fixedThrough;}public ClientStreamId StreamId{get;}public byte[] CopyCursor()=>(byte[])cursor.Clone();public long CommittedThrough{get;}public long? FixedThrough{get;}}
