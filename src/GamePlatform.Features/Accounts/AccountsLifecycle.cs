@@ -61,13 +61,15 @@ namespace GamePlatform.Features.Accounts
     /// <summary>Portable account lifecycle. It persists reservation before provisioning and never derives a principal from a session key.</summary>
     public sealed class AccountsLifecycleService
     {
-        private readonly IAccountsAuthLifecycle auth; private readonly IProvisioningRemote provisioning; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids;
+        private readonly IAccountsAuthLifecycle auth; private readonly IProvisioningRemote provisioning; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
         private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1); private readonly object gate = new object();
-        private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active;
+        private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private bool scopeRecoveryRequired;
 
-        public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemote provisioning, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids)
+        public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemote provisioning, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null)
         {
             this.auth = auth ?? throw new ArgumentNullException(nameof(auth)); this.provisioning = provisioning ?? throw new ArgumentNullException(nameof(provisioning)); this.directory = directory ?? throw new ArgumentNullException(nameof(directory)); this.scopes = scopes ?? throw new ArgumentNullException(nameof(scopes)); this.ids = ids ?? throw new ArgumentNullException(nameof(ids));
+            this.lateLeaseDrainTimeout = lateLeaseDrainTimeout ?? TimeSpan.FromSeconds(5);
+            if (this.lateLeaseDrainTimeout < TimeSpan.FromMilliseconds(1) || this.lateLeaseDrainTimeout > TimeSpan.FromSeconds(30)) throw new ArgumentOutOfRangeException(nameof(lateLeaseDrainTimeout));
         }
 
         public AccountsLifecycleSnapshot Snapshot { get { lock (gate) return new AccountsLifecycleSnapshot(readiness, current, generation); } }
@@ -102,10 +104,11 @@ namespace GamePlatform.Features.Accounts
             try
             {
                 if (!Current(request)) return Late(request);
+                if (ScopeRecoveryRequired()) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
                 if (!await RetireActiveAsync(request, token).ConfigureAwait(false)) return Finish(request, AccountsReadiness.Unavailable, entry);
                 var lease = await scopes.ReopenOfflineAsync(entry, request, token).ConfigureAwait(false);
-                if (!Current(request)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Late(request); }
-                if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Finish(request, AccountsReadiness.UnavailableOffline, entry); }
+                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
+                if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry); return Finish(request, AccountsReadiness.UnavailableOffline, entry); }
                 SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
@@ -140,13 +143,14 @@ namespace GamePlatform.Features.Accounts
             try
             {
                 if (!Current(request)) return Late(request);
+                if (ScopeRecoveryRequired()) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
                 if (!await RetireActiveAsync(request, token).ConfigureAwait(false)) return Finish(request, AccountsReadiness.Unavailable, entry);
                 Set(request, AccountsReadiness.Bootstrapping, entry);
                 var lease = await scopes.OpenAuthenticatedAsync(entry, session, request, token).ConfigureAwait(false);
-                if (!Current(request)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Late(request); }
+                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
                 var bootstrap = await lease.BootstrapAsync(token).ConfigureAwait(false);
-                if (!Current(request)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Late(request); }
-                if (bootstrap != AccountBootstrapResult.Complete || !await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { await RetireLateLeaseAsync(lease, token).ConfigureAwait(false); return Finish(request, AccountsReadiness.Bootstrapping, entry); }
+                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
+                if (bootstrap != AccountBootstrapResult.Complete || !await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry); return Finish(request, AccountsReadiness.Bootstrapping, entry); }
                 SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
@@ -170,7 +174,22 @@ namespace GamePlatform.Features.Accounts
             }
             catch { return false; }
         }
-        private static async Task RetireLateLeaseAsync(IAccountScopeLease lease, CancellationToken token) { await lease.StopAdmissionsAsync(token).ConfigureAwait(false); await lease.DrainAndRetireAsync(token).ConfigureAwait(false); }
+        private async Task<bool> RetireLateLeaseAsync(IAccountScopeLease lease)
+        {
+            using var timeout = new CancellationTokenSource(lateLeaseDrainTimeout);
+            try
+            {
+                if (!await CompleteWithinAsync(lease.StopAdmissionsAsync(timeout.Token), timeout.Token).ConfigureAwait(false)) return false;
+                return await CompleteWithinAsync(lease.DrainAndRetireAsync(timeout.Token), timeout.Token).ConfigureAwait(false);
+            }
+            catch { return false; }
+        }
+        private static async Task<bool> CompleteWithinAsync(Task operation, CancellationToken timeout)
+        {
+            var completed = await Task.WhenAny(operation, Task.Delay(Timeout.InfiniteTimeSpan, timeout)).ConfigureAwait(false);
+            if (!ReferenceEquals(completed, operation)) return false;
+            await operation.ConfigureAwait(false); return true;
+        }
         private long Begin(AccountsReadiness next) { lock (gate) { generation = checked(generation + 1); readiness = next; current = null; return generation; } }
         private bool Current(long request) { lock (gate) return generation == request; }
         private AccountsLifecycleSnapshot Late(long request) => new AccountsLifecycleSnapshot(AccountsReadiness.LateResultRejected, null, request);
@@ -187,6 +206,9 @@ namespace GamePlatform.Features.Accounts
                 return new AccountsLifecycleSnapshot(next, entry, request);
             }
         }
+        private bool ScopeRecoveryRequired() { lock (gate) return scopeRecoveryRequired; }
+        private void Quarantine() { lock (gate) { scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; } }
+        private AccountsLifecycleSnapshot Quarantine(long request, AccountDirectoryEntry? entry) { Quarantine(); return Capture(request, AccountsReadiness.RecoveryRequired, entry); }
         private void Set(long request, AccountsReadiness next, AccountDirectoryEntry? entry) { lock (gate) { if (generation == request) { readiness = next; current = entry; } } }
         private void SetActive(long request, IAccountScopeLease lease, AccountDirectoryEntry entry, AccountsReadiness next) { lock (gate) { if (generation == request) { active = lease; current = entry; readiness = next; } } }
     }
