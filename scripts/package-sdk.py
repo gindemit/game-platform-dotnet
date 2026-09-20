@@ -69,6 +69,7 @@ def deterministic_build_arguments(root, revision, source_link):
         '-p:PathMap=' + str(root) + '=/_/',
         '-p:ContinuousIntegrationBuild=true',
         '-p:DeterministicSourcePaths=true',
+        '-p:EnableSourceControlManagerQueries=false',
         '-p:RepositoryUrl=' + CANONICAL_REPOSITORY_URL,
         '-p:SourceRevisionId=' + revision,
         '-p:IncludeSourceRevisionInInformationalVersion=true',
@@ -460,6 +461,7 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
                       'repositoryUrl': CANONICAL_REPOSITORY_URL,
                       'sourceLinkSha256': hashlib.sha256(canonical_source_link(revision).encode()).hexdigest(),
                       'continuousIntegrationBuild': True, 'deterministicSourcePaths': True,
+                      'sourceControlManagerQueries': False,
                       'buildSkipped': skip_build}, 'files': files,
         }
         (stage / 'dependency-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
