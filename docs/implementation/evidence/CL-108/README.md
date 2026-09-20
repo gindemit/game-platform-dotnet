@@ -24,11 +24,15 @@ Focused command:
 
 `dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter FullyQualifiedName~Cl108ProgressionServiceTests`
 
-Result: 7/7 tests passed. The native cases cover atomic completion/outbox plus
+Result: 9/9 tests passed. The native cases cover atomic completion/outbox plus
 reopen, duplicate callback idempotency and immutable identity conflict, lost ACK
 then explicit acceptance/pull confirmation, terminal rejection followed by next
 sequence while retaining another pending item, owner/generation fencing, reset
 projection retention, confirmation-ID integrity (unknown or still-awaiting IDs
-cannot install a projection), and signed-64 boundary preservation. They do not prove a
+cannot install a projection), and signed-64 boundary preservation. Borrowed
+private-group cases prove projection, immutable confirmation evidence and a
+cursor sentinel roll back/commit/reopen together; only explicitly confirmed
+accepted IDs are suppressed, while unrelated awaiting work remains. Equal/lower
+revision and evidence-replacement attempts fail closed. They do not prove a
 real backend outcome/reward receipt, production codec, live command sender,
 Unity completed-run writer, or any G3 journey.
