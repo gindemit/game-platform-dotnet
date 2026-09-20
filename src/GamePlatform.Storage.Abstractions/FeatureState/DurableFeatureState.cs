@@ -14,7 +14,7 @@ namespace GamePlatform.Storage.Abstractions.FeatureState
             long revision, long confirmedAtMilliseconds, ReadOnlySpan<byte> payload, ReadOnlySpan<byte> extensions)
         {
             ValidateIdentity(owner, featureNamespace, entityKey);
-            if (revision <= 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             if (confirmedAtMilliseconds < 0 || confirmedAtMilliseconds > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(confirmedAtMilliseconds));
             if (payload.Length > 262_144) throw new ArgumentOutOfRangeException(nameof(payload));
             if (extensions.Length > 65_536) throw new ArgumentOutOfRangeException(nameof(extensions));
@@ -56,7 +56,7 @@ namespace GamePlatform.Storage.Abstractions.FeatureState
             long revision, long confirmedAtMilliseconds, ReadOnlySpan<byte> payload, byte[]? extensions)
         {
             DurableFeatureState.ValidateIdentity(owner, featureNamespace, entityKey);
-            if (revision <= 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             if (confirmedAtMilliseconds < 0 || confirmedAtMilliseconds > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(confirmedAtMilliseconds));
             if (payload.Length > 262_144) throw new ArgumentOutOfRangeException(nameof(payload));
             if (extensions != null && extensions.Length > 65_536) throw new ArgumentOutOfRangeException(nameof(extensions));

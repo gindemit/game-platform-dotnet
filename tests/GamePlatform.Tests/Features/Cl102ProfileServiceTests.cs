@@ -27,8 +27,9 @@ namespace GamePlatform.Tests.Features
         private static readonly OwnerScope Owner = new OwnerScope(new BackendNamespace("profile-test"), App, User);
         private static readonly StorageScope Scope = new StorageScope("profile-test", new PlatformId(App.ToString()), new PlatformId(User.ToString()));
         private static readonly ClientStreamId Stream = new ClientStreamId(Guid.Parse("0199f9a0-1111-7777-8888-999999999999"));
+        private static readonly Guid Installation = Guid.Parse("0199f9a0-1212-7777-8888-999999999999");
         private static readonly ScopedOwnerContext Context = new ScopedOwnerContext(Owner, new SemanticId("private"), 7);
-        private static readonly IReadOnlyList<SqliteMigration> Migrations = new[] { SqliteOutboxMigration.Create(1), SqliteFeatureStateMigration.Create(2) };
+        private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations;
 
         [Fact]
         public async Task RealSqliteEditOutboxAndPendingProjectionCommitTogetherAndSurviveReopen()
@@ -245,7 +246,7 @@ namespace GamePlatform.Tests.Features
 
         private static ProfileService Create(SqliteDatabase database, IProfileRemote remote) => new ProfileService(Context, Scope,
             new SqliteDurableFeatureStateStore(database, Scope), database,
-            new SqliteAtomicCommandStore(database, Scope, Owner, new TestFingerprint()), new TestCodec(), remote,
+            new SqliteAtomicCommandStore(database, Scope, Owner, new TestFingerprint(), new FixedClock()), new TestCodec(), remote,
             8, TimeSpan.FromMinutes(1), () => 1000);
         private static ProfileConfirmed Confirmed(string name, long revision, byte[] extension) => new ProfileConfirmed(name, false, null, false, null, revision, 100, extension);
         private static ProfileUpdateRequest Request(string operation, long expected, string source, string name) => new ProfileUpdateRequest(Context,
@@ -255,7 +256,7 @@ namespace GamePlatform.Tests.Features
             var database = await SqliteDatabase.OpenAsync(path, Scope, Migrations, CancellationToken.None);
             if (seed) await database.ExecuteAsync(Scope, tx =>
             {
-                ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString());
+                ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D"));
                 return true;
             }, CancellationToken.None);
             return database;
@@ -295,8 +296,9 @@ namespace GamePlatform.Tests.Features
         private sealed class TestFingerprint : ICommandFingerprint
         {
             public int GetFingerprintLength(int version) => version == 1 ? 32 : 0;
-            public void Compute(OwnerScope owner, OperationId operation, ClientStreamId stream, long sequence, string kind, int schema, int fingerprint, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
+            public void Compute(OwnerScope owner, OperationId operation, ClientStreamId stream, Guid installation, long sequence, string kind, int schema, int fingerprint, long clientCreatedAt, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
         }
+        private sealed class FixedClock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1_789_555_200_000; }
         private sealed class InjectedFailure : Exception { }
         private sealed class TemporaryDatabase : IDisposable
         {

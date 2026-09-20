@@ -30,7 +30,8 @@ namespace GamePlatform.Tests.Features.Progression
         private static readonly StorageScope Scope = new StorageScope("progression-test", new PlatformId(App.ToString()), new PlatformId(User.ToString()));
         private static readonly ScopedOwnerContext Context = new ScopedOwnerContext(Owner, new SemanticId("private"), 7);
         private static readonly ClientStreamId Stream = new ClientStreamId(Guid.Parse("0199f9a0-0000-7000-8000-000000000110"));
-        private static readonly IReadOnlyList<SqliteMigration> Migrations = new[] { SqliteOutboxMigration.Create(1), SqliteFeatureStateMigration.Create(2) };
+        private static readonly Guid Installation = Guid.Parse("0199f9a0-0000-7000-8000-000000000111");
+        private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations;
 
         [Fact]
         public async Task RealSqliteLocalCompletionAndOutboxCommitTogetherAndSurviveSoftRestart()
@@ -231,22 +232,23 @@ namespace GamePlatform.Tests.Features.Progression
             Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressionCompletionRequest(Context, request.OperationId, Stream, "run", request.Outcome, 0, ProgressionOutcomeAuthority.ClientTrustedUnvalidated));
         }
 
-        private static ProgressionService Create(SqliteDatabase database, ScopedOwnerContext context) => new ProgressionService(context, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new Fingerprint()), new Codec(), new SqliteConfirmationStore(database), () => 100);
+        private static ProgressionService Create(SqliteDatabase database, ScopedOwnerContext context) => new ProgressionService(context, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new Fingerprint(), new FixedClock()), new Codec(), new SqliteConfirmationStore(database), () => 100);
         private static ProgressionCompletionRequest Request(string operation, string source, int contentVersion, long score = 7) => new ProgressionCompletionRequest(Context, new OperationId(Guid.Parse(operation)), Stream, source,
             new GameplayOutcome(new PlatformId("session-1"), new PlatformId("mode-1"), new PlatformId("content-1"), new PlatformId("difficulty-1"), true, score, long.MaxValue, 1_000_000, new Dictionary<string, long>(), ""), contentVersion, ProgressionOutcomeAuthority.ClientTrustedUnvalidated);
         private static ProgressionConfirmedProjection Projection(long revision, long value) => new ProgressionConfirmedProjection(revision, 100, new[] { new ProgressionConfirmedState(new SemanticId("campaign.level"), value) });
         private static async Task<SqliteDatabase> OpenReady(string path, bool seed = true)
         {
             var database = await SqliteDatabase.OpenAsync(path, Scope, Migrations, CancellationToken.None);
-            if (seed) await database.ExecuteAsync(Scope, tx => { ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString()); return true; }, CancellationToken.None);
+            if (seed) await database.ExecuteAsync(Scope, tx => { ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D")); return true; }, CancellationToken.None);
             return database;
         }
 
         private sealed class Fingerprint : ICommandFingerprint
         {
             public int GetFingerprintLength(int version) => version == 1 ? 32 : 0;
-            public void Compute(OwnerScope _, OperationId __, ClientStreamId ___, long ____, string _____, int ______, int _______, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
+            public void Compute(OwnerScope _, OperationId __, ClientStreamId ___, Guid ____, long _____, string ______, int _______, int ________, long _________, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
         }
+        private sealed class FixedClock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1_789_555_200_000; }
 
         private sealed class Codec : IProgressionStateCodec
         {

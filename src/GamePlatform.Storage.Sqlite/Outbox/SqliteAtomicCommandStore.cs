@@ -32,15 +32,17 @@ namespace GamePlatform.Storage.Sqlite.Outbox
         private readonly StorageScope scope;
         private readonly OwnerScope owner;
         private readonly ICommandFingerprint fingerprint;
+        private readonly IUnixMillisecondClock clock;
         private readonly Action<AdmissionCheckpoint>? checkpoint;
 
-        public SqliteAtomicCommandStore(SqliteDatabase database, StorageScope scope, OwnerScope owner, ICommandFingerprint fingerprint)
-            : this(database, scope, owner, fingerprint, null) { }
+        public SqliteAtomicCommandStore(SqliteDatabase database, StorageScope scope, OwnerScope owner, ICommandFingerprint fingerprint, IUnixMillisecondClock clock)
+            : this(database, scope, owner, fingerprint, clock, null) { }
 
-        internal SqliteAtomicCommandStore(SqliteDatabase database, StorageScope scope, OwnerScope owner, ICommandFingerprint fingerprint, Action<AdmissionCheckpoint>? checkpoint)
+        internal SqliteAtomicCommandStore(SqliteDatabase database, StorageScope scope, OwnerScope owner, ICommandFingerprint fingerprint, IUnixMillisecondClock clock, Action<AdmissionCheckpoint>? checkpoint)
         {
             this.database = database ?? throw new ArgumentNullException(nameof(database));
             this.fingerprint = fingerprint ?? throw new ArgumentNullException(nameof(fingerprint));
+            this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
             if (!owner.IsValid) throw new ArgumentException("A valid owner is required.", nameof(owner));
             if (!Matches(scope, owner)) throw new StorageException(StorageFailure.InvalidOwner, "The command owner does not match the database scope.");
             this.scope = scope;
@@ -108,6 +110,10 @@ namespace GamePlatform.Storage.Sqlite.Outbox
 
             var next = session.ExecuteScalar<long>("SELECT next_sequence FROM gp_stream_state WHERE singleton = 1");
             var revision = session.ExecuteScalar<long>("SELECT local_revision FROM gp_stream_state WHERE singleton = 1");
+            var installation = new Guid(session.ExecuteScalar<string>("SELECT installation_id FROM gp_stream_state WHERE singleton = 1"));
+            if (!UuidIdentity.IsValid(installation))
+                throw new StorageException(StorageFailure.Constraint, "The durable stream installation identity is invalid.");
+            var clientCreatedAt = PlatformNumbers.UnixMilliseconds(clock.GetUnixMilliseconds());
             if (next <= 0 || next == long.MaxValue || revision == long.MaxValue)
                 throw new StorageException(StorageFailure.SequenceExhausted, "The durable command sequence or local revision is exhausted.");
             var localRevision = checked(revision + 1);
@@ -123,16 +129,16 @@ namespace GamePlatform.Storage.Sqlite.Outbox
             if (fingerprintLength <= 0 || fingerprintLength > 512)
                 throw new StorageException(StorageFailure.Constraint, "The fingerprint length is invalid.");
             var finalFingerprint = new byte[fingerprintLength];
-            fingerprint.Compute(owner, command.OperationId, command.StreamId, next, command.OperationKind,
-                command.SchemaVersion, command.FingerprintVersion, body, finalFingerprint);
+            fingerprint.Compute(owner, command.OperationId, command.StreamId, installation, next, command.OperationKind,
+                command.SchemaVersion, command.FingerprintVersion, clientCreatedAt, body, finalFingerprint);
             session.Execute(
-                "INSERT INTO gp_outbox(operation_id, backend_namespace, app_id, account_id, client_stream_id, sequence, business_run_id, operation_kind, schema_version, fingerprint_version, semantic_body, fingerprint, local_revision) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO gp_outbox(operation_id, backend_namespace, app_id, account_id, client_stream_id, installation_id, sequence, business_run_id, operation_kind, schema_version, fingerprint_version, client_created_at, semantic_body, fingerprint, local_revision) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 command.OperationId.ToString(), owner.Backend.Value, owner.AppId.ToString(), owner.UserId.ToString(),
-                command.StreamId.ToString(), next, businessRunId, command.OperationKind, command.SchemaVersion,
-                command.FingerprintVersion, body, finalFingerprint, localRevision);
+                command.StreamId.ToString(), installation.ToString("D"), next, businessRunId, command.OperationKind, command.SchemaVersion,
+                command.FingerprintVersion, clientCreatedAt, body, finalFingerprint, localRevision);
             checkpoint?.Invoke(AdmissionCheckpoint.OutboxInserted);
             cancellationToken.ThrowIfCancellationRequested();
-            return new CommandAdmission(command.OperationId, command.StreamId, next, localRevision);
+            return new CommandAdmission(command.OperationId, command.StreamId, installation, clientCreatedAt, next, localRevision);
         }
 
         private CommandAdmission ReadIdempotentAdmission(SqliteTransactionSession session, string businessRunId, CommandDraft command)
@@ -152,7 +158,9 @@ namespace GamePlatform.Storage.Sqlite.Outbox
                 throw new StorageException(StorageFailure.IdentityConflict, "The operation or business run was already admitted with different immutable semantics.");
             var sequence = session.ExecuteScalar<long>("SELECT sequence FROM gp_outbox WHERE operation_id = ?", operationId);
             var revision = session.ExecuteScalar<long>("SELECT local_revision FROM gp_outbox WHERE operation_id = ?", operationId);
-            return new CommandAdmission(command.OperationId, command.StreamId, sequence, revision);
+            var installation = new Guid(session.ExecuteScalar<string>("SELECT installation_id FROM gp_outbox WHERE operation_id = ?", operationId));
+            var clientCreatedAt = session.ExecuteScalar<long>("SELECT client_created_at FROM gp_outbox WHERE operation_id = ?", operationId);
+            return new CommandAdmission(command.OperationId, command.StreamId, installation, clientCreatedAt, sequence, revision);
         }
 
         private void EnsureReady(SqliteTransactionSession session, ClientStreamId stream)

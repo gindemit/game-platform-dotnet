@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -29,14 +30,14 @@ namespace GamePlatform.Tests.Features.Wallet
         private static readonly OwnerScope Owner = new OwnerScope(new BackendNamespace("wallet-test"), App, User);
         private static readonly StorageScope Scope = new StorageScope("wallet-test", new PlatformId(App.ToString()), new PlatformId(User.ToString()));
         private static readonly ClientStreamId Stream = new ClientStreamId(Guid.Parse("0199f9a0-1111-7777-8888-999999999991"));
+        private static readonly Guid Installation = Guid.Parse("0199f9a0-1212-7777-8888-999999999991");
         private static readonly ScopedOwnerContext Context = new ScopedOwnerContext(Owner, new SemanticId("private"), 7);
         private static readonly WalletCurrency Coin = new WalletCurrency(new PlatformId("test-coin"), new SemanticId("test.coin"));
-        private static readonly IReadOnlyList<SqliteMigration> Migrations = new[] { SqliteOutboxMigration.Create(1), SqliteFeatureStateMigration.Create(2) };
-        private static readonly IReadOnlyList<SqliteMigration> AtomicMigrations = new[]
+        private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations;
+        private static readonly IReadOnlyList<SqliteMigration> AtomicMigrations = SqlitePlatformMigrationRegistry.Migrations.Concat(new[]
         {
-            SqliteOutboxMigration.Create(1), SqliteFeatureStateMigration.Create(2),
-            new SqliteMigration(3, "wallet-atomic-cursor-sentinel", new[] { "CREATE TABLE wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
-        };
+            new SqliteMigration(7, "wallet-atomic-cursor-sentinel", new[] { "CREATE TABLE wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
+        }).ToArray();
 
         [Fact]
         public async Task RealSqliteConfirmedIntentAndOutboxCommitTogetherAndSurviveReopenWithSigned64Extrema()
@@ -281,7 +282,7 @@ namespace GamePlatform.Tests.Features.Wallet
         }
 
         private static WalletService Create(SqliteDatabase database, ScopedOwnerContext owner, IWalletRemote remote) => new WalletService(owner, Scope,
-            new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new TestFingerprint()),
+            new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new TestFingerprint(), new FixedClock()),
             new TestCodec(), remote, 8, TimeSpan.FromMinutes(1), () => 1_000);
         private static WalletConfirmedBalance Confirmed(WalletCurrency currency, long balance, long revision) => new WalletConfirmedBalance(currency, balance, revision, 100, new byte[] { 7 });
         private static CatalogSnapshot Catalog(ScopedOwnerContext? owner = null, bool included = true, bool spend = true, CatalogResourceKind kind = CatalogResourceKind.Currency) =>
@@ -295,7 +296,7 @@ namespace GamePlatform.Tests.Features.Wallet
             var database = await SqliteDatabase.OpenAsync(path, Scope, migrations ?? Migrations, CancellationToken.None);
             if (seed) await database.ExecuteAsync(Scope, tx =>
             {
-                ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString());
+                ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D"));
                 return true;
             }, CancellationToken.None);
             return database;
@@ -349,8 +350,9 @@ namespace GamePlatform.Tests.Features.Wallet
         private sealed class TestFingerprint : ICommandFingerprint
         {
             public int GetFingerprintLength(int version) => version == 1 ? 32 : 0;
-            public void Compute(OwnerScope owner, OperationId operation, ClientStreamId stream, long sequence, string kind, int schema, int fingerprint, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
+            public void Compute(OwnerScope owner, OperationId operation, ClientStreamId stream, Guid installation, long sequence, string kind, int schema, int fingerprint, long clientCreatedAt, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
         }
+        private sealed class FixedClock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1_789_555_200_000; }
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl105", Guid.NewGuid().ToString("N"));
