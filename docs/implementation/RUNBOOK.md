@@ -55,7 +55,7 @@ The machine-readable DAG is every task's `dependencies` in execution-manifest.js
 | 19 | INT-017, INT-018 |
 | 20 | INT-020 |
 
-Prioritize the first real slice over ready breadth work: the wave table is valid but not an assertion that every lower-numbered unrelated feature must finish first. INT-010 does **not** depend on Quests, Achievements, Store, Purchases, Teams, Leaderboards, RemoteConfig or Inbox completion. INT-008 includes the minimal one-currency display for the optional bounded server-issued test reward; its gameplay completion remains unvalidated. INT-011 later expands value UI. Native packaging starts early because late AOT discovery can invalidate desktop-only assumptions.
+Prioritize the first real slice over ready breadth work: the wave table is valid but not an assertion that every lower-numbered unrelated feature must finish first. INT-010 does **not** depend on Quests, Achievements, Store, Purchases, Teams, Leaderboards, RemoteConfig or Inbox completion. INT-008 includes the minimal one-currency trusted reward display; INT-011 later expands value UI. Native packaging starts early because late AOT discovery can invalidate desktop-only assumptions.
 
 Critical edges in plain text:
 
@@ -83,7 +83,7 @@ M0 remains historical scaffold work. M1 contracts/import; M2 durability/provisio
 
 **Lifecycle gate:** no new account application while old writer/sender has not quiesced. Cancellation is not evidence of stopped work. Keep caller cancellation separate from shared transitions and durable operations. Screen closure only disposes owned view/presenter/subscription/lease objects. No global Current/service locator, universal services bag or mandatory DI framework. DI10/11 are conditional future-container requirements; manual DI and AOT tests remain required now.
 
-**Trust gates:** DEC-CONTENT-VALIDATION is accepted for the bounded initial unvalidated tier: support both client-side and server-side rewards, use client-side rewards initially, and let the optional G3 server fixture accept the authorized client completion report under explicit client trust before issuing one nonpremium `test.coin` through normal Wallet/receipt/idempotency controls. This is not gameplay/session validation. Preserve a future game-owned validator boundary; do not require TypeScript replay or the existing .NET game DLL now. DEC-LEGACY-TRUST remains unresolved, so historical/import grants remain forbidden.
+**Trust gates:** DEC-LEGACY-TRUST and DEC-CONTENT-VALIDATION require explicit product/backend decisions. Recommended safe defaults preserve legacy local progress as unverified import and use a bounded nonproduction validation/reward fixture; neither authorizes historical grants or treats a client signature as trusted anti-cheat proof. Continue independent work while these remain unresolved.
 
 ## 4. Exact commands and environment labels
 
@@ -174,5 +174,5 @@ Reproduce relevant commands in an independent environment, reject zero-test or f
 ```text
 Execute INT-010 (or INT-018) using the paired Unity LIVE_SLICE runbook and exact reviewed SDK/backend/consumer revisions. Verify prerequisites and test isolation first. Use the actual GardenPreview/Main consumer, real native SQLite, real compatible nonproduction backend and authorized Android test device. Do not substitute a new sample scene, fake provider or liveness endpoint.
 
-Prove online full first bootstrap, offline real level, atomic local projection/outbox, kill/reopen, same pending identity, reconnect, and either the initial client-side reward or the optional bounded backend `test.coin` reward/receipt, followed by ordered pull and truthful actual UI. When exercising server issuance, label the completion accepted-under-client-trust/unvalidated, never technically verified. Add lost-response/duplicate/rejection/account-switch/migration/interrupted-bootstrap cases. Inspect server and local durable state, not just screenshots. Report every environment separately with raw evidence and pass/fail/blocked; missing credentials/runners/APIs leave the gate blocked. Make no production or publication changes.
+Prove online full first bootstrap, offline real level, atomic local projection/outbox, kill/reopen, same pending identity, reconnect, one backend reward/receipt, ordered pull and confirmed actual UI. Add lost-response/duplicate/rejection/account-switch/migration/interrupted-bootstrap cases. Inspect server and local durable state, not just screenshots. Report every environment separately with raw evidence and pass/fail/blocked; missing credentials/runners/APIs leave the gate blocked. Make no production or publication changes.
 ```
