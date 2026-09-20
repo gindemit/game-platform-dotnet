@@ -191,6 +191,7 @@ namespace GamePlatform.Features.Contracts.Wallet
     }
 
     public sealed class WalletConflictException : InvalidOperationException { public WalletConflictException(string message) : base(message) { } }
+    public sealed class WalletCatalogException : InvalidOperationException { public WalletCatalogException(string message) : base(message) { } }
     public sealed class WalletOwnerMismatchException : InvalidOperationException { public WalletOwnerMismatchException() : base("The wallet result does not belong to the captured account/view generation.") { } }
     public sealed class WalletOfflineSpendException : InvalidOperationException { public WalletOfflineSpendException() : base("A cached wallet balance cannot authorize a spend.") { } }
 

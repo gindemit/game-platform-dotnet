@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Core;
+using GamePlatform.Features.Contracts.Catalog;
 using GamePlatform.Features.Contracts.Snapshots;
 using GamePlatform.Features.Contracts.Wallet;
 using GamePlatform.Features.Shared;
@@ -44,11 +45,11 @@ namespace GamePlatform.Features.Wallet
             reads = new DisposableQueryCache<WalletRemoteRead>(refreshCacheCapacity, refreshCacheLifetime, this.nowMilliseconds);
         }
 
-        public Task<FeatureSnapshot<WalletSnapshot>> ReadCachedAsync(WalletBalanceRequest request, CancellationToken cancellationToken) =>
-            ReadSnapshotAsync(EnsureRequest(request), SnapshotFreshness.Stale, cancellationToken);
+        public Task<FeatureSnapshot<WalletSnapshot>> ReadCachedAsync(WalletBalanceRequest request, CatalogSnapshot catalog, CancellationToken cancellationToken) =>
+            ReadSnapshotAsync(EnsureRequest(request), catalog, SnapshotFreshness.Stale, cancellationToken);
 
         /// <summary>Fetches and installs an exact scoped server projection; an older pull never regresses the durable balance.</summary>
-        public async Task<FeatureSnapshot<WalletSnapshot>> RefreshAsync(WalletBalanceRequest request, CancellationToken cancellationToken)
+        public async Task<FeatureSnapshot<WalletSnapshot>> RefreshAsync(WalletBalanceRequest request, CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             var exact = EnsureRequest(request);
             var key = new ScopedQueryKey(exact.Owner, FeatureNamespace, ConfirmedKey(exact.Currency));
@@ -56,16 +57,17 @@ namespace GamePlatform.Features.Wallet
             {
                 var result = await remote.ReadAsync(exact, token).ConfigureAwait(false);
                 if (result == null || result.Owner != exact.Owner || !SameCurrency(result.Confirmed.Currency, exact.Currency)) throw new WalletOwnerMismatchException();
+                ValidateVisibleCatalog(exact.Owner, exact.Currency, catalog);
                 codec.ValidateExtensions(result.Confirmed.CopyExtensions());
                 return new FeatureSnapshot<WalletRemoteRead>(exact.Owner, result.Confirmed.Revision, FeatureSnapshotState.Available,
                     SnapshotFreshness.Current, result, result.Confirmed.ConfirmedAtMilliseconds, null);
             }, cancellationToken).ConfigureAwait(false);
-            await ApplyConfirmedAsync(exact.Owner, read.Value!.Confirmed, cancellationToken).ConfigureAwait(false);
-            return await ReadSnapshotAsync(exact, SnapshotFreshness.Current, cancellationToken).ConfigureAwait(false);
+            await ApplyConfirmedAsync(exact.Owner, read.Value!.Confirmed, catalog, cancellationToken).ConfigureAwait(false);
+            return await ReadSnapshotAsync(exact, catalog, SnapshotFreshness.Current, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>Only a fresh injected backend authorization may admit a spend intent. The local cached balance is never used as authority.</summary>
-        public async Task<FeatureSnapshot<WalletSnapshot>> SubmitSpendIntentAsync(WalletSpendRequest request, CancellationToken cancellationToken)
+        public async Task<FeatureSnapshot<WalletSnapshot>> SubmitSpendIntentAsync(WalletSpendRequest request, CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
             var exactOwner = EnsureOwner(request.Owner);
@@ -73,13 +75,14 @@ namespace GamePlatform.Features.Wallet
             try
             {
                 var current = await ReadDurableAsync(exactOwner, request.Intent.Currency, cancellationToken).ConfigureAwait(false);
+                ValidateSpendCatalog(exactOwner, request.Intent.Currency, catalog);
                 if (current.Pending != null && current.Pending.Status != WalletPendingStatus.Rejected)
                 {
-                    if (Equivalent(current.Pending, request)) return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+                    if (Equivalent(current.Pending, request)) return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
                     throw new WalletConflictException("A wallet spend is already pending for this currency and captured scope.");
                 }
                 if (current.Pending != null && current.Pending.Status == WalletPendingStatus.Rejected && Equivalent(current.Pending, request))
-                    return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+                    return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
                 if (current.Confirmed == null || current.Confirmed.Revision != request.Intent.ExpectedRevision)
                     throw new WalletOfflineSpendException();
 
@@ -104,14 +107,15 @@ namespace GamePlatform.Features.Wallet
                 }, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
-            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>Moves only the matching local intent to receipt-accepted. The balance changes only when a confirming pull arrives.</summary>
-        public async Task<FeatureSnapshot<WalletSnapshot>> MarkAcceptedAwaitingPullAsync(WalletSpendAcceptance acceptance, WalletCurrency currency, CancellationToken cancellationToken)
+        public async Task<FeatureSnapshot<WalletSnapshot>> MarkAcceptedAwaitingPullAsync(WalletSpendAcceptance acceptance, WalletCurrency currency, CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             if (acceptance == null) throw new ArgumentNullException(nameof(acceptance));
             var exactOwner = EnsureOwner(acceptance.Owner);
+            ValidateVisibleCatalog(exactOwner, currency, catalog);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -126,13 +130,14 @@ namespace GamePlatform.Features.Wallet
                 await WritePendingAsync(exactOwner, updated, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
-            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<FeatureSnapshot<WalletSnapshot>> MarkRejectedAsync(WalletSpendRejection rejection, WalletCurrency currency, CancellationToken cancellationToken)
+        public async Task<FeatureSnapshot<WalletSnapshot>> MarkRejectedAsync(WalletSpendRejection rejection, WalletCurrency currency, CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             if (rejection == null) throw new ArgumentNullException(nameof(rejection));
             var exactOwner = EnsureOwner(rejection.Owner);
+            ValidateVisibleCatalog(exactOwner, currency, catalog);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -147,14 +152,15 @@ namespace GamePlatform.Features.Wallet
                 await WritePendingAsync(exactOwner, updated, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
-            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>Applies monotonic server state only. It neither debits nor credits from local intent or receipt information.</summary>
-        public async Task ApplyConfirmedAsync(ScopedOwnerContext requestedOwner, WalletConfirmedBalance confirmed, CancellationToken cancellationToken)
+        public async Task ApplyConfirmedAsync(ScopedOwnerContext requestedOwner, WalletConfirmedBalance confirmed, CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
             if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            ValidateVisibleCatalog(exactOwner, confirmed.Currency, catalog);
             codec.ValidateExtensions(confirmed.CopyExtensions());
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -184,8 +190,9 @@ namespace GamePlatform.Features.Wallet
 
         public void Dispose() { if (disposed) return; disposed = true; reads.Dispose(); mutation.Dispose(); }
 
-        private async Task<FeatureSnapshot<WalletSnapshot>> ReadSnapshotAsync(WalletBalanceRequest exact, SnapshotFreshness freshness, CancellationToken cancellationToken)
+        private async Task<FeatureSnapshot<WalletSnapshot>> ReadSnapshotAsync(WalletBalanceRequest exact, CatalogSnapshot catalog, SnapshotFreshness freshness, CancellationToken cancellationToken)
         {
+            ValidateVisibleCatalog(exact.Owner, exact.Currency, catalog);
             var durable = await ReadDurableAsync(exact.Owner, exact.Currency, cancellationToken).ConfigureAwait(false);
             if (durable.Confirmed == null && durable.Pending == null)
                 return new FeatureSnapshot<WalletSnapshot>(exact.Owner, 0, FeatureSnapshotState.Missing, SnapshotFreshness.Missing, null, null, null);
@@ -255,5 +262,30 @@ namespace GamePlatform.Features.Wallet
         private static bool Equivalent(WalletConfirmedBalance left, WalletConfirmedBalance right) => SameCurrency(left.Currency, right.Currency) && left.Balance == right.Balance &&
             left.Revision == right.Revision && left.ConfirmedAtMilliseconds == right.ConfirmedAtMilliseconds && Equal(left.CopyExtensions(), right.CopyExtensions());
         private static bool Equal(byte[] left, byte[] right) { if (left.Length != right.Length) return false; var difference = 0; for (var i = 0; i < left.Length; i++) difference |= left[i] ^ right[i]; return difference == 0; }
+        private static void ValidateVisibleCatalog(ScopedOwnerContext owner, WalletCurrency currency, CatalogSnapshot catalog)
+        {
+            var entry = FindCatalogEntry(owner, currency, catalog);
+            if (!entry.Binding.Permits(CatalogResourceKind.Currency, CatalogPermission.Visible))
+                throw new WalletCatalogException("The currency is not visible in the exact app catalog.");
+        }
+        private static void ValidateSpendCatalog(ScopedOwnerContext owner, WalletCurrency currency, CatalogSnapshot catalog)
+        {
+            var entry = FindCatalogEntry(owner, currency, catalog);
+            if (!entry.Binding.Permits(CatalogResourceKind.Currency, CatalogPermission.Visible) ||
+                !entry.Binding.Permits(CatalogResourceKind.Currency, CatalogPermission.Spend))
+                throw new WalletCatalogException("The currency is not spendable in the exact app catalog.");
+        }
+        private static CatalogEntry FindCatalogEntry(ScopedOwnerContext owner, WalletCurrency currency, CatalogSnapshot catalog)
+        {
+            if (catalog == null || catalog.Request.Owner != owner) throw new WalletCatalogException("The catalog does not belong to the captured wallet scope.");
+            CatalogEntry? found = null;
+            foreach (var entry in catalog.Entries)
+            {
+                if (entry.Definition.DefinitionId.Equals(currency.DefinitionId)) { found = entry; break; }
+            }
+            if (found == null || found.Definition.Kind != CatalogResourceKind.Currency || !found.Definition.SemanticKey.Equals(currency.SemanticKey))
+                throw new WalletCatalogException("The currency is absent or incompatible in the exact app catalog.");
+            return found;
+        }
     }
 }
