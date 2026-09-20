@@ -17,3 +17,12 @@ service contains no grant, credit or local funds validation. The pending intent
 and immutable `wallet.spend` command share the existing atomic outbox
 transaction. Production HTTP/wire adapters and Unity composition remain outside
 this portable feature scope.
+
+`ApplyConfirmed` is the narrow borrowed-transaction mutation for a private-feed
+adapter. Its caller supplies the durable prior revision observed in the same
+projection/cursor transaction; the mutation requires a strictly higher server
+revision and validates the exact visible catalog binding before writing. It does
+not advance a cursor. `AcceptedAwaitingPull` is a local overlay: when the stored
+confirmed revision reaches its receipt revision, every cached read suppresses it
+after commit/reopen, including when the confirmation arrived through this
+borrowed path. Awaiting and rejected intents remain visible.

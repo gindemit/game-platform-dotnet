@@ -27,6 +27,15 @@ state. A matching receipt moves only the intent to `AcceptedAwaitingPull`; the
 balance remains unchanged until a monotonic confirmed pull reaches the receipt's
 resulting revision. A retained rejection remains an explicit error state.
 
+The narrow borrowed `ApplyConfirmed` mutation now accepts a caller-owned
+`ILocalStorageTransaction` plus the explicit durable prior revision observed in
+that same private projection/cursor transaction. It verifies exact owner and
+visible catalog binding, validates codec/extensions, and rejects equal/lower
+revision replacement before writing. The convenience async path routes every
+advancing write through that same mutation. Accepted pending cleanup is a read
+overlay, so receipt state is suppressed after the stored confirming revision
+survives a borrowed transaction and restart; awaiting/rejected states remain.
+
 The remote, codec, SQLite composition and command fingerprint interfaces are
 injected. Test fakes are not production providers. No wire DTO, HTTP route,
 server-side funds algorithm, wallet ledger, reward grant, Unity composition or
@@ -41,10 +50,10 @@ rtk dotnet build GamePlatform.sln -c Release --no-restore
 exit 0; 18 projects, zero warnings/errors
 
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter FullyQualifiedName~Cl105WalletServiceTests
-exit 0; 7 passed, 0 failed/skipped/warnings
+exit 0; 9 passed, 0 failed/skipped/warnings
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
-exit 0; 405 passed, 0 failed/skipped/warnings
+exit 0; 433 passed, 0 failed/skipped/warnings
 ```
 
 The real pinned SQLite cases prove confirmed/pending/outbox atomicity and reopen,
@@ -57,6 +66,10 @@ missing/unavailable and subsequently revoked bindings, wrong resource kind,
 foreign owner, and spend-disabled binding rejection before outbox admission.
 It also proves a post-admission revocation cannot suppress a matching accepted
 or rejected terminal receipt, and neither receipt changes the confirmed balance.
+The borrowed-transaction cases use a real SQLite cursor sentinel to prove rollback
+and commit/reopen atomicity, logical accepted-overlay suppression after a borrowed
+confirming revision, and rejection of equal/lower revision overwrite, foreign
+owner and invisible catalog input.
 
 ## Remaining limits
 
