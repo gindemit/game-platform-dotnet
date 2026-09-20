@@ -46,3 +46,21 @@ operations remain fail-closed and unsupported. No credentials or endpoint are
 embedded. Backend BE-016, UnityWebRequest and live hosted execution remain
 separate gates.
 Gates: A02, A11, A12.
+
+`SupabaseAnonymousAuthLifecycle` is the deliberately bounded nonproduction
+CL-101 host adapter. It implements the consumer-owned account auth port but
+uses an injected secure-session store and neutral executor; it has no Unity
+reference, fallback file/PlayerPrefs storage, logging, JWT claim parsing or
+issuer/audience validation. Its separate `SupabaseAuthConfiguration` accepts
+only an HTTPS `.../auth/v1/` root and admits only anonymous signup and refresh
+JSON routes. A first signup writes a secure pending marker before send, clears
+that marker only after a definitely not-sent failure, and requires recovery
+after any uncertain result. Access tokens are memory-only; a framed refresh
+token/subject record is rotated in the secure store before session publication.
+
+For Unity, the functions executor remains rooted at
+`.../functions/v1/game-platform/`; Auth needs a second separately bounded
+executor rooted at `.../auth/v1/`, plus a small adapter from the existing
+Android-keystore secret port to `ISupabaseAnonymousSessionStore`. The SDK does
+not create either Unity boundary. Hosted HTTPS, Unity/device composition and
+G3 remain separate evidence gates.
