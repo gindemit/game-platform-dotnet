@@ -278,5 +278,40 @@
       "remaining": "Unity import/stripping,IL2CPP/APK,Android device and macOS execution unrun; production IWireCodec remains unavailable."
     },
     "next_action": "Import and qualify the CL-015 bundle through the authorized INT-009 Unity IL2CPP/AOT/device workflow before production IWireCodec availability; then continue concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript. Do not assess G3 or start P4."
+  },
+  "p3_continuation_2026_09_20": {
+    "status": "in_progress_g3_blocked",
+    "observed_backend_head": "0b1c3e3",
+    "sdk_source_head": "c2f878d",
+    "unity_head": "223ca88",
+    "implemented_bounded_scope": [
+      "portable CL-101 through CL-108 services retained as in_progress/unverified",
+      "transactional CL-010 group and snapshot hooks",
+      "platform SQLite migration v6 with complete durable command envelope and exact zero revisions",
+      "bounded MessagePack CommandPushHttpProvider for profile and gameplay commands"
+    ],
+    "verification": {
+      "sdk_release_tests": "467/467",
+      "sdk_structure_validation": "passed",
+      "sdk_manifest_validation": "passed",
+      "unity_INT_005_portable": "5/5"
+    },
+    "blockers": [
+      "production canonical fingerprint adapter",
+      "borrowed transactional feature-state reads",
+      "snapshot fixed-H and server-time propagation",
+      "remote revision-zero and invalidation handling",
+      "durable receipt/feed/operation correlation and complete typed projector composition",
+      "reviewed current SDK bundle and INT-006 through INT-009 Unity integration",
+      "exact Unity 6000.5.3f1 and current-bundle device execution",
+      "BE-016 managed Supabase/Deno/JWT/HTTPS qualification"
+    ],
+    "unrun": [
+      "BE-025",
+      "INT-010",
+      "G3 synchronization review",
+      "P4"
+    ],
+    "note": "The frozen schema is sufficient for the bounded test.coin journey, but rich inventory/entitlement models cannot be fabricated from the semantic rows. Keep empty authoritative raw collections until reviewed narrow adapters exist."
   }
 }

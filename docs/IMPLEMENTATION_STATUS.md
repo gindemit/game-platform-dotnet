@@ -232,6 +232,47 @@ Concrete HTTP executor/host, live transcript and independent-review evidence
 remain open. G3 was not assessed and P4 was not started. See
 [CL-004 evidence](implementation/evidence/CL-004/README.md).
 
+## P3 live-slice services and durable envelope — 2026-09-20
+
+CL-101 through CL-108 now have real portable service implementations and real
+SQLite coverage for their bounded scopes; their task states remain
+`in_progress` and the feature catalog says `unverified`, not implemented.
+Unity/package/live-backend evidence is still missing. Profile, progression,
+inventory, entitlement, and the narrow semantic-only G3 wallet read path
+preserve authoritative revision zero distinctly from absence. Platform SQLite
+migration v6 stores zero and the signed-64 maximum exactly.
+
+The v6 command envelope durably binds the exact Accounts installation identity
+and captures `clientCreatedAt` once at admission. Admission replay, lease,
+restart, retry, and `RemoteCommand` retain that identity and timestamp. Upgrade
+from a legacy retained outbox fails atomically because the original values
+cannot be reconstructed; an empty legacy stream upgrades only when it matches
+one exact Accounts-directory binding. The frozen fingerprint interface now
+receives the complete envelope context.
+
+CL-010 exposes explicit consumer-owned transactional hooks for every ordered
+private-feed group and for complete snapshot replacement. Raw rows, typed
+projection work, overlay rebuild, and cursor publication share one SQLite
+transaction and roll back together. This is a seam, not yet complete live-slice
+composition.
+
+`CommandPushHttpProvider` now maps exactly one durable profile/gameplay command
+to the frozen MessagePack `/sync/push` route, binds response identity, performs
+one coordinated authentication refresh, and preserves uncertain delivery for
+receipt reconciliation. It does not supply the still-missing canonical
+fingerprint or typed private-sync composition.
+
+Integrated Release tests pass 467/467 after the v6, revision corrections, and
+command-push adapter;
+repository and manifest validation pass. Remaining G3 blockers are production
+canonical fingerprint adaptation, borrowed transaction reads, snapshot
+boundary/server-time propagation, remote revision-zero and invalidation
+handling, durable receipt/feed correlation, complete typed projector
+composition, SDK packaging/Unity integration, and the actual live/device
+journey. Frozen inventory and entitlement rows are intentionally not expanded
+into their richer catalog/origin-dependent services; doing so would fabricate
+missing authority data.
+
 ## CL-010 private pull/bootstrap increment — 2026-09-19; corrected 2026-09-20
 
 Effective source commit `13c36e9083a6b814896724e949f0f7f1dfd35c29` (initial source
