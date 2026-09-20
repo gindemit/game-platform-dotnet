@@ -21,18 +21,21 @@ namespace GamePlatform.Features.RewardFulfillment
         private readonly ISerializedStorageExecutor transactions;
         private readonly IRewardFulfillmentStateCodec codec;
         private readonly IRewardPresentationClaimStore claims;
+        private readonly IRewardProjectionEvidenceStore evidence;
         private readonly Func<long> nowMilliseconds;
         private readonly SemaphoreSlim mutation = new SemaphoreSlim(1, 1);
         private bool disposed;
 
         public RewardFulfillmentService(ScopedOwnerContext owner, StorageScope scope, IDurableFeatureStateStore state,
-            ISerializedStorageExecutor transactions, IRewardFulfillmentStateCodec codec, IRewardPresentationClaimStore claims, Func<long> nowMilliseconds)
+            ISerializedStorageExecutor transactions, IRewardFulfillmentStateCodec codec, IRewardPresentationClaimStore claims,
+            IRewardProjectionEvidenceStore evidence, Func<long> nowMilliseconds)
         {
             if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
             if (!Matches(scope, owner.Owner)) throw new ArgumentException("The reward presentation scope does not match the captured owner.", nameof(scope));
             this.owner = owner; this.scope = scope; this.state = state ?? throw new ArgumentNullException(nameof(state));
             this.transactions = transactions ?? throw new ArgumentNullException(nameof(transactions)); this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
             this.claims = claims ?? throw new ArgumentNullException(nameof(claims));
+            this.evidence = evidence ?? throw new ArgumentNullException(nameof(evidence));
             this.nowMilliseconds = nowMilliseconds ?? throw new ArgumentNullException(nameof(nowMilliseconds));
         }
 
@@ -120,7 +123,7 @@ namespace GamePlatform.Features.RewardFulfillment
             EnsureOwner(group.Owner);
             if (!transaction.Scope.Equals(scope)) throw new RewardFulfillmentOwnerMismatchException();
             var payload = codec.EncodeGroup(group); ValidatePayload(payload);
-            state.Upsert(transaction, new DurableFeatureMutation(group.Owner, Namespace, EvidenceKey(group.GrantId), group.FeedRevision, Now(), payload, Array.Empty<byte>()));
+            evidence.InsertOrVerify(transaction, group.Owner, group.GrantId, group.FeedRevision, Now(), payload);
         }
 
         public async Task<FeatureSnapshot<RewardPresentationRecord>> ObserveRejectedAsync(RewardRejection rejection, CancellationToken cancellationToken)

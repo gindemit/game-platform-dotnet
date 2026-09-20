@@ -152,7 +152,24 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             reopened.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
-        private static RewardFulfillmentService Create(SqliteDatabase database, ScopedOwnerContext owner) => new RewardFulfillmentService(owner, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new Codec(), new SqliteClaimStore(database), () => 1_000);
+        [Fact]
+        public async Task BorrowedEvidenceInsertOrVerifyRejectsEqualRevisionReplacementAndPreservesOriginalAcrossReopen()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database, Context); var receipt = Receipt(Operation, Grant, Source); var original = Group(Context, Operation, receipt);
+            await database.ExecuteAsync(Scope, transaction => { service.StageProjectionGroup(transaction, original); return true; }, CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction => { service.StageProjectionGroup(transaction, original); return true; }, CancellationToken.None); // exact replay
+            var altered = new RewardProjectionGroup(Context, new OperationId(Guid.Parse("0199f9a0-0700-7000-8000-000000000014")), Grant, "gameplay.completion.changed", receipt.FeedRevision,
+                new[] { new RewardProjectionLine(0, RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 999), new RewardProjectionLine(1, RewardReceiptLineKind.ItemStack, new PlatformId("test.item"), 11) });
+            await Assert.ThrowsAsync<RewardFulfillmentConflictException>(() => database.ExecuteAsync(Scope, transaction => { service.StageProjectionGroup(transaction, altered); return true; }, CancellationToken.None));
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            database = await OpenAsync(files.Path); service = Create(database, Context);
+            var restored = await service.ObserveAcceptedReceiptAsync(new RewardReceiptObservation(Context, Operation, receipt), CancellationToken.None);
+            Assert.Equal(RewardPresentationStatus.Confirmed, restored.Value!.Status); // original evidence, not altered bytes, survived reopen.
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        private static RewardFulfillmentService Create(SqliteDatabase database, ScopedOwnerContext owner) => new RewardFulfillmentService(owner, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new Codec(), new SqliteClaimStore(database), new SqliteEvidenceStore(), () => 1_000);
         private static Task<SqliteDatabase> OpenAsync(string path) => SqliteDatabase.OpenAsync(path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
         private static RewardReceipt Receipt(OperationId originating, Guid grant, string source) => new RewardReceipt(grant, originating, 10, 100, source, "mrsquare.test.coin", 1, new RewardReceiptLine[]
         {
@@ -207,6 +224,32 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
                     onClaim(transaction);
                     return true;
                 }, cancellationToken);
+            }
+        }
+        /// <summary>Concrete test composition for immutable group evidence. Equal feed revision is accepted only when canonical bytes match exactly.</summary>
+        private sealed class SqliteEvidenceStore : IRewardProjectionEvidenceStore
+        {
+            public void InsertOrVerify(ILocalStorageTransaction transaction, ScopedOwnerContext owner, Guid grantId, long feedRevision, long recordedAtMilliseconds, byte[] canonicalPayload)
+            {
+                var session = transaction as SqliteTransactionSession ?? throw new InvalidOperationException("Expected the SQLite transaction.");
+                if (canonicalPayload == null || canonicalPayload.Length == 0) throw new ArgumentException("A canonical group payload is required.", nameof(canonicalPayload));
+                var key = "evidence/" + grantId.ToString("N");
+                var args = new object[] { owner.ViewKey.Value, "reward-fulfillment", key };
+                if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0)
+                {
+                    session.Execute("INSERT INTO gp_feature_state(view_key,feature_namespace,entity_key,revision,confirmed_at,payload,extensions) VALUES (?,?,?,?,?,?,?)",
+                        owner.ViewKey.Value, "reward-fulfillment", key, feedRevision, recordedAtMilliseconds, canonicalPayload, Array.Empty<byte>());
+                    return;
+                }
+                var existingRevision = session.ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args);
+                var existingPayload = session.ExecuteScalar<byte[]>("SELECT payload FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args);
+                if (existingRevision != feedRevision || !SameBytes(existingPayload, canonicalPayload)) throw new RewardFulfillmentConflictException("A grant cannot replace immutable projection evidence.");
+            }
+            private static bool SameBytes(byte[] left, byte[] right)
+            {
+                if (left.Length != right.Length) return false;
+                var difference = 0; for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index];
+                return difference == 0;
             }
         }
         private sealed class TemporaryDatabase : IDisposable
