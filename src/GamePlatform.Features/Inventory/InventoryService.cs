@@ -213,7 +213,12 @@ namespace GamePlatform.Features.Inventory
             if (pending == null || pending.PayloadLength == 0) return (decoded, Array.Empty<InventoryIntent>(), pending?.Revision ?? 0);
             var decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
             if (decodedPending == null || decodedPending.Any(value => value == null)) throw new InventoryProjectionConflictException("The inventory codec returned invalid pending state.");
-            return (decoded, decodedPending.ToArray(), pending.Revision);
+            // A borrowed private-feed transaction can commit the projection and cursor without taking ownership of this
+            // feature's pending record. Its authoritative revision suppresses only matching accepted receipts on every
+            // durable read; awaiting-receipt intents remain pending and no holding is inferred from a receipt.
+            var visiblePending = decodedPending.Where(value => value.Status != InventoryIntentStatus.AcceptedAwaitingPull ||
+                decoded == null || decoded.Revision < value.AcceptedInventoryRevision!.Value).ToArray();
+            return (decoded, visiblePending, pending.Revision);
         }
 
         private Task WritePendingAsync(ScopedOwnerContext exactOwner, IReadOnlyList<InventoryIntent> pending, long currentRevision, CancellationToken cancellationToken) =>
