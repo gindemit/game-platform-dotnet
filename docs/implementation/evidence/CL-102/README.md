@@ -13,6 +13,16 @@ duplicate recognition, receipt-to-awaiting-pull handling, monotonic confirmed
 replacement, and explicit conflict rather than automatic merge when an
 unreceipted local edit loses to a newer server revision.
 
+The follow-up adds `ApplyConfirmedProjection`, a borrowed
+`ILocalStorageTransaction` API for CL-010 private-feed composition. It requires the
+exact captured owner and storage scope plus the confirmed durable prior revision read
+by the caller in that same transaction; same/lower revisions fail before any write.
+It validates codec and extension bytes and writes only the confirmed state, leaving
+cursor advancement and pending-row ownership to the caller. `ApplyConfirmedAsync`
+uses this same mutation. Durable reads suppress only an accepted-awaiting-pull edit
+whose recorded accepted revision is reached by confirmed state; a newer revision over
+an unreceipted edit is still presented as `profile_revision_conflict` after restart.
+
 The only edit fields are frozen `displayName`, `avatarKey`, and `locale` patch
 fields. The public SDK contracts do not expose `createdBy`, `updatedBy`, actor,
 executing-service, causation, or server audit time inputs. Codec validation
@@ -39,11 +49,11 @@ ok dotnet build: 18 projects, 0 errors, 0 warnings
 
 rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-restore --filter FullyQualifiedName~Cl102
 exit 0
-ok dotnet test: 6 tests passed, 0 warnings in 1 projects
+ok dotnet test: 8 tests passed, 0 warnings in 1 projects
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
 exit 0
-ok dotnet test: 389 tests passed, 0 warnings in 1 projects
+ok dotnet test: 439 tests passed, 0 warnings in 1 projects
 
 rtk python scripts/validate.py
 exit 0
@@ -65,6 +75,13 @@ not confirmation; matching later pull clears it; and a newer unreceipted device
 revision yields durable conflict. The refresh coalescing and foreign-late-owner
 cases deliberately use an injected non-production `IProfileRemote`; they are
 not HTTP, host, Unity, device, or peer-runtime evidence.
+
+The two follow-up SQLite cases create a cursor-side sentinel in the same
+caller-owned transaction as `ApplyConfirmedProjection`: an injected rollback leaves
+neither sentinel nor confirmed revision, while commit/reopen retains both and
+logically suppresses only the matching accepted pending edit. They also reject same
+and lower revision overwrite attempts atomically, preserve the original confirmed
+state, and show a newer borrowed foreign revision as a pending conflict.
 
 ## Remaining gates and limits
 

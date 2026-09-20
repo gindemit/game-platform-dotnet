@@ -13,6 +13,14 @@ the same transaction callback. A receipt moves only its matching edit to
 the pending edit clears. A newer unreceipted profile revision is a visible conflict;
 there is no automatic merge.
 
+Private-feed composition may call `ApplyConfirmedProjection` inside its own
+`ILocalStorageTransaction`, supplying the durable revision read in that same
+transaction. The borrowed method validates exact owner/scope, codec/extensions and
+strict advancement, writes only the confirmed projection, and never advances a cursor
+or acknowledges a command. On durable reads, a confirmed revision reaching an accepted
+pending edit's receipt revision suppresses that pending edit even after restart; an
+unreceipted edit displaced by a newer revision remains a conflict.
+
 Known profile data has no created/updated actor, service, causation or other audit
 fields. Those remain backend-authored. Supported opaque extension bytes are bounded,
 validated by the injected codec, copied defensively and retained across local edits.

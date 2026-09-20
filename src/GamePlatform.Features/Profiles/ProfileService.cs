@@ -128,7 +128,7 @@ namespace GamePlatform.Features.Profiles
             return await ReadSnapshotAsync(exactOwner, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
-        /// <summary>Installs only monotonic server-confirmed state. A newer foreign revision marks a local unreceipted edit as conflicted.</summary>
+        /// <summary>Installs only monotonic server-confirmed state through the same borrowed projection mutation used by private-feed callers.</summary>
         public async Task ApplyConfirmedAsync(ScopedOwnerContext requestedOwner, ProfileConfirmed confirmed, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
@@ -139,41 +139,42 @@ namespace GamePlatform.Features.Profiles
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
                 if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision) return;
-                if (current.Confirmed != null && confirmed.Revision == current.Confirmed.Revision && !Equivalent(current.Confirmed, confirmed))
-                    throw new ProfileConflictException("The server supplied different profile contents for the same revision.");
-
-                PendingProfileEdit? nextPending = current.Pending;
-                if (nextPending != null && confirmed.Revision > nextPending.Patch.ExpectedRevision)
+                if (current.Confirmed != null && confirmed.Revision == current.Confirmed.Revision)
                 {
-                    if (nextPending.Status == ProfilePendingStatus.AcceptedAwaitingPull && confirmed.Revision >= nextPending.AcceptedRevision!.Value)
-                        nextPending = null;
-                    else if (nextPending.Status != ProfilePendingStatus.Conflict)
-                        nextPending = new PendingProfileEdit(nextPending.OperationId, nextPending.StreamId, nextPending.BusinessSource, nextPending.Patch,
-                            nextPending.LocalRevision, ProfilePendingStatus.Conflict, null);
+                    if (!Equivalent(current.Confirmed, confirmed))
+                        throw new ProfileConflictException("The server supplied different profile contents for the same revision.");
+                    return;
                 }
+
                 await transactions.ExecuteAsync(storageScope, transaction =>
                 {
-                    if (current.Confirmed == null || confirmed.Revision > current.Confirmed.Revision)
-                    {
-                        var encoded = codec.EncodeConfirmed(confirmed);
-                        ValidatePayload(encoded, "confirmed profile");
-                        state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, ConfirmedKey,
-                            confirmed.Revision, confirmed.UpdatedAtMilliseconds, encoded, confirmed.CopyExtensions()));
-                    }
-                    if (nextPending == null && current.Pending != null)
-                        state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, PendingKey,
-                            current.Pending.LocalRevision, Now(), Array.Empty<byte>(), Array.Empty<byte>()));
-                    else if (nextPending != null && (current.Pending == null || nextPending.Status != current.Pending.Status))
-                    {
-                        var encodedPending = codec.EncodePending(nextPending);
-                        ValidatePayload(encodedPending, "pending profile");
-                        state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, PendingKey,
-                            nextPending.LocalRevision, Now(), encodedPending, Array.Empty<byte>()));
-                    }
+                    ApplyConfirmedProjection(transaction, exactOwner, current.Confirmed?.Revision ?? 0, confirmed);
                     return true;
                 }, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
+        }
+
+        /// <summary>
+        /// Applies a validated server profile in the caller-owned private-feed transaction. The caller supplies the
+        /// confirmed durable revision read in that same transaction; this method neither advances nor acknowledges a cursor.
+        /// </summary>
+        public void ApplyConfirmedProjection(ILocalStorageTransaction transaction, ScopedOwnerContext requestedOwner,
+            long durablePriorRevision, ProfileConfirmed confirmed)
+        {
+            var exactOwner = EnsureOwner(requestedOwner);
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (!transaction.Scope.Equals(storageScope)) throw new StorageException(StorageFailure.InvalidOwner, "The profile transaction belongs to another scope.");
+            if (durablePriorRevision < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (confirmed.Revision <= durablePriorRevision)
+                throw new ProfileConflictException("A borrowed confirmed profile projection must advance its durable revision.");
+            var extensions = confirmed.CopyExtensions();
+            codec.ValidateExtensions(extensions);
+            var payload = codec.EncodeConfirmed(confirmed);
+            ValidatePayload(payload, "confirmed profile");
+            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, ConfirmedKey,
+                confirmed.Revision, confirmed.UpdatedAtMilliseconds, payload, extensions));
         }
 
         public void Dispose()
@@ -215,6 +216,16 @@ namespace GamePlatform.Features.Profiles
             {
                 decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
                 if (decodedPending == null || decodedPending.LocalRevision != pending.Revision) throw new InvalidOperationException("The profile state codec returned an invalid pending record.");
+                // A private-feed caller may commit the confirmed profile and cursor atomically without owning this
+                // pending row. On every reopen/read, confirmed state suppresses only the matching accepted receipt;
+                // an unreceipted local edit displaced by a newer server revision remains an explicit conflict.
+                if (decodedConfirmed != null && decodedPending.Status == ProfilePendingStatus.AcceptedAwaitingPull &&
+                    decodedConfirmed.Revision >= decodedPending.AcceptedRevision!.Value)
+                    decodedPending = null;
+                else if (decodedConfirmed != null && decodedPending.Status != ProfilePendingStatus.AcceptedAwaitingPull &&
+                    decodedConfirmed.Revision > decodedPending.Patch.ExpectedRevision && decodedPending.Status != ProfilePendingStatus.Conflict)
+                    decodedPending = new PendingProfileEdit(decodedPending.OperationId, decodedPending.StreamId, decodedPending.BusinessSource,
+                        decodedPending.Patch, decodedPending.LocalRevision, ProfilePendingStatus.Conflict, null);
             }
             return (decodedConfirmed, decodedPending);
         }

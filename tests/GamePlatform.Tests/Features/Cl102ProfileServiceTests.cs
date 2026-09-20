@@ -82,6 +82,74 @@ namespace GamePlatform.Tests.Features
         }
 
         [Fact]
+        public async Task BorrowedProjectionSharesCursorTransactionAndSuppressesMatchingAcceptedPendingAfterReopen()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path);
+            var service = Create(database, new ImmediateRemote(Context, Confirmed("Rose", 2, new byte[] { 1 })));
+            await service.ApplyConfirmedAsync(Context, Confirmed("Garden", 1, new byte[] { 1 }), CancellationToken.None);
+            var request = Request("0199f9a0-0000-7000-8000-000000000001", 1, "profile-borrowed-accepted", "Rose");
+            await service.EditAsync(request, CancellationToken.None);
+            await service.MarkAcceptedAwaitingPullAsync(new ProfileUpdateAcceptance(Context, request.OperationId, 2), CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cl102_cursor_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
+
+            await Assert.ThrowsAsync<InjectedFailure>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                service.ApplyConfirmedProjection(transaction, Context, 1, Confirmed("Rose", 2, new byte[] { 1 }));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_cursor_sentinel VALUES (?)", 1);
+                throw new InjectedFailure();
+            }, CancellationToken.None));
+            Assert.Equal(0, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl102_cursor_sentinel"), CancellationToken.None));
+            Assert.Equal(1, (await service.ReadCachedAsync(Context, CancellationToken.None)).Revision);
+
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                service.ApplyConfirmedProjection(transaction, Context, 1, Confirmed("Rose", 2, new byte[] { 1 }));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_cursor_sentinel VALUES (?)", 2);
+                return true;
+            }, CancellationToken.None);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, new ImmediateRemote(Context, Confirmed("Rose", 2, new byte[] { 1 })));
+            var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(FeatureSnapshotState.Stale, cached.State); Assert.Equal(2, cached.Revision);
+            Assert.Null(cached.Value!.Pending); Assert.Equal("Rose", cached.Value.Confirmed!.DisplayName);
+            Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl102_cursor_sentinel WHERE value=2"), CancellationToken.None));
+            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task BorrowedProjectionRejectsSameOrLowerOverwriteAndSurfacesForeignPendingConflict()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path);
+            var service = Create(database, new ImmediateRemote(Context, Confirmed("Remote", 3, new byte[] { 3 })));
+            await service.ApplyConfirmedAsync(Context, Confirmed("Garden", 1, new byte[] { 1 }), CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cl102_overwrite_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                service.ApplyConfirmedProjection(transaction, Context, 1, Confirmed("Rose", 2, new byte[] { 2 }));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_overwrite_sentinel VALUES (?)", 1); return true;
+            }, CancellationToken.None);
+            await Assert.ThrowsAsync<ProfileConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_overwrite_sentinel VALUES (?)", 2);
+                service.ApplyConfirmedProjection(transaction, Context, 2, Confirmed("Changed", 2, new byte[] { 9 })); return true;
+            }, CancellationToken.None));
+            await Assert.ThrowsAsync<ProfileConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_overwrite_sentinel VALUES (?)", 3);
+                service.ApplyConfirmedProjection(transaction, Context, 2, Confirmed("Older", 1, new byte[] { 9 })); return true;
+            }, CancellationToken.None));
+            Assert.Equal(1, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl102_overwrite_sentinel"), CancellationToken.None));
+            Assert.Equal("Rose", (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.Confirmed!.DisplayName);
+
+            await service.EditAsync(Request("0199f9a0-0000-7000-8000-000000000002", 2, "profile-borrowed-foreign", "Local"), CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction => { service.ApplyConfirmedProjection(transaction, Context, 2, Confirmed("Remote", 3, new byte[] { 3 })); return true; }, CancellationToken.None);
+            var conflict = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(FeatureSnapshotState.Error, conflict.State); Assert.Equal(ProfilePendingStatus.Conflict, conflict.Value!.Pending!.Status);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task NewerForeignRevisionMarksUnreceiptedLocalEditAsConflict()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path);
@@ -192,6 +260,7 @@ namespace GamePlatform.Tests.Features
             public int GetFingerprintLength(int version) => version == 1 ? 32 : 0;
             public void Compute(OwnerScope owner, OperationId operation, ClientStreamId stream, long sequence, string kind, int schema, int fingerprint, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
         }
+        private sealed class InjectedFailure : Exception { }
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl102", Guid.NewGuid().ToString("N"));
