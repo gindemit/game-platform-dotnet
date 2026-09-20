@@ -123,9 +123,11 @@ namespace GamePlatform.Transport.Http
                 !Guid.TryParseExact(segments[2], "D", out _)) return false;
             if (isGet)
             {
-                return segments.Length == 4 && segments[3] == "bootstrap" &&
+                return (segments.Length == 4 && segments[3] == "bootstrap" &&
                     query.StartsWith("?clientStreamId=", StringComparison.Ordinal) &&
-                    Guid.TryParseExact(query.Substring("?clientStreamId=".Length), "D", out _);
+                    Guid.TryParseExact(query.Substring("?clientStreamId=".Length), "D", out _)) ||
+                    (query.Length == 0 && segments.Length == 6 && segments[3] == "gameplay" &&
+                    segments[4] == "reward-receipts" && Guid.TryParseExact(segments[5], "D", out _));
             }
             if (query.Length != 0) return false;
             return (segments.Length == 4 && segments[3] == "provision") ||

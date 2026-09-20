@@ -58,10 +58,12 @@ namespace GamePlatform.Transport.Http
             PrivateSync = new PrivateSyncHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh);
             CommandPush = new CommandPushHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh);
             CommandReceipts = new CommandReceiptHttpProvider(appId, accountId, installationId, configuration, executor, codec, auth, refresh);
+            RewardReceipts = new G3RewardReceiptHttpProvider(appId, accountId, configuration, executor, new G3RewardReceiptMessagePackCodec(), codec, auth, refresh);
         }
 
         public IPrivateSyncRemote PrivateSync { get; }
         public ICommandRemote CommandPush { get; }
         public ICommandReceiptRemote CommandReceipts { get; }
+        public G3RewardReceiptHttpProvider RewardReceipts { get; }
     }
 }

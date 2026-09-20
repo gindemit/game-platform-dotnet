@@ -28,7 +28,16 @@ verifies the exact retained canonical bytes at the same feed revision. It never
 uses generic equal-revision upsert replacement; a replay is idempotent while an
 operation/source/line/revision change for an existing grant fails closed.
 
-The receipt endpoint/feed adapter remains a composition owner. It maps frozen
-backend receipt and group semantics into these contracts after component
-projections commit. G3 peer, production codec/HTTP, Unity wiring and A06/A08
-acceptance remain unverified.
+`DurableRewardFulfillmentComposition` supplies the production state, evidence
+and claim implementations. `DurableRewardReceiptCorrelation` preserves both
+receipt-before-pull and pull-before-receipt. The pull adapter calls
+`StageInstalledFeed` only after installing the listed projections, in the same
+projection/cursor transaction, then calls `ReconcileAsync` after commit. The
+receipt adapter calls `ObserveReceiptAsync`. Correlation requires the exact feed
+revision and exact kind/resource membership; it stores component revisions but
+never stores or applies receipt quantities, advances component revisions, or
+creates value. Exact replay is idempotent and changed replay fails closed.
+
+The Unity feed sink remains the composition owner for mapping its installed
+typed changes into that transaction/post-commit pair. G3 live peer, Unity wiring
+and A06/A08 acceptance remain unverified.

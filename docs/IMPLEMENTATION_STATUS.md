@@ -1,5 +1,29 @@
 # Implementation status
 
+## P3 G3 receipt and durable correlation increment — 2026-09-20
+
+The approved v2 G3 reward-receipt carrier now has a closed production
+MessagePack mapper and a read-only authenticated HTTP provider on the frozen
+GET route. Account production composition exposes that provider through the
+neutral `IHttpExecutor`; route admission requires the exact app/operation path,
+no query and no request body. Response operation identity, protocol media type,
+bounded body and correlation header fail closed.
+
+CL-107 now has production durable codec, immutable evidence and exactly-once
+claim composition over the caller-owned serialized store. Durable correlation
+preserves both receipt-before-pull and pull-before-receipt across restart. Feed
+evidence is staged in the projection/cursor transaction and confirmation occurs
+only after commit. It requires the receipt's exact feed revision and exact
+kind/resource membership, retains installed component revisions, and never
+applies receipt quantity or increments a value projection revision. Changed
+same-revision replay fails closed; exact replay is idempotent.
+
+Focused production receipt/correlation tests pass 15/15. Full verification and
+exact commands are recorded in the P3 receipt-correlation evidence. This does
+not supply the owner-assigned invalidation migration, Unity feed-sink adapter,
+bundle/device/live-backend journey, INT-007, BE-025/INT-010 or G3 acceptance.
+
+
 ## P3 bounded live-composition bridge — 2026-09-20
 
 The SDK now supplies the production `gsc1` command-fingerprint adapter for the
