@@ -32,13 +32,13 @@ rtk dotnet build GamePlatform.sln -c Release --no-restore
 exit 0
 ok dotnet build: 18 projects, 0 errors, 0 warnings
 
-rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~Cl017ExtensionMigrationTests|FullyQualifiedName~Cl010MigrationRegistryTests|FullyQualifiedName~Cl101AccountsLifecycleTests"
+rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter "FullyQualifiedName~Cl007P3ExtensionMigrationTests|FullyQualifiedName~Cl010MigrationRegistryTests|FullyQualifiedName~Cl101AccountsLifecycleTests"
 exit 0
-ok dotnet test: 19 tests passed, 0 warnings in 1 projects
+ok dotnet test: 22 tests passed, 0 warnings in 1 projects
 
 rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
 exit 0
-ok dotnet test: 389 tests passed, 0 warnings in 1 projects
+ok dotnet test: 392 tests passed, 0 warnings in 1 projects
 
 rtk python scripts/validate.py
 exit 0
@@ -52,7 +52,12 @@ OK
 
 The selected tests use the real pinned Windows x64 SQLite library and cover
 fresh v4/v5 installation, retained v1-v3 platform rows during upgrade, Accounts
-v4, platform upgrade with an extension, independent extension upgrade,
-omission/newer/drift/gap rejection, effects/marker checkpoint rollback, and
-concurrent open. Full-suite, physical-fault, non-Windows native, Unity/AOT and
-device validation are recorded separately and are not claimed by this evidence.
+v4, a real extension-v1 then synthetic platform-v6 upgrade with retained extension
+data, rejection by the older v1--v5 registry, independent extension upgrade,
+single- and multi-namespace omission, newer/drift/gap/changed-minimum rejection,
+foreign-owner markers, duplicate/unsorted descriptors, effects/marker checkpoint
+rollback, and concurrent open. Concurrent extension marker checks acquire
+SQLite's immediate write reservation before rereading the journal, preventing a
+second opener from replaying already-created consumer SQL. Full-suite,
+physical-fault, non-Windows native, Unity/AOT and device validation are recorded
+separately and are not claimed by this evidence.
