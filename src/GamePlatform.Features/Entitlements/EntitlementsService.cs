@@ -62,15 +62,30 @@ namespace GamePlatform.Features.Entitlements
 
                 await transactions.ExecuteAsync(scope, transaction =>
                 {
-                    var payload = codec.EncodeConfirmed(confirmed);
-                    // An empty byte payload is the valid canonical encoding of a server-confirmed empty app-visible projection.
-                    if (payload == null || payload.Length > 262_144) throw new EntitlementProjectionConflictException("The entitlement codec produced an invalid projection payload.");
-                    state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmed.Revision,
-                        confirmed.ConfirmedAtMilliseconds, payload, Array.Empty<byte>()));
+                    ApplyConfirmedInTransaction(transaction, exactOwner, confirmed, catalog);
                     return true;
                 }, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
+        }
+
+        /// <summary>
+        /// Adds this projection to an already-open caller-owned transaction, so a private-feed adapter can commit it with
+        /// its cursor and sibling effects. The caller remains responsible for complete group ordering and revision admission.
+        /// </summary>
+        public void ApplyConfirmedInTransaction(ILocalStorageTransaction transaction, ScopedOwnerContext requestedOwner,
+            EntitlementConfirmedSnapshot confirmed, CatalogSnapshot catalog)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            var exactOwner = EnsureOwner(requestedOwner);
+            if (!transaction.Scope.Equals(scope)) throw new EntitlementOwnerMismatchException();
+            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            ValidateCatalog(exactOwner, confirmed, catalog);
+            var payload = codec.EncodeConfirmed(confirmed);
+            // An empty byte payload is the valid canonical encoding of a server-confirmed empty app-visible projection.
+            if (payload == null || payload.Length > 262_144) throw new EntitlementProjectionConflictException("The entitlement codec produced an invalid projection payload.");
+            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmed.Revision,
+                confirmed.ConfirmedAtMilliseconds, payload, Array.Empty<byte>()));
         }
 
         public void Dispose()
@@ -141,10 +156,10 @@ namespace GamePlatform.Features.Entitlements
         private static bool Equivalent(EntitlementConfirmedSnapshot left, EntitlementConfirmedSnapshot right)
         {
             if (left.ConfirmedAtMilliseconds != right.ConfirmedAtMilliseconds || left.Rights.Count != right.Rights.Count) return false;
-            for (var index = 0; index < left.Rights.Count; index++)
+            var byId = right.Rights.ToDictionary(value => value.EntitlementId);
+            foreach (var a in left.Rights)
             {
-                var a = left.Rights[index]; var b = right.Rights[index];
-                if (!a.EntitlementId.Equals(b.EntitlementId) || a.Revision != b.Revision || a.State != b.State ||
+                if (!byId.TryGetValue(a.EntitlementId, out var b) || a.Revision != b.Revision || a.State != b.State ||
                     a.ExpiresAtServerMilliseconds != b.ExpiresAtServerMilliseconds || !a.OriginReceipt.ReceiptId.Equals(b.OriginReceipt.ReceiptId) ||
                     !string.Equals(a.OriginReceipt.BusinessSource, b.OriginReceipt.BusinessSource, StringComparison.Ordinal) || !EqualBytes(a.CopyPayload(), b.CopyPayload())) return false;
             }
