@@ -11,6 +11,7 @@ namespace GamePlatform.Features.Contracts.Inventory
     public enum InventoryEntryKind { Stack = 0, Instance = 1 }
     public enum InventoryInstanceState { Active = 0, Tombstoned = 1 }
     public enum InventoryIntentKind { Use = 0, Consume = 1 }
+    public enum InventoryIntentStatus { AwaitingReceipt = 0, AcceptedAwaitingPull = 1 }
 
     public sealed class InventoryStack
     {
@@ -83,13 +84,27 @@ namespace GamePlatform.Features.Contracts.Inventory
     {
         public InventoryIntent(OperationId operationId, ClientStreamId streamId, string businessSource, InventoryIntentKind kind,
             InventoryEntryKind targetKind, PlatformId targetId, long expectedInventoryRevision, long localRevision)
+            : this(operationId, streamId, businessSource, kind, targetKind, targetId, expectedInventoryRevision, localRevision,
+                InventoryIntentStatus.AwaitingReceipt, null)
+        {
+        }
+
+        public InventoryIntent(OperationId operationId, ClientStreamId streamId, string businessSource, InventoryIntentKind kind,
+            InventoryEntryKind targetKind, PlatformId targetId, long expectedInventoryRevision, long localRevision,
+            InventoryIntentStatus status, long? acceptedInventoryRevision)
         {
             if (!operationId.IsValid || !streamId.IsValid || !targetId.IsValid) throw new ArgumentException("Valid command identities are required.");
             if (!Enum.IsDefined(typeof(InventoryIntentKind), kind) || !Enum.IsDefined(typeof(InventoryEntryKind), targetKind)) throw new ArgumentOutOfRangeException(nameof(kind));
             InventoryValidation.BusinessSource(businessSource, nameof(businessSource));
             if (expectedInventoryRevision <= 0 || localRevision <= 0) throw new ArgumentOutOfRangeException(nameof(expectedInventoryRevision));
+            if (!Enum.IsDefined(typeof(InventoryIntentStatus), status)) throw new ArgumentOutOfRangeException(nameof(status));
+            if (status == InventoryIntentStatus.AcceptedAwaitingPull && (!acceptedInventoryRevision.HasValue || acceptedInventoryRevision.Value <= expectedInventoryRevision))
+                throw new ArgumentException("An accepted inventory intent requires a newer resulting revision.", nameof(acceptedInventoryRevision));
+            if (status != InventoryIntentStatus.AcceptedAwaitingPull && acceptedInventoryRevision.HasValue)
+                throw new ArgumentException("Only accepted inventory intents carry a resulting revision.", nameof(acceptedInventoryRevision));
             OperationId = operationId; StreamId = streamId; BusinessSource = businessSource; Kind = kind; TargetKind = targetKind;
             TargetId = targetId; ExpectedInventoryRevision = expectedInventoryRevision; LocalRevision = localRevision;
+            Status = status; AcceptedInventoryRevision = acceptedInventoryRevision;
         }
         public OperationId OperationId { get; }
         public ClientStreamId StreamId { get; }
@@ -99,6 +114,22 @@ namespace GamePlatform.Features.Contracts.Inventory
         public PlatformId TargetId { get; }
         public long ExpectedInventoryRevision { get; }
         public long LocalRevision { get; }
+        public InventoryIntentStatus Status { get; }
+        public long? AcceptedInventoryRevision { get; }
+    }
+
+    /// <summary>Receipt outcome only. It has no holdings, quantities, or grant instructions.</summary>
+    public sealed class InventoryIntentAcceptance
+    {
+        public InventoryIntentAcceptance(ScopedOwnerContext owner, OperationId operationId, long resultingInventoryRevision)
+        {
+            if (!owner.IsValid || !operationId.IsValid) throw new ArgumentException("A captured owner and operation ID are required.");
+            if (resultingInventoryRevision <= 0) throw new ArgumentOutOfRangeException(nameof(resultingInventoryRevision));
+            Owner = owner; OperationId = operationId; ResultingInventoryRevision = resultingInventoryRevision;
+        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public long ResultingInventoryRevision { get; }
     }
 
     public sealed class InventorySnapshot
