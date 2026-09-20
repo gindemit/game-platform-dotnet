@@ -26,3 +26,11 @@ not advance a cursor. `AcceptedAwaitingPull` is a local overlay: when the stored
 confirmed revision reaches its receipt revision, every cached read suppresses it
 after commit/reopen, including when the confirmation arrived through this
 borrowed path. Awaiting and rejected intents remain visible.
+
+`G3WalletProjectionService` is a separate read-only compatibility path for the
+frozen G3 wallet projection, whose sole identity is semantic `currencyId`. It
+does not synthesize a catalog definition or weaken the catalog-gated spend API.
+Only a bootstrap/pull owner can install a strictly newer confirmed record (or an
+explicit removal/reset marker) through its borrowed local transaction. Cached
+reads are stale or Missing, never a manufactured zero balance; its bounded
+versioned local codec is separate from `WalletService` state.
