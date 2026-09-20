@@ -10,7 +10,7 @@
   "quiescent": true,
   "next_gate": "G3",
   "implementation_commits": {
-    "sdk": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
+    "sdk": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
     "unity": "84c2b1137a8dbde497f22495910c9117d3024c5f"
   },
   "required_repository_keys": [
@@ -43,7 +43,7 @@
     "CL-002": "Canonical typed UUID/scope primitives and compatibility-preserving outcomes/state; original 14 Platform tests pass against canonical SDK types.",
     "CL-003": "G1 schema/mirror plus 64 immutable DTO shapes,12 unions,explicit presence and generated schema mapping. No canonical delta.",
     "CL-013": "14-assembly managed bundle with dependency closure,symbols,notices,hashes and identical retained build inventories. Qualification MessagePack excluded pending CL-015.",
-    "CL-015": "Packaging-complete unpublished 23-assembly bundle with exact MessagePack closure,three reviewed SQLite targets,notices,import metadata,AOT/PInvoke inventory and reproducible 99-file manifest. Unity/IL2CPP/device execution unrun.",
+    "CL-015": "Packaging-complete unpublished 23-assembly bundle with exact MessagePack closure,three reviewed SQLite targets,generated target-isolated import metadata,strict clean-built verification,notices,AOT/PInvoke inventory and reproducible 99-file manifest. Unity/IL2CPP/device execution unrun.",
     "CL-004": "Qualification-only bounded MessagePack,typed mapping,canonical fingerprints and hostile-input checks; actual G2 peer/AOT remains unverified.",
     "CL-016": "Producer/consumer and raw encode/decode CLI;34 actual CSharp MessagePack fixtures plus24 fingerprints; service/fault modes unavailable.",
     "INT-002": "Real Core/Features import and duplicate removal,exact artifact verifier,selected Unity7/7 EditMode with both scene assets; visual/control PlayMode and tested rollback remain unrun."
@@ -80,8 +80,8 @@
     {
       "repository": "sdk",
       "path": "docs/implementation/evidence/CL-015/results.json",
-      "tests": {"dotnet": 335, "scripts": 38, "packaging": 16, "manifest": 14},
-      "note": "Two clean byte-identical 99-file manifests at bb4136a;23 managed assemblies,three native targets and exact notices verified. Unity/AOT/device execution unrun."
+      "tests": {"dotnet": 335, "scripts": 44, "packaging": 22, "manifest": 14},
+      "note": "Two clean byte-identical 99-file manifests at fdc3f19;23 managed assemblies,three native targets,generated isolated importer metadata and exact notices verified. Dirty/skipped artifacts rejected by default. Unity/AOT/device execution unrun."
     },
     {
       "repository": "unity",
@@ -103,7 +103,7 @@
     "docs/implementation/evidence/P2/csharp-corpus.json": "c4988f5a1fee3eba832cfcfeed9dc2f561f5a17d0321c5db5afc93ad8d2aabc0",
     "docs/implementation/evidence/P2/results.json": "1cf3228297be1cd78a1601c80452049b882b5c64a4a22eec477a1cb708c42360",
     "docs/implementation/evidence/CL-013/results.json": "d6991daedd745becf72d739340a7521b88cdcbd068f84f44b20aa2219e3e808c",
-    "docs/implementation/evidence/CL-015/results.json": "bd1ed9e330477adabde32a83c7ceb511dbe2abcc95179ca31d3ad7201b569898"
+    "docs/implementation/evidence/CL-015/results.json": "0a9b021eb8f6996acb2be7969e8143b38843b46ab238eb08942bb811bcdfc953"
   },
   "approved_schema": {
     "version": "0.2.0-core-schema.1",
@@ -121,8 +121,8 @@
     ]
   },
   "available_sdk_bundle": {
-    "source_commit": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
-    "manifest_sha256": "c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7",
+    "source_commit": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
+    "manifest_sha256": "2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe",
     "managed_assemblies": 23,
     "native_targets": ["windows-x86_64", "macos-universal", "android-arm64"],
     "consumer_imported": false,
@@ -192,7 +192,7 @@
   "p3_progress": {
     "status": "in_progress",
     "observed_backend_head": "e1e687605e9f5d2fc51aa6be15d804c0f1248e96",
-    "sdk_head": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
+    "sdk_head": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
     "unity_head": "84c2b1137a8dbde497f22495910c9117d3024c5f",
     "source_commits": {
       "CL-004": "2e46b6f90ed60492d77114c655fb9788d4112e25",
@@ -202,7 +202,7 @@
       "CL-012": "010d47c07907baf86d8a1c9396f81cd5628d03d2",
       "CL-009": "6ee33493e2919086331918210d01aa26835243ac",
       "CL-010": "cc329e39d309808150af760d30beb33861ed9fc7",
-      "CL-015": "bb4136a9e11fb142980c57c0a8d5ca251a634d29"
+      "CL-015": "fdc3f19285b83bd011c91f4b16ed090125d023d9"
     },
     "evidence_commits": {
       "CL-007": "1dce23b98c425e8d5d0178b04d22deb5eba307a4",
@@ -231,7 +231,7 @@
       "CL-010_http_boundary": 27,
       "CL-010_migration_native": 5,
       "CL-007_010_durability_regression": 46,
-      "script": 38,
+      "script": 44,
       "manifest": 14
     },
     "unity_fresh_checks": {
@@ -269,11 +269,12 @@
     },
     "cl015_bundle_increment": {
       "date": "2026-09-20",
-      "source_commit": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
+      "source_commit": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
       "status": "packaging_complete_execution_unverified",
-      "manifest_sha256": "c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7",
+      "manifest_sha256": "2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe",
       "inventory": {"managed_assemblies": 23, "managed_packages": 9, "native_targets": 3, "pinvoke_declarations": 38, "files": 99},
-      "verification": {"reproducible_builds": 2, "full_dotnet": 335, "script": 38, "packaging": 16, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0},
+      "verification": {"reproducible_builds": 2, "full_dotnet": 335, "script": 44, "packaging": 22, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0, "dirty_and_skipped_default_verify_rejected": true},
+      "native_import_metadata": {"source": "generated_target_isolated", "windows_x86_64": "b39d9d871b4bfdc044f3eebbb61ad41d32782cad58af7cd7650a5467caf247ae", "macos_universal": "209335ce1c0ebff68ce374d1a5f894af73b7569a2919585b0a1dc7e8a63869f3", "android_arm64": "67b379e32cf078ae5ba14c28538598fed2ba365f13285f1d44b40cba5e4894d2"},
       "remaining": "Unity import/stripping,IL2CPP/APK,Android device and macOS execution unrun; production IWireCodec remains unavailable."
     },
     "next_action": "Import and qualify the CL-015 bundle through the authorized INT-009 Unity IL2CPP/AOT/device workflow before production IWireCodec availability; then continue concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript. Do not assess G3 or start P4."

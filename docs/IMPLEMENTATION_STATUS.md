@@ -2,20 +2,23 @@
 
 ## CL-015 complete bundle checkpoint — 2026-09-20
 
-Packaging source `bb4136a9e11fb142980c57c0a8d5ca251a634d29`
+Corrected packaging source `fdc3f19285b83bd011c91f4b16ed090125d023d9`
 replaces the early managed-only output with one unpublished, reproducible
 managed/native artifact. It contains all 15 SDK assemblies, the exact eight-DLL
 runtime closure for the nine pinned MessagePack packages, three reviewed SQLite
-native targets, their upstream Unity import metadata, exact notices/hashes,
+native targets, narrowed generated Unity import metadata, exact notices/hashes,
 deterministic explicit-reference managed metadata, a 38-entry P/Invoke inventory,
 targeted linker preservation and install/upgrade/uninstall/CL-013 rollback rules.
 Duplicate UPM acquisition is forbidden and missing packages/native targets fail
-closed. The included codec remains qualification-only and does not implement
-production `IWireCodec`.
+closed. Semantic validation prevents Windows binaries from enabling Linux,
+macOS or WSA and enforces isolated macOS/Android CPU/OS/alignment policies.
+Ordinary verification rejects dirty-source and skipped-build artifacts; explicit
+development inspection remains non-importable. The included codec remains
+qualification-only and does not implement production `IWireCodec`.
 
 Two clean builds produced identical 99-file manifests with SHA-256
-`c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7`.
-Fresh verification passed, as did 335/335 .NET tests, 38/38 script tests (16
+`2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe`.
+Fresh verification passed, as did 335/335 .NET tests, 44/44 script tests (22
 packaging cases), validation, 18-project locked restore/build with zero warnings
 or errors, the 52-task/16-ledger/21-wave manifest and 14/14 manifest tests. See
 [CL-015 evidence](implementation/evidence/CL-015/README.md).

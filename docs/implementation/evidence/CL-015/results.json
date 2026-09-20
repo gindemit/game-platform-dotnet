@@ -2,8 +2,8 @@
   "task": "CL-015",
   "date": "2026-09-20",
   "status": "in_progress_packaging_complete_execution_unverified",
-  "source_commit": "bb4136a9e11fb142980c57c0a8d5ca251a634d29",
-  "manifest_sha256": "c151e2b3c89f07985877e1c8da5ab4d37f2cb0bd15256d2bdb0baaabf953c6c7",
+  "source_commit": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
+  "manifest_sha256": "2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe",
   "reproducible_builds": 2,
   "manifests_byte_equal": true,
   "inventory": {
@@ -15,10 +15,17 @@
     "hashed_files": 99
   },
   "native_targets": ["windows-x86_64", "macos-universal", "android-arm64"],
+  "native_import_metadata": {
+    "windows-x86_64": "b39d9d871b4bfdc044f3eebbb61ad41d32782cad58af7cd7650a5467caf247ae",
+    "macos-universal": "209335ce1c0ebff68ce374d1a5f894af73b7569a2919585b0a1dc7e8a63869f3",
+    "android-arm64": "67b379e32cf078ae5ba14c28538598fed2ba365f13285f1d44b40cba5e4894d2",
+    "source": "generated_target_isolated_not_upstream",
+    "semantic_validation": true
+  },
   "verification": {
     "dotnet_tests": 335,
-    "script_tests": 38,
-    "packaging_tests": 16,
+    "script_tests": 44,
+    "packaging_tests": 22,
     "manifest_tests": 14,
     "projects_restored_and_built": 18,
     "warnings": 0,
@@ -32,6 +39,11 @@
     "aot_and_device": "unverified",
     "published": false,
     "duplicate_upm_acquisition": false
+  },
+  "development_artifacts": {
+    "allow_dirty_default_verify": "rejected_development_bundle_not_importable",
+    "no_build_default_verify": "rejected_development_bundle_not_importable",
+    "explicit_inspection": "verify-development_non-importable_only"
   },
   "unrun": [
     "Unity Editor import and compilation",
