@@ -26,7 +26,7 @@ namespace GamePlatform.Tests.Durability
         private static readonly Guid Installation = Guid.Parse("0199f9a0-1212-7777-8888-999999999999");
         private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations.Concat(new[]
         {
-            new SqliteMigration(7, "test-projection", new[] { "CREATE TABLE test_projection (name TEXT PRIMARY KEY, value INTEGER NOT NULL)" })
+            new SqliteMigration(8, "test-projection", new[] { "CREATE TABLE test_projection (name TEXT PRIMARY KEY, value INTEGER NOT NULL)" })
         }).ToArray();
 
         [Fact]

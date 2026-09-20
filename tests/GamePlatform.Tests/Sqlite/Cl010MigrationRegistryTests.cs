@@ -38,7 +38,7 @@ namespace GamePlatform.Tests.Sqlite
                     Bootstrap: TableExists(session, "gp_bootstrap_state"));
             }, CancellationToken.None);
 
-            Assert.Equal(6, observed.Migrations);
+            Assert.Equal(7, observed.Migrations);
             Assert.Equal(1, observed.Outbox);
             Assert.Equal(1, observed.Sync);
             Assert.Equal(1, observed.Bootstrap);
@@ -95,7 +95,7 @@ namespace GamePlatform.Tests.Sqlite
                 return (Installation: session.ExecuteScalar<string>("SELECT installation_id FROM gp_stream_state WHERE singleton=1"), Migrations: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"));
             }, CancellationToken.None);
             Assert.Equal(installation, observed.Installation);
-            Assert.Equal(6, observed.Migrations);
+            Assert.Equal(7, observed.Migrations);
             Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
@@ -151,7 +151,7 @@ namespace GamePlatform.Tests.Sqlite
                     Staged: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_entities") + session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_pages"));
             }, CancellationToken.None);
 
-            Assert.Equal(6, observed.Migrations);
+            Assert.Equal(7, observed.Migrations);
             Assert.Equal(new byte[] { 8 }, observed.Cursor);
             Assert.Equal(new byte[] { 10 }, observed.View);
             Assert.Equal(2, observed.Staged);
@@ -174,7 +174,8 @@ namespace GamePlatform.Tests.Sqlite
                 SqlitePlatformMigrationRegistry.Migrations[2],
                 SqlitePlatformMigrationRegistry.Migrations[3],
                 SqlitePlatformMigrationRegistry.Migrations[4],
-                SqlitePlatformMigrationRegistry.Migrations[5]
+                SqlitePlatformMigrationRegistry.Migrations[5],
+                SqlitePlatformMigrationRegistry.Migrations[6]
             };
 
             var error = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, changed, CancellationToken.None));
@@ -222,6 +223,84 @@ namespace GamePlatform.Tests.Sqlite
 
             var v6Failure = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None));
             Assert.Equal(StorageFailure.Constraint, v6Failure.Failure);
+        }
+
+        [Fact]
+        public async Task VersionSevenUpgradesVersionSixAndPersistsInvalidationDistinctly()
+        {
+            using var files = new TemporaryDatabase();
+            var v6 = SqlitePlatformMigrationRegistry.Migrations.Take(6).ToArray();
+            var database = await SqliteDatabase.OpenAsync(files.Path, Scope, v6, CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                session.Execute("INSERT INTO gp_confirmed_projection VALUES ('profile','visible',4,'visible',?)", new byte[] { 1 });
+                session.Execute("INSERT INTO gp_confirmed_projection VALUES ('inventory','removed',5,'removed',NULL)");
+                session.Execute("INSERT INTO gp_confirmed_projection VALUES ('wallet','tombstone',6,'tombstone',NULL)");
+                return true;
+            }, CancellationToken.None);
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            database = await SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
+            var observed = await database.ExecuteAsync(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                session.Execute("INSERT INTO gp_confirmed_projection VALUES ('entitlements','invalidated',7,'invalidation',NULL)");
+                return (
+                    Migrations: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"),
+                    Visible: session.ExecuteScalar<string>("SELECT state FROM gp_confirmed_projection WHERE collection = 'profile'"),
+                    Removed: session.ExecuteScalar<string>("SELECT state FROM gp_confirmed_projection WHERE collection = 'inventory'"),
+                    Tombstone: session.ExecuteScalar<string>("SELECT state FROM gp_confirmed_projection WHERE collection = 'wallet'"),
+                    Invalidation: session.ExecuteScalar<string>("SELECT state FROM gp_confirmed_projection WHERE collection = 'entitlements'"));
+            }, CancellationToken.None);
+
+            Assert.Equal(7, observed.Migrations);
+            Assert.Equal("visible", observed.Visible);
+            Assert.Equal("removed", observed.Removed);
+            Assert.Equal("tombstone", observed.Tombstone);
+            Assert.Equal("invalidation", observed.Invalidation);
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task VersionSevenEffectsAndMarkerRollbackKeepTheVersionSixConstraint()
+        {
+            using var files = new TemporaryDatabase();
+            var v6 = SqlitePlatformMigrationRegistry.Migrations.Take(6).ToArray();
+            var database = await SqliteDatabase.OpenAsync(files.Path, Scope, v6, CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_confirmed_projection VALUES ('profile','self',8,'visible',?)", new byte[] { 12 });
+                return true;
+            }, CancellationToken.None);
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            foreach (var failedCheckpoint in new[] { MigrationCheckpoint.EffectsApplied, MigrationCheckpoint.MarkerInserted })
+            {
+                var failure = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(
+                    files.Path,
+                    Scope,
+                    SqlitePlatformMigrationRegistry.Migrations,
+                    SqliteDatabaseOptions.Default,
+                    (checkpoint, migration) =>
+                    {
+                        if (migration.Version == 7 && checkpoint == failedCheckpoint) throw new InjectedFailure();
+                    },
+                    CancellationToken.None));
+                Assert.IsType<InjectedFailure>(failure.InnerException);
+
+                database = await SqliteDatabase.OpenAsync(files.Path, Scope, v6, CancellationToken.None);
+                var observed = await database.ExecuteAsync(Scope, transaction =>
+                {
+                    var session = (SqliteTransactionSession)transaction;
+                    var invalidation = Assert.Throws<SQLite.SQLiteException>(() => session.Execute("INSERT INTO gp_confirmed_projection VALUES ('profile','invalidated',9,'invalidation',NULL)"));
+                    return (Migrations: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"), Payload: session.ExecuteScalar<byte[]>("SELECT payload FROM gp_confirmed_projection WHERE collection = 'profile' AND entity_key = 'self'"), InvalidationRejected: invalidation.Message.Contains("CHECK constraint failed", StringComparison.Ordinal));
+                }, CancellationToken.None);
+                Assert.Equal(6, observed.Migrations);
+                Assert.Equal(new byte[] { 12 }, observed.Payload);
+                Assert.True(observed.InvalidationRejected);
+                Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            }
         }
 
         private static int TableExists(SqliteTransactionSession session, string table) =>

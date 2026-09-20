@@ -21,7 +21,8 @@ namespace GamePlatform.Storage.Sqlite.Migrations
                 SqliteFeatureStateMigration.Create(3),
                 SqliteAccountsDirectoryMigration.Create(4),
                 SqliteExtensionMigrationJournal.Create(5),
-                SqliteEnvelopeAndZeroRevisionMigration.Create(6)
+                SqliteEnvelopeAndZeroRevisionMigration.Create(6),
+                SqliteConfirmedProjectionInvalidationMigration.Create(7)
             });
 
         public static IReadOnlyList<SqliteMigration> Migrations => migrations;
