@@ -312,25 +312,30 @@ namespace GamePlatform.Storage.Sqlite.Executor
             Action<MigrationCheckpoint, SqliteMigration>? checkpoint,
             CancellationToken cancellationToken)
         {
-            var recordedMaximum = connection.ExecuteScalar<int>("SELECT COALESCE(MAX(version), 0) FROM gp_migrations");
             var supportedMaximum = migrations.Count == 0 ? 0 : migrations[migrations.Count - 1].Version;
-            if (recordedMaximum > supportedMaximum)
-                throw new StorageException(StorageFailure.Migration, "The database schema is newer than this SDK supports.");
             foreach (var migration in migrations)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var existing = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations WHERE version = ?", migration.Version);
-                if (existing == 1)
-                {
-                    var identityMatches = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations WHERE version = ? AND migration_id = ? AND checksum = ? AND backend_namespace = ? AND app_id = ? AND account_id = ?", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
-                    if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "An applied migration identity or checksum changed.");
-                    continue;
-                }
-                if (migration.Version <= recordedMaximum)
-                    throw new StorageException(StorageFailure.Migration, "The migration journal has a gap or conflicting version.");
-                connection.BeginTransaction();
+                // Reserve SQLite's cross-process writer before consulting the
+                // journal. A deferred transaction could read an absent marker,
+                // then resume after a peer committed the same DDL and fail with
+                // "table already exists" instead of re-reading the journal.
+                connection.Execute("BEGIN IMMEDIATE");
                 try
                 {
+                    var recordedMaximum = connection.ExecuteScalar<int>("SELECT COALESCE(MAX(version), 0) FROM gp_migrations");
+                    if (recordedMaximum > supportedMaximum)
+                        throw new StorageException(StorageFailure.Migration, "The database schema is newer than this SDK supports.");
+                    var existing = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations WHERE version = ?", migration.Version);
+                    if (existing == 1)
+                    {
+                        var identityMatches = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations WHERE version = ? AND migration_id = ? AND checksum = ? AND backend_namespace = ? AND app_id = ? AND account_id = ?", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
+                        if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "An applied migration identity or checksum changed.");
+                        connection.Execute("COMMIT");
+                        continue;
+                    }
+                    if (migration.Version <= recordedMaximum)
+                        throw new StorageException(StorageFailure.Migration, "The migration journal has a gap or conflicting version.");
                     foreach (var statement in migration.Statements) connection.Execute(statement);
                     checkpoint?.Invoke(MigrationCheckpoint.EffectsApplied, migration);
                     var appliedAt = options.NowMilliseconds();
@@ -339,12 +344,12 @@ namespace GamePlatform.Storage.Sqlite.Executor
                     connection.Execute("INSERT INTO gp_migrations(version, migration_id, checksum, backend_namespace, app_id, account_id, applied_at) VALUES (?, ?, ?, ?, ?, ?, ?)", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value, appliedAt);
                     checkpoint?.Invoke(MigrationCheckpoint.MarkerInserted, migration);
                     cancellationToken.ThrowIfCancellationRequested();
-                    connection.Commit();
-                    recordedMaximum = migration.Version;
+                    connection.Execute("COMMIT");
                 }
                 catch
                 {
-                    connection.Rollback();
+                    try { connection.Execute("ROLLBACK"); }
+                    catch { }
                     throw;
                 }
             }
