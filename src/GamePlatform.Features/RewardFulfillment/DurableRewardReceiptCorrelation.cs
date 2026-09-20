@@ -31,19 +31,34 @@ namespace GamePlatform.Features.RewardFulfillment
         public DurableRewardReceiptCorrelation(ScopedOwnerContext owner,StorageScope scope,IDurableFeatureStateStore state,ISerializedStorageExecutor transactions,RewardFulfillmentService fulfillment,Func<long> nowMilliseconds){if(!owner.IsValid)throw new ArgumentException("A captured owner is required.",nameof(owner));this.owner=owner;this.scope=scope;this.state=state??throw new ArgumentNullException(nameof(state));this.transactions=transactions??throw new ArgumentNullException(nameof(transactions));this.fulfillment=fulfillment??throw new ArgumentNullException(nameof(fulfillment));this.now=nowMilliseconds??throw new ArgumentNullException(nameof(nowMilliseconds));}
         public async Task ObserveReceiptAsync(RewardReceiptObservation observation,CancellationToken token)
         {
-            if(observation==null)throw new ArgumentNullException(nameof(observation));EnsureOwner(observation.Owner);await fulfillment.ObserveAcceptedReceiptAsync(observation,token).ConfigureAwait(false);
-            await transactions.ExecuteAsync(scope,transaction=>{var payload=codec.EncodeRecord(new RewardPresentationRecord(observation.OperationId,observation.Receipt.BusinessSource,RewardPresentationStatus.AcceptedAwaitingPull,observation.Receipt,null,false));InsertOrVerify(transaction,ReceiptKey(observation.Receipt.FeedRevision),observation.Receipt.FeedRevision,payload);var feed=state.Read(transaction,owner,Namespace,FeedKey(observation.Receipt.FeedRevision));if(feed!=null)fulfillment.StageProjectionGroup(transaction,Join(observation,DecodeFeed(feed.CopyPayload()),observation.Receipt.FeedRevision));return true;},token).ConfigureAwait(false);
-            await ReconcileAsync(observation.Receipt.FeedRevision,token).ConfigureAwait(false);
+            if(observation==null)throw new ArgumentNullException(nameof(observation));EnsureOwner(observation.Owner);
+            await transactions.ExecuteAsync(scope,transaction=>
+            {
+                // Receipt facts, optional feed join, immutable evidence and the operation presentation are one durable unit.
+                fulfillment.StageAcceptedReceipt(transaction,observation);
+                var payload=codec.EncodeRecord(new RewardPresentationRecord(observation.OperationId,observation.Receipt.BusinessSource,RewardPresentationStatus.AcceptedAwaitingPull,observation.Receipt,null,false));
+                InsertOrVerify(transaction,ReceiptKey(observation.Receipt.FeedRevision),observation.Receipt.FeedRevision,payload);
+                var feed=state.Read(transaction,owner,Namespace,FeedKey(observation.Receipt.FeedRevision));
+                if(feed!=null)fulfillment.StageProjectionGroupAndConfirm(transaction,Join(observation,DecodeFeed(feed.CopyPayload()),observation.Receipt.FeedRevision));
+                return true;
+            },token).ConfigureAwait(false);
         }
         /// <summary>Call after all listed component upserts are installed, inside the same feed/cursor transaction.</summary>
         public void StageInstalledFeed(ILocalStorageTransaction transaction,long feedRevision,IReadOnlyList<InstalledRewardProjection> projections)
         {
-            if(transaction==null)throw new ArgumentNullException(nameof(transaction));if(!transaction.Scope.Equals(scope))throw new RewardFulfillmentOwnerMismatchException();if(feedRevision<=0)throw new ArgumentOutOfRangeException(nameof(feedRevision));var exact=Validate(projections);InsertOrVerify(transaction,FeedKey(feedRevision),feedRevision,EncodeFeed(exact));var receipt=state.Read(transaction,owner,Namespace,ReceiptKey(feedRevision));if(receipt!=null){var record=codec.DecodeRecord(receipt.Revision,receipt.CopyPayload());fulfillment.StageProjectionGroup(transaction,Join(new RewardReceiptObservation(owner,record.OperationId,record.Receipt!),exact,feedRevision));}
+            if(transaction==null)throw new ArgumentNullException(nameof(transaction));if(!transaction.Scope.Equals(scope))throw new RewardFulfillmentOwnerMismatchException();if(feedRevision<=0)throw new ArgumentOutOfRangeException(nameof(feedRevision));var exact=Validate(projections);InsertOrVerify(transaction,FeedKey(feedRevision),feedRevision,EncodeFeed(exact));var receipt=state.Read(transaction,owner,Namespace,ReceiptKey(feedRevision));if(receipt!=null){var record=codec.DecodeRecord(receipt.Revision,receipt.CopyPayload());if(record.Receipt==null)throw new RewardFulfillmentConflictException("Durable receipt correlation has no receipt.");fulfillment.StageProjectionGroupAndConfirm(transaction,Join(new RewardReceiptObservation(owner,record.OperationId,record.Receipt),exact,feedRevision));}
         }
         /// <summary>Call only after the feed transaction committed; exact replay is safe.</summary>
         public async Task ReconcileAsync(long feedRevision,CancellationToken token)
         {
-            if(feedRevision<=0)throw new ArgumentOutOfRangeException(nameof(feedRevision));var receipt=await state.ReadAsync(owner,Namespace,ReceiptKey(feedRevision),token).ConfigureAwait(false);var feed=await state.ReadAsync(owner,Namespace,FeedKey(feedRevision),token).ConfigureAwait(false);if(receipt==null||feed==null)return;var record=codec.DecodeRecord(receipt.Revision,receipt.CopyPayload());await fulfillment.ObserveProjectionGroupAsync(Join(new RewardReceiptObservation(owner,record.OperationId,record.Receipt!),DecodeFeed(feed.CopyPayload()),feedRevision),token).ConfigureAwait(false);
+            if(feedRevision<=0)throw new ArgumentOutOfRangeException(nameof(feedRevision));
+            // This is idempotent repair/notification for pre-existing state, not a required post-commit correctness step.
+            await transactions.ExecuteAsync(scope,transaction=>
+            {
+                var receipt=state.Read(transaction,owner,Namespace,ReceiptKey(feedRevision));var feed=state.Read(transaction,owner,Namespace,FeedKey(feedRevision));if(receipt==null||feed==null)return true;
+                var record=codec.DecodeRecord(receipt.Revision,receipt.CopyPayload());if(record.Receipt==null)throw new RewardFulfillmentConflictException("Durable receipt correlation has no receipt.");
+                var observation=new RewardReceiptObservation(owner,record.OperationId,record.Receipt);fulfillment.StageAcceptedReceipt(transaction,observation);fulfillment.StageProjectionGroupAndConfirm(transaction,Join(observation,DecodeFeed(feed.CopyPayload()),feedRevision));return true;
+            },token).ConfigureAwait(false);
         }
         private RewardProjectionGroup Join(RewardReceiptObservation observation,IReadOnlyList<InstalledRewardProjection> projections,long feedRevision)
         {
