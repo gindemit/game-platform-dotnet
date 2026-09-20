@@ -101,6 +101,14 @@ def validate_closure(metadata, expected_names):
                 raise ValueError('unresolved_runtime_dependency: ' + reference['name'])
 
 
+def validate_debug_identity(metadata, project_names, revision):
+    expected = canonical_source_link(revision).rstrip('\n')
+    by_name = {item['name']: item for item in metadata}
+    for name in project_names:
+        if by_name[name].get('sourceLink') != expected:
+            raise ValueError('canonical_source_link_missing: ' + name)
+
+
 def package_lock(project):
     return json.loads(project.with_name('packages.lock.json').read_text(encoding='utf-8'))
 
@@ -361,6 +369,8 @@ def verify_bundle(output, qualification=None, expected_packages=None, expected_p
         if path.stat().st_size != entry['bytes'] or digest(path) != entry['sha256']:
             raise ValueError('bundle_hash_mismatch: ' + relative)
     validate_closure(manifest['assemblies'], manifest['managedAssemblyNames'])
+    if manifest.get('schemaVersion', 0) >= 3:
+        validate_debug_identity(manifest['assemblies'], manifest['projects'], manifest['sourceCommit'])
     package_items = {item['id']: item for item in manifest.get('managedPackages', [])}
     if set(package_items) != set(MESSAGEPACK_PACKAGES):
         raise ValueError('managed_package_inventory_mismatch')
@@ -421,6 +431,7 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
             (managed / (dll.name + '.meta')).write_text(managed_meta(dll.name), encoding='utf-8', newline='\n')
         metadata = inspect(sorted(managed.glob('*.dll')))
         validate_closure(metadata, [item['name'] for item in metadata])
+        validate_debug_identity(metadata, [project.stem for project in projects], revision)
         copy_package_notices(stage, runtime_assets, packages, package_root)
         native_entries, qualified = [], {item['target']: item for item in qualification['inputs']}
         for target, relative in NATIVE_TARGETS.items():

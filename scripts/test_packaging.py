@@ -37,6 +37,15 @@ class PackageTests(unittest.TestCase):
         self.assertIn('-p:SourceRevisionId=' + ('b' * 40), arguments)
         self.assertIn('-p:SourceLink=' + str(source_link), arguments)
 
+    def test_debug_identity_requires_revision_bound_source_link_for_projects(self):
+        revision = 'c' * 40
+        item = assembly()
+        item['sourceLink'] = package.canonical_source_link(revision).rstrip('\n')
+        package.validate_debug_identity([item], ['A'], revision)
+        item['sourceLink'] = None
+        with self.assertRaisesRegex(ValueError, 'canonical_source_link_missing'):
+            package.validate_debug_identity([item], ['A'], revision)
+
     def test_dependency_closure_accepts_only_bundled_and_framework(self):
         package.validate_closure([assembly('A', ['B', 'netstandard']), assembly('B')], ['A', 'B'])
 
