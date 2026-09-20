@@ -396,8 +396,8 @@ def verify_bundle(output, qualification=None, expected_packages=None, expected_p
     for package_id, version in MESSAGEPACK_PACKAGES.items():
         if package_items[package_id]['version'] != version or package_items[package_id]['contentHash'] != locked[package_id]['contentHash']:
             raise ValueError('managed_package_pin_mismatch: ' + package_id)
-    if manifest.get('capabilities', {}).get('productionMessagePack') != 'unavailable':
-        raise ValueError('qualification_codec_mislabeled')
+    if manifest.get('capabilities', {}).get('productionMessagePack') != 'included':
+        raise ValueError('production_codec_missing')
     validate_licenses(output, manifest['managedPackages'])
     validate_native_manifest(manifest, output, qualification, expected_pinvoke)
     return manifest
@@ -482,7 +482,7 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
             'assemblies': metadata, 'managedPackages': packages, 'nativeLibraries': native_entries,
             'pinvoke': pinvoke_inventory(), 'sqliteCandidate': qualification['candidate'],
             'capabilities': {'coreContracts': 'included', 'wireDtoContracts': 'included', 'safeDiagnostics': 'included',
-                'messagePackQualificationCandidate': 'included', 'productionMessagePack': 'unavailable',
+                'messagePackQualificationCandidate': 'included', 'productionMessagePack': 'included',
                 'nativeSqliteInputs': 'included-unexecuted-by-unity', 'unityImport': 'metadata-only-unverified',
                 'aotAndDevice': 'unverified', 'liveBackendIntegration': 'unverified'},
             'features': json.loads((root / 'features.json').read_text()),
