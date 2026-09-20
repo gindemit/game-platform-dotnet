@@ -14,8 +14,12 @@ SDK passes 370/370.
 This is a qualification/exchange bridge, not an HTTP provider or feature. The
 generated G3 carriers remain intentionally outside the production typed mapper;
 source/business idempotency and the catalog/visibility bridge have no additional
-wire fixture and must not acquire an invented client route. Cross-runtime output
-is recorded separately after both clean repository revisions are committed.
+wire fixture and must not acquire an invented client route. Four values passed
+both TypeScript/C# directions and six authority/presence/unknown/version/signed64
+negatives were rejected by both producers at SDK `469796b` and backend
+`66ccc78`. The subsequent unchanged frozen-core regression passed 34 cases and
+24 fingerprints each direction, 32 raw probes in both decoders, 39 diagnostic
+negatives and 89 dotnet commands at backend `5963b45`.
 Central G3 state and A01–A13 remain unchanged.
 
 ## CL-011 snapshot, durable-state and query-cache foundation — 2026-09-20
