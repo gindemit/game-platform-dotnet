@@ -16,7 +16,7 @@ namespace GamePlatform.Features.Progression
         private readonly ReadOnlyCollection<OperationId> operationIds;
         public ProgressionConfirmationEvidence(long projectionRevision, IReadOnlyList<OperationId> operationIds)
         {
-            if (projectionRevision < 1) throw new ArgumentOutOfRangeException(nameof(projectionRevision));
+            if (projectionRevision < 0) throw new ArgumentOutOfRangeException(nameof(projectionRevision));
             if (operationIds == null || operationIds.Count > 256 || operationIds.Any(value => !value.IsValid) || operationIds.Distinct().Count() != operationIds.Count)
                 throw new ArgumentException("Confirmation operation identities must be valid, unique, and bounded.", nameof(operationIds));
             ProjectionRevision = projectionRevision; this.operationIds = new ReadOnlyCollection<OperationId>(operationIds.ToArray());

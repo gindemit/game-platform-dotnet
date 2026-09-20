@@ -16,6 +16,11 @@ Only evidence IDs verified against durable accepted-awaiting-pull records are
 suppressed after restart; a projection revision alone never suppresses a local
 completion.
 
+Projection revision zero is a valid authoritative empty/bootstrap revision, not
+an absent or remapped revision. The borrowed seam uses an explicit nullable
+prior revision so absent-to-zero is distinct from zero-to-one; the durable
+feature-state envelope stays positive only for its local record identity.
+
 `ProgressionFeature` remains an old unavailable compatibility marker. Evidence:
 immutable offline commands, provisional state and accepted overlay retention
 (A03/A04/A07); peer, Unity, device and G3 evidence remain separate.

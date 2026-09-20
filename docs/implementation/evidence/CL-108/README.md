@@ -24,7 +24,7 @@ Focused command:
 
 `dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter FullyQualifiedName~Cl108ProgressionServiceTests`
 
-Result: 10/10 tests passed. The native cases cover atomic completion/outbox plus
+Result: 11/11 tests passed. The native cases cover atomic completion/outbox plus
 reopen, duplicate callback idempotency and immutable identity conflict, lost ACK
 then explicit acceptance/pull confirmation, terminal rejection followed by next
 sequence while retaining another pending item, owner/generation fencing, reset
@@ -38,6 +38,12 @@ The convenience pull path remains monotonic: older projections are no-ops and
 an exact same-revision projection/evidence replay is idempotent, while changed
 same-revision projection or operation evidence fails closed. The borrowed
 private-group path intentionally remains strict-forward.
+
+The authoritative projection revision accepts exact zero. SQLite tests prove
+absent-to-zero installation, exact zero replay, changed zero-revision rejection,
+zero-to-one advancement, and zero projection/cursor-sentinel rollback then
+commit/reopen. The positive `gp_feature_state` row revision is only a local
+envelope (`semantic + 1`); all feature/codec snapshots retain semantic zero.
 
 These tests do not prove a
 real backend outcome/reward receipt, production codec, live command sender,

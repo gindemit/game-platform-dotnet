@@ -117,13 +117,28 @@ namespace GamePlatform.Tests.Features.Progression
         }
 
         [Fact]
+        public async Task AbsentProjectionInstallsSemanticRevisionZeroReplaysExactlyAndThenAdvancesToOne()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            var zero = new ProgressionConfirmation(Context, new ProgressionConfirmedProjection(0, 100, Array.Empty<ProgressionConfirmedState>()), Array.Empty<OperationId>());
+            await service.ApplyConfirmedAsync(zero, CancellationToken.None);
+            var installed = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(0, installed.Value!.Confirmed!.Revision); Assert.Empty(installed.Value.Confirmed.States);
+            await service.ApplyConfirmedAsync(zero, CancellationToken.None);
+            await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(0, 1), Array.Empty<OperationId>()), CancellationToken.None));
+            await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()), CancellationToken.None);
+            Assert.Equal(1, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.Confirmed!.Revision);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task BorrowedProjectionAndCursorSentinelRollbackTogetherThenCommitAndReopen()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
             await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cursor_side_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
             await Assert.ThrowsAsync<InvalidOperationException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 0, new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()));
+                service.ApplyConfirmedProjection(transaction, Context, null, new ProgressionConfirmation(Context, Projection(0, 10), Array.Empty<OperationId>()));
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (1)");
                 throw new InvalidOperationException("simulate cursor failure");
             }, CancellationToken.None));
@@ -131,13 +146,13 @@ namespace GamePlatform.Tests.Features.Progression
             Assert.Equal(0, rolledBack);
             await database.ExecuteAsync(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 0, new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()));
+                service.ApplyConfirmedProjection(transaction, Context, null, new ProgressionConfirmation(Context, Projection(0, 10), Array.Empty<OperationId>()));
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (1)"); return true;
             }, CancellationToken.None);
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
             var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
             var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(10, cached.Value!.Confirmed!.States.Single().Value);
+            Assert.Equal(0, cached.Value!.Confirmed!.Revision); Assert.Equal(10, cached.Value.Confirmed.States.Single().Value);
             Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cursor_side_sentinel"), CancellationToken.None));
             restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
@@ -287,16 +302,15 @@ namespace GamePlatform.Tests.Features.Progression
                 var args = new object[] { owner.ViewKey.Value, Namespace, Key };
                 if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0)
                 {
-                    session.Execute("INSERT INTO gp_feature_state(view_key,feature_namespace,entity_key,revision,confirmed_at,payload,extensions) VALUES (?,?,?,?,?,?,?)", owner.ViewKey.Value, Namespace, Key, evidence.ProjectionRevision, 0L, Encode(new[] { evidence }), Array.Empty<byte>());
+                    session.Execute("INSERT INTO gp_feature_state(view_key,feature_namespace,entity_key,revision,confirmed_at,payload,extensions) VALUES (?,?,?,?,?,?,?)", owner.ViewKey.Value, Namespace, Key, StorageRevision(evidence.ProjectionRevision), 0L, Encode(new[] { evidence }), Array.Empty<byte>());
                     return;
                 }
-                var existingRevision = session.ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args);
                 var prior = Decode(session.ExecuteScalar<byte[]>("SELECT payload FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args));
-                if (evidence.ProjectionRevision <= existingRevision || prior.SelectMany(value => value.OperationIds).Intersect(evidence.OperationIds).Any())
+                if (evidence.ProjectionRevision <= prior.Last().ProjectionRevision || prior.SelectMany(value => value.OperationIds).Intersect(evidence.OperationIds).Any())
                     throw new ProgressionConflictException("A progression confirmation cannot replace immutable evidence.");
                 var next = prior.Concat(new[] { evidence }).ToArray();
                 if (next.Length > 1024 || next.SelectMany(value => value.OperationIds).Count() > 1024) throw new ProgressionConflictException("Progression confirmation evidence exceeds its durable bound.");
-                session.Execute("UPDATE gp_feature_state SET revision=?, confirmed_at=?, payload=?, extensions=? WHERE view_key=? AND feature_namespace=? AND entity_key=?", evidence.ProjectionRevision, 0L, Encode(next), Array.Empty<byte>(), owner.ViewKey.Value, Namespace, Key);
+                session.Execute("UPDATE gp_feature_state SET revision=?, confirmed_at=?, payload=?, extensions=? WHERE view_key=? AND feature_namespace=? AND entity_key=?", StorageRevision(evidence.ProjectionRevision), 0L, Encode(next), Array.Empty<byte>(), owner.ViewKey.Value, Namespace, Key);
             }
             private static byte[] Encode(IReadOnlyList<ProgressionConfirmationEvidence> values) => Encoding.UTF8.GetBytes(string.Join(";", values.Select(value => value.ProjectionRevision + ":" + string.Join(",", value.OperationIds.Select(operation => operation.ToString())))));
             private static IReadOnlyList<ProgressionConfirmationEvidence> Decode(byte[] payload)
@@ -304,6 +318,7 @@ namespace GamePlatform.Tests.Features.Progression
                 var text = Encoding.UTF8.GetString(payload); if (string.IsNullOrEmpty(text)) throw new InvalidOperationException("Confirmation evidence is empty.");
                 return text.Split(';').Select(value => { var parts = value.Split(':'); if (parts.Length != 2) throw new InvalidOperationException("Confirmation evidence is malformed."); var operations = string.IsNullOrEmpty(parts[1]) ? Array.Empty<OperationId>() : parts[1].Split(',').Select(item => new OperationId(Guid.Parse(item))).ToArray(); return new ProgressionConfirmationEvidence(long.Parse(parts[0]), operations); }).ToArray();
             }
+            private static long StorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new ProgressionConflictException("The progression evidence revision is exhausted.") : checked(semanticRevision + 1);
         }
 
         private sealed class TemporaryDatabase : IDisposable
