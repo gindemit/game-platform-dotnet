@@ -51,7 +51,6 @@ namespace GamePlatform.Tests.Transport
 
         [Theory]
         [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/unsupported")]
-        [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/sync/push")]
         public async Task UnsupportedRoutesFailClosedBeforeNetwork(string path)
         {
             var handler = new DelegateHandler((_, _) => throw new InvalidOperationException("must not send"));
@@ -62,6 +61,27 @@ namespace GamePlatform.Tests.Transport
 
             Assert.Equal(HttpDeliveryCertainty.NotSent, error.Certainty);
             Assert.Equal(0, handler.Calls);
+        }
+
+        [Fact]
+        public async Task PushRouteIsAdmittedWithTheFrozenMessagePackProfile()
+        {
+            var handler = new DelegateHandler((request, _) =>
+            {
+                Assert.Equal("/platform/v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/sync/push", request.RequestUri!.AbsolutePath);
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Content!.Headers.ContentType!.MediaType);
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(new byte[] { 1 })
+                });
+            });
+            using var client = new HttpClient(handler);
+            var executor = new BoundedHttpClientExecutor(client, Configuration());
+
+            var response = await executor.SendAsync(Request("v1/apps/" + App + "/sync/push"), CancellationToken.None);
+
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(1, handler.Calls);
         }
 
         [Fact]
