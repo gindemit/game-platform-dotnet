@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/g3/reward-receipt.2.schema.json",
+  "$defs": {
+    "request": {
+      "$ref": "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json#/$defs/request"
+    },
+    "response": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "schemaVersion",
+            "operationId",
+            "status"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "schemaVersion": {
+              "const": 2
+            },
+            "operationId": {
+              "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+            },
+            "status": {
+              "const": "not_found"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "schemaVersion",
+            "operationId",
+            "status",
+            "outcomeAuthority",
+            "reward"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "schemaVersion": {
+              "const": 2
+            },
+            "operationId": {
+              "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+            },
+            "status": {
+              "const": "completion_recorded"
+            },
+            "outcomeAuthority": {
+              "const": "client_trusted_unvalidated"
+            },
+            "reward": {
+              "oneOf": [
+                {
+                  "$ref": "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json#/$defs/receipt"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

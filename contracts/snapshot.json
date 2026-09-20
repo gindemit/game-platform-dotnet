@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contractVersion": "0.3.0-live-slice-schema.1",
+  "contractVersion": "0.4.0-g3-schema-checkpoint.1",
   "algorithm": "sha256",
   "files": {
     "platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
@@ -96,7 +96,11 @@
     "live-slice/fixtures.json": "41c99936880fe8037526b2eb309cf1aea247dc0b39fb89d054b771ba3cdac83d",
     "live-slice/receipt.schema.json": "edd573e64495f3ba6508105796d6fd42065ceda2368cd16b265146a022fff164",
     "live-slice/semantics.json": "228ed7824fa915007e239b157e15aef3d74b176137b020a5c1620bb73f1b17af",
-    "live-slice/source-key-vectors.json": "45b529df35e0d26709418477f440bb4fd1902bc9a316647dd5d67a572ead5e23"
+    "live-slice/source-key-vectors.json": "45b529df35e0d26709418477f440bb4fd1902bc9a316647dd5d67a572ead5e23",
+    "g3/client-mappings.json": "677c9216ff852d052aefcf98d5b7833d3211e0788c1befb191f0de3383b294bf",
+    "g3/fixtures.json": "0a2a76d9ae73bf91233575645e92a94e2d8b605780097c927a2f10295645a542",
+    "g3/reward-receipt.schema.json": "30d73417a344e2cf4f38a21133bd3f23e9d16a1e60f009ce2dd327d1a9e000f4",
+    "g3/semantics.json": "249142df40560d81e4fb52c1415c744fcd8b0b9656b7ec9cc2bc4b55d731bf1d"
   },
-  "approvalScope": "G1 core schema only; not runtime interoperability or feature/product approval"
+  "approvalScope": "P3 same-phase G3 schema checkpoint only; runtime interoperability and G3 acceptance remain unverified"
 }

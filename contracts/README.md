@@ -1,5 +1,12 @@
 # Reviewed backend protocol snapshot
 
+P3 same-phase checkpoint **0.4.0-g3-schema-checkpoint.1** is mirrored exactly
+from backend `0518ad5cc54f5c6b71bfa19819476197242cfc5c`: 98 pins, preserving all
+G1 and G2 files. It adds only the v2 reward-receipt authority label and the exact
+reuse/exclusion mappings needed before G3 feature implementation. Generated C#
+carriers exist, but runtime codecs, HTTP, feature behavior, Unity consumption,
+interoperability and G3 remain unverified.
+
 G2 additive schema **0.3.0-live-slice-schema.1** is mirrored from backend `0c3473e165ce73479c349b8fba2394274a2a833e`: 94 exact pins, preserving all 90 G1 files. [Semantics and field mappings](live-slice/semantics.json) approve only the read-only reward receipt; feature DTO/codec/runtime implementation is pending. Frozen core corpus/version remains unchanged.
 
 Current G1-reviewed schema: **0.2.0-core-schema.1**, canonical commit

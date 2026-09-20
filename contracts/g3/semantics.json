@@ -1,0 +1,61 @@
+{
+  "version": "0.4.0-g3-schema-checkpoint.1",
+  "status": "same_phase_schema_checkpoint_runtime_unverified",
+  "route": {
+    "method": "GET",
+    "path": "/v1/apps/{appId}/gameplay/reward-receipts/{operationId}",
+    "capability": "gameplay.reward-receipt.v2",
+    "request": "reward-receipt.schema.json#/$defs/request",
+    "response": "reward-receipt.schema.json#/$defs/response"
+  },
+  "authorization": [
+    "derive account only from verified authentication",
+    "reauthorize enabled app membership, original operation ownership and current resource binding on every read",
+    "authorization failures never enumerate or return another account's operation, source or grant"
+  ],
+  "catalog": {
+    "wireShape": "none_for_g3",
+    "authority": "server_owned_versioned_definition_and_app_binding",
+    "requiredFixture": "test.coin definition version and visible can_grant app binding are pinned by trusted seed/import configuration",
+    "failure": "unknown, retired, invisible, unbound or non-grantable resources fail closed before completion commit",
+    "exclusion": "clients never select a resource, definition version, reward plan, quantity or permission"
+  },
+  "completion": {
+    "command": "unchanged contracts/v1/schemas/gameplay.schema.json#/$defs/completionCommand",
+    "terminalResult": "unchanged contracts/v1/schemas/push.schema.json gameplay_completion_recorded branch",
+    "receiptCorrection": "schemaVersion 2 requires outcomeAuthority=client_trusted_unvalidated on every completion_recorded response",
+    "meaning": "authenticated client report accepted without game, session, replay, solution or outcome validation; never describe it as server validated or secure",
+    "unknown": "unknown authority, status, schema version or field fails closed"
+  },
+  "progression": {
+    "wireShape": "reuse contracts/v1/schemas/projection.schema.json progression snapshot/change",
+    "meaning": "the G3 fixture uses server-owned semantic state keys and checked nonnegative signed64 values; completion history and source uniqueness stay server-side",
+    "absence": "an absent progression entity is absent state, not an inferred completion; explicit null is not permitted"
+  },
+  "value": {
+    "wireShape": "reuse contracts/v1/schemas/projection.schema.json wallet snapshot/change",
+    "meaning": "test.coin confirmed balance is a checked nonnegative signed64 decimal string in diagnostic JSON and C# long/TS bigint in runtime mappings",
+    "absence": "an absent wallet entity is not a confirmed zero balance; explicit null is not permitted",
+    "receipt": "historical reward quantity never mutates a client balance directly; ordered bootstrap/pull owns confirmed value"
+  },
+  "reward": {
+    "shape": "reuse the approved live-slice receipt and typed lines",
+    "absenceAndNull": "reward is required for completion_recorded; explicit null means committed with no server grant; omission is invalid; not_found carries neither reward nor outcomeAuthority",
+    "operationIdempotency": "operationId identifies the looked-up immutable accepted command and originatingOperationId identifies the first operation that committed the grant",
+    "sourceIdempotency": "backend/app/account plus source kind/key/rewardSlot selects at most one grant; retries or another operation for that source reuse the same immutable grant",
+    "signed64": "feedRevision and quantities are checked signed64, decimal strings only in diagnostic JSON"
+  },
+  "visibility": {
+    "wireShape": "reuse the single private-player visibilityGeneration already carried by bootstrap and cursor semantics",
+    "catalogGeneration": "BE-017 app catalog generation is an authorization input, not a second client-visible generation",
+    "requiredBridge": "before bootstrap or pull authorization, compare the app catalog generation with the player's last observed catalog generation; a mismatch advances the existing private-player visibility generation and requires a replacement snapshot before old shared state can be revealed",
+    "revokeRegrant": "both revoke and regrant advance catalog generation; neither may reveal retained shared state through an old cursor",
+    "runtimeState": "the cross-owner persistence bridge and transaction tests remain BE-012/BE-013/BE-017 implementation work"
+  },
+  "compatibility": {
+    "frozenCore": "all 90 version 0.2.0 core artifacts remain unchanged",
+    "g2Receipt": "all four version 0.3.0 live-slice artifacts remain unchanged; capability v1 stays a distinct schema",
+    "rollout": "v2 requires explicit trusted capability composition; missing capability, 404 or 501 is unavailable",
+    "runtimeInteroperability": "unverified"
+  }
+}

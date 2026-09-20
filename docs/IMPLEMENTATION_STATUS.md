@@ -1,5 +1,22 @@
 # Implementation status
 
+## P3 same-phase G3 schema mirror and carrier checkpoint — 2026-09-20
+
+The SDK exactly mirrors backend canonical commit
+`0518ad565efdfe16df13e78e2acbb92033e8bd30`, contract
+`0.4.0-g3-schema-checkpoint.1`: 98/98 files match, preserving all 90 G1 and four
+G2 artifacts. Eight attribute-free C# carrier classes and two union interfaces
+are generated for the v2 reward-receipt request/response, immutable
+receipt/source and three typed reward lines. The recorded-completion carrier exposes the required constant
+`client_trusted_unvalidated` label and a required nullable reward; receipt
+signed64 values map to `long`.
+
+Focused DTO tests pass 2/2. Pin, exact-mirror, generated-artifact and mapping
+validators pass. This checkpoint deliberately does not register these types in
+the production/qualification codec, add an HTTP provider, implement any feature,
+change Unity, or claim C#/TypeScript binary interoperability, A01-A13 or G3.
+Central coordination state remains unchanged.
+
 ## CL-015 generated-source byte identity correction — 2026-09-20
 
 The DTO mapper generator now writes explicit UTF-8/LF bytes and its check mode

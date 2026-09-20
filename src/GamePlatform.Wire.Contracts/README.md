@@ -1,5 +1,14 @@
 # GamePlatform.Wire.Contracts
 
+The P3 same-phase `0.4.0-g3-schema-checkpoint.1` mirror adds generated,
+attribute-free carriers for the schema-version-2 reward receipt. Its completion
+branch exposes the required `client_trusted_unvalidated` authority label and a
+required nullable reward. The generated mapping catalog records exact schema
+sources and preserves `long` for receipt signed64 fields. No serializer mapping,
+HTTP provider, feature behavior or runtime interoperability is implemented by
+this checkpoint. Regenerate/check with `rtk python
+src/GamePlatform.Wire.Contracts/generate_g3_dtos.py [--check]`.
+
 Owns attribute-free, immutable wire carriers, distinct from domain and SQL models.
 The 64 concrete shapes and 12 union interfaces cover the G1-reviewed core schema
 `0.2.0-core-schema.1`, canonical commit

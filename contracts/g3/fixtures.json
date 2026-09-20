@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "not-found-v2",
+      "definition": "response",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "not_found"
+      }
+    },
+    {
+      "id": "completion-without-server-reward",
+      "definition": "response",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "outcomeAuthority": "client_trusted_unvalidated",
+        "reward": null
+      }
+    },
+    {
+      "id": "completion-with-test-coin-reward",
+      "definition": "response",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "outcomeAuthority": "client_trusted_unvalidated",
+        "reward": {
+          "grantId": "018f0f3e-7a6b-7c8d-9e0f-102030405061",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "feedRevision": "9223372036854775807",
+          "recordedAt": 253402300799999,
+          "source": {
+            "kind": "gameplay.completion",
+            "key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+            "rewardSlot": "fixture.slot",
+            "policyId": "mrsquare.casual.fixture",
+            "policyVersion": 1
+          },
+          "planId": "test.coin.one",
+          "planVersion": 1,
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.coin",
+              "quantity": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "completion-missing-authority",
+      "definition": "response",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "reward": null
+      }
+    },
+    {
+      "id": "completion-claims-validated",
+      "definition": "response",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "outcomeAuthority": "server_validated",
+        "reward": null
+      }
+    },
+    {
+      "id": "completion-missing-reward",
+      "definition": "response",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "outcomeAuthority": "client_trusted_unvalidated"
+      }
+    },
+    {
+      "id": "completion-unknown-field",
+      "definition": "response",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "outcomeAuthority": "client_trusted_unvalidated",
+        "reward": null,
+        "validated": true
+      }
+    },
+    {
+      "id": "completion-v1-version-rejected",
+      "definition": "response",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 1,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "outcomeAuthority": "client_trusted_unvalidated",
+        "reward": null
+      }
+    },
+    {
+      "id": "reward-quantity-overflow",
+      "definition": "response",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "schemaVersion": 2,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "status": "completion_recorded",
+        "outcomeAuthority": "client_trusted_unvalidated",
+        "reward": {
+          "grantId": "018f0f3e-7a6b-7c8d-9e0f-102030405061",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "feedRevision": "1",
+          "recordedAt": 1,
+          "source": {
+            "kind": "gameplay.completion",
+            "key": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+            "rewardSlot": "fixture.slot",
+            "policyId": "mrsquare.casual.fixture",
+            "policyVersion": 1
+          },
+          "planId": "test.coin.one",
+          "planVersion": 1,
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.coin",
+              "quantity": "9223372036854775808"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
