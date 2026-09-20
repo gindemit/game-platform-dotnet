@@ -29,7 +29,7 @@ namespace GamePlatform.Backend.Contracts.Remote
         {
             if (string.IsNullOrWhiteSpace(collection) || collection.Length > 64) throw new ArgumentOutOfRangeException(nameof(collection));
             if (string.IsNullOrWhiteSpace(entityKey) || entityKey.Length > 512) throw new ArgumentOutOfRangeException(nameof(entityKey));
-            if (entityRevision <= 0) throw new ArgumentOutOfRangeException(nameof(entityRevision));
+            if (entityRevision < 0) throw new ArgumentOutOfRangeException(nameof(entityRevision));
             if (!Enum.IsDefined(typeof(ProjectionMutationKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind));
             if (kind == ProjectionMutationKind.Upsert && (payload == null || payload.Length == 0)) throw new ArgumentException("An upsert payload is required.", nameof(payload));
             if ((payload?.Length ?? 0) > 262_144) throw new ArgumentOutOfRangeException(nameof(payload));
@@ -46,15 +46,18 @@ namespace GamePlatform.Backend.Contracts.Remote
     {
         private readonly byte[] session, firstPage;
         public BootstrapStart(ClientStreamId streamId, string streamState, long finalizedThrough, long? nextSequence, long committedThrough, long visibilityGeneration, Guid logEpoch, IReadOnlyList<SnapshotCollection> collections, byte[] session, byte[] firstPage, long expiresAt)
+            : this(streamId, streamState, finalizedThrough, nextSequence, committedThrough, visibilityGeneration, logEpoch, collections, session, firstPage, expiresAt, 0) { }
+        public BootstrapStart(ClientStreamId streamId, string streamState, long finalizedThrough, long? nextSequence, long committedThrough, long visibilityGeneration, Guid logEpoch, IReadOnlyList<SnapshotCollection> collections, byte[] session, byte[] firstPage, long expiresAt, long serverTime)
         {
             if (!streamId.IsValid || (streamState!="active"&&streamState!="retired") || finalizedThrough < 0 || committedThrough < 0 || visibilityGeneration < 0 || logEpoch == Guid.Empty) throw new ArgumentException("Invalid bootstrap boundary.");
             if(streamState=="retired" ? nextSequence!=null : finalizedThrough==long.MaxValue||nextSequence==null||nextSequence<=0||nextSequence!=finalizedThrough+1)throw new ArgumentException("Invalid authoritative stream sequence boundary.");
             ValidateToken(session, nameof(session)); ValidateToken(firstPage, nameof(firstPage));
             if (collections == null) throw new ArgumentNullException(nameof(collections));
             if (expiresAt < 0 || expiresAt > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(expiresAt));
-            StreamId = streamId; StreamState=streamState; FinalizedThrough = finalizedThrough; NextSequence = nextSequence; CommittedThrough = committedThrough; VisibilityGeneration = visibilityGeneration; LogEpoch = logEpoch; Collections = Copy(collections); this.session = (byte[])session.Clone(); this.firstPage = (byte[])firstPage.Clone(); ExpiresAt = expiresAt;
+            if (serverTime < 0 || serverTime > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(serverTime));
+            StreamId = streamId; StreamState=streamState; FinalizedThrough = finalizedThrough; NextSequence = nextSequence; CommittedThrough = committedThrough; VisibilityGeneration = visibilityGeneration; LogEpoch = logEpoch; Collections = Copy(collections); this.session = (byte[])session.Clone(); this.firstPage = (byte[])firstPage.Clone(); ExpiresAt = expiresAt; ServerTime = serverTime;
         }
-        public ClientStreamId StreamId { get; } public string StreamState{get;} public long FinalizedThrough { get; } public long? NextSequence { get; } public long CommittedThrough { get; } public long VisibilityGeneration { get; } public Guid LogEpoch { get; } public IReadOnlyList<SnapshotCollection> Collections { get; } public long ExpiresAt { get; }
+        public ClientStreamId StreamId { get; } public string StreamState{get;} public long FinalizedThrough { get; } public long? NextSequence { get; } public long CommittedThrough { get; } public long VisibilityGeneration { get; } public Guid LogEpoch { get; } public IReadOnlyList<SnapshotCollection> Collections { get; } public long ExpiresAt { get; } public long ServerTime { get; }
         public byte[] CopySession() => (byte[])session.Clone(); public byte[] CopyFirstPageToken() => (byte[])firstPage.Clone();
         private static IReadOnlyList<SnapshotCollection> Copy(IReadOnlyList<SnapshotCollection> values) { var copy = new SnapshotCollection[values.Count]; for (var i = 0; i < copy.Length; i++) copy[i] = values[i] ?? throw new ArgumentException("A collection is null.", nameof(values)); return Array.AsReadOnly(copy); }
         internal static void ValidateToken(byte[] value, string name) { if (value == null || value.Length < 12 || value.Length > 3072) throw new ArgumentOutOfRangeException(name); }
@@ -64,13 +67,16 @@ namespace GamePlatform.Backend.Contracts.Remote
     {
         private readonly byte[] session; private readonly byte[]? nextPage, initialCursor;
         public BootstrapPage(byte[] session, long committedThrough, IReadOnlyList<RemoteProjectionMutation> entities, bool hasMore, byte[]? nextPageToken, byte[]? initialPullCursor)
+            : this(session, committedThrough, entities, hasMore, nextPageToken, initialPullCursor, 0) { }
+        public BootstrapPage(byte[] session, long committedThrough, IReadOnlyList<RemoteProjectionMutation> entities, bool hasMore, byte[]? nextPageToken, byte[]? initialPullCursor, long serverTime)
         {
             BootstrapStart.ValidateToken(session, nameof(session)); if (committedThrough < 0) throw new ArgumentOutOfRangeException(nameof(committedThrough)); if (entities == null || entities.Count > 1024) throw new ArgumentOutOfRangeException(nameof(entities));
             if (hasMore) BootstrapStart.ValidateToken(nextPageToken!, nameof(nextPageToken)); else BootstrapStart.ValidateToken(initialPullCursor!, nameof(initialPullCursor));
             if (hasMore && initialPullCursor != null || !hasMore && nextPageToken != null) throw new ArgumentException("Page continuation is inconsistent.");
-            this.session=(byte[])session.Clone(); CommittedThrough=committedThrough; Entities=Copy(entities); HasMore=hasMore; nextPage=nextPageToken==null?null:(byte[])nextPageToken.Clone(); initialCursor=initialPullCursor==null?null:(byte[])initialPullCursor.Clone();
+            if(serverTime<0||serverTime>253_402_300_799_999L)throw new ArgumentOutOfRangeException(nameof(serverTime));
+            this.session=(byte[])session.Clone(); CommittedThrough=committedThrough; Entities=Copy(entities); HasMore=hasMore; nextPage=nextPageToken==null?null:(byte[])nextPageToken.Clone(); initialCursor=initialPullCursor==null?null:(byte[])initialPullCursor.Clone();ServerTime=serverTime;
         }
-        public long CommittedThrough { get; } public IReadOnlyList<RemoteProjectionMutation> Entities { get; } public bool HasMore { get; }
+        public long CommittedThrough { get; } public IReadOnlyList<RemoteProjectionMutation> Entities { get; } public bool HasMore { get; } public long ServerTime { get; }
         public byte[] CopySession()=> (byte[])session.Clone(); public byte[]? CopyNextPageToken()=>nextPage==null?null:(byte[])nextPage.Clone(); public byte[]? CopyInitialPullCursor()=>initialCursor==null?null:(byte[])initialCursor.Clone();
         private static IReadOnlyList<RemoteProjectionMutation> Copy(IReadOnlyList<RemoteProjectionMutation> values) { var copy=new RemoteProjectionMutation[values.Count]; for(var i=0;i<copy.Length;i++) copy[i]=values[i]??throw new ArgumentException("An entity is null.",nameof(values)); return Array.AsReadOnly(copy); }
     }
@@ -83,10 +89,12 @@ namespace GamePlatform.Backend.Contracts.Remote
     public sealed class RemotePullPage
     {
         private readonly byte[]? nextCursor;
-        private RemotePullPage(bool reset,string? reason,long committedThrough,IReadOnlyList<RemotePullGroup> groups,byte[]? cursor,bool hasMore){ResetRequired=reset;ResetReason=reason;CommittedThrough=committedThrough;Groups=groups;nextCursor=cursor==null?null:(byte[])cursor.Clone();HasMore=hasMore;}
-        public static RemotePullPage Page(long committedThrough,IReadOnlyList<RemotePullGroup> groups,byte[] nextCursor,bool hasMore){if(committedThrough<0||groups==null)throw new ArgumentOutOfRangeException();BootstrapStart.ValidateToken(nextCursor,nameof(nextCursor));return new RemotePullPage(false,null,committedThrough,Copy(groups),nextCursor,hasMore);}
-        public static RemotePullPage Reset(string reason){if(string.IsNullOrWhiteSpace(reason)||reason.Length>64)throw new ArgumentOutOfRangeException(nameof(reason));return new RemotePullPage(true,reason,0,Array.Empty<RemotePullGroup>(),null,false);}
-        public bool ResetRequired{get;} public string? ResetReason{get;} public long CommittedThrough{get;} public IReadOnlyList<RemotePullGroup> Groups{get;} public bool HasMore{get;} public byte[]? CopyNextCursor()=>nextCursor==null?null:(byte[])nextCursor.Clone();
+        private RemotePullPage(bool reset,string? reason,long committedThrough,IReadOnlyList<RemotePullGroup> groups,byte[]? cursor,bool hasMore,long serverTime){if(serverTime<0||serverTime>253_402_300_799_999L)throw new ArgumentOutOfRangeException(nameof(serverTime));ResetRequired=reset;ResetReason=reason;CommittedThrough=committedThrough;Groups=groups;nextCursor=cursor==null?null:(byte[])cursor.Clone();HasMore=hasMore;ServerTime=serverTime;}
+        public static RemotePullPage Page(long committedThrough,IReadOnlyList<RemotePullGroup> groups,byte[] nextCursor,bool hasMore)=>Page(committedThrough,groups,nextCursor,hasMore,0);
+        public static RemotePullPage Page(long committedThrough,IReadOnlyList<RemotePullGroup> groups,byte[] nextCursor,bool hasMore,long serverTime){if(committedThrough<0||groups==null)throw new ArgumentOutOfRangeException();BootstrapStart.ValidateToken(nextCursor,nameof(nextCursor));return new RemotePullPage(false,null,committedThrough,Copy(groups),nextCursor,hasMore,serverTime);}
+        public static RemotePullPage Reset(string reason)=>Reset(reason,0);
+        public static RemotePullPage Reset(string reason,long serverTime){if(string.IsNullOrWhiteSpace(reason)||reason.Length>64)throw new ArgumentOutOfRangeException(nameof(reason));return new RemotePullPage(true,reason,0,Array.Empty<RemotePullGroup>(),null,false,serverTime);}
+        public bool ResetRequired{get;} public string? ResetReason{get;} public long CommittedThrough{get;} public IReadOnlyList<RemotePullGroup> Groups{get;} public bool HasMore{get;} public long ServerTime{get;} public byte[]? CopyNextCursor()=>nextCursor==null?null:(byte[])nextCursor.Clone();
         private static IReadOnlyList<RemotePullGroup> Copy(IReadOnlyList<RemotePullGroup> values){var copy=new RemotePullGroup[values.Count];for(var i=0;i<copy.Length;i++)copy[i]=values[i]??throw new ArgumentException("A group is null.",nameof(values));return Array.AsReadOnly(copy);}
     }
 

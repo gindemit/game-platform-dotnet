@@ -36,8 +36,12 @@ The caller owns its `HttpClient` and must disable automatic redirects.
 `ProductionBackendHttpProviders` is the explicit manual composition path. It
 uses `MessagePackWireCodec`, exposes provisioning before an account exists and
 creates an immutable account-owned private-sync/receipt scope only after
-provisioning; the caller owns and quiesces the executor, auth session and shared
-refresh coordinator. Push, account, profile and stream recovery
+provisioning. Its neutral `IHttpExecutor` input supports the bounded portable
+HTTP executor and a separately qualified Unity executor without coupling this
+composition to either implementation. The caller owns and quiesces the executor,
+auth session and shared refresh coordinator. The account scope exposes the
+bounded immutable command-push provider alongside private sync and receipts.
+Account, profile and stream recovery
 operations remain fail-closed and unsupported. No credentials or endpoint are
 embedded. Backend BE-016, UnityWebRequest and live hosted execution remain
 separate gates.

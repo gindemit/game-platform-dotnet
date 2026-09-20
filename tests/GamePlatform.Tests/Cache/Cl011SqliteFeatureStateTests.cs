@@ -79,6 +79,26 @@ namespace GamePlatform.Tests.Cache
         }
 
         [Fact]
+        public async Task BorrowedReadAndDeleteRemainInsideCallerTransaction()
+        {
+            using var files = new TemporaryDatabase();
+            var database = await SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
+            var store = new SqliteDurableFeatureStateStore(database, Scope); var owner = Owner("view", 1);
+            await database.ExecuteAsync(Scope, transaction => { store.Upsert(transaction, Mutation(owner, 5)); return true; }, CancellationToken.None);
+            await Assert.ThrowsAsync<InjectedFailure>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                Assert.Equal(5, store.Read(transaction, owner, "progression", "level:1")!.Revision);
+                store.Delete(transaction, owner, "progression", "level:1");
+                Assert.Null(store.Read(transaction, owner, "progression", "level:1"));
+                throw new InjectedFailure();
+            }, CancellationToken.None));
+            Assert.Equal(5, (await store.ReadAsync(owner, "progression", "level:1", CancellationToken.None))!.Revision);
+            await database.ExecuteAsync(Scope, transaction => { store.Delete(transaction, owner, "progression", "level:1"); return true; }, CancellationToken.None);
+            Assert.Null(await store.ReadAsync(owner, "progression", "level:1", CancellationToken.None));
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public void PayloadsAreDefensivelyCopiedAndBounded()
         {
             var payload = new byte[] { 1 }; var extensions = new byte[] { 2 };

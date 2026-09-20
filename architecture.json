@@ -8,14 +8,14 @@
     "GamePlatform.Backend.Contracts": ["GamePlatform.Core", "GamePlatform.Features.Contracts"],
     "GamePlatform.Storage.Abstractions": ["GamePlatform.Core", "GamePlatform.Features.Contracts"],
     "GamePlatform.Features": ["GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Features.Contracts", "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions"],
-    "GamePlatform.Sync": ["GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions"],
+    "GamePlatform.Sync": ["GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"],
     "GamePlatform.Navigation": ["GamePlatform.Core"],
     "GamePlatform.Features.Presentation": ["GamePlatform.Core", "GamePlatform.Features.Contracts", "GamePlatform.Navigation"],
     "GamePlatform.Wire.Contracts": [],
     "GamePlatform.Transport.Abstractions": [],
     "GamePlatform.Transport.Http": ["GamePlatform.Core", "GamePlatform.Backend.Contracts", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts", "GamePlatform.Serialization.MessagePack"],
     "GamePlatform.Storage.Sqlite": ["GamePlatform.Core", "GamePlatform.Storage.Abstractions"],
-    "GamePlatform.Serialization.MessagePack": ["GamePlatform.Core", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"],
+    "GamePlatform.Serialization.MessagePack": ["GamePlatform.Core", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts", "GamePlatform.Storage.Abstractions"],
     "GamePlatform.Serialization.Json": ["GamePlatform.Core", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"]
   },
   "allowedRuntimePackages": {

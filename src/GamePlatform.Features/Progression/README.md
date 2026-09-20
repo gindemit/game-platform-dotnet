@@ -9,6 +9,14 @@ server projection states. It accepts only the explicitly bounded
 admission policy, not gameplay/session/replay validation. A codec/sync adapter
 must map the frozen wire command and pull projection; this module adds neither.
 
+The completion overload with an `applyGameState` callback lets a consumer write
+its game-owned checkpoint, progress and client-side presentation state in that
+same transaction as SDK pending state, sequence allocation and outbox admission.
+It is a synchronous, transaction-only callback: consumers must not retain the
+transaction, start nested transactions, publish UI, perform external side
+effects or allocate authoritative platform value. A callback failure or
+cancellation rolls the entire admission back, and exact replay skips it.
+
 `ApplyConfirmedProjection` is the narrow private-feed integration seam: it
 stages a strictly advancing projection plus immutable, bounded confirmation
 evidence in a caller-owned transaction, leaving cursor ownership to CL-010.

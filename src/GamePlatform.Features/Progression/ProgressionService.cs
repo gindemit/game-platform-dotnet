@@ -46,9 +46,20 @@ namespace GamePlatform.Features.Progression
             ReadSnapshotAsync(EnsureOwner(requestedOwner), SnapshotFreshness.Stale, cancellationToken);
 
         /// <summary>Commits the game supplied outcome and immutable command atomically. No local rule check, checkpoint write, progress increment, or reward occurs here.</summary>
-        public async Task<FeatureSnapshot<ProgressionSnapshot>> CompleteAsync(ProgressionCompletionRequest request, CancellationToken cancellationToken)
+        public Task<FeatureSnapshot<ProgressionSnapshot>> CompleteAsync(ProgressionCompletionRequest request, CancellationToken cancellationToken) =>
+            CompleteAsync(request, (transaction, localRevision) => { }, cancellationToken);
+
+        /// <summary>
+        /// Commits a game-owned checkpoint/progress mutation in the same transaction as the SDK pending projection,
+        /// allocated sequence and immutable outbox command. The callback is synchronous and transaction-only: it must
+        /// not retain the transaction, start a nested transaction, publish UI, perform external side effects, or allocate
+        /// authoritative platform value. Exact idempotent replay skips the callback.
+        /// </summary>
+        public async Task<FeatureSnapshot<ProgressionSnapshot>> CompleteAsync(ProgressionCompletionRequest request,
+            Action<ILocalStorageTransaction, long> applyGameState, CancellationToken cancellationToken)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
+            if (applyGameState == null) throw new ArgumentNullException(nameof(applyGameState));
             var exactOwner = EnsureOwner(request.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -73,6 +84,7 @@ namespace GamePlatform.Features.Progression
                     var all = current.Pending.Concat(new[] { pending }).ToArray();
                     var encoded = codec.EncodePending(all); ValidatePayload(encoded, "pending completions");
                     state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, PendingKey, localRevision, Now(), encoded, Array.Empty<byte>()));
+                    applyGameState(transaction, localRevision);
                 }, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }

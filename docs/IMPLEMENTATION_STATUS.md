@@ -1,5 +1,37 @@
 # Implementation status
 
+## P3 bounded live-composition bridge — 2026-09-20
+
+The SDK now supplies the production `gsc1` command-fingerprint adapter for the
+complete durable command envelope and proves it against every applicable frozen
+known-answer vector. Production HTTP composition accepts the neutral
+`IHttpExecutor` boundary (including a separately qualified Unity executor) and
+exposes command push with private sync and receipt lookup after account capture.
+
+Private sync now preserves remote revision zero and carries the fixed snapshot/
+pull boundary plus server observation time into an observed typed projector. The
+bounded G3 projector decodes profile, progression and wallet replacement/group
+DTOs inside the raw-row/cursor transaction, handles removals, and rejects any
+non-empty inventory or entitlement row rather than inventing catalog/origin
+data. Durable feature state supports borrowed transaction reads/deletes for the
+consumer sink. Frozen `invalidation` remains fail-closed: storing it distinctly
+requires a new owner-assigned platform migration because migration v6 constrains
+raw state to visible/removed/tombstone.
+
+CL-108 adds the consumer-owned synchronous transaction callback required by the
+real completed-run writer. Game checkpoint/progress/client presentation writes
+can now join pending progression, sequence allocation and immutable outbox
+admission; failure/cancellation rolls back all effects and exact replay skips the
+callback. Focused CL-108 passes 12/12. Integrated Release passes 473/473; locked
+restore/build cover 18 projects with zero warnings/errors. Validation, 51 script
+tests, manifest validation and 14 manifest tests pass.
+
+This does not complete receipt/feed/operation correlation: the approved G3
+receipt carriers still need a production mapper/provider plus durable correlation
+composition. It also does not supply the owner-assigned invalidation migration,
+SDK bundle/Unity runtime evidence, INT-007, BE-025/INT-010, or G3 acceptance.
+See [evidence](implementation/evidence/P3-live-composition/README.md).
+
 ## G3 receipt schema bridge prepared for cross-runtime evidence — 2026-09-20
 
 The bounded qualification MessagePack schema engine now loads the two approved

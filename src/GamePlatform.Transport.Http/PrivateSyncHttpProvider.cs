@@ -76,7 +76,7 @@ namespace GamePlatform.Transport.Http
                     new ClientStreamId(value.StreamState.ClientStreamId), value.StreamState.State,
                     value.StreamState.FinalizedThrough, value.StreamState.NextSequence,
                     value.CommittedThrough, value.VisibilityGeneration, value.LogEpoch, collections,
-                    DecodeToken(value.SnapshotSession), DecodeToken(value.FirstPageToken), value.ExpiresAt));
+                    DecodeToken(value.SnapshotSession), DecodeToken(value.FirstPageToken), value.ExpiresAt, value.ServerTime));
             }
             catch { return ProtocolFailure<BootstrapStart>(response.Response.StatusCode); }
         }
@@ -105,7 +105,7 @@ namespace GamePlatform.Transport.Http
                 for (var i = 0; i < entities.Length; i++) entities[i] = Snapshot(value.Entities[i]);
                 var next = value.NextPageToken == null ? null : DecodeToken(value.NextPageToken);
                 var cursor = value.InitialPullCursor == null ? null : DecodeToken(value.InitialPullCursor);
-                return RemoteResult<BootstrapPage>.Success(new BootstrapPage(decodedSession, value.CommittedThrough, entities, value.HasMore, next, cursor));
+                return RemoteResult<BootstrapPage>.Success(new BootstrapPage(decodedSession, value.CommittedThrough, entities, value.HasMore, next, cursor, value.ServerTime));
             }
             catch { return ProtocolFailure<BootstrapPage>(response.Response.StatusCode); }
         }
@@ -129,7 +129,7 @@ namespace GamePlatform.Transport.Http
                 if (decoded.Value is PullReset reset)
                 {
                     if (!reset.ResetRequired || reset.Changes.Count != 0 || reset.NextCursor != null || reset.HasMore || !IsResetReason(reset.Reason)) return ProtocolFailure<RemotePullPage>(response.Response.StatusCode);
-                    return RemoteResult<RemotePullPage>.Success(RemotePullPage.Reset(reset.Reason));
+                    return RemoteResult<RemotePullPage>.Success(RemotePullPage.Reset(reset.Reason, reset.ServerTime));
                 }
                 if (decoded.Value is PullPage page)
                 {
@@ -142,7 +142,7 @@ namespace GamePlatform.Transport.Http
                         for (var j = 0; j < changes.Length; j++) changes[j] = Change(source.Changes[j]);
                         groups[i] = new RemotePullGroup(source.FeedRevision, changes);
                     }
-                    return RemoteResult<RemotePullPage>.Success(RemotePullPage.Page(page.CommittedThrough, groups, DecodeToken(page.NextCursor), page.HasMore));
+                    return RemoteResult<RemotePullPage>.Success(RemotePullPage.Page(page.CommittedThrough, groups, DecodeToken(page.NextCursor), page.HasMore, page.ServerTime));
                 }
                 return ProtocolFailure<RemotePullPage>(response.Response.StatusCode);
             }

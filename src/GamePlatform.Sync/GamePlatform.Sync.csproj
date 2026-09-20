@@ -10,6 +10,8 @@
     <ProjectReference Include="../GamePlatform.Diagnostics.Abstractions/GamePlatform.Diagnostics.Abstractions.csproj" />
     <ProjectReference Include="../GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.csproj" />
     <ProjectReference Include="../GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.csproj" />
+    <ProjectReference Include="../GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions.csproj" />
+    <ProjectReference Include="../GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

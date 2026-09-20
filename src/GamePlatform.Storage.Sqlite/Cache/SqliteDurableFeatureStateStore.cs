@@ -41,6 +41,13 @@ namespace GamePlatform.Storage.Sqlite.Cache
             }, cancellationToken);
         }
 
+        public DurableFeatureState? Read(ILocalStorageTransaction transaction, ScopedOwnerContext owner, string featureNamespace, string entityKey)
+        {
+            ValidateIdentity(owner, featureNamespace, entityKey); EnsureOwner(owner.Owner);
+            if (!transaction.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
+            return ReadCore(RequireSession(transaction), owner, featureNamespace, entityKey);
+        }
+
         public void Upsert(ILocalStorageTransaction transaction, DurableFeatureMutation mutation)
         {
             if (mutation == null) throw new ArgumentNullException(nameof(mutation));
@@ -57,6 +64,25 @@ namespace GamePlatform.Storage.Sqlite.Cache
             if (mutation.Revision < currentRevision) throw new StorageException(StorageFailure.IdentityConflict, "A feature-state revision would regress.");
             var extensions = mutation.CopyExtensions() ?? session.ExecuteScalar<byte[]>("SELECT extensions FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args);
             session.Execute("UPDATE gp_feature_state SET revision=?,confirmed_at=?,payload=?,extensions=? WHERE view_key=? AND feature_namespace=? AND entity_key=?", mutation.Revision, mutation.ConfirmedAtMilliseconds, mutation.CopyPayload(), extensions, mutation.Owner.ViewKey.Value, mutation.FeatureNamespace, mutation.EntityKey);
+        }
+
+        public void Delete(ILocalStorageTransaction transaction, ScopedOwnerContext owner, string featureNamespace, string entityKey)
+        {
+            ValidateIdentity(owner, featureNamespace, entityKey); EnsureOwner(owner.Owner);
+            if (!transaction.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
+            RequireSession(transaction).Execute("DELETE FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", owner.ViewKey.Value, featureNamespace, entityKey);
+        }
+
+        private static DurableFeatureState? ReadCore(SqliteTransactionSession session, ScopedOwnerContext owner, string featureNamespace, string entityKey)
+        {
+            var args = new object[] { owner.ViewKey.Value, featureNamespace, entityKey };
+            if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0) return null;
+            return new SqliteFeatureStateRow(
+                session.ExecuteScalar<string>("SELECT view_key FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args), featureNamespace, entityKey,
+                session.ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args),
+                session.ExecuteScalar<long>("SELECT confirmed_at FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args),
+                session.ExecuteScalar<byte[]>("SELECT payload FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args),
+                session.ExecuteScalar<byte[]>("SELECT extensions FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args)).ToState(owner);
         }
 
         private static SqliteTransactionSession RequireSession(ILocalStorageTransaction transaction)

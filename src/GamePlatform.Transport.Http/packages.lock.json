@@ -68,9 +68,16 @@
         "type": "Project",
         "dependencies": {
           "GamePlatform.Core": "[0.1.0-draft, )",
+          "GamePlatform.Storage.Abstractions": "[0.1.0-draft, )",
           "GamePlatform.Transport.Abstractions": "[0.1.0-draft, )",
           "GamePlatform.Wire.Contracts": "[0.1.0-draft, )",
           "MessagePack": "[3.1.8, )"
+        }
+      },
+      "gameplatform.storage.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Core": "[0.1.0-draft, )"
         }
       },
       "gameplatform.transport.abstractions": {
