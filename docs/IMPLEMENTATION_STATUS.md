@@ -35,14 +35,19 @@ bounded body and correlation header fail closed.
 
 CL-107 now has production durable codec, immutable evidence and exactly-once
 claim composition over the caller-owned serialized store. Durable correlation
-preserves both receipt-before-pull and pull-before-receipt across restart. Feed
-evidence is staged in the projection/cursor transaction and confirmation occurs
-only after commit. It requires the receipt's exact feed revision and exact
+preserves both receipt-before-pull and pull-before-receipt across restart. The
+receipt path stages correlation, optional feed join, immutable proof and
+presentation in one serialized transaction; the feed path stages its index,
+proof and confirmation in the caller's projection/cursor transaction.
+`ReconcileAsync` is only idempotent repair/notification, not a necessary
+post-commit correctness step. It requires the receipt's exact feed revision and exact
 kind/resource membership, retains installed component revisions, and never
 applies receipt quantity or increments a value projection revision. Changed
 same-revision replay fails closed; exact replay is idempotent.
 
-Focused production receipt/correlation tests pass 15/15. Full verification and
+Focused production receipt/correlation tests pass 17/17, including injected
+receipt and pre-commit feed faults plus both restart arrival orders without
+replay or reconciliation. Full verification and
 exact commands are recorded in the P3 receipt-correlation evidence. This does
 not supply the owner-assigned invalidation migration, Unity feed-sink adapter,
 bundle/device/live-backend journey, INT-007, BE-025/INT-010 or G3 acceptance.
