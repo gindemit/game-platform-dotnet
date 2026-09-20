@@ -83,3 +83,33 @@ functions-root executor cannot admit `/auth/v1/` calls. No live endpoint,
 device, A05/A07/A12, INT-006 or G3 result is claimed.
 
 CL-101 remains in progress and neither A05/A07/A12 nor Unity/G3 is claimed.
+
+### Independent-review repair â€” 2026-09-21
+
+The adapter now treats a NotSent cleanup CAS/store failure as recovery-required,
+while a cleanup cancellation remains cancelled and only an exact durable restore
+is offline/temporarily unavailable. This applies to both initial signup and an
+already-published session refresh. It rejects zero or non-advancable maximum
+marker versions and refuses a malformed successful store response before
+publishing a session.
+
+`StopAsync` now bounds acquisition of a concurrently held activation section.
+It first fences the generation, then publishes recovery-required if a
+noncooperative open/bootstrap does not release the lifecycle-owned timeout. A
+late lease retirement failure is retained in quarantine and is observed by Stop;
+repeated Stop returns the same terminal recovery truth rather than hiding it.
+
+Focused command passed **25/25**:
+
+`dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --no-restore --filter "FullyQualifiedName~SupabaseAnonymousAuthLifecycleTests|FullyQualifiedName~Cl101AccountsLifecycleTests"`
+
+This includes deterministic signup/session cleanup CAS-conflict, store-error,
+and cancellation cases; malformed/overflow version snapshots; late-retirement
+failure; and a bounded noncooperative-open shutdown case. Full SDK validation is
+recorded separately for this commit. `python scripts/validate.py`,
+`python scripts/test_validation.py` (19 tests), and
+`python scripts/test_packaging.py` (29 tests) passed. The full
+`dotnet test GamePlatform.sln --no-restore` run had 502 passing tests and one
+pre-existing/out-of-scope failure: the CL-008 abrupt-process crash probe did not
+reach its requested write boundary; rerunning that test alone reproduced the
+same failure. No TLS listener, device, hosted Supabase, or G3 result is claimed.

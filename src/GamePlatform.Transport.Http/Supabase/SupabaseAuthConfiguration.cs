@@ -89,6 +89,7 @@ namespace GamePlatform.Transport.Http.Supabase
         public SupabaseAnonymousSessionSnapshot(SupabaseAnonymousSessionPublicRecord? @public, byte[]? secret)
         {
             if (@public == null && secret != null) throw new ArgumentException("An absent marker cannot carry a secret.", nameof(secret));
+            if (@public != null && @public.Version <= 0) throw new ArgumentOutOfRangeException(nameof(@public));
             Public = @public; this.secret = secret == null ? null : (byte[])secret.Clone();
         }
         private readonly byte[]? secret;

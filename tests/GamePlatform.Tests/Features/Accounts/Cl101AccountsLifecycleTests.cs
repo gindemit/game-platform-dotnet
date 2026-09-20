@@ -112,6 +112,26 @@ namespace GamePlatform.Tests.Features.Accounts
         }
 
         [Fact]
+        public async Task StopObservesLateLeaseRetirementFailureAndRepeatedStopDoesNotHideIt()
+        {
+            var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var opened = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var leases = new Leases { FirstOpenGate = gate, FirstLeaseOpened = opened };
+            var service = Service(new Auth(A), new Remote(), new Directory(), leases); var starting = service.StartAsync(App, CancellationToken.None); await opened.Task;
+            var stopping = service.StopAsync(CancellationToken.None); leases.DrainFailures = 1; gate.SetResult(true);
+            Assert.Equal(AccountsReadiness.LateResultRejected, (await starting).Readiness); Assert.Equal(AccountsReadiness.RecoveryRequired, (await stopping).Readiness); Assert.Equal(AccountsReadiness.RecoveryRequired, service.Snapshot.Readiness);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.StopAsync(CancellationToken.None)).Readiness); Assert.Equal(1, leases.Stopped);
+        }
+
+        [Fact]
+        public async Task StopBoundsAConcurrentNoncooperativeOpenAndPublishesRecovery()
+        {
+            var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var opened = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var leases = new Leases { FirstOpenGate = gate, FirstLeaseOpened = opened };
+            var service = new AccountsLifecycleService(new Auth(A), new Remote(), new Directory(), leases, new UuidV7Generator(new Clock(), new Random()), TimeSpan.FromMilliseconds(25));
+            var starting = service.StartAsync(App, CancellationToken.None); await opened.Task;
+            var stopped = await service.StopAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(2)); Assert.Equal(AccountsReadiness.RecoveryRequired, stopped.Readiness); Assert.Equal(AccountsReadiness.RecoveryRequired, service.Snapshot.Readiness);
+            gate.SetResult(true); Assert.Equal(AccountsReadiness.LateResultRejected, (await starting).Readiness);
+        }
+
+        [Fact]
         public async Task SqliteDirectoryReopensReservationBeforeIssuedAccountBinding()
         {
             var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");

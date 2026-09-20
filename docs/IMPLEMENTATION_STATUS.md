@@ -19,8 +19,11 @@ atomic public-marker/keystore-secret CAS and use a separate `/auth/v1/` executor
 
 Accounts lifecycle now exposes terminal `StopAsync`: it fences active/late
 generations, stops admissions, drains/retires exactly once with lifecycle-owned
-timeout semantics and leaves a non-ready terminal result. Focused auth/account
-tests pass 20/20. This remains bounded SDK behavior only; secure-store bridge,
+timeout semantics and leaves a non-ready terminal result. The review repair also
+rejects zero and non-advancable maximum marker versions, distinguishes NotSent
+cleanup cancellation from a durable restore or a CAS/store conflict, and
+quarantines a late lease whose retirement fails before Stop completes. Focused
+auth/account tests pass 25/25. This remains bounded SDK behavior only; secure-store bridge,
 hosted Supabase, A05/A07/A12, INT-006 and G3 remain unverified.
 
 ## P3 CL-101 bounded nonproduction Supabase anonymous-auth adapter — 2026-09-21

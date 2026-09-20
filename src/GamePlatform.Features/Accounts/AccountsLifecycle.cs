@@ -104,10 +104,17 @@ namespace GamePlatform.Features.Accounts
             AccountsLifecycleSnapshot outcome;
             // Do not use the caller token here. Once stop is accepted, it must quiesce
             // an admitted writer even when the caller has already been cancelled.
-            await activation.WaitAsync().ConfigureAwait(false);
+            var activationHeld = false;
             try
             {
-                if (retiring == null) outcome = Capture(request, AccountsReadiness.Unavailable, null);
+                using var timeout = new CancellationTokenSource(lateLeaseDrainTimeout);
+                try { await activation.WaitAsync(timeout.Token).ConfigureAwait(false); activationHeld = true; }
+                catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+                {
+                    lock (gate) { scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; outcome = new AccountsLifecycleSnapshot(readiness, current, request); }
+                    completion!.TrySetResult(outcome); return outcome;
+                }
+                if (retiring == null) outcome = ScopeRecoveryRequired() ? Capture(request, AccountsReadiness.RecoveryRequired, current) : Capture(request, AccountsReadiness.Unavailable, null);
                 else
                 {
                 var retired = await RetireLeaseAsync(retiring).ConfigureAwait(false);
@@ -122,7 +129,7 @@ namespace GamePlatform.Features.Accounts
                 }
             }
             catch { lock (gate) { readiness = AccountsReadiness.RecoveryRequired; outcome = new AccountsLifecycleSnapshot(readiness, current, request); } }
-            finally { activation.Release(); }
+            finally { if (activationHeld) activation.Release(); }
             completion!.TrySetResult(outcome); return outcome;
         }
 
@@ -161,8 +168,8 @@ namespace GamePlatform.Features.Accounts
                 if (!await RetireActiveAsync(request).ConfigureAwait(false)) return Quarantine(request, entry);
                 token.ThrowIfCancellationRequested();
                 var lease = await scopes.ReopenOfflineAsync(entry, request, token).ConfigureAwait(false);
-                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
-                if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry); return Finish(request, AccountsReadiness.UnavailableOffline, entry); }
+                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(lease); return Late(request); }
+                if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry, lease); return Finish(request, AccountsReadiness.UnavailableOffline, entry); }
                 SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
@@ -202,10 +209,10 @@ namespace GamePlatform.Features.Accounts
                 token.ThrowIfCancellationRequested();
                 Set(request, AccountsReadiness.Bootstrapping, entry);
                 var lease = await scopes.OpenAuthenticatedAsync(entry, session, request, token).ConfigureAwait(false);
-                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
+                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(lease); return Late(request); }
                 var bootstrap = await lease.BootstrapAsync(token).ConfigureAwait(false);
-                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
-                if (bootstrap != AccountBootstrapResult.Complete || !await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry); return Finish(request, AccountsReadiness.Bootstrapping, entry); }
+                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(lease); return Late(request); }
+                if (bootstrap != AccountBootstrapResult.Complete || !await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry, lease); return Finish(request, AccountsReadiness.Bootstrapping, entry); }
                 SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
@@ -269,8 +276,8 @@ namespace GamePlatform.Features.Accounts
             }
         }
         private bool ScopeRecoveryRequired() { lock (gate) return scopeRecoveryRequired; }
-        private void Quarantine() { lock (gate) { scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; } }
-        private AccountsLifecycleSnapshot Quarantine(long request, AccountDirectoryEntry? entry) { Quarantine(); return Capture(request, AccountsReadiness.RecoveryRequired, entry); }
+        private void Quarantine(IAccountScopeLease? failedLease = null) { lock (gate) { if (failedLease != null) { active = null; failedRetirement = failedLease; } scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; } }
+        private AccountsLifecycleSnapshot Quarantine(long request, AccountDirectoryEntry? entry, IAccountScopeLease? failedLease = null) { Quarantine(failedLease); return Capture(request, AccountsReadiness.RecoveryRequired, entry); }
         private void Set(long request, AccountsReadiness next, AccountDirectoryEntry? entry) { lock (gate) { if (generation == request) { readiness = next; current = entry; } } }
         private void SetActive(long request, IAccountScopeLease lease, AccountDirectoryEntry entry, AccountsReadiness next) { lock (gate) { if (generation == request) { active = lease; current = entry; readiness = next; } } }
     }
