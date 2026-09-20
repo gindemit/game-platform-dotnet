@@ -147,6 +147,19 @@ state, real backend/peer fault execution, overlay rejection rebuild,
 restart/process-kill/device/Unity evidence and independent A03/A07/A12 review
 remain open. G3 was not assessed and P4 was not started.
 
+Receipt-provider source `7955e2d39b164d9a427e64c4c2903c620b114298`
+adds the frozen authenticated receipt lookup over injected codec, executor,
+auth-session and shared refresh ports. It binds app/account/installation plus
+the retained stream/operation/sequence/fingerprint identity, maps accepted and
+terminally rejected receipts to immutable terminal bytes, preserves authorized
+absence only below the observed finalized watermark, and fails closed on
+identity, watermark, media, correlation or envelope drift. Focused provider
+tests pass 14/14; the CL-009 sender plus CL-010 provider regression passes 46/46;
+architecture/contract validation passes. This is scripted boundary evidence,
+not production composition or a live backend transcript. Push HTTP, sender
+receipt reconciliation, batching/backoff, blocked-auth persistence, qualified
+codec/executor hosting, Unity/device evidence and G3 remain open.
+
 ## CL-012 minimal navigation complete — 2026-09-19
 
 Source commit `010d47c07907baf86d8a1c9396f81cd5628d03d2` completes
