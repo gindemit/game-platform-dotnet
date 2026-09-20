@@ -1,0 +1,2001 @@
+{
+  "schemaVersion": 3,
+  "version": "0.1.0-draft",
+  "sourceCommit": "7c1f9534df3b245c6d0d30f5b56fc183a1f7758a",
+  "sourceDirty": false,
+  "managedRuntime": "netstandard2.1",
+  "nativeLibrariesIncluded": true,
+  "published": false,
+  "duplicateUpmAcquisitionAllowed": false,
+  "projects": [
+    "GamePlatform.Backend.Contracts",
+    "GamePlatform.Core",
+    "GamePlatform.Diagnostics.Abstractions",
+    "GamePlatform.Features",
+    "GamePlatform.Features.Contracts",
+    "GamePlatform.Features.Presentation",
+    "GamePlatform.Navigation",
+    "GamePlatform.Serialization.Json",
+    "GamePlatform.Serialization.MessagePack",
+    "GamePlatform.Storage.Abstractions",
+    "GamePlatform.Storage.Sqlite",
+    "GamePlatform.Sync",
+    "GamePlatform.Transport.Abstractions",
+    "GamePlatform.Transport.Http",
+    "GamePlatform.Wire.Contracts"
+  ],
+  "managedAssemblyNames": [
+    "GamePlatform.Backend.Contracts",
+    "GamePlatform.Core",
+    "GamePlatform.Diagnostics.Abstractions",
+    "GamePlatform.Features.Contracts",
+    "GamePlatform.Features.Presentation",
+    "GamePlatform.Features",
+    "GamePlatform.Navigation",
+    "GamePlatform.Serialization.Json",
+    "GamePlatform.Serialization.MessagePack",
+    "GamePlatform.Storage.Abstractions",
+    "GamePlatform.Storage.Sqlite",
+    "GamePlatform.Sync",
+    "GamePlatform.Transport.Abstractions",
+    "GamePlatform.Transport.Http",
+    "GamePlatform.Wire.Contracts",
+    "MessagePack.Annotations",
+    "MessagePack",
+    "Microsoft.NET.StringTools",
+    "System.Buffers",
+    "System.Collections.Immutable",
+    "System.Memory",
+    "System.Numerics.Vectors",
+    "System.Runtime.CompilerServices.Unsafe"
+  ],
+  "assemblies": [
+    {
+      "file": "GamePlatform.Backend.Contracts.dll",
+      "name": "GamePlatform.Backend.Contracts",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Backend.Contracts.IBackendGateway",
+        "GamePlatform.Backend.Contracts.Remote.AccessTokenSnapshot",
+        "GamePlatform.Backend.Contracts.Remote.BootstrapPage",
+        "GamePlatform.Backend.Contracts.Remote.BootstrapStart",
+        "GamePlatform.Backend.Contracts.Remote.IAuthSession",
+        "GamePlatform.Backend.Contracts.Remote.ICommandRemote",
+        "GamePlatform.Backend.Contracts.Remote.IPrivateSyncRemote",
+        "GamePlatform.Backend.Contracts.Remote.IProvisioningRemote",
+        "GamePlatform.Backend.Contracts.Remote.ProjectionMutationKind",
+        "GamePlatform.Backend.Contracts.Remote.ProvisioningSnapshot",
+        "GamePlatform.Backend.Contracts.Remote.RemoteCommand",
+        "GamePlatform.Backend.Contracts.Remote.RemoteCommandOutcome",
+        "GamePlatform.Backend.Contracts.Remote.RemoteCommandStatus",
+        "GamePlatform.Backend.Contracts.Remote.RemoteFailure",
+        "GamePlatform.Backend.Contracts.Remote.RemoteFailureKind",
+        "GamePlatform.Backend.Contracts.Remote.RemoteProjectionMutation",
+        "GamePlatform.Backend.Contracts.Remote.RemotePullGroup",
+        "GamePlatform.Backend.Contracts.Remote.RemotePullPage",
+        "GamePlatform.Backend.Contracts.Remote.RemoteResult`1",
+        "GamePlatform.Backend.Contracts.Remote.SnapshotCollection"
+      ],
+      "moduleVersionId": "bc245aba-c3f5-4a5c-a101-b8946804b843",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Core.dll",
+      "name": "GamePlatform.Core",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Core.AppId",
+        "GamePlatform.Core.BackendNamespace",
+        "GamePlatform.Core.ClientStreamId",
+        "GamePlatform.Core.CryptographicUuidRandomSource",
+        "GamePlatform.Core.IUnixMillisecondClock",
+        "GamePlatform.Core.IUuidRandomSource",
+        "GamePlatform.Core.OperationId",
+        "GamePlatform.Core.OwnerScope",
+        "GamePlatform.Core.PlatformCapabilityUnavailableException",
+        "GamePlatform.Core.PlatformFailure",
+        "GamePlatform.Core.PlatformId",
+        "GamePlatform.Core.PlatformNumbers",
+        "GamePlatform.Core.PlatformResult`1",
+        "GamePlatform.Core.PlatformUserId",
+        "GamePlatform.Core.ScopedOwnerContext",
+        "GamePlatform.Core.SemanticId",
+        "GamePlatform.Core.SystemUnixMillisecondClock",
+        "GamePlatform.Core.UuidIdentity",
+        "GamePlatform.Core.UuidV7Generator"
+      ],
+      "moduleVersionId": "b83ecae4-9e98-40fd-80dd-c9e0825f7ffc",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Diagnostics.Abstractions.dll",
+      "name": "GamePlatform.Diagnostics.Abstractions",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Diagnostics.Abstractions.AppLogContext",
+        "GamePlatform.Diagnostics.Abstractions.AppLogLevel",
+        "GamePlatform.Diagnostics.Abstractions.AppLogRecord",
+        "GamePlatform.Diagnostics.Abstractions.IAppLog",
+        "GamePlatform.Diagnostics.Abstractions.IStructuredAppLogSink",
+        "GamePlatform.Diagnostics.Abstractions.NullAppLog",
+        "GamePlatform.Diagnostics.Abstractions.NullStructuredAppLogSink",
+        "GamePlatform.Diagnostics.Abstractions.SafeAppLog"
+      ],
+      "moduleVersionId": "746e5c2a-de87-41fb-9a88-677c03076424",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Features.Contracts.dll",
+      "name": "GamePlatform.Features.Contracts",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Features.Contracts.DataOwnership",
+        "GamePlatform.Features.Contracts.FeatureStatus",
+        "GamePlatform.Features.Contracts.GameplayOutcome",
+        "GamePlatform.Features.Contracts.IFeatureCapability",
+        "GamePlatform.Features.Contracts.IGameplayOutcomeSink",
+        "GamePlatform.Features.Contracts.IProgressObserver",
+        "GamePlatform.Features.Contracts.ProgressEvent",
+        "GamePlatform.Features.Contracts.StateRecord"
+      ],
+      "moduleVersionId": "5a52dcc9-671c-45ca-ae5a-564bbc97f33a",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Features.Presentation.dll",
+      "name": "GamePlatform.Features.Presentation",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Navigation",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Features.Presentation.PresentationStub",
+        "GamePlatform.Features.Presentation.Shared.PresenterLifetime",
+        "GamePlatform.Features.Presentation.Shared.ResultPresentation"
+      ],
+      "moduleVersionId": "c00d96a9-4cfd-4241-8af0-701f635aa7fe",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Features.dll",
+      "name": "GamePlatform.Features",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Features.Contracts",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Features.AccountsFeature",
+        "GamePlatform.Features.AchievementsFeature",
+        "GamePlatform.Features.CatalogFeature",
+        "GamePlatform.Features.EntitlementsFeature",
+        "GamePlatform.Features.InboxFeature",
+        "GamePlatform.Features.InventoryFeature",
+        "GamePlatform.Features.LeaderboardsFeature",
+        "GamePlatform.Features.ProfilesFeature",
+        "GamePlatform.Features.ProgressionFeature",
+        "GamePlatform.Features.PurchasesFeature",
+        "GamePlatform.Features.QuestsFeature",
+        "GamePlatform.Features.RemoteConfigFeature",
+        "GamePlatform.Features.RewardFulfillmentFeature",
+        "GamePlatform.Features.StoreFeature",
+        "GamePlatform.Features.TeamsFeature",
+        "GamePlatform.Features.UnavailableFeature",
+        "GamePlatform.Features.WalletFeature"
+      ],
+      "moduleVersionId": "0bf82d30-3c6a-41d9-a3a9-c938347cc3ce",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Navigation.dll",
+      "name": "GamePlatform.Navigation",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Navigation.CallerReturnContext",
+        "GamePlatform.Navigation.CompletionPresentationState",
+        "GamePlatform.Navigation.HomeRoute",
+        "GamePlatform.Navigation.IRouteLoader",
+        "GamePlatform.Navigation.ModalOwner",
+        "GamePlatform.Navigation.ModalRoute",
+        "GamePlatform.Navigation.NavigationCoordinator",
+        "GamePlatform.Navigation.NavigationMode",
+        "GamePlatform.Navigation.NavigationOutcome",
+        "GamePlatform.Navigation.NavigationRoute",
+        "GamePlatform.Navigation.NavigationStub",
+        "GamePlatform.Navigation.PlayRoute",
+        "GamePlatform.Navigation.ProfileRoute",
+        "GamePlatform.Navigation.ResultRoute",
+        "GamePlatform.Navigation.RouteLoadResult"
+      ],
+      "moduleVersionId": "17af3299-5c3a-4e71-a6ef-14db118acd21",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Serialization.Json.dll",
+      "name": "GamePlatform.Serialization.Json",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Serialization.Json.UnavailableJsonCodec"
+      ],
+      "moduleVersionId": "ed2829a6-2ae1-462d-a280-6b408a250cfa",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Serialization.MessagePack.dll",
+      "name": "GamePlatform.Serialization.MessagePack",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Wire.Contracts",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "MessagePack",
+          "version": "3.1.8.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Serialization.MessagePack.QualificationCodecException",
+        "GamePlatform.Serialization.MessagePack.QualificationMessagePackCodec",
+        "GamePlatform.Serialization.MessagePack.QualificationValue",
+        "GamePlatform.Serialization.MessagePack.QualificationValueKind",
+        "GamePlatform.Serialization.MessagePack.TypedQualificationCodec",
+        "GamePlatform.Serialization.MessagePack.UnavailableMessagePackCodec"
+      ],
+      "moduleVersionId": "d1fe3100-8d65-46b6-a260-bc368b90e03e",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Storage.Abstractions.dll",
+      "name": "GamePlatform.Storage.Abstractions",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Storage.Abstractions.ILocalStorageTransaction",
+        "GamePlatform.Storage.Abstractions.IPlatformStore",
+        "GamePlatform.Storage.Abstractions.ISerializedStorageExecutor",
+        "GamePlatform.Storage.Abstractions.Outbox.CommandAdmission",
+        "GamePlatform.Storage.Abstractions.Outbox.CommandDraft",
+        "GamePlatform.Storage.Abstractions.Outbox.CommandTerminalOutcome",
+        "GamePlatform.Storage.Abstractions.Outbox.IAtomicCommandStore",
+        "GamePlatform.Storage.Abstractions.Outbox.ICommandDeliveryStore",
+        "GamePlatform.Storage.Abstractions.Outbox.ICommandFingerprint",
+        "GamePlatform.Storage.Abstractions.Outbox.LeasedCommand",
+        "GamePlatform.Storage.Abstractions.StorageException",
+        "GamePlatform.Storage.Abstractions.StorageFailure",
+        "GamePlatform.Storage.Abstractions.StorageScope",
+        "GamePlatform.Storage.Abstractions.Sync.BootstrapBoundary",
+        "GamePlatform.Storage.Abstractions.Sync.BootstrapProgress",
+        "GamePlatform.Storage.Abstractions.Sync.IPrivateSyncStore",
+        "GamePlatform.Storage.Abstractions.Sync.PullCheckpoint",
+        "GamePlatform.Storage.Abstractions.Sync.StagedBootstrapPage",
+        "GamePlatform.Storage.Abstractions.Sync.StoredProjectionKind",
+        "GamePlatform.Storage.Abstractions.Sync.StoredProjectionMutation",
+        "GamePlatform.Storage.Abstractions.Sync.StoredPullGroup",
+        "GamePlatform.Storage.Abstractions.Sync.StoredPullPage"
+      ],
+      "moduleVersionId": "4c64aa47-536d-4798-a8ba-c66b55babd7f",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Storage.Sqlite.dll",
+      "name": "GamePlatform.Storage.Sqlite",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Storage.Abstractions",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        ".ColType",
+        ".Column",
+        ".ColumnInfo",
+        ".ConfigOption",
+        ".ExtendedResult",
+        ".Result",
+        "GamePlatform.Storage.Sqlite.Executor.SqliteDatabase",
+        "GamePlatform.Storage.Sqlite.Executor.SqliteDatabaseOptions",
+        "GamePlatform.Storage.Sqlite.Executor.SqliteTransactionSession",
+        "GamePlatform.Storage.Sqlite.Migrations.SqliteMigration",
+        "GamePlatform.Storage.Sqlite.Migrations.SqlitePlatformMigrationRegistry",
+        "GamePlatform.Storage.Sqlite.Outbox.SqliteAtomicCommandStore",
+        "GamePlatform.Storage.Sqlite.Outbox.SqliteCommandDeliveryStore",
+        "GamePlatform.Storage.Sqlite.Outbox.SqliteOutboxMigration",
+        "GamePlatform.Storage.Sqlite.Outbox.StreamRecoveryAssessment",
+        "GamePlatform.Storage.Sqlite.Outbox.StreamRecoveryState",
+        "GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncMigration",
+        "GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore",
+        "GamePlatform.Storage.Sqlite.UnavailableSqliteStore",
+        "SQLite.AutoIncrementAttribute",
+        "SQLite.BaseTableQuery",
+        "SQLite.CollationAttribute",
+        "SQLite.ColumnAttribute",
+        "SQLite.CreateFlags",
+        "SQLite.CreateTableResult",
+        "SQLite.CreateTablesResult",
+        "SQLite.ISQLiteConnection",
+        "SQLite.IgnoreAttribute",
+        "SQLite.IndexedAttribute",
+        "SQLite.MaxLengthAttribute",
+        "SQLite.NotNullAttribute",
+        "SQLite.NotNullConstraintViolationException",
+        "SQLite.NotifyTableChangedAction",
+        "SQLite.NotifyTableChangedEventArgs",
+        "SQLite.Orm",
+        "SQLite.PreserveAttribute",
+        "SQLite.PrimaryKeyAttribute",
+        "SQLite.SQLite3",
+        "SQLite.SQLiteCommand",
+        "SQLite.SQLiteConnection",
+        "SQLite.SQLiteConnectionString",
+        "SQLite.SQLiteException",
+        "SQLite.SQLiteOpenFlags",
+        "SQLite.StoreAsTextAttribute",
+        "SQLite.TableAttribute",
+        "SQLite.TableMapping",
+        "SQLite.TableQuery`1",
+        "SQLite.UniqueAttribute"
+      ],
+      "moduleVersionId": "7e456501-1698-4d44-a802-f933a1efabb4",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Sync.dll",
+      "name": "GamePlatform.Sync",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Backend.Contracts",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Storage.Abstractions",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Sync.Pull.PrivateSyncCoordinator",
+        "GamePlatform.Sync.Pull.PrivateSyncResult",
+        "GamePlatform.Sync.Push.OrderedCommandSender",
+        "GamePlatform.Sync.Push.SendCycleResult",
+        "GamePlatform.Sync.UnavailableSyncCoordinator"
+      ],
+      "moduleVersionId": "589c3db6-f834-4fc3-a640-330d1be34762",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Transport.Abstractions.dll",
+      "name": "GamePlatform.Transport.Abstractions",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Transport.Abstractions.HttpDeliveryCertainty",
+        "GamePlatform.Transport.Abstractions.HttpExecutionException",
+        "GamePlatform.Transport.Abstractions.HttpRequestData",
+        "GamePlatform.Transport.Abstractions.HttpResponseData",
+        "GamePlatform.Transport.Abstractions.IHttpExecutor",
+        "GamePlatform.Transport.Abstractions.IWireCodec"
+      ],
+      "moduleVersionId": "3443ff44-f881-49a7-ad18-4e4e3f059016",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Transport.Http.dll",
+      "name": "GamePlatform.Transport.Http",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "GamePlatform.Backend.Contracts",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Core",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Transport.Abstractions",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "GamePlatform.Wire.Contracts",
+          "version": "0.1.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Transport.Http.AuthRefreshCoordinator",
+        "GamePlatform.Transport.Http.BackendHttpConfiguration",
+        "GamePlatform.Transport.Http.BackendWireRepresentation",
+        "GamePlatform.Transport.Http.PrivateSyncHttpProvider",
+        "GamePlatform.Transport.Http.ProvisioningHttpProvider",
+        "GamePlatform.Transport.Http.UnavailableHttpTransport"
+      ],
+      "moduleVersionId": "a3b57f4b-2529-4c22-a085-db7c106f4226",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "GamePlatform.Wire.Contracts.dll",
+      "name": "GamePlatform.Wire.Contracts",
+      "version": "0.1.0.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        "GamePlatform.Wire.Contracts.AccountResponse",
+        "GamePlatform.Wire.Contracts.BootstrapCollection",
+        "GamePlatform.Wire.Contracts.BootstrapPageRequest",
+        "GamePlatform.Wire.Contracts.BootstrapPageResponse",
+        "GamePlatform.Wire.Contracts.BootstrapStartQuery",
+        "GamePlatform.Wire.Contracts.BootstrapStartResponse",
+        "GamePlatform.Wire.Contracts.CommonAccount",
+        "GamePlatform.Wire.Contracts.CommonActor",
+        "GamePlatform.Wire.Contracts.CommonError",
+        "GamePlatform.Wire.Contracts.CommonExtension",
+        "GamePlatform.Wire.Contracts.CommonMembership",
+        "GamePlatform.Wire.Contracts.CommonStreamState",
+        "GamePlatform.Wire.Contracts.ErrorDetailKind",
+        "GamePlatform.Wire.Contracts.ErrorDetailValue",
+        "GamePlatform.Wire.Contracts.ErrorResponse",
+        "GamePlatform.Wire.Contracts.ExtensionValue",
+        "GamePlatform.Wire.Contracts.ExtensionValueKind",
+        "GamePlatform.Wire.Contracts.GameplayCompletionCommand",
+        "GamePlatform.Wire.Contracts.GameplayValidation",
+        "GamePlatform.Wire.Contracts.IProjectionChange",
+        "GamePlatform.Wire.Contracts.IProjectionEntitlementChange",
+        "GamePlatform.Wire.Contracts.IProjectionInventoryChange",
+        "GamePlatform.Wire.Contracts.IProjectionProfileChangeUnion",
+        "GamePlatform.Wire.Contracts.IProjectionProgressionChange",
+        "GamePlatform.Wire.Contracts.IProjectionSnapshotEntity",
+        "GamePlatform.Wire.Contracts.IProjectionWalletChange",
+        "GamePlatform.Wire.Contracts.IPullResponse",
+        "GamePlatform.Wire.Contracts.IPushAcceptedResult",
+        "GamePlatform.Wire.Contracts.IPushFinalResult",
+        "GamePlatform.Wire.Contracts.IPushPayload",
+        "GamePlatform.Wire.Contracts.IPushResult",
+        "GamePlatform.Wire.Contracts.ProfilePatchCommand",
+        "GamePlatform.Wire.Contracts.ProfileProfile",
+        "GamePlatform.Wire.Contracts.ProfileResponse",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementData",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementKey",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionEntitlementUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryData",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryKey",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionInventorySnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionInventoryUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionProfileKey",
+        "GamePlatform.Wire.Contracts.ProjectionProfileRemovalValue",
+        "GamePlatform.Wire.Contracts.ProjectionProfileSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionProfileUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionData",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionKey",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionProgressionUpsert",
+        "GamePlatform.Wire.Contracts.ProjectionWalletData",
+        "GamePlatform.Wire.Contracts.ProjectionWalletKey",
+        "GamePlatform.Wire.Contracts.ProjectionWalletRemoval",
+        "GamePlatform.Wire.Contracts.ProjectionWalletSnapshot",
+        "GamePlatform.Wire.Contracts.ProjectionWalletUpsert",
+        "GamePlatform.Wire.Contracts.ProtocolVersion",
+        "GamePlatform.Wire.Contracts.ProvisionRequest",
+        "GamePlatform.Wire.Contracts.ProvisionResponse",
+        "GamePlatform.Wire.Contracts.PullGroup",
+        "GamePlatform.Wire.Contracts.PullPage",
+        "GamePlatform.Wire.Contracts.PullRequest",
+        "GamePlatform.Wire.Contracts.PullReset",
+        "GamePlatform.Wire.Contracts.PushAccepted",
+        "GamePlatform.Wire.Contracts.PushGameplayCompletionRecordedResult",
+        "GamePlatform.Wire.Contracts.PushOperation",
+        "GamePlatform.Wire.Contracts.PushProfileUpdatedResult",
+        "GamePlatform.Wire.Contracts.PushRequest",
+        "GamePlatform.Wire.Contracts.PushResponse",
+        "GamePlatform.Wire.Contracts.PushRetryable",
+        "GamePlatform.Wire.Contracts.PushTerminalRejected",
+        "GamePlatform.Wire.Contracts.PushUpgradeRequired",
+        "GamePlatform.Wire.Contracts.PushWaiting",
+        "GamePlatform.Wire.Contracts.RecoveryInspectRequest",
+        "GamePlatform.Wire.Contracts.RecoveryInspectResponse",
+        "GamePlatform.Wire.Contracts.RecoveryReceiptRequest",
+        "GamePlatform.Wire.Contracts.RecoveryReceiptResponse",
+        "GamePlatform.Wire.Contracts.RecoveryStreamRequest",
+        "GamePlatform.Wire.Contracts.RecoveryStreamResponse",
+        "GamePlatform.Wire.Contracts.WireOptional`1"
+      ],
+      "moduleVersionId": "b079a225-bac0-458a-85b5-266d3c09f8a4",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/7c1f9534df3b245c6d0d30f5b56fc183a1f7758a/*\"}}\n"
+    },
+    {
+      "file": "MessagePack.Annotations.dll",
+      "name": "MessagePack.Annotations",
+      "version": "3.1.8.0",
+      "targetFramework": ".NETStandard,Version=v2.0",
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0"
+        }
+      ],
+      "publicTypes": [
+        "MessagePack.ExcludeFormatterFromSourceGeneratedResolverAttribute",
+        "MessagePack.IMessagePackSerializationCallbackReceiver",
+        "MessagePack.IgnoreMemberAttribute",
+        "MessagePack.KeyAttribute",
+        "MessagePack.MessagePackAssumedFormattableAttribute",
+        "MessagePack.MessagePackFormatterAttribute",
+        "MessagePack.MessagePackKnownFormatterAttribute",
+        "MessagePack.MessagePackObjectAttribute",
+        "MessagePack.SerializationConstructorAttribute",
+        "MessagePack.UnionAttribute"
+      ],
+      "moduleVersionId": "7aaa1b14-ce1d-468f-811d-2a83a077b93c",
+      "sourceLink": null
+    },
+    {
+      "file": "MessagePack.dll",
+      "name": "MessagePack",
+      "version": "3.1.8.0",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "references": [
+        {
+          "name": "MessagePack.Annotations",
+          "version": "3.1.8.0"
+        },
+        {
+          "name": "Microsoft.NET.StringTools",
+          "version": "1.0.0.0"
+        },
+        {
+          "name": "System.Collections.Immutable",
+          "version": "8.0.0.0"
+        },
+        {
+          "name": "System.Runtime.CompilerServices.Unsafe",
+          "version": "6.0.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.1.0.0"
+        }
+      ],
+      "publicTypes": [
+        ".DecodeResult",
+        ".Tasks",
+        ".Typeless",
+        "MessagePack.CompositeResolverAttribute",
+        "MessagePack.ExtensionHeader",
+        "MessagePack.ExtensionResult",
+        "MessagePack.FormatterNotRegisteredException",
+        "MessagePack.FormatterResolverExtensions",
+        "MessagePack.Formatters.ArrayFormatter`1",
+        "MessagePack.Formatters.ArraySegmentFormatter`1",
+        "MessagePack.Formatters.BigIntegerFormatter",
+        "MessagePack.Formatters.BitArrayFormatter",
+        "MessagePack.Formatters.BooleanArrayFormatter",
+        "MessagePack.Formatters.BooleanFormatter",
+        "MessagePack.Formatters.ByteArrayFormatter",
+        "MessagePack.Formatters.ByteArraySegmentFormatter",
+        "MessagePack.Formatters.ByteFormatter",
+        "MessagePack.Formatters.ByteListFormatter",
+        "MessagePack.Formatters.ByteMemoryFormatter",
+        "MessagePack.Formatters.ByteReadOnlyMemoryFormatter",
+        "MessagePack.Formatters.ByteReadOnlySequenceFormatter",
+        "MessagePack.Formatters.CharArrayFormatter",
+        "MessagePack.Formatters.CharFormatter",
+        "MessagePack.Formatters.CollectionFormatterBase`2",
+        "MessagePack.Formatters.CollectionFormatterBase`3",
+        "MessagePack.Formatters.CollectionFormatterBase`4",
+        "MessagePack.Formatters.ComplexFormatter",
+        "MessagePack.Formatters.ConcurrentBagFormatter`1",
+        "MessagePack.Formatters.ConcurrentDictionaryFormatter`2",
+        "MessagePack.Formatters.ConcurrentQueueFormatter`1",
+        "MessagePack.Formatters.ConcurrentStackFormatter`1",
+        "MessagePack.Formatters.DateTimeArrayFormatter",
+        "MessagePack.Formatters.DateTimeFormatter",
+        "MessagePack.Formatters.DateTimeOffsetFormatter",
+        "MessagePack.Formatters.DecimalFormatter",
+        "MessagePack.Formatters.DictionaryFormatterBase`3",
+        "MessagePack.Formatters.DictionaryFormatterBase`4",
+        "MessagePack.Formatters.DictionaryFormatterBase`5",
+        "MessagePack.Formatters.DictionaryFormatter`2",
+        "MessagePack.Formatters.DoubleArrayFormatter",
+        "MessagePack.Formatters.DoubleFormatter",
+        "MessagePack.Formatters.DynamicObjectTypeFallbackFormatter",
+        "MessagePack.Formatters.EnumAsStringFormatter`1",
+        "MessagePack.Formatters.ExpandoObjectFormatter",
+        "MessagePack.Formatters.ForceByteBlockFormatter",
+        "MessagePack.Formatters.ForceInt16BlockArrayFormatter",
+        "MessagePack.Formatters.ForceInt16BlockFormatter",
+        "MessagePack.Formatters.ForceInt32BlockArrayFormatter",
+        "MessagePack.Formatters.ForceInt32BlockFormatter",
+        "MessagePack.Formatters.ForceInt64BlockArrayFormatter",
+        "MessagePack.Formatters.ForceInt64BlockFormatter",
+        "MessagePack.Formatters.ForceSByteBlockArrayFormatter",
+        "MessagePack.Formatters.ForceSByteBlockFormatter",
+        "MessagePack.Formatters.ForceTypelessFormatter`1",
+        "MessagePack.Formatters.ForceUInt16BlockArrayFormatter",
+        "MessagePack.Formatters.ForceUInt16BlockFormatter",
+        "MessagePack.Formatters.ForceUInt32BlockArrayFormatter",
+        "MessagePack.Formatters.ForceUInt32BlockFormatter",
+        "MessagePack.Formatters.ForceUInt64BlockArrayFormatter",
+        "MessagePack.Formatters.ForceUInt64BlockFormatter",
+        "MessagePack.Formatters.FourDimensionalArrayFormatter`1",
+        "MessagePack.Formatters.GenericCollectionFormatter`2",
+        "MessagePack.Formatters.GenericDictionaryFormatter`3",
+        "MessagePack.Formatters.GenericEnumFormatter`1",
+        "MessagePack.Formatters.GenericEnumerableFormatter`2",
+        "MessagePack.Formatters.GenericReadOnlyDictionaryFormatter`3",
+        "MessagePack.Formatters.GuidFormatter",
+        "MessagePack.Formatters.HashSetFormatter`1",
+        "MessagePack.Formatters.IMessagePackFormatter",
+        "MessagePack.Formatters.IMessagePackFormatter`1",
+        "MessagePack.Formatters.IgnoreFormatter`1",
+        "MessagePack.Formatters.Int16ArrayFormatter",
+        "MessagePack.Formatters.Int16Formatter",
+        "MessagePack.Formatters.Int32ArrayFormatter",
+        "MessagePack.Formatters.Int32Formatter",
+        "MessagePack.Formatters.Int64ArrayFormatter",
+        "MessagePack.Formatters.Int64Formatter",
+        "MessagePack.Formatters.InterfaceCollectionFormatter2`1",
+        "MessagePack.Formatters.InterfaceCollectionFormatter`1",
+        "MessagePack.Formatters.InterfaceDictionaryFormatter`2",
+        "MessagePack.Formatters.InterfaceEnumerableFormatter`1",
+        "MessagePack.Formatters.InterfaceGroupingFormatter`2",
+        "MessagePack.Formatters.InterfaceListFormatter2`1",
+        "MessagePack.Formatters.InterfaceListFormatter`1",
+        "MessagePack.Formatters.InterfaceLookupFormatter`2",
+        "MessagePack.Formatters.InterfaceReadOnlyCollectionFormatter`1",
+        "MessagePack.Formatters.InterfaceReadOnlyDictionaryFormatter`2",
+        "MessagePack.Formatters.InterfaceReadOnlyListFormatter`1",
+        "MessagePack.Formatters.InterfaceSetFormatter`1",
+        "MessagePack.Formatters.KeyValuePairFormatter`2",
+        "MessagePack.Formatters.LazyFormatter`1",
+        "MessagePack.Formatters.LinkedListFormatter`1",
+        "MessagePack.Formatters.ListFormatter`1",
+        "MessagePack.Formatters.Matrix3x2Formatter",
+        "MessagePack.Formatters.Matrix4x4Formatter",
+        "MessagePack.Formatters.MemoryFormatter`1",
+        "MessagePack.Formatters.NativeDateTimeArrayFormatter",
+        "MessagePack.Formatters.NativeDateTimeFormatter",
+        "MessagePack.Formatters.NativeDecimalFormatter",
+        "MessagePack.Formatters.NativeGuidFormatter",
+        "MessagePack.Formatters.NilFormatter",
+        "MessagePack.Formatters.NonGenericDictionaryFormatter`1",
+        "MessagePack.Formatters.NonGenericInterfaceCollectionFormatter",
+        "MessagePack.Formatters.NonGenericInterfaceDictionaryFormatter",
+        "MessagePack.Formatters.NonGenericInterfaceEnumerableFormatter",
+        "MessagePack.Formatters.NonGenericInterfaceListFormatter",
+        "MessagePack.Formatters.NonGenericListFormatter`1",
+        "MessagePack.Formatters.NullableBooleanFormatter",
+        "MessagePack.Formatters.NullableByteFormatter",
+        "MessagePack.Formatters.NullableCharFormatter",
+        "MessagePack.Formatters.NullableDateTimeFormatter",
+        "MessagePack.Formatters.NullableDoubleFormatter",
+        "MessagePack.Formatters.NullableForceByteBlockFormatter",
+        "MessagePack.Formatters.NullableForceInt16BlockFormatter",
+        "MessagePack.Formatters.NullableForceInt32BlockFormatter",
+        "MessagePack.Formatters.NullableForceInt64BlockFormatter",
+        "MessagePack.Formatters.NullableForceSByteBlockFormatter",
+        "MessagePack.Formatters.NullableForceUInt16BlockFormatter",
+        "MessagePack.Formatters.NullableForceUInt32BlockFormatter",
+        "MessagePack.Formatters.NullableForceUInt64BlockFormatter",
+        "MessagePack.Formatters.NullableFormatter`1",
+        "MessagePack.Formatters.NullableInt16Formatter",
+        "MessagePack.Formatters.NullableInt32Formatter",
+        "MessagePack.Formatters.NullableInt64Formatter",
+        "MessagePack.Formatters.NullableNilFormatter",
+        "MessagePack.Formatters.NullableSByteFormatter",
+        "MessagePack.Formatters.NullableSingleFormatter",
+        "MessagePack.Formatters.NullableStringArrayFormatter",
+        "MessagePack.Formatters.NullableStringFormatter",
+        "MessagePack.Formatters.NullableUInt16Formatter",
+        "MessagePack.Formatters.NullableUInt32Formatter",
+        "MessagePack.Formatters.NullableUInt64Formatter",
+        "MessagePack.Formatters.ObservableCollectionFormatter`1",
+        "MessagePack.Formatters.PrimitiveObjectFormatter",
+        "MessagePack.Formatters.QuaternionFormatter",
+        "MessagePack.Formatters.QueueFormatter`1",
+        "MessagePack.Formatters.ReadOnlyCollectionFormatter`1",
+        "MessagePack.Formatters.ReadOnlyDictionaryFormatter`2",
+        "MessagePack.Formatters.ReadOnlyMemoryFormatter`1",
+        "MessagePack.Formatters.ReadOnlyObservableCollectionFormatter`1",
+        "MessagePack.Formatters.ReadOnlySequenceFormatter`1",
+        "MessagePack.Formatters.SByteArrayFormatter",
+        "MessagePack.Formatters.SByteFormatter",
+        "MessagePack.Formatters.SingleArrayFormatter",
+        "MessagePack.Formatters.SingleFormatter",
+        "MessagePack.Formatters.SortedDictionaryFormatter`2",
+        "MessagePack.Formatters.SortedListFormatter`2",
+        "MessagePack.Formatters.StackFormatter`1",
+        "MessagePack.Formatters.StaticNullableFormatter`1",
+        "MessagePack.Formatters.StringBuilderFormatter",
+        "MessagePack.Formatters.StringInterningFormatter",
+        "MessagePack.Formatters.ThreeDimensionalArrayFormatter`1",
+        "MessagePack.Formatters.TimeSpanFormatter",
+        "MessagePack.Formatters.TupleFormatter`1",
+        "MessagePack.Formatters.TupleFormatter`2",
+        "MessagePack.Formatters.TupleFormatter`3",
+        "MessagePack.Formatters.TupleFormatter`4",
+        "MessagePack.Formatters.TupleFormatter`5",
+        "MessagePack.Formatters.TupleFormatter`6",
+        "MessagePack.Formatters.TupleFormatter`7",
+        "MessagePack.Formatters.TupleFormatter`8",
+        "MessagePack.Formatters.TwoDimensionalArrayFormatter`1",
+        "MessagePack.Formatters.TypeFormatter`1",
+        "MessagePack.Formatters.TypelessFormatter",
+        "MessagePack.Formatters.UInt16ArrayFormatter",
+        "MessagePack.Formatters.UInt16Formatter",
+        "MessagePack.Formatters.UInt32ArrayFormatter",
+        "MessagePack.Formatters.UInt32Formatter",
+        "MessagePack.Formatters.UInt64ArrayFormatter",
+        "MessagePack.Formatters.UInt64Formatter",
+        "MessagePack.Formatters.UriFormatter",
+        "MessagePack.Formatters.ValueTupleFormatter`1",
+        "MessagePack.Formatters.ValueTupleFormatter`2",
+        "MessagePack.Formatters.ValueTupleFormatter`3",
+        "MessagePack.Formatters.ValueTupleFormatter`4",
+        "MessagePack.Formatters.ValueTupleFormatter`5",
+        "MessagePack.Formatters.ValueTupleFormatter`6",
+        "MessagePack.Formatters.ValueTupleFormatter`7",
+        "MessagePack.Formatters.ValueTupleFormatter`8",
+        "MessagePack.Formatters.Vector2Formatter",
+        "MessagePack.Formatters.Vector3Formatter",
+        "MessagePack.Formatters.Vector4Formatter",
+        "MessagePack.Formatters.VersionFormatter",
+        "MessagePack.GeneratedMessagePackResolverAttribute",
+        "MessagePack.IFormatterResolver",
+        "MessagePack.ImmutableCollection.ImmutableArrayFormatter`1",
+        "MessagePack.ImmutableCollection.ImmutableCollectionResolver",
+        "MessagePack.ImmutableCollection.ImmutableDictionaryFormatter`2",
+        "MessagePack.ImmutableCollection.ImmutableHashSetFormatter`1",
+        "MessagePack.ImmutableCollection.ImmutableListFormatter`1",
+        "MessagePack.ImmutableCollection.ImmutableQueueBuilder`1",
+        "MessagePack.ImmutableCollection.ImmutableQueueFormatter`1",
+        "MessagePack.ImmutableCollection.ImmutableSortedDictionaryFormatter`2",
+        "MessagePack.ImmutableCollection.ImmutableSortedSetFormatter`1",
+        "MessagePack.ImmutableCollection.ImmutableStackFormatter`1",
+        "MessagePack.ImmutableCollection.InterfaceImmutableDictionaryFormatter`2",
+        "MessagePack.ImmutableCollection.InterfaceImmutableListFormatter`1",
+        "MessagePack.ImmutableCollection.InterfaceImmutableQueueFormatter`1",
+        "MessagePack.ImmutableCollection.InterfaceImmutableSetFormatter`1",
+        "MessagePack.ImmutableCollection.InterfaceImmutableStackFormatter`1",
+        "MessagePack.Internal.AutomataDictionary",
+        "MessagePack.Internal.AutomataKeyGen",
+        "MessagePack.Internal.ByteArrayStringHashTable",
+        "MessagePack.Internal.CodeGenHelpers",
+        "MessagePack.Internal.GeneratedAssemblyMessagePackResolverAttribute",
+        "MessagePack.Internal.RuntimeTypeHandleEqualityComparer",
+        "MessagePack.Internal.UnsafeMemory",
+        "MessagePack.Internal.UnsafeMemory32",
+        "MessagePack.Internal.UnsafeMemory64",
+        "MessagePack.MessagePackCode",
+        "MessagePack.MessagePackCompression",
+        "MessagePack.MessagePackPrimitives",
+        "MessagePack.MessagePackRange",
+        "MessagePack.MessagePackReader",
+        "MessagePack.MessagePackSecurity",
+        "MessagePack.MessagePackSerializationException",
+        "MessagePack.MessagePackSerializer",
+        "MessagePack.MessagePackSerializerOptions",
+        "MessagePack.MessagePackStreamReader",
+        "MessagePack.MessagePackType",
+        "MessagePack.MessagePackWriter",
+        "MessagePack.Nil",
+        "MessagePack.ReservedExtensionTypeCodes",
+        "MessagePack.ReservedMessagePackExtensionTypeCode",
+        "MessagePack.Resolvers.AttributeFormatterResolver",
+        "MessagePack.Resolvers.BuiltinResolver",
+        "MessagePack.Resolvers.CompositeResolver",
+        "MessagePack.Resolvers.ContractlessStandardResolver",
+        "MessagePack.Resolvers.ContractlessStandardResolverAllowPrivate",
+        "MessagePack.Resolvers.DynamicContractlessObjectResolver",
+        "MessagePack.Resolvers.DynamicContractlessObjectResolverAllowPrivate",
+        "MessagePack.Resolvers.DynamicEnumAsStringIgnoreCaseResolver",
+        "MessagePack.Resolvers.DynamicEnumAsStringResolver",
+        "MessagePack.Resolvers.DynamicEnumResolver",
+        "MessagePack.Resolvers.DynamicGenericResolver",
+        "MessagePack.Resolvers.DynamicObjectResolver",
+        "MessagePack.Resolvers.DynamicObjectResolverAllowPrivate",
+        "MessagePack.Resolvers.DynamicUnionResolver",
+        "MessagePack.Resolvers.ExpandoObjectResolver",
+        "MessagePack.Resolvers.NativeDateTimeResolver",
+        "MessagePack.Resolvers.NativeDecimalResolver",
+        "MessagePack.Resolvers.NativeGuidResolver",
+        "MessagePack.Resolvers.PrimitiveObjectResolver",
+        "MessagePack.Resolvers.SourceGeneratedFormatterResolver",
+        "MessagePack.Resolvers.StandardResolver",
+        "MessagePack.Resolvers.StandardResolverAllowPrivate",
+        "MessagePack.Resolvers.StaticCompositeResolver",
+        "MessagePack.Resolvers.TypelessContractlessStandardResolver",
+        "MessagePack.Resolvers.TypelessObjectResolver",
+        "MessagePack.SequencePool",
+        "MessagePack.TinyJsonException"
+      ],
+      "moduleVersionId": "bc73640f-32db-462e-8a1b-31bfb9d24b77",
+      "sourceLink": null
+    },
+    {
+      "file": "Microsoft.NET.StringTools.dll",
+      "name": "Microsoft.NET.StringTools",
+      "version": "1.0.0.0",
+      "targetFramework": ".NETStandard,Version=v2.0",
+      "references": [
+        {
+          "name": "System.Memory",
+          "version": "4.0.1.2"
+        },
+        {
+          "name": "System.Runtime.CompilerServices.Unsafe",
+          "version": "6.0.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0"
+        }
+      ],
+      "publicTypes": [
+        ".DebugInfo",
+        ".Enumerator",
+        ".Enumerator",
+        "Microsoft.NET.StringTools.FowlerNollVo1aHash",
+        "Microsoft.NET.StringTools.SpanBasedStringBuilder",
+        "Microsoft.NET.StringTools.Strings"
+      ],
+      "moduleVersionId": "ca3b31d9-8792-4d4c-8f5d-33d6d1310393",
+      "sourceLink": null
+    },
+    {
+      "file": "System.Buffers.dll",
+      "name": "System.Buffers",
+      "version": "4.0.3.0",
+      "targetFramework": null,
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0"
+        }
+      ],
+      "publicTypes": [
+        "System.Buffers.ArrayPool`1"
+      ],
+      "moduleVersionId": "081c3ecc-60b8-44f9-a6aa-b9d202311a05",
+      "sourceLink": null
+    },
+    {
+      "file": "System.Collections.Immutable.dll",
+      "name": "System.Collections.Immutable",
+      "version": "8.0.0.0",
+      "targetFramework": ".NETStandard,Version=v2.0",
+      "references": [
+        {
+          "name": "System.Buffers",
+          "version": "4.0.2.0"
+        },
+        {
+          "name": "System.Memory",
+          "version": "4.0.1.2"
+        },
+        {
+          "name": "System.Runtime.CompilerServices.Unsafe",
+          "version": "6.0.0.0"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0"
+        }
+      ],
+      "publicTypes": [
+        ".Builder",
+        ".Builder",
+        ".Builder",
+        ".Builder",
+        ".Builder",
+        ".Builder",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        "System.Collections.Frozen.FrozenDictionary",
+        "System.Collections.Frozen.FrozenDictionary`2",
+        "System.Collections.Frozen.FrozenSet",
+        "System.Collections.Frozen.FrozenSet`1",
+        "System.Collections.Immutable.IImmutableDictionary`2",
+        "System.Collections.Immutable.IImmutableList`1",
+        "System.Collections.Immutable.IImmutableQueue`1",
+        "System.Collections.Immutable.IImmutableSet`1",
+        "System.Collections.Immutable.IImmutableStack`1",
+        "System.Collections.Immutable.ImmutableArray",
+        "System.Collections.Immutable.ImmutableArray`1",
+        "System.Collections.Immutable.ImmutableDictionary",
+        "System.Collections.Immutable.ImmutableDictionary`2",
+        "System.Collections.Immutable.ImmutableHashSet",
+        "System.Collections.Immutable.ImmutableHashSet`1",
+        "System.Collections.Immutable.ImmutableInterlocked",
+        "System.Collections.Immutable.ImmutableList",
+        "System.Collections.Immutable.ImmutableList`1",
+        "System.Collections.Immutable.ImmutableQueue",
+        "System.Collections.Immutable.ImmutableQueue`1",
+        "System.Collections.Immutable.ImmutableSortedDictionary",
+        "System.Collections.Immutable.ImmutableSortedDictionary`2",
+        "System.Collections.Immutable.ImmutableSortedSet",
+        "System.Collections.Immutable.ImmutableSortedSet`1",
+        "System.Collections.Immutable.ImmutableStack",
+        "System.Collections.Immutable.ImmutableStack`1",
+        "System.Linq.ImmutableArrayExtensions",
+        "System.Runtime.InteropServices.ImmutableCollectionsMarshal"
+      ],
+      "moduleVersionId": "96bce695-477e-4131-84bd-3d331b294610",
+      "sourceLink": null
+    },
+    {
+      "file": "System.Memory.dll",
+      "name": "System.Memory",
+      "version": "4.0.1.2",
+      "targetFramework": null,
+      "references": [
+        {
+          "name": "System.Buffers",
+          "version": "4.0.2.0"
+        },
+        {
+          "name": "System.Numerics.Vectors",
+          "version": "4.1.3.0"
+        },
+        {
+          "name": "System.Runtime.CompilerServices.Unsafe",
+          "version": "4.0.4.1"
+        },
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0"
+        }
+      ],
+      "publicTypes": [
+        ".Enumerator",
+        ".Enumerator",
+        ".Enumerator",
+        ".HexCasing",
+        ".PerTypeValues`1",
+        ".ReadOnlySequenceDebugViewSegments",
+        "System.Buffers.Binary.BinaryPrimitives",
+        "System.Buffers.BuffersExtensions",
+        "System.Buffers.IBufferWriter`1",
+        "System.Buffers.IMemoryOwner`1",
+        "System.Buffers.IPinnable",
+        "System.Buffers.MemoryHandle",
+        "System.Buffers.MemoryManager`1",
+        "System.Buffers.MemoryPool`1",
+        "System.Buffers.OperationStatus",
+        "System.Buffers.ReadOnlySequenceSegment`1",
+        "System.Buffers.ReadOnlySequence`1",
+        "System.Buffers.StandardFormat",
+        "System.Buffers.Text.Base64",
+        "System.Buffers.Text.Utf8Formatter",
+        "System.Buffers.Text.Utf8Parser",
+        "System.MemoryExtensions",
+        "System.Memory`1",
+        "System.ReadOnlyMemory`1",
+        "System.ReadOnlySpan`1",
+        "System.Runtime.InteropServices.MemoryMarshal",
+        "System.Runtime.InteropServices.SequenceMarshal",
+        "System.SequencePosition",
+        "System.Span`1"
+      ],
+      "moduleVersionId": "00be0fb5-88be-459b-8356-ff9591cac0f7",
+      "sourceLink": null
+    },
+    {
+      "file": "System.Numerics.Vectors.dll",
+      "name": "System.Numerics.Vectors",
+      "version": "4.1.3.0",
+      "targetFramework": null,
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0"
+        }
+      ],
+      "publicTypes": [
+        "System.Numerics.Matrix3x2",
+        "System.Numerics.Matrix4x4",
+        "System.Numerics.Plane",
+        "System.Numerics.Quaternion",
+        "System.Numerics.Vector",
+        "System.Numerics.Vector2",
+        "System.Numerics.Vector3",
+        "System.Numerics.Vector4",
+        "System.Numerics.Vector`1"
+      ],
+      "moduleVersionId": "95de52ab-0179-450a-9f6f-08d224d60b15",
+      "sourceLink": null
+    },
+    {
+      "file": "System.Runtime.CompilerServices.Unsafe.dll",
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.0.0.0",
+      "targetFramework": null,
+      "references": [
+        {
+          "name": "netstandard",
+          "version": "2.0.0.0"
+        }
+      ],
+      "publicTypes": [
+        "System.Runtime.CompilerServices.Unsafe"
+      ],
+      "moduleVersionId": "a8391708-f361-428d-a4a8-45fb3e6b1001",
+      "sourceLink": null
+    }
+  ],
+  "managedPackages": [
+    {
+      "id": "MessagePack.Annotations",
+      "version": "3.1.8",
+      "contentHash": "SitOtZ4tOlAZZPF7p52M7143F+Cuz7o/aU0MrtAXX0+ZkPXzDNroOFhzzE2ogMFThsoEW/E6akXVVcBFM9ZKaw==",
+      "runtimeAssets": [
+        "lib/netstandard2.0/MessagePack.Annotations.dll"
+      ]
+    },
+    {
+      "id": "MessagePack",
+      "version": "3.1.8",
+      "contentHash": "Qk2q+9FVxnMSp+NQ9y3SLz3HqWe7Rg3KRMHhBX28FkKUoOeP9YIU86mA4pFOxDDjUIRA9e7Ssbxs/LwWUcAzPw==",
+      "runtimeAssets": [
+        "lib/netstandard2.1/MessagePack.dll"
+      ]
+    },
+    {
+      "id": "MessagePackAnalyzer",
+      "version": "3.1.8",
+      "contentHash": "Vm4g0cR4YRKRchEOmMJ0uVFU6yxdg7cJa2KHv3SUAHEsdYKvMpHMF5A1hZfsix89ymD5cmuzRnw9a6dKMcvq+Q==",
+      "runtimeAssets": []
+    },
+    {
+      "id": "Microsoft.NET.StringTools",
+      "version": "17.11.4",
+      "contentHash": "mudqUHhNpeqIdJoUx2YDWZO/I9uEDYVowan89R6wsomfnUJQk6HteoQTlNjZDixhT2B4IXMkMtgZtoceIjLRmA==",
+      "runtimeAssets": [
+        "lib/netstandard2.0/Microsoft.NET.StringTools.dll"
+      ]
+    },
+    {
+      "id": "System.Buffers",
+      "version": "4.5.1",
+      "contentHash": "Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg==",
+      "runtimeAssets": [
+        "lib/netstandard2.0/System.Buffers.dll"
+      ]
+    },
+    {
+      "id": "System.Collections.Immutable",
+      "version": "8.0.0",
+      "contentHash": "AurL6Y5BA1WotzlEvVaIDpqzpIPvYnnldxru8oXJU2yFxFUy3+pNXjXd1ymO+RA0rq0+590Q8gaz2l3Sr7fmqg==",
+      "runtimeAssets": [
+        "lib/netstandard2.0/System.Collections.Immutable.dll"
+      ]
+    },
+    {
+      "id": "System.Memory",
+      "version": "4.5.5",
+      "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==",
+      "runtimeAssets": [
+        "lib/netstandard2.0/System.Memory.dll"
+      ]
+    },
+    {
+      "id": "System.Numerics.Vectors",
+      "version": "4.4.0",
+      "contentHash": "UiLzLW+Lw6HLed1Hcg+8jSRttrbuXv7DANVj0DkL9g6EnnzbL75EB7EWsw5uRbhxd/4YdG8li5XizGWepmG3PQ==",
+      "runtimeAssets": [
+        "lib/netstandard2.0/System.Numerics.Vectors.dll"
+      ]
+    },
+    {
+      "id": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.0.0",
+      "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==",
+      "runtimeAssets": [
+        "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll"
+      ]
+    }
+  ],
+  "nativeLibraries": [
+    {
+      "target": "windows-x86_64",
+      "path": "native/Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll",
+      "importMetadata": "native/Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll.meta",
+      "sha256": "e7e370938925dff66d9a4d50bfac6d18cc9505bd2f3f127a232b410491b46e3e",
+      "importMetadataSha256": "b39d9d871b4bfdc044f3eebbb61ad41d32782cad58af7cd7650a5467caf247ae",
+      "execution": "passed-dotnet-native-probe"
+    },
+    {
+      "target": "macos-universal",
+      "path": "native/Plugins/lib/macos/libgilzoide-sqlite-net.dylib",
+      "importMetadata": "native/Plugins/lib/macos/libgilzoide-sqlite-net.dylib.meta",
+      "sha256": "39489aa49e2ba5ae0619b0f9f9a1821da058fab95f173bf15399ee2210cfb3d4",
+      "importMetadataSha256": "209335ce1c0ebff68ce374d1a5f894af73b7569a2919585b0a1dc7e8a63869f3",
+      "execution": "unrun"
+    },
+    {
+      "target": "android-arm64",
+      "path": "native/Plugins/lib/android/arm64/libgilzoide-sqlite-net.so",
+      "importMetadata": "native/Plugins/lib/android/arm64/libgilzoide-sqlite-net.so.meta",
+      "sha256": "6d7f5c14cc5eda83c919f13ac75cc342a619090c9d6aee7be039f052fa86621d",
+      "importMetadataSha256": "67b379e32cf078ae5ba14c28538598fed2ba365f13285f1d44b40cba5e4894d2",
+      "execution": "deferred-cl015-int009"
+    }
+  ],
+  "pinvoke": {
+    "libraryNames": [
+      "__Internal",
+      "gilzoide-sqlite-net"
+    ],
+    "entryPoints": [
+      "sqlite3_bind_blob",
+      "sqlite3_bind_double",
+      "sqlite3_bind_int",
+      "sqlite3_bind_int64",
+      "sqlite3_bind_null",
+      "sqlite3_bind_parameter_index",
+      "sqlite3_bind_text16",
+      "sqlite3_busy_timeout",
+      "sqlite3_changes",
+      "sqlite3_close",
+      "sqlite3_close_v2",
+      "sqlite3_column_blob",
+      "sqlite3_column_bytes",
+      "sqlite3_column_count",
+      "sqlite3_column_double",
+      "sqlite3_column_int",
+      "sqlite3_column_int64",
+      "sqlite3_column_name",
+      "sqlite3_column_name16",
+      "sqlite3_column_text",
+      "sqlite3_column_text16",
+      "sqlite3_column_type",
+      "sqlite3_config",
+      "sqlite3_enable_load_extension",
+      "sqlite3_errmsg16",
+      "sqlite3_finalize",
+      "sqlite3_initialize",
+      "sqlite3_last_insert_rowid",
+      "sqlite3_open",
+      "sqlite3_open16",
+      "sqlite3_open_v2",
+      "sqlite3_open_v2",
+      "sqlite3_prepare_v2",
+      "sqlite3_reset",
+      "sqlite3_shutdown",
+      "sqlite3_step",
+      "sqlite3_threadsafe",
+      "sqlite3_win32_set_directory"
+    ],
+    "declarationCount": 38
+  },
+  "sqliteCandidate": {
+    "repository": "https://github.com/gilzoide/unity-sqlite-net.git",
+    "version": "1.3.2",
+    "commit": "08248bd5884d8eb932a837aa56d4ff456daf913f",
+    "managedSource": {
+      "name": "praeclarum/sqlite-net",
+      "version": "1.9.172",
+      "commit": "5f72241035dd48f4305a7c811eba8e7c955e9840"
+    },
+    "nativeSource": {
+      "name": "SQLite3 Multiple Ciphers",
+      "version": "2.1.3",
+      "commit": "632ca1ef4a3457991ec638d5180cc3358620ea93",
+      "sqliteVersion": "3.50.1"
+    }
+  },
+  "capabilities": {
+    "coreContracts": "included",
+    "wireDtoContracts": "included",
+    "safeDiagnostics": "included",
+    "messagePackQualificationCandidate": "included",
+    "productionMessagePack": "unavailable",
+    "nativeSqliteInputs": "included-unexecuted-by-unity",
+    "unityImport": "metadata-only-unverified",
+    "aotAndDevice": "unverified",
+    "liveBackendIntegration": "unverified"
+  },
+  "features": {
+    "schemaVersion": 1,
+    "catalogVersion": "0.1.0-draft",
+    "features": [
+      {
+        "id": "accounts",
+        "name": "Accounts",
+        "status": "stubbed",
+        "acceptance": [
+          "A05",
+          "A07",
+          "A12"
+        ]
+      },
+      {
+        "id": "profiles",
+        "name": "Profiles",
+        "status": "stubbed",
+        "acceptance": [
+          "A07"
+        ]
+      },
+      {
+        "id": "catalog",
+        "name": "Catalog",
+        "status": "stubbed",
+        "acceptance": [
+          "A07"
+        ]
+      },
+      {
+        "id": "inventory",
+        "name": "Inventory",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07"
+        ]
+      },
+      {
+        "id": "wallet",
+        "name": "Wallet",
+        "status": "stubbed",
+        "acceptance": [
+          "A06"
+        ]
+      },
+      {
+        "id": "entitlements",
+        "name": "Entitlements",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07"
+        ]
+      },
+      {
+        "id": "reward-fulfillment",
+        "name": "RewardFulfillment",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A08"
+        ]
+      },
+      {
+        "id": "progression",
+        "name": "Progression",
+        "status": "stubbed",
+        "acceptance": [
+          "A03",
+          "A04",
+          "A07"
+        ]
+      },
+      {
+        "id": "quests",
+        "name": "Quests",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A08"
+        ]
+      },
+      {
+        "id": "achievements",
+        "name": "Achievements",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A08"
+        ]
+      },
+      {
+        "id": "store",
+        "name": "Store",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07"
+        ]
+      },
+      {
+        "id": "purchases",
+        "name": "Purchases",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A12"
+        ]
+      },
+      {
+        "id": "leaderboards",
+        "name": "Leaderboards",
+        "status": "stubbed",
+        "acceptance": [
+          "A07",
+          "A11"
+        ]
+      },
+      {
+        "id": "teams",
+        "name": "Teams",
+        "status": "stubbed",
+        "acceptance": [
+          "A07",
+          "A12"
+        ]
+      },
+      {
+        "id": "remote-config",
+        "name": "RemoteConfig",
+        "status": "stubbed",
+        "acceptance": [
+          "A07"
+        ]
+      },
+      {
+        "id": "inbox",
+        "name": "Inbox",
+        "status": "stubbed",
+        "acceptance": [
+          "A06",
+          "A07",
+          "A12"
+        ]
+      }
+    ]
+  },
+  "build": {
+    "configuration": "Release",
+    "pathMap": "/_/",
+    "sdkVersion": "9.0.203",
+    "repositoryUrl": "https://github.com/gindemit/game-platform-dotnet",
+    "sourceLinkSha256": "baa3548c996f26bdc3499d472ee7967c3db1b4c958c0d7e1e1ed1c881aad9322",
+    "continuousIntegrationBuild": true,
+    "deterministicSourcePaths": true,
+    "sourceControlManagerQueries": false,
+    "buildSkipped": false
+  },
+  "files": [
+    {
+      "path": "aot/aot-inventory.json",
+      "sha256": "44bb9e9c4e64138755c90dcbccb4d28fa46dbb96e64f0742efc7d1454f1dc5ae",
+      "bytes": 1181
+    },
+    {
+      "path": "aot/link.xml",
+      "sha256": "773d21b29d5d1bfc9b24639dd5af363e8acb506947773fdf378f5744835613c9",
+      "bytes": 534
+    },
+    {
+      "path": "architecture.json",
+      "sha256": "ff19967fd4e265ed241c9adf5ee1566fc9cbc87095925a63ec7f7cecda6134cb",
+      "bytes": 2588
+    },
+    {
+      "path": "contract-snapshot.json",
+      "sha256": "60d75fab00f7c27bd8bc6b76b26222e4d33bbea52e2f7c2a9a42f4b374658769",
+      "bytes": 11351
+    },
+    {
+      "path": "features.json",
+      "sha256": "ae7a4d0ba6d81e84ca21cf3d24dc3cf9eec947083deb5eef995d9869fe8590f0",
+      "bytes": 1500
+    },
+    {
+      "path": "licenses/LICENSE-NOTICE.md",
+      "sha256": "28ec600831acb6410e18e0e3dcff4a0ca956c1e11de1f205e9613d38a6ae8acb",
+      "bytes": 398
+    },
+    {
+      "path": "licenses/LICENSE.MessagePack-CSharp.txt",
+      "sha256": "0e1ac21682bcd0bfbb1a4656eb9b99ec05f6ef4b6aa22a2916dc477833b3717f",
+      "bytes": 3032
+    },
+    {
+      "path": "licenses/LICENSE.sqlite-net.txt",
+      "sha256": "f4f848e81a747b85a1f5c7b761bf12b85098dd6a6a46acebd54958e2fe2dd62d",
+      "bytes": 1082
+    },
+    {
+      "path": "licenses/LICENSE.SQLite3MultipleCiphers.txt",
+      "sha256": "ef17378697b38c803a91cd82430dac4be3d6e610c3569ddb3aa547d8d084f983",
+      "bytes": 1074
+    },
+    {
+      "path": "licenses/LICENSE.unity-sqlite-net.txt",
+      "sha256": "f029c8aaafe1ceb2dc57fae54ee065f150132530209003da4d6444318d335725",
+      "bytes": 1060
+    },
+    {
+      "path": "licenses/nuget-metadata/MessagePack.3.1.8.nuspec",
+      "sha256": "2bceec68e01aac3a5410563cc79c381129401eafb49100f02ad525830d958f9b",
+      "bytes": 4071
+    },
+    {
+      "path": "licenses/nuget-metadata/MessagePack.Annotations.3.1.8.nuspec",
+      "sha256": "1f829b7b0e6f8f0dbda9a9f317b085fcf3dae132c0c32eca732ce8831f3b25b3",
+      "bytes": 1006
+    },
+    {
+      "path": "licenses/nuget-metadata/MessagePackAnalyzer.3.1.8.nuspec",
+      "sha256": "856c33022ad7aaef5a8dfcc90112518c0fbb6dffd03d5989e3a1d8f1bca0c894",
+      "bytes": 1116
+    },
+    {
+      "path": "licenses/nuget-metadata/Microsoft.NET.StringTools.17.11.4.nuspec",
+      "sha256": "88a95fdb64a776c1e3a9d758bf5a5e243c2e2027c5c97137000459a96d602d69",
+      "bytes": 1742
+    },
+    {
+      "path": "licenses/nuget-metadata/Microsoft.NET.StringTools.17.11.4.THIRDPARTYNOTICES.txt",
+      "sha256": "01bb7cfadd7ebc022a5ff5dad8c9df0574ee0330f6f58ee497a27c0792dcb4f4",
+      "bytes": 2029
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Buffers.4.5.1.LICENSE.TXT",
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+      "bytes": 1139
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Buffers.4.5.1.nuspec",
+      "sha256": "353a5c2810bfb22de50b87616f426d4d2c8aac2040802c68e2caadedbfe66b8e",
+      "bytes": 2319
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Buffers.4.5.1.THIRD-PARTY-NOTICES.TXT",
+      "sha256": "7864a01e2fdef7e8fdf81b906efb1466f083206affea7ba7e6dadea429754765",
+      "bytes": 15835
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Collections.Immutable.8.0.0.LICENSE.TXT",
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+      "bytes": 1139
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Collections.Immutable.8.0.0.nuspec",
+      "sha256": "f02ab7c533dc1daeb6aa78ca3aa471c1d43147d257d75396252e9f3c74bf04d3",
+      "bytes": 2323
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Collections.Immutable.8.0.0.THIRD-PARTY-NOTICES.TXT",
+      "sha256": "19c19dcac9f3ee6302cfbc6745bb8e79f08efc4c933eb8dc5509bf14b88347ec",
+      "bytes": 68911
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Memory.4.5.5.LICENSE.TXT",
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+      "bytes": 1139
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Memory.4.5.5.nuspec",
+      "sha256": "745bfa574a0fe397559dad595fd0b73a38d7dde40703bb8f0f1eba82edf99aa7",
+      "bytes": 5381
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Memory.4.5.5.THIRD-PARTY-NOTICES.TXT",
+      "sha256": "7864a01e2fdef7e8fdf81b906efb1466f083206affea7ba7e6dadea429754765",
+      "bytes": 15835
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Numerics.Vectors.4.4.0.LICENSE.TXT",
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+      "bytes": 1139
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Numerics.Vectors.4.4.0.nuspec",
+      "sha256": "4d3f87dc61b56fd70778c13b0d69e12ca02ef1f3485e3789486bab4ea1732167",
+      "bytes": 2218
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Numerics.Vectors.4.4.0.THIRD-PARTY-NOTICES.TXT",
+      "sha256": "0ef4dce1f4e8965f19a3b8b2f984f337d5c35e5aaf7f8a36b95aec66c301963a",
+      "bytes": 11591
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.LICENSE.TXT",
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+      "bytes": 1139
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.nuspec",
+      "sha256": "edaccfd50eebadf418188db5a19cb7b24c887fbbc638f2e4d402ff94bbcc14dc",
+      "bytes": 1384
+    },
+    {
+      "path": "licenses/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.THIRD-PARTY-NOTICES.TXT",
+      "sha256": "a6344bfb229bc08d1071cec400eea216e307439f961c5943ec1b56d2245acb95",
+      "bytes": 46990
+    },
+    {
+      "path": "lifecycle-manifest.json",
+      "sha256": "da89771f8d1805ea0f78d994e8d4db18aa372e79347fd19b0877fe9404ee8e6e",
+      "bytes": 2644
+    },
+    {
+      "path": "managed/GamePlatform.Backend.Contracts.dll",
+      "sha256": "095bab99f19ca0873c6d9bb13d8a5b0a3d9f16f6c2a427472bcf65f9c9f33da5",
+      "bytes": 18432
+    },
+    {
+      "path": "managed/GamePlatform.Backend.Contracts.dll.meta",
+      "sha256": "5c671e8ac6c238e06693623af11f59c4f6a6436b93a2b1d26b5cda2d9339ee5b",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Backend.Contracts.pdb",
+      "sha256": "e0759787c0552035b0a98624159d2afdc70600e615a7c01b368e40936270c311",
+      "bytes": 11720
+    },
+    {
+      "path": "managed/GamePlatform.Core.dll",
+      "sha256": "10654ab497ab46adecc597ebc0583ecf8343524c55a96ae1c9e3220b3f36a3f1",
+      "bytes": 15872
+    },
+    {
+      "path": "managed/GamePlatform.Core.dll.meta",
+      "sha256": "1ed1957ef958e61486d7b1c30c77a1183018b219941ec648df98a87f2fe07594",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Core.pdb",
+      "sha256": "26debfed487d065e8214510b8343dcc2944dcdf2ae4433e2db21d116a884b567",
+      "bytes": 12476
+    },
+    {
+      "path": "managed/GamePlatform.Diagnostics.Abstractions.dll",
+      "sha256": "48b9688da02d928149ce87cdb505272fc477cab47c92bb0d45f06f643f66cde2",
+      "bytes": 10752
+    },
+    {
+      "path": "managed/GamePlatform.Diagnostics.Abstractions.dll.meta",
+      "sha256": "2213961bdd07b2c9605d5979800f2c493e47244b418402c3b9fe41a09c6b88bd",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Diagnostics.Abstractions.pdb",
+      "sha256": "9ebefaee6e9c103fc6862b466e66430ca6762905002d90e94ec3c7d67cdcf878",
+      "bytes": 9540
+    },
+    {
+      "path": "managed/GamePlatform.Features.Contracts.dll",
+      "sha256": "c167c59a741cafd03d9b312ce9864a6bb15267d20a068f77733b4ca98e7edcff",
+      "bytes": 10240
+    },
+    {
+      "path": "managed/GamePlatform.Features.Contracts.dll.meta",
+      "sha256": "8f2cef073f978abbafbb06947638162afcf89f89a32647ba27dc088f1de3699f",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Features.Contracts.pdb",
+      "sha256": "ff69f861323b47b37fedb90fb631e0b9744fd085330b68e35409b1a7e81b00cc",
+      "bytes": 9520
+    },
+    {
+      "path": "managed/GamePlatform.Features.dll",
+      "sha256": "06ee74b1fe2482760e4358cabab49689abd7fcfcd3ce2c803d5a4b78b4814745",
+      "bytes": 6656
+    },
+    {
+      "path": "managed/GamePlatform.Features.dll.meta",
+      "sha256": "283d343a5f91682d843d232ecc8e224bb13e288d5bb35677d5f51a52267bae3c",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Features.pdb",
+      "sha256": "908cc14444e67a637de12613cc902ccc8cbc3d22e40327014ed069bf264dc64e",
+      "bytes": 9268
+    },
+    {
+      "path": "managed/GamePlatform.Features.Presentation.dll",
+      "sha256": "b2bf31a30a0a2200c0f4b286931a8a0aa08177f9d344bae2fb740385f956a59c",
+      "bytes": 7680
+    },
+    {
+      "path": "managed/GamePlatform.Features.Presentation.dll.meta",
+      "sha256": "4f35ef32a3b4c3845ae5cfacbeb3a34d8a33ddfeea850c0e993cef805b44d6c4",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Features.Presentation.pdb",
+      "sha256": "665ba59d35ee43413ae9a6a83ddc0c39d65c8cd221c003b21c13e50ab0f66c14",
+      "bytes": 9032
+    },
+    {
+      "path": "managed/GamePlatform.Navigation.dll",
+      "sha256": "053fb0544abaaf9c98919207ad28a41ff15ae1754a752adec5068f4031c4f486",
+      "bytes": 12800
+    },
+    {
+      "path": "managed/GamePlatform.Navigation.dll.meta",
+      "sha256": "e19f80312db21f1a3f13eab9d652bdddebeedf2f7cb9e4cc37fe2ba7d5456a98",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Navigation.pdb",
+      "sha256": "f8e2baf4fce77118d64888834658868f95ee22d83047befc701f4082d1bc9c53",
+      "bytes": 10436
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.Json.dll",
+      "sha256": "8a67f6c15bd588acaf31b98134e1c4068d7b319a6f62ee74aab46097f447e7c4",
+      "bytes": 5632
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.Json.dll.meta",
+      "sha256": "dc9d42bc3a100d9ae2a5664ebbd2c643c1761523a4b7ba7cf293eb0df24d61ba",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.Json.pdb",
+      "sha256": "6923c8720202174ae4e36b7d6b0de27b99e7cb2e309a0fa550775f6754024bd3",
+      "bytes": 8372
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.MessagePack.dll",
+      "sha256": "be2098286aa4fbaa91a9855e90ec1ca5185a30fe59053efb9ee75aeb5546a921",
+      "bytes": 144896
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.MessagePack.dll.meta",
+      "sha256": "889c92e28615ffff5c15251029e9112c7030aa528e400498253de8bbe7f2dd99",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Serialization.MessagePack.pdb",
+      "sha256": "6c90f127917df64f444510a6d1fb0cd203a2f288ae4a27b5dbc20aea94c65ed7",
+      "bytes": 31244
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Abstractions.dll",
+      "sha256": "942dd079f1344196c46817cd6137d4167ad47ec86f6226288c512f08435650a3",
+      "bytes": 18944
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Abstractions.dll.meta",
+      "sha256": "f4090be73764064505af5e0a362bba53edceda5f8801cf97217d995429de4f12",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Abstractions.pdb",
+      "sha256": "318d2a393f2862ed695232531108f107e221d2ba31f9a33410e8cd0d03655066",
+      "bytes": 11944
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Sqlite.dll",
+      "sha256": "6248f0b08945b81e2af7896050620c814ef3f32266250d9ebfb05dbb95dc5e09",
+      "bytes": 139776
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Sqlite.dll.meta",
+      "sha256": "6dab37eb1225ecad6d101562df48fa61eb0bdf4821486e61e4ec23c86ca5fea1",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Storage.Sqlite.pdb",
+      "sha256": "b17c064aa7e8fcfc28f3a174c92c594d6142398ae8efd38fc21b4f7a73188ade",
+      "bytes": 40288
+    },
+    {
+      "path": "managed/GamePlatform.Sync.dll",
+      "sha256": "b596451bc5e0b6236bb24b376fc42f2132915bf7952f2434a57c578e9255bff4",
+      "bytes": 16384
+    },
+    {
+      "path": "managed/GamePlatform.Sync.dll.meta",
+      "sha256": "d0164308ac3574e71adfb7f75d165495727d0e7ed0ab829a16db1de1442f96a6",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Sync.pdb",
+      "sha256": "b8a2a8d9c20a13beeab0888a225794f6c0cc077c47a0b18a42fa3183022ffe2f",
+      "bytes": 10384
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Abstractions.dll",
+      "sha256": "3268f1689a213a32db258a0b32e8e515c58f27dc394464c2917f4e4df44f34cb",
+      "bytes": 8704
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Abstractions.dll.meta",
+      "sha256": "f72d024282ea70774f26a6a651bd6b3d71e215434a2894978f4039351ec069af",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Abstractions.pdb",
+      "sha256": "1d3948ceda9c99932383846506c6316bfec2b354227cafbef0eebb1655043c5c",
+      "bytes": 8956
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Http.dll",
+      "sha256": "2c6d4d166d92e47fb56698599c4313181c8b1ec6635bcfae34231b5c96e6cb02",
+      "bytes": 36864
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Http.dll.meta",
+      "sha256": "fedcd46e5eb7bf358c4fa377674864923451e278643adc41d7c715004362d973",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Transport.Http.pdb",
+      "sha256": "be6c05a5802affe2fce99ab5a6ae11890e32f459f13e2419d29427f96d6c1e40",
+      "bytes": 14452
+    },
+    {
+      "path": "managed/GamePlatform.Wire.Contracts.dll",
+      "sha256": "bef372d131335816742edaf60005f06304c657308ee21b4706376fc139a47631",
+      "bytes": 39424
+    },
+    {
+      "path": "managed/GamePlatform.Wire.Contracts.dll.meta",
+      "sha256": "ed4d06a079f322399ed1fafacca8ebfa2bdd078b7621f1a401bb72f52611d13d",
+      "bytes": 380
+    },
+    {
+      "path": "managed/GamePlatform.Wire.Contracts.pdb",
+      "sha256": "db1dc7254d7357a5113303cc8f7223c51edec08b5f7101cc481778c6499b9967",
+      "bytes": 20044
+    },
+    {
+      "path": "managed/MessagePack.Annotations.dll",
+      "sha256": "bba53a8b44184fce30178502149ada027185e17f4156baf2dc38ad6c1550cdd6",
+      "bytes": 18432
+    },
+    {
+      "path": "managed/MessagePack.Annotations.dll.meta",
+      "sha256": "82a4f179c566ffe42d0b74bc026514988046aacef24e833bc489714fd41bb22e",
+      "bytes": 380
+    },
+    {
+      "path": "managed/MessagePack.dll",
+      "sha256": "e6d0afae348eb2e8f12d8fbf65a26975e8d64fb723557c3ad845cf3e120a4100",
+      "bytes": 368640
+    },
+    {
+      "path": "managed/MessagePack.dll.meta",
+      "sha256": "447952c3299ac82ed39608907d3c932da05efea029088ce91403f00502a7e36a",
+      "bytes": 380
+    },
+    {
+      "path": "managed/Microsoft.NET.StringTools.dll",
+      "sha256": "391643a1db7c8730ca829e3fa461f804047dc9db51e13e5a64d4b59b844664a5",
+      "bytes": 31392
+    },
+    {
+      "path": "managed/Microsoft.NET.StringTools.dll.meta",
+      "sha256": "181bb29b99bc2b2704badf51e714fe902135d819db1360f4882325aaa68b93f3",
+      "bytes": 380
+    },
+    {
+      "path": "managed/System.Buffers.dll",
+      "sha256": "c65fff603b283dc966d1a8b730c11d5e5e750e8021bd24640612f6cc3f2c6fb7",
+      "bytes": 21376
+    },
+    {
+      "path": "managed/System.Buffers.dll.meta",
+      "sha256": "9b58b079efd4a9bd9a3ceacae94cf72f37e26e4f8c8e2db60c71fb7a03506b16",
+      "bytes": 380
+    },
+    {
+      "path": "managed/System.Collections.Immutable.dll",
+      "sha256": "5b1b1c83ba3d135c2fdfe425842fbe9c7432878b7e468623acb554c69b4c130f",
+      "bytes": 252680
+    },
+    {
+      "path": "managed/System.Collections.Immutable.dll.meta",
+      "sha256": "e504f8526e11680b19add4289596b81d6bae0203ae3596f2f711262579a49d87",
+      "bytes": 380
+    },
+    {
+      "path": "managed/System.Memory.dll",
+      "sha256": "11590d8bb3b12f29f4202b3ef8593229a5cd6debb61e76cba9ac5493a82ee382",
+      "bytes": 142752
+    },
+    {
+      "path": "managed/System.Memory.dll.meta",
+      "sha256": "50a6c358ef8ebbaa75991d0a78070f67e6509c7225820654047305860f9b6678",
+      "bytes": 380
+    },
+    {
+      "path": "managed/System.Numerics.Vectors.dll",
+      "sha256": "2324ee5a35674269225e2aa20957ce8830dbca0cffb918bd593f7a3222dee480",
+      "bytes": 163712
+    },
+    {
+      "path": "managed/System.Numerics.Vectors.dll.meta",
+      "sha256": "87c28436832fd0d7d7bff4e51c90e21541103a78ef379c9d9c7d66267889a773",
+      "bytes": 380
+    },
+    {
+      "path": "managed/System.Runtime.CompilerServices.Unsafe.dll",
+      "sha256": "01748200f2400c742aa689f1f5101bd6298efdfd92c00c18f4fa473847235ba9",
+      "bytes": 18024
+    },
+    {
+      "path": "managed/System.Runtime.CompilerServices.Unsafe.dll.meta",
+      "sha256": "5a120030ebdf739c4ab8ad57cf267021089af44747d593974c41146fb50839f0",
+      "bytes": 380
+    },
+    {
+      "path": "native/Plugins/lib/android/arm64/libgilzoide-sqlite-net.so",
+      "sha256": "6d7f5c14cc5eda83c919f13ac75cc342a619090c9d6aee7be039f052fa86621d",
+      "bytes": 2040480
+    },
+    {
+      "path": "native/Plugins/lib/android/arm64/libgilzoide-sqlite-net.so.meta",
+      "sha256": "67b379e32cf078ae5ba14c28538598fed2ba365f13285f1d44b40cba5e4894d2",
+      "bytes": 1951
+    },
+    {
+      "path": "native/Plugins/lib/macos/libgilzoide-sqlite-net.dylib",
+      "sha256": "39489aa49e2ba5ae0619b0f9f9a1821da058fab95f173bf15399ee2210cfb3d4",
+      "bytes": 3875712
+    },
+    {
+      "path": "native/Plugins/lib/macos/libgilzoide-sqlite-net.dylib.meta",
+      "sha256": "209335ce1c0ebff68ce374d1a5f894af73b7569a2919585b0a1dc7e8a63869f3",
+      "bytes": 1955
+    },
+    {
+      "path": "native/Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll",
+      "sha256": "e7e370938925dff66d9a4d50bfac6d18cc9505bd2f3f127a232b410491b46e3e",
+      "bytes": 2091520
+    },
+    {
+      "path": "native/Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll.meta",
+      "sha256": "b39d9d871b4bfdc044f3eebbb61ad41d32782cad58af7cd7650a5467caf247ae",
+      "bytes": 1958
+    },
+    {
+      "path": "README.md",
+      "sha256": "5b6b246dd70876cbe4ac2c9136f40e2b41392ef61676809e9e1c68c19f7b71d1",
+      "bytes": 2334
+    }
+  ]
+}

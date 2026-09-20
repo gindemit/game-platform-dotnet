@@ -1,0 +1,51 @@
+  Determining projects to restore...
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Sync\GamePlatform.Sync.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Serialization.Json\GamePlatform.Serialization.Json.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Transport.Abstractions\GamePlatform.Transport.Abstractions.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Features\GamePlatform.Features.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Navigation\GamePlatform.Navigation.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Wire.Contracts\GamePlatform.Wire.Contracts.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Storage.Sqlite\GamePlatform.Storage.Sqlite.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Features.Presentation\GamePlatform.Features.Presentation.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Transport.Http\GamePlatform.Transport.Http.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Storage.Abstractions\GamePlatform.Storage.Abstractions.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Backend.Contracts\GamePlatform.Backend.Contracts.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Diagnostics.Abstractions\GamePlatform.Diagnostics.Abstractions.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Features.Contracts\GamePlatform.Features.Contracts.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Core\GamePlatform.Core.csproj (in 90 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Serialization.MessagePack\GamePlatform.Serialization.MessagePack.csproj (in 201 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\tests\acceptance\GamePlatform.CodecHarness\GamePlatform.CodecHarness.csproj (in 201 ms).
+  Restored C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\tests\GamePlatform.Tests\GamePlatform.Tests.csproj (in 217 ms).
+  GamePlatform.Core -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Core\bin\Release\netstandard2.1\GamePlatform.Core.dll
+  GamePlatform.Diagnostics.Abstractions -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Diagnostics.Abstractions\bin\Release\netstandard2.1\GamePlatform.Diagnostics.Abstractions.dll
+  GamePlatform.Transport.Abstractions -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Transport.Abstractions\bin\Release\netstandard2.1\GamePlatform.Transport.Abstractions.dll
+  GamePlatform.Wire.Contracts -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Wire.Contracts\bin\Release\netstandard2.1\GamePlatform.Wire.Contracts.dll
+  GamePlatform.Storage.Abstractions -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Storage.Abstractions\bin\Release\netstandard2.1\GamePlatform.Storage.Abstractions.dll
+  GamePlatform.Features.Contracts -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Features.Contracts\bin\Release\netstandard2.1\GamePlatform.Features.Contracts.dll
+  GamePlatform.Navigation -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Navigation\bin\Release\netstandard2.1\GamePlatform.Navigation.dll
+  GamePlatform.Serialization.Json -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Serialization.Json\bin\Release\netstandard2.1\GamePlatform.Serialization.Json.dll
+  GamePlatform.Features.Presentation -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Features.Presentation\bin\Release\netstandard2.1\GamePlatform.Features.Presentation.dll
+  GamePlatform.Storage.Sqlite -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Storage.Sqlite\bin\Release\netstandard2.1\GamePlatform.Storage.Sqlite.dll
+  GamePlatform.Backend.Contracts -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Backend.Contracts\bin\Release\netstandard2.1\GamePlatform.Backend.Contracts.dll
+  GamePlatform.Serialization.MessagePack -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Serialization.MessagePack\bin\Release\netstandard2.1\GamePlatform.Serialization.MessagePack.dll
+  GamePlatform.Transport.Http -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Transport.Http\bin\Release\netstandard2.1\GamePlatform.Transport.Http.dll
+  GamePlatform.Features -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Features\bin\Release\netstandard2.1\GamePlatform.Features.dll
+  GamePlatform.Sync -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\src\GamePlatform.Sync\bin\Release\netstandard2.1\GamePlatform.Sync.dll
+  GamePlatform.CodecHarness -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\tests\acceptance\GamePlatform.CodecHarness\bin\Release\net9.0\GamePlatform.CodecHarness.dll
+  GamePlatform.Tests -> C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.58
+From https://github.com/gilzoide/unity-sqlite-net
+ * branch            08248bd5884d8eb932a837aa56d4ff456daf913f -> FETCH_HEAD
+HEAD is now at 08248bd Bump version to 1.3.2
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.88
+Packaged 23 managed assemblies and 3 native targets with exact notices at C:\Users\khind\AppData\Local\Temp\cl015-independent-clones-mc2dhbez\clone-b\artifacts\sdk; nothing published.

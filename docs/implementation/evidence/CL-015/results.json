@@ -2,10 +2,26 @@
   "task": "CL-015",
   "date": "2026-09-20",
   "status": "in_progress_packaging_complete_execution_unverified",
-  "source_commit": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
-  "manifest_sha256": "2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe",
+  "source_commit": "7c1f9534df3b245c6d0d30f5b56fc183a1f7758a",
+  "superseded_source_commit": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
+  "superseded_manifest_sha256": "2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe",
+  "manifest_sha256": "a4c36e6c8bbb19821b8f79dbd71622da1a22e85f5ea3b51b01d46a3f38a813b7",
   "reproducible_builds": 2,
   "manifests_byte_equal": true,
+  "complete_artifacts_byte_equal": true,
+  "independent_clean_clones": true,
+  "fresh_outputs": true,
+  "varied_origin_metadata": true,
+  "root_cause": "Ambient source-control discovery emitted Source Link only for recognized GitHub origins, changing portable PDBs, deterministic MVIDs, and DLL hashes.",
+  "deterministic_inputs": {
+    "canonical_repository_url": "https://github.com/gindemit/game-platform-dotnet",
+    "full_source_revision": true,
+    "path_map": "/_/",
+    "continuous_integration_build": true,
+    "deterministic_source_paths": true,
+    "ambient_source_control_queries": false,
+    "revision_bound_source_link": true
+  },
   "inventory": {
     "sdk_projects": 15,
     "managed_assemblies": 23,
@@ -24,12 +40,25 @@
   },
   "verification": {
     "dotnet_tests": 335,
-    "script_tests": 45,
-    "packaging_tests": 23,
+    "script_tests": 48,
+    "packaging_tests": 26,
     "manifest_tests": 14,
     "projects_restored_and_built": 18,
     "warnings": 0,
     "errors": 0
+  },
+  "reproducibility_evidence": {
+    "path": "docs/implementation/evidence/CL-015/replacement-anchor",
+    "complete_files_including_manifest": 100,
+    "managed_mvids_compared": 23,
+    "portable_pdb_hashes_compared": 15,
+    "ordinary_verify_passes": 2
+  },
+  "environment": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "dotnet_sdk": "9.0.203",
+    "python": "3.10.4",
+    "git": "2.47.0.windows.2"
   },
   "capabilities": {
     "bundle": "complete_for_reviewed_targets",

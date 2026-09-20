@@ -2,7 +2,7 @@
 
 ## CL-015 complete bundle checkpoint — 2026-09-20
 
-Corrected packaging source `fdc3f19285b83bd011c91f4b16ed090125d023d9`
+Replacement packaging source `7c1f9534df3b245c6d0d30f5b56fc183a1f7758a`
 replaces the early managed-only output with one unpublished, reproducible
 managed/native artifact. It contains all 15 SDK assemblies, the exact eight-DLL
 runtime closure for the nine pinned MessagePack packages, three reviewed SQLite
@@ -16,10 +16,16 @@ Ordinary verification rejects dirty-source and skipped-build artifacts; explicit
 development inspection remains non-importable. The included codec remains
 qualification-only and does not implement production `IWireCodec`.
 
-Two clean builds produced identical 99-file manifests with SHA-256
-`2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe`.
-Fresh verification passed, as did 335/335 .NET tests, 45/45 script tests (23
-packaging cases), validation, 18-project locked restore/build with zero warnings
+The earlier same-checkout `2357a74...` anchor is superseded: ambient Git-origin
+discovery changed Source Link presence, portable PDBs, MVIDs and DLLs between
+checkout kinds. Packaging now pins the canonical repository URL, revision,
+path map and Source Link while retaining source/debug integrity. Two independent
+clean clones with different origin metadata and fresh outputs produced identical
+99-entry manifests and complete 100-file artifacts with manifest SHA-256
+`a4c36e6c8bbb19821b8f79dbd71622da1a22e85f5ea3b51b01d46a3f38a813b7`.
+Fresh verification passed, as did 335/335 .NET tests, 48/48 script tests (26
+packaging cases), validation,
+18-project locked restore/build with zero warnings
 or errors, the 52-task/16-ledger/21-wave manifest and 14/14 manifest tests. See
 [CL-015 evidence](implementation/evidence/CL-015/README.md).
 
