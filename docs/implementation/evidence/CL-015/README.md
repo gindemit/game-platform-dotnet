@@ -176,3 +176,44 @@ See `g3-current-bundle-2026-09-20.json` for exact command and inventory facts.
 This is packaging evidence only. The refreshed bundle still needs the real
 Unity import/IL2CPP/device/live-host journey before CL-015 or G3 can be marked
 complete; no package was published.
+
+## Final G3 bundle refresh — 2026-09-21
+
+The final G3 artifact is a fresh clean build of coordinated primary source
+`73cf2feb84734d453a138573c4ffbc6ffc9a2e1b`. It includes the CL-107 atomic
+receipt-correlation repair and CL-101's public bounded Supabase anonymous-auth
+CAS adapter plus `AccountsLifecycleService.StopAsync`; these are compiled in
+the inspected `GamePlatform.Features` and `GamePlatform.Transport.Http`
+assemblies, not merely represented in source documentation. Packaging policy
+inputs required no new correction: the promoted production
+`MessagePackWireCodec`, explicit runtime closure and fail-closed native/import
+checks remain in force.
+
+The unpublished artifact is
+`C:/Work/git/gindemit/game-platform-dotnet-g3bundle-final-20260921/artifacts/sdk`.
+Its source-clean, non-skipped manifest SHA-256 is
+`14562ae0b16985d8a5de5c04a3374fd3f06e83289496810ba516afa7b3e6201e`.
+It has 15 SDK projects, 23 managed assemblies (15 SDK plus the exact eight-DLL
+MessagePack runtime closure; MessagePackAnalyzer is build-only), nine pinned
+package records, three pinned SQLite native targets, 38 P/Invoke declarations
+and 100 files including the manifest. The inspector accepted every managed
+reference; `GamePlatform.Transport.Http` closes the reviewed Features,
+Storage.Abstractions and MessagePack dependencies, while `GamePlatform.Sync`
+remains correctly serializer-neutral.
+
+Locked restore/Release package build and normal verification passed with zero
+warnings/errors. Packaging tests pass 29/29, the full Release SDK suite passes
+503/503, architecture/contract validation passes, validator tests pass 19/19
+and the independent execution-manifest suite passes 14/14. Two independently
+cloned clean checkouts with deliberately distinct origin metadata rebuilt and
+normally verified byte-identical complete 100-file artifacts. Retained external
+reproduction evidence is
+`C:/Work/git/gindemit/sdk-bundle-evidence-final-g3-20260921/reproducibility-summary.json`;
+exact facts and commands are in `g3-final-bundle-2026-09-21.json`.
+
+The artifact source commit intentionally precedes its evidence commit, so the
+bundle remains source-clean and independently reproducible; the evidence only
+records that immutable artifact. No package was published. Hosted TLS Supabase
+auth/backend execution, Unity auth/secure-store bridge, Unity import, IL2CPP
+and stripping, APK/device execution, macOS native execution and the actual G3
+journey remain unrun.
