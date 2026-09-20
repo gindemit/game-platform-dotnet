@@ -1,4 +1,4 @@
-# CL-101 account-lifecycle contract blocker — 2026-09-20
+# CL-101 account-lifecycle contract blocker — 2026-09-20 (superseded)
 
 Source inspected: SDK branch `impl/cl101-accounts-20260920` at
 `8941dfe` (clean before this evidence-only change).
@@ -54,9 +54,9 @@ mapping is kept distinct from secret-token storage.  It must not infer identity
 from `IAuthSession.SessionKey` or change the frozen provisioning/sync wire
 contracts without canonical backend ownership.
 
-## Result
+## Historical result
 
-No CL-101 source, shared contracts, migrations, manifest, handoff, or status
-ledger was changed.  No test was run because implementing or testing the required
-behavior would require invented identity/scope semantics.  CL-101 remains
-blocked pending the decision above.
+This was the correct stop state before the architecture review supplied the
+portable principal, directory, and scope-lease decision. See `README.md` in this
+directory for the subsequently implemented bounded seam and its remaining shared
+composition/migration-registration limits.
