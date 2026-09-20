@@ -85,6 +85,16 @@ namespace GamePlatform.Tests.Transport
         }
 
         [Fact]
+        public async Task RewardReceiptGetRouteIsAdmittedWithoutABody()
+        {
+            var operation=Guid.Parse("0199f9a0-0700-7000-8000-000000000010");
+            var handler=new DelegateHandler((request,_)=>{Assert.Equal(HttpMethod.Get,request.Method);Assert.Null(request.Content);return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new ByteArrayContent(new byte[]{1})});});
+            using var client=new HttpClient(handler);var executor=new BoundedHttpClientExecutor(client,Configuration());
+            var response=await executor.SendAsync(GetRequest("v1/apps/"+App+"/gameplay/reward-receipts/"+operation),CancellationToken.None);
+            Assert.Equal(200,response.StatusCode);Assert.Equal(1,handler.Calls);
+        }
+
+        [Fact]
         public async Task OversizeResponseFailsAfterResponseWithoutAllocatingPastBound()
         {
             var handler = new DelegateHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
@@ -163,6 +173,7 @@ namespace GamePlatform.Tests.Transport
             Assert.IsType<PrivateSyncHttpProvider>(accountProviders.PrivateSync);
             Assert.IsType<CommandPushHttpProvider>(accountProviders.CommandPush);
             Assert.IsType<CommandReceiptHttpProvider>(accountProviders.CommandReceipts);
+            Assert.IsType<G3RewardReceiptHttpProvider>(accountProviders.RewardReceipts);
             Assert.Equal(1, handler.Calls);
         }
 
@@ -179,6 +190,8 @@ namespace GamePlatform.Tests.Transport
                 ["Content-Type"] = ProvisioningHttpProvider.MediaType
             },
             new byte[] { 1 });
+
+        private static HttpRequestData GetRequest(string path)=>new HttpRequestData("GET",Configuration().Resolve(path).AbsoluteUri,new Dictionary<string,string>{{"Authorization","Bearer token"},{"Accept",ProvisioningHttpProvider.MediaType}},Array.Empty<byte>());
 
         private sealed class DelegateHandler : HttpMessageHandler
         {
