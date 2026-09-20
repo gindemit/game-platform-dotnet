@@ -152,6 +152,6 @@ output = '\n'.join(lines)+'\n'
 path = Path(__file__).with_name('TypedQualificationCodec.g.cs')
 import sys
 if '--check' in sys.argv:
-    if path.read_text(encoding='utf-8') != output: raise SystemExit('DTO mapper drift')
+    if path.read_bytes() != output.encode('utf-8'): raise SystemExit('DTO mapper drift')
 else:
-    path.write_text(output, encoding='utf-8')
+    path.write_text(output, encoding='utf-8', newline='\n')

@@ -1,5 +1,19 @@
 # Implementation status
 
+## CL-015 generated-source byte identity correction — 2026-09-20
+
+The DTO mapper generator now writes explicit UTF-8/LF bytes and its check mode
+compares bytes. The prior Windows writer produced 1,149 CRLF lines in
+`TypedQualificationCodec.g.cs` while Git stored LF; clean Git status and the old
+newline-normalizing check hid the difference. The resulting PDB document checksum
+changed MessagePack and dependent HTTP DLL/PDB/MVID identities at the same source
+revision. Source Link, symbols and all package/native/license checks are retained.
+The corrected check rejected the existing CRLF file, regeneration restored the
+canonical LF bytes without a tracked generated-source diff, and packaging tests
+pass 29/29. Two-clean-clone verification is pending at this source checkpoint.
+CL-015 remains M2/C, A09/A13, `in_progress`; macOS and new HTTP Unity/device/live
+acceptance remain unverified.
+
 ## CL-015 HTTP transitive closure validation — 2026-09-20
 
 Packaging input validation now accepts the HTTP composition's already reviewed
