@@ -175,7 +175,7 @@ namespace GamePlatform.Features.Profiles
             var payload = codec.EncodeConfirmed(confirmed);
             ValidatePayload(payload, "confirmed profile");
             state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, ConfirmedKey,
-                ToStorageRevision(confirmed.Revision), confirmed.UpdatedAtMilliseconds, payload, extensions));
+                confirmed.Revision, confirmed.UpdatedAtMilliseconds, payload, extensions));
         }
 
         public void Dispose()
@@ -210,9 +210,8 @@ namespace GamePlatform.Features.Profiles
             if (confirmed != null)
             {
                 codec.ValidateExtensions(confirmed.CopyExtensions());
-                var semanticRevision = FromStorageRevision(confirmed.Revision);
-                decodedConfirmed = codec.DecodeConfirmed(semanticRevision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
-                if (decodedConfirmed == null || decodedConfirmed.Revision != semanticRevision) throw new InvalidOperationException("The profile state codec returned an invalid confirmed record.");
+                decodedConfirmed = codec.DecodeConfirmed(confirmed.Revision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
+                if (decodedConfirmed == null || decodedConfirmed.Revision != confirmed.Revision) throw new InvalidOperationException("The profile state codec returned an invalid confirmed record.");
             }
             if (pending != null && pending.PayloadLength != 0)
             {
@@ -267,9 +266,5 @@ namespace GamePlatform.Features.Profiles
             if (left.Length != right.Length) return false;
             var difference = 0; for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index]; return difference == 0;
         }
-        // gp_feature_state reserves positive row revisions for durable-record identity. This is an envelope only:
-        // semantic profile revision zero round-trips as zero and is never surfaced as revision one.
-        private static long ToStorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new ProfileConflictException("The profile revision is exhausted.") : checked(semanticRevision + 1);
-        private static long FromStorageRevision(long storageRevision) => storageRevision <= 0 ? throw new ProfileConflictException("The profile storage revision is invalid.") : storageRevision - 1;
     }
 }

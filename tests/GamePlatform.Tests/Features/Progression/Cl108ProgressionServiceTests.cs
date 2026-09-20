@@ -304,7 +304,7 @@ namespace GamePlatform.Tests.Features.Progression
                 var args = new object[] { owner.ViewKey.Value, Namespace, Key };
                 if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0)
                 {
-                    session.Execute("INSERT INTO gp_feature_state(view_key,feature_namespace,entity_key,revision,confirmed_at,payload,extensions) VALUES (?,?,?,?,?,?,?)", owner.ViewKey.Value, Namespace, Key, StorageRevision(evidence.ProjectionRevision), 0L, Encode(new[] { evidence }), Array.Empty<byte>());
+                    session.Execute("INSERT INTO gp_feature_state(view_key,feature_namespace,entity_key,revision,confirmed_at,payload,extensions) VALUES (?,?,?,?,?,?,?)", owner.ViewKey.Value, Namespace, Key, evidence.ProjectionRevision, 0L, Encode(new[] { evidence }), Array.Empty<byte>());
                     return;
                 }
                 var prior = Decode(session.ExecuteScalar<byte[]>("SELECT payload FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args));
@@ -312,7 +312,7 @@ namespace GamePlatform.Tests.Features.Progression
                     throw new ProgressionConflictException("A progression confirmation cannot replace immutable evidence.");
                 var next = prior.Concat(new[] { evidence }).ToArray();
                 if (next.Length > 1024 || next.SelectMany(value => value.OperationIds).Count() > 1024) throw new ProgressionConflictException("Progression confirmation evidence exceeds its durable bound.");
-                session.Execute("UPDATE gp_feature_state SET revision=?, confirmed_at=?, payload=?, extensions=? WHERE view_key=? AND feature_namespace=? AND entity_key=?", StorageRevision(evidence.ProjectionRevision), 0L, Encode(next), Array.Empty<byte>(), owner.ViewKey.Value, Namespace, Key);
+                session.Execute("UPDATE gp_feature_state SET revision=?, confirmed_at=?, payload=?, extensions=? WHERE view_key=? AND feature_namespace=? AND entity_key=?", evidence.ProjectionRevision, 0L, Encode(next), Array.Empty<byte>(), owner.ViewKey.Value, Namespace, Key);
             }
             private static byte[] Encode(IReadOnlyList<ProgressionConfirmationEvidence> values) => Encoding.UTF8.GetBytes(string.Join(";", values.Select(value => value.ProjectionRevision + ":" + string.Join(",", value.OperationIds.Select(operation => operation.ToString())))));
             private static IReadOnlyList<ProgressionConfirmationEvidence> Decode(byte[] payload)
@@ -320,7 +320,6 @@ namespace GamePlatform.Tests.Features.Progression
                 var text = Encoding.UTF8.GetString(payload); if (string.IsNullOrEmpty(text)) throw new InvalidOperationException("Confirmation evidence is empty.");
                 return text.Split(';').Select(value => { var parts = value.Split(':'); if (parts.Length != 2) throw new InvalidOperationException("Confirmation evidence is malformed."); var operations = string.IsNullOrEmpty(parts[1]) ? Array.Empty<OperationId>() : parts[1].Split(',').Select(item => new OperationId(Guid.Parse(item))).ToArray(); return new ProgressionConfirmationEvidence(long.Parse(parts[0]), operations); }).ToArray();
             }
-            private static long StorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new ProgressionConflictException("The progression evidence revision is exhausted.") : checked(semanticRevision + 1);
         }
 
         private sealed class TemporaryDatabase : IDisposable

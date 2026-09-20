@@ -90,7 +90,7 @@ namespace GamePlatform.Features.Wallet
 
             var payload = Encode(kind, projection);
             state.Upsert(transaction, new DurableFeatureMutation(request.Owner, FeatureNamespace, EntityKey(request.CurrencyId),
-                DurableRevision(revision), 0, payload, Array.Empty<byte>()));
+                revision, 0, payload, Array.Empty<byte>()));
         }
 
         private byte[] Encode(byte kind, G3ConfirmedWalletProjection? projection)
@@ -121,7 +121,7 @@ namespace GamePlatform.Features.Wallet
                 if (payload.Length == 2) throw new InvalidOperationException("The G3 wallet confirmed projection payload is missing.");
                 var projection = codec.Decode(schema, new ReadOnlySpan<byte>(payload, 2, payload.Length - 2));
                 if (projection == null || !projection.CurrencyId.Equals(currencyId)) throw new InvalidOperationException("The G3 wallet codec returned an incompatible projection.");
-                if (DurableRevision(projection.Revision) != durable.Revision) throw new InvalidOperationException("The G3 wallet durable revision does not match its projection.");
+                if (projection.Revision != durable.Revision) throw new InvalidOperationException("The G3 wallet durable revision does not match its projection.");
                 return new Decoded(kind, projection);
             }
             if ((kind == RemovedFromViewKind || kind == ResetKind) && payload.Length == 2)
@@ -139,9 +139,6 @@ namespace GamePlatform.Features.Wallet
         private static FeatureSnapshot<G3ConfirmedWalletProjection> Missing(ScopedOwnerContext owner) =>
             new FeatureSnapshot<G3ConfirmedWalletProjection>(owner, 0, FeatureSnapshotState.Missing, SnapshotFreshness.Missing, null, null, null);
 
-        // DurableFeatureState requires positive revisions. This saturated mapping retains revision zero and long.MaxValue;
-        // strict caller-supplied prior-revision validation provides the final non-equality fence at the signed-64 maximum.
-        private static long DurableRevision(long revision) => revision == long.MaxValue ? long.MaxValue : checked(revision + 1);
         private static string EntityKey(SemanticId currencyId) => "currency/" + currencyId.Value;
         private static bool Matches(StorageScope scope, OwnerScope candidate) => string.Equals(scope.BackendNamespace, candidate.Backend.Value, StringComparison.Ordinal) &&
             string.Equals(scope.AppId.Value, candidate.AppId.ToString(), StringComparison.Ordinal) && string.Equals(scope.AccountId.Value, candidate.UserId.ToString(), StringComparison.Ordinal);

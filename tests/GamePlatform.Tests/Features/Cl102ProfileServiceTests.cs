@@ -172,7 +172,7 @@ namespace GamePlatform.Tests.Features
                 service.ApplyConfirmedProjection(transaction, Context, null, Confirmed("Bootstrap", 0, new byte[] { 4 }));
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_zero_sentinel VALUES (?)", 2); return true;
             }, CancellationToken.None);
-            Assert.Equal(1L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='profiles' AND entity_key='self'"), CancellationToken.None));
+            Assert.Equal(0L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='profiles' AND entity_key='self'"), CancellationToken.None));
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
 
             var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, new ImmediateRemote(Context, Confirmed("Bootstrap", 0, new byte[] { 4 })));
