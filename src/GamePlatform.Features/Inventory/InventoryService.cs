@@ -209,8 +209,23 @@ namespace GamePlatform.Features.Inventory
         {
             if (left.ConfirmedAtMilliseconds != right.ConfirmedAtMilliseconds || left.Stacks.Count != right.Stacks.Count || left.Instances.Count != right.Instances.Count) return false;
             for (var index = 0; index < left.Stacks.Count; index++) if (!left.Stacks[index].DefinitionId.Equals(right.Stacks[index].DefinitionId) || left.Stacks[index].Quantity != right.Stacks[index].Quantity || left.Stacks[index].Revision != right.Stacks[index].Revision) return false;
-            for (var index = 0; index < left.Instances.Count; index++) if (!left.Instances[index].InstanceId.Equals(right.Instances[index].InstanceId) || !left.Instances[index].DefinitionId.Equals(right.Instances[index].DefinitionId) || left.Instances[index].Revision != right.Instances[index].Revision || left.Instances[index].State != right.Instances[index].State) return false;
+            for (var index = 0; index < left.Instances.Count; index++)
+            {
+                var leftInstance = left.Instances[index];
+                var rightInstance = right.Instances[index];
+                if (!leftInstance.InstanceId.Equals(rightInstance.InstanceId) || !leftInstance.DefinitionId.Equals(rightInstance.DefinitionId) ||
+                    leftInstance.Revision != rightInstance.Revision || leftInstance.State != rightInstance.State ||
+                    !EqualBytes(leftInstance.CopyPayload(), rightInstance.CopyPayload()) ||
+                    !EqualBytes(leftInstance.CopyAuditExtensions(), rightInstance.CopyAuditExtensions())) return false;
+            }
             return true;
+        }
+        private static bool EqualBytes(byte[] left, byte[] right)
+        {
+            if (left.Length != right.Length) return false;
+            var difference = 0;
+            for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index];
+            return difference == 0;
         }
     }
 }
