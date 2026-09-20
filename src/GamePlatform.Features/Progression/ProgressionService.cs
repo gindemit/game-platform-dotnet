@@ -105,6 +105,12 @@ namespace GamePlatform.Features.Progression
             try
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
+                foreach (var operationId in confirmation.ConfirmedOperationIds)
+                {
+                    var matches = current.Pending.Where(value => value.OperationId == operationId).ToArray();
+                    if (matches.Length != 1 || matches[0].Status != ProgressionPendingStatus.AcceptedAwaitingPull)
+                        throw new ProgressionConflictException("A pull confirmation may name only one retained accepted-awaiting-pull completion.");
+                }
                 if (current.Confirmed != null && confirmation.Projection.Revision < current.Confirmed.Revision) return;
                 if (current.Confirmed != null && confirmation.Projection.Revision == current.Confirmed.Revision && !Equivalent(current.Confirmed, confirmation.Projection))
                     throw new ProgressionConflictException("The server supplied different progression contents for the same revision.");
