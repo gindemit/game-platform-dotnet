@@ -82,7 +82,7 @@ namespace GamePlatform.Features.Progression
         private readonly ReadOnlyCollection<ProgressionConfirmedState> states;
         public ProgressionConfirmedProjection(long revision, long confirmedAtMilliseconds, IReadOnlyList<ProgressionConfirmedState> states)
         {
-            if (revision < 1) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             ProgressionValidation.Timestamp(confirmedAtMilliseconds, nameof(confirmedAtMilliseconds));
             if (states == null || states.Count > 1024 || states.Any(value => value == null)) throw new ArgumentOutOfRangeException(nameof(states));
             if (states.GroupBy(value => value.StateKey).Any(group => group.Count() != 1)) throw new ArgumentException("Confirmed progression state keys must be unique.", nameof(states));

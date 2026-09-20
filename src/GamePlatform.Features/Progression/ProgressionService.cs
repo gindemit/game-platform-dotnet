@@ -119,7 +119,7 @@ namespace GamePlatform.Features.Progression
                 ValidateNewConfirmation(current.Pending, current.Confirmations, confirmation);
                 await transactions.ExecuteAsync(scope, transaction =>
                 {
-                    ApplyConfirmedProjection(transaction, exactOwner, current.Confirmed?.Revision ?? 0, confirmation);
+                    ApplyConfirmedProjection(transaction, exactOwner, current.Confirmed == null ? (long?)null : current.Confirmed.Revision, confirmation);
                     return true;
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -149,23 +149,24 @@ namespace GamePlatform.Features.Progression
 
         /// <summary>
         /// Stages a confirmed projection and immutable operation evidence in the caller's private-group transaction.
-        /// The caller supplies the durable projection revision observed by that same group; equal/lower revisions are
-        /// never idempotently overwritten. This method does not advance a cursor.
+        /// The caller supplies the durable projection revision observed by that same group; null means the projection
+        /// is absent, while zero is a real server revision. Equal/lower revisions are never idempotently overwritten.
+        /// This method does not advance a cursor.
         /// </summary>
         public void ApplyConfirmedProjection(ILocalStorageTransaction transaction, ScopedOwnerContext requestedOwner,
-            long durablePriorRevision, ProgressionConfirmation confirmation)
+            long? durablePriorRevision, ProgressionConfirmation confirmation)
         {
             var exactOwner = EnsureOwner(requestedOwner);
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (confirmation == null) throw new ArgumentNullException(nameof(confirmation));
             if (confirmation.Owner != exactOwner) throw new ProgressionOwnerMismatchException();
             if (!transaction.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The progression transaction belongs to another scope.");
-            if (durablePriorRevision < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
-            if (confirmation.Projection.Revision <= durablePriorRevision)
+            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (durablePriorRevision.HasValue && confirmation.Projection.Revision <= durablePriorRevision.Value)
                 throw new ProgressionConflictException("A borrowed progression projection must advance its durable revision.");
             var encoded = codec.EncodeConfirmed(confirmation.Projection); ValidatePayload(encoded, "confirmed progression");
             confirmations.ValidateAndInsert(transaction, exactOwner, new ProgressionConfirmationEvidence(confirmation.Projection.Revision, confirmation.ConfirmedOperationIds), codec);
-            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmation.Projection.Revision,
+            state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, ToStorageRevision(confirmation.Projection.Revision),
                 confirmation.Projection.ConfirmedAtMilliseconds, encoded, Array.Empty<byte>()));
         }
 
@@ -192,8 +193,9 @@ namespace GamePlatform.Features.Progression
             ProgressionConfirmedProjection? decodedConfirmed = null;
             if (confirmed != null)
             {
-                decodedConfirmed = codec.DecodeConfirmed(confirmed.Revision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload());
-                if (decodedConfirmed == null || decodedConfirmed.Revision != confirmed.Revision || decodedConfirmed.ConfirmedAtMilliseconds != confirmed.ConfirmedAtMilliseconds)
+                var semanticRevision = FromStorageRevision(confirmed.Revision);
+                decodedConfirmed = codec.DecodeConfirmed(semanticRevision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload());
+                if (decodedConfirmed == null || decodedConfirmed.Revision != semanticRevision || decodedConfirmed.ConfirmedAtMilliseconds != confirmed.ConfirmedAtMilliseconds)
                     throw new ProgressionConflictException("The progression codec returned an invalid confirmed projection.");
             }
             var evidence = await confirmations.ReadAsync(exactOwner, cancellationToken).ConfigureAwait(false);
@@ -238,6 +240,10 @@ namespace GamePlatform.Features.Progression
         private static bool Equivalent(GameplayOutcome left, GameplayOutcome right) => left.Session.Equals(right.Session) && left.Mode.Equals(right.Mode) && left.Content.Equals(right.Content) && left.Difficulty.Equals(right.Difficulty) && left.Success == right.Success && left.Score == right.Score && left.DurationTicks == right.DurationTicks && left.TicksPerSecond == right.TicksPerSecond && string.Equals(left.ValidationReference, right.ValidationReference, StringComparison.Ordinal) && left.Metrics.Count == right.Metrics.Count && left.Metrics.All(value => right.Metrics.TryGetValue(value.Key, out var matched) && matched == value.Value);
         private static bool Equivalent(ProgressionConfirmedProjection left, ProgressionConfirmedProjection right) => left.Revision == right.Revision && left.ConfirmedAtMilliseconds == right.ConfirmedAtMilliseconds && left.States.Count == right.States.Count && left.States.All(value => right.States.Any(other => other.StateKey == value.StateKey && other.Value == value.Value));
         private static bool SameOperationSet(IReadOnlyList<OperationId> left, IReadOnlyList<OperationId> right) => left.Count == right.Count && left.All(value => right.Contains(value));
+        // gp_feature_state reserves positive row revisions for durable-record identity. This is an envelope only:
+        // semantic projection revision zero round-trips as zero and is never presented as revision one.
+        private static long ToStorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new ProgressionConflictException("The progression revision is exhausted.") : checked(semanticRevision + 1);
+        private static long FromStorageRevision(long storageRevision) => storageRevision <= 0 ? throw new ProgressionConflictException("The progression storage revision is invalid.") : storageRevision - 1;
         private static IReadOnlyList<PendingProgressionCompletion> SuppressConfirmed(IReadOnlyList<PendingProgressionCompletion> pending, IReadOnlyList<ProgressionConfirmationEvidence> evidence)
         {
             var confirmed = new HashSet<OperationId>(evidence.SelectMany(value => value.OperationIds));
