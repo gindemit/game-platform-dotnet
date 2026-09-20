@@ -35,7 +35,7 @@ class PackageTests(unittest.TestCase):
         self.assertIn('-p:EnableSourceControlManagerQueries=false', arguments)
         self.assertIn('-p:RepositoryUrl=' + package.CANONICAL_REPOSITORY_URL, arguments)
         self.assertIn('-p:SourceRevisionId=' + ('b' * 40), arguments)
-        self.assertIn('-p:SourceLink=' + str(source_link), arguments)
+        self.assertIn('-p:CanonicalPackagingSourceLink=' + str(source_link), arguments)
 
     def test_debug_identity_requires_revision_bound_source_link_for_projects(self):
         revision = 'c' * 40

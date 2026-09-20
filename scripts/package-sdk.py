@@ -74,7 +74,7 @@ def deterministic_build_arguments(root, revision, source_link):
         '-p:SourceRevisionId=' + revision,
         '-p:IncludeSourceRevisionInInformationalVersion=true',
         '-p:EmbedUntrackedSources=false',
-        '-p:SourceLink=' + str(source_link),
+        '-p:CanonicalPackagingSourceLink=' + str(source_link),
     ]
 
 

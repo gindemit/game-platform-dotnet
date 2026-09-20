@@ -1,0 +1,12 @@
+<Project>
+  <Target Name="UseCanonicalPackagingSourceLink"
+          BeforeTargets="CoreCompile"
+          Condition="'$(CanonicalPackagingSourceLink)' != ''">
+    <Error Condition="!Exists('$(CanonicalPackagingSourceLink)')"
+           Text="Canonical packaging Source Link file is missing: $(CanonicalPackagingSourceLink)" />
+    <PropertyGroup>
+      <!-- Set after SDK provider discovery so ambient checkout metadata cannot replace it. -->
+      <SourceLink>$(CanonicalPackagingSourceLink)</SourceLink>
+    </PropertyGroup>
+  </Target>
+</Project>
