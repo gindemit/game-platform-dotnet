@@ -63,7 +63,7 @@ namespace GamePlatform.Features.Accounts
     {
         private readonly IAccountsAuthLifecycle auth; private readonly IProvisioningRemote provisioning; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
         private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1); private readonly object gate = new object();
-        private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private bool scopeRecoveryRequired;
+        private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private IAccountScopeLease? failedRetirement; private bool scopeRecoveryRequired;
 
         public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemote provisioning, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null)
         {
@@ -105,7 +105,8 @@ namespace GamePlatform.Features.Accounts
             {
                 if (!Current(request)) return Late(request);
                 if (ScopeRecoveryRequired()) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-                if (!await RetireActiveAsync(request, token).ConfigureAwait(false)) return Finish(request, AccountsReadiness.Unavailable, entry);
+                if (!await RetireActiveAsync(request).ConfigureAwait(false)) return Quarantine(request, entry);
+                token.ThrowIfCancellationRequested();
                 var lease = await scopes.ReopenOfflineAsync(entry, request, token).ConfigureAwait(false);
                 if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
                 if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry); return Finish(request, AccountsReadiness.UnavailableOffline, entry); }
@@ -144,7 +145,8 @@ namespace GamePlatform.Features.Accounts
             {
                 if (!Current(request)) return Late(request);
                 if (ScopeRecoveryRequired()) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-                if (!await RetireActiveAsync(request, token).ConfigureAwait(false)) return Finish(request, AccountsReadiness.Unavailable, entry);
+                if (!await RetireActiveAsync(request).ConfigureAwait(false)) return Quarantine(request, entry);
+                token.ThrowIfCancellationRequested();
                 Set(request, AccountsReadiness.Bootstrapping, entry);
                 var lease = await scopes.OpenAuthenticatedAsync(entry, session, request, token).ConfigureAwait(false);
                 if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(); return Late(request); }
@@ -157,24 +159,31 @@ namespace GamePlatform.Features.Accounts
             finally { activation.Release(); }
         }
 
-        private async Task<bool> RetireActiveAsync(long request, CancellationToken token)
+        private async Task<bool> RetireActiveAsync(long request)
         {
             IAccountScopeLease? old;
-            lock (gate) { if (generation != request) return false; old = active; }
-            if (old == null) return true;
-            try
+            lock (gate)
             {
-                await old.StopAdmissionsAsync(token).ConfigureAwait(false);
-                await old.DrainAndRetireAsync(token).ConfigureAwait(false);
-                lock (gate)
+                if (generation != request || failedRetirement != null) return false;
+                old = active;
+                if (old != null)
                 {
-                    if (ReferenceEquals(active, old)) active = null;
-                    return generation == request;
+                    // This is the irreversible switch point. The old scope is never active again.
+                    active = null; failedRetirement = old; scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired;
                 }
             }
-            catch { return false; }
+            if (old == null) return true;
+            if (!await RetireLeaseAsync(old).ConfigureAwait(false)) return false;
+            lock (gate)
+            {
+                if (ReferenceEquals(failedRetirement, old)) failedRetirement = null;
+                if (generation == request) scopeRecoveryRequired = false;
+                return generation == request;
+            }
         }
         private async Task<bool> RetireLateLeaseAsync(IAccountScopeLease lease)
+            => await RetireLeaseAsync(lease).ConfigureAwait(false);
+        private async Task<bool> RetireLeaseAsync(IAccountScopeLease lease)
         {
             using var timeout = new CancellationTokenSource(lateLeaseDrainTimeout);
             try
