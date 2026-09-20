@@ -6,7 +6,7 @@ Status: qualified for dependency-ready adapter work on Windows x86-64 desktop; U
 
 Retain [`gilzoide/unity-sqlite-net` release `1.3.2`](https://github.com/gilzoide/unity-sqlite-net/tree/08248bd5884d8eb932a837aa56d4ff456daf913f) at commit `08248bd5884d8eb932a837aa56d4ff456daf913f`. Its embedded [`praeclarum/sqlite-net` source](https://github.com/praeclarum/sqlite-net/tree/5f72241035dd48f4305a7c811eba8e7c955e9840) is submodule commit `5f72241035dd48f4305a7c811eba8e7c955e9840` (`v1.9.172`). The pinned [package manifest](https://github.com/gilzoide/unity-sqlite-net/blob/08248bd5884d8eb932a837aa56d4ff456daf913f/package.json) declares Unity 2021.2 or newer. The inspected MrSquare consumer uses Unity 6000.5.3f1, Android ARM64 and IL2CPP, so no known version/architecture mismatch was found; this is input qualification, not runtime acceptance.
 
-Use one SDK-assembled, versioned managed/native bundle. Compile the pinned `Runtime/sqlite-net/SQLite.cs` into the storage adapter assembly and bundle only the native libraries selected for supported targets, with their original Unity `.meta` importer settings and required notices. Do not also install `com.gilzoide.sqlite-net` through UPM. CL-015 owns the final transitive bundle and Unity import; CL-007 owns the adapter and connection/thread policy. No dependency is added to portable Core and `Microsoft.Data.Sqlite` is not substituted.
+Use one SDK-assembled, versioned managed/native bundle. Compile the pinned `Runtime/sqlite-net/SQLite.cs` into the storage adapter assembly and bundle only the native libraries selected for supported targets, with reviewed deterministic target-isolated Unity `.meta` importer settings and required notices. The upstream Windows metadata is intentionally not copied because it also enables unrelated standalone/WSA targets. Do not also install `com.gilzoide.sqlite-net` through UPM. CL-015 owns the final transitive bundle and Unity import; CL-007 owns the adapter and connection/thread policy. No dependency is added to portable Core and `Microsoft.Data.Sqlite` is not substituted.
 
 The machine-readable pin, acquisition route, input hashes and execution states are in `integration/unity/sqlite-qualification/qualification.json`.
 
@@ -34,9 +34,9 @@ The package and sqlite-net managed source are MIT licensed, as recorded in the p
 
 | Target | Candidate input | Import/build condition | Qualification state |
 | --- | --- | --- | --- |
-| Windows Editor/standalone x86-64 | `Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll` | Editor OS Windows, CPU x86_64; Win64 standalone | Native .NET process probe passed; Unity Editor unrun |
-| macOS Editor/standalone universal | `Plugins/lib/macos/libgilzoide-sqlite-net.dylib` | Editor OS OSX; OSXUniversal; upstream minimum macOS 11 | Inspected and hashed; runner unavailable/unrun |
-| Android ARM64 | `Plugins/lib/android/arm64/libgilzoide-sqlite-net.so` | Android CPU ARM64, marked 16 KiB aligned; upstream build uses NDK r27c and API 21 compiler | Inspected and hashed; IL2CPP build/device execution deferred to CL-015/INT-009 |
+| Windows Editor/standalone x86-64 | `Plugins/lib/windows/x86_64/gilzoide-sqlite-net.dll` | Generated metadata enables only Editor OS Windows CPU x86_64 and Win64 x86_64; Linux/macOS/WSA/other targets excluded | Native .NET process probe passed; Unity Editor unrun |
+| macOS Editor/standalone universal | `Plugins/lib/macos/libgilzoide-sqlite-net.dylib` | Generated metadata enables only Editor OS OSX and OSXUniversal; upstream minimum macOS 11 | Inspected and hashed; runner unavailable/unrun |
+| Android ARM64 | `Plugins/lib/android/arm64/libgilzoide-sqlite-net.so` | Generated metadata enables only Android CPU ARM64 with 16 KiB alignment; upstream build uses NDK r27c and API 21 compiler | Inspected and hashed; IL2CPP build/device execution deferred to CL-015/INT-009 |
 
 Other packaged architectures are outside the first MrSquare slice and are not approved merely because upstream includes binaries. iOS, tvOS, visionOS, Linux and WebGL also remain conditional/unverified.
 

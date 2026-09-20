@@ -29,7 +29,7 @@ use the exact pinned Windows x64 native DLL
 `e7e370938925dff66d9a4d50bfac6d18cc9505bd2f3f127a232b410491b46e3e`.
 All three MIT notices are retained. This does not install a Unity package or
 complete Unity/device acceptance. CL-015 packaging now includes the reviewed
-Windows x86-64, macOS universal and Android ARM64 binaries, their upstream Unity
-import metadata, all three SQLite notices, the exact 38-entry P/Invoke inventory
+Windows x86-64, macOS universal and Android ARM64 binaries, generated narrowed
+Unity import metadata, all three SQLite notices, the exact 38-entry P/Invoke inventory
 and targeted linker metadata. Unity import/stripping, IL2CPP/APK and physical-device
 execution remain unrun under INT-009. Do not install a duplicate UPM copy.

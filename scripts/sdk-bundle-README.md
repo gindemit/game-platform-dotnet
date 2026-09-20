@@ -4,9 +4,11 @@ This unpublished CL-015 bundle contains the exact managed assemblies, portable
 symbols, transitive runtime DLLs, actual assembly references, target-framework
 metadata, hashes, licenses and source commit listed in
 `dependency-manifest.json`. It also carries reviewed SQLite native inputs for
-Windows x86-64 and macOS Editors/standalone plus Android ARM64, adjacent upstream
-import metadata, and the targeted AOT/linker inventory. A `sourceDirty=true` or
-`buildSkipped=true` artifact is development evidence and must not be imported.
+Windows x86-64 and macOS Editors/standalone plus Android ARM64, deterministic
+target-isolated import metadata, and the targeted AOT/linker inventory. Unsafe
+broad upstream native metadata is not copied. A `sourceDirty=true` or
+`buildSkipped=true` artifact is development evidence: ordinary `--verify` rejects
+it and it must not be imported.
 
 The MessagePack assembly and eight runtime package DLLs are included only as a
 qualification candidate; the ninth pinned package is a build-only analyzer. The
@@ -21,6 +23,10 @@ existing clean checkout at the same revision. Verify with
 the prior verified output is retained at `artifacts/sdk-previous`. Run clean
 builds twice and compare complete manifests. Byte equality does not certify
 Unity or device behavior.
+
+`--verify-development` performs only an explicit development inspection and
+prints that the artifact remains non-importable and unpublished. It never turns
+`--allow-dirty` or `--no-build` output into a release candidate.
 
 This is not a NuGet feed and nothing is published. Import only assemblies named
 by a consumer's explicit precompiled-reference list plus their full declared

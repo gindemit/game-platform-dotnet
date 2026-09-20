@@ -74,7 +74,7 @@ class PackageTests(unittest.TestCase):
             path.parent.mkdir(exist_ok=True)
             path.write_bytes(target.encode())
             meta = path.with_name(path.name + '.meta')
-            meta.write_text('PluginImporter: {}')
+            meta.write_text(package.native_meta(target))
             native.append({'target': target, 'path': path.relative_to(root).as_posix(),
                            'importMetadata': meta.relative_to(root).as_posix(),
                            'sha256': package.digest(path),
@@ -96,6 +96,7 @@ class PackageTests(unittest.TestCase):
                                         for name, version in package.MESSAGEPACK_PACKAGES.items()],
                     'duplicateUpmAcquisitionAllowed': False, 'nativeLibraries': native,
                     'pinvoke': package.pinvoke_inventory(),
+                    'sourceDirty': False, 'build': {'buildSkipped': False},
                     'capabilities': {'productionMessagePack': 'unavailable'}, 'files': files}
         (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
         return manifest
@@ -103,7 +104,7 @@ class PackageTests(unittest.TestCase):
     def verify(self, root, manifest):
         qualification = {'inputs': [
             {'target': item['target'], 'sha256': item['sha256'],
-             'importMetadataSha256': item['importMetadataSha256']}
+             'generatedImportMetadataSha256': item['importMetadataSha256']}
             for item in manifest['nativeLibraries']]}
         locked = {item['id']: {'contentHash': item['contentHash']} for item in manifest['managedPackages']}
         return package.verify_bundle(root, qualification, locked, package.pinvoke_inventory())
@@ -179,6 +180,60 @@ class PackageTests(unittest.TestCase):
             manifest['files'] = [item for item in manifest['files'] if item['path'] != relative]
             (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
             with self.assertRaisesRegex(ValueError, 'required_license_notice_missing'):
+                self.verify(root, manifest)
+
+    def test_generated_native_importers_are_target_isolated(self):
+        for target in package.NATIVE_TARGETS:
+            with self.subTest(target=target):
+                self.assertTrue(package.validate_native_importer(package.native_meta(target), target))
+
+    def test_windows_importer_rejects_cross_platform_enablement(self):
+        text = package.native_meta('windows-x86_64').replace(
+            'Standalone: Linux64\n    second:\n      enabled: 0',
+            'Standalone: Linux64\n    second:\n      enabled: 1')
+        with self.assertRaisesRegex(ValueError, 'cross_platform_enablement'):
+            package.validate_native_importer(text, 'windows-x86_64')
+
+    def test_importer_rejects_exclusion_conflict(self):
+        text = package.native_meta('windows-x86_64').replace('Exclude OSXUniversal: 1',
+                                                              'Exclude OSXUniversal: 0')
+        with self.assertRaisesRegex(ValueError, 'exclusion_conflict'):
+            package.validate_native_importer(text, 'windows-x86_64')
+
+    def test_importer_rejects_cpu_and_os_conflicts(self):
+        cases = [
+            ('windows-x86_64', 'OS: Windows', 'OS: OSX'),
+            ('macos-universal', 'CPU: AnyCPU', 'CPU: x86_64'),
+            ('android-arm64', 'CPU: ARM64', 'CPU: ARMv7'),
+        ]
+        for target, before, after in cases:
+            with self.subTest(target=target):
+                text = package.native_meta(target).replace(before, after, 1)
+                with self.assertRaisesRegex(ValueError, 'setting_conflict'):
+                    package.validate_native_importer(text, target)
+
+    def test_allow_dirty_artifact_is_rejected_by_default_verify(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            manifest = self.bundle(root)
+            manifest['sourceDirty'] = True
+            (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, 'development_bundle_not_importable'):
+                self.verify(root, manifest)
+            qualification = {'inputs': [
+                {'target': item['target'], 'sha256': item['sha256'],
+                 'generatedImportMetadataSha256': item['importMetadataSha256']}
+                for item in manifest['nativeLibraries']]}
+            locked = {item['id']: {'contentHash': item['contentHash']} for item in manifest['managedPackages']}
+            package.verify_bundle(root, qualification, locked, package.pinvoke_inventory(), allow_development=True)
+
+    def test_no_build_artifact_is_rejected_by_default_verify(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            manifest = self.bundle(root)
+            manifest['build']['buildSkipped'] = True
+            (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, 'development_bundle_not_importable'):
                 self.verify(root, manifest)
 
 

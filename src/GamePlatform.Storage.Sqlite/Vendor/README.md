@@ -19,5 +19,6 @@ sqlite-net source and SQLite3 Multiple Ciphers native source. The latter notice
 has SHA-256 `ef17378697b38c803a91cd82430dac4be3d6e610c3569ddb3aa547d8d084f983`.
 The Windows x64 native test input remains byte-identical to the CL-006 pin.
 CL-015 bundles the reviewed Windows x86-64, macOS universal and Android ARM64
-inputs with their original import metadata. Other platforms and all Unity/device
+inputs with deterministic target-isolated import metadata; the broader upstream
+metadata is not copied. Other platforms and all Unity/device
 execution remain unsupported or unverified.

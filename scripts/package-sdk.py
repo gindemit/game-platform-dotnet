@@ -26,6 +26,13 @@ NATIVE_TARGETS = {
     'macos-universal': 'Plugins/lib/macos/libgilzoide-sqlite-net.dylib',
     'android-arm64': 'Plugins/lib/android/arm64/libgilzoide-sqlite-net.so',
 }
+NATIVE_IMPORT_POLICIES = {
+    'windows-x86_64': {'enabled': {'Editor', 'Win64'}, 'editorCpu': 'x86_64',
+                       'editorOs': 'Windows', 'win64Cpu': 'x86_64'},
+    'macos-universal': {'enabled': {'Editor', 'OSXUniversal'}, 'editorCpu': 'AnyCPU',
+                        'editorOs': 'OSX', 'osxCpu': 'AnyCPU'},
+    'android-arm64': {'enabled': {'Android'}, 'androidCpu': 'ARM64', 'is16KbAligned': 'true'},
+}
 REQUIRED_NOTICES = {
     'licenses/LICENSE-NOTICE.md',
     'licenses/LICENSE.MessagePack-CSharp.txt',
@@ -142,12 +149,10 @@ def acquire_sqlite(source):
     expected = {item['target']: item for item in qualification['inputs']}
     for target, relative in NATIVE_TARGETS.items():
         path = source / relative
-        if not path.is_file() or not path.with_name(path.name + '.meta').is_file():
+        if not path.is_file():
             raise ValueError('native_target_missing: ' + target)
         if digest(path) != expected[target]['sha256']:
             raise ValueError('native_target_hash_mismatch: ' + target)
-        if digest(path.with_name(path.name + '.meta')) != expected[target]['importMetadataSha256']:
-            raise ValueError('native_import_metadata_hash_mismatch: ' + target)
     return qualification
 
 
@@ -192,6 +197,88 @@ def managed_meta(name):
             '  assetBundleName: \n  assetBundleVariant: \n')
 
 
+def native_meta(target):
+    policy = NATIVE_IMPORT_POLICIES.get(target)
+    if policy is None:
+        raise ValueError('unknown_native_import_target: ' + target)
+    enabled = policy['enabled']
+    guid = hashlib.sha256(('game-platform-cl015-native:' + target).encode()).hexdigest()[:32]
+    excluded = {
+        'Android': '0' if 'Android' in enabled else '1', 'Editor': '0' if 'Editor' in enabled else '1',
+        'Linux64': '1', 'OSXUniversal': '0' if 'OSXUniversal' in enabled else '1',
+        'VisionOS': '1', 'WebGL': '1', 'Win': '1', 'Win64': '0' if 'Win64' in enabled else '1',
+        'WindowsStoreApps': '1', 'iOS': '1', 'tvOS': '1',
+    }
+    blocks = ['  - first:\n      : Any\n    second:\n      enabled: 0\n      settings:\n' +
+              ''.join(f'        Exclude {name}: {value}\n' for name, value in excluded.items())]
+    settings_by_platform = {
+        'Android': [('AndroidSharedLibraryType', 'Executable'), ('CPU', policy.get('androidCpu', 'None')),
+                    ('Is16KbAligned', policy.get('is16KbAligned', 'false'))],
+        'Editor': [('CPU', policy.get('editorCpu', 'None')), ('DefaultValueInitialized', 'true'),
+                   ('OS', policy.get('editorOs', 'AnyOS'))],
+        'Linux64': [('CPU', 'None')], 'OSXUniversal': [('CPU', policy.get('osxCpu', 'None'))],
+        'Win': [('CPU', 'None')], 'Win64': [('CPU', policy.get('win64Cpu', 'None'))],
+        'WindowsStoreApps': [('CPU', 'None'), ('DontProcess', 'false'), ('SDK', 'AnySDK'),
+                             ('ScriptingBackend', 'AnyScriptingBackend')],
+        'VisionOS': [('CPU', 'ARM64')], 'iOS': [('CPU', 'AnyCPU')], 'tvOS': [('CPU', 'AnyCPU')],
+    }
+    first_keys = {'Linux64': 'Standalone', 'OSXUniversal': 'Standalone', 'Win': 'Standalone',
+                  'Win64': 'Standalone', 'WindowsStoreApps': 'Windows Store Apps', 'iOS': 'iPhone'}
+    for platform, settings in settings_by_platform.items():
+        first = first_keys.get(platform, platform)
+        blocks.append(f'  - first:\n      {first}: {platform}\n    second:\n'
+                      f'      enabled: {1 if platform in enabled else 0}\n      settings:\n' +
+                      ''.join(f'        {key}: {value}\n' for key, value in settings))
+    text = (f'fileFormatVersion: 2\nguid: {guid}\nPluginImporter:\n  externalObjects: {{}}\n'
+            '  serializedVersion: 2\n  iconMap: {}\n  executionOrder: {}\n  defineConstraints: []\n'
+            '  isPreloaded: 0\n  isOverridable: 0\n  isExplicitlyReferenced: 0\n'
+            '  validateReferences: 1\n  platformData:\n' + ''.join(blocks) +
+            f'  userData: CL-015 isolated {target}\n  assetBundleName: \n  assetBundleVariant: \n')
+    validate_native_importer(text, target)
+    return text
+
+
+def validate_native_importer(text, target):
+    policy = NATIVE_IMPORT_POLICIES.get(target)
+    if policy is None:
+        raise ValueError('unknown_native_import_target: ' + target)
+    blocks = {}
+    pattern = re.compile(r'  - first:\n      (?P<first>[^\n]+)\n    second:\n(?P<body>.*?)(?=  - first:|  userData:)', re.S)
+    for match in pattern.finditer(text):
+        first, body = match.group('first'), match.group('body')
+        platform = first.split(':', 1)[1].strip() if ':' in first else first.strip()
+        if platform in blocks:
+            raise ValueError('native_import_duplicate_platform: ' + platform)
+        enabled = re.search(r'^      enabled: ([01])$', body, re.M)
+        if enabled is None:
+            raise ValueError('native_import_enabled_missing: ' + platform)
+        blocks[platform] = {'enabled': enabled.group(1) == '1',
+                            'settings': dict(re.findall(r'^        ([^:\n]+):\s*(.*)$', body, re.M))}
+    required = {'Any', 'Android', 'Editor', 'Linux64', 'OSXUniversal', 'Win', 'Win64',
+                'WindowsStoreApps', 'VisionOS', 'iOS', 'tvOS'}
+    if set(blocks) != required:
+        raise ValueError('native_import_platform_inventory_mismatch: ' + target)
+    if {name for name, block in blocks.items() if block['enabled']} != policy['enabled']:
+        raise ValueError('native_import_cross_platform_enablement: ' + target)
+    exclusions = {name: ('0' if name in policy['enabled'] else '1')
+                  for name in ('Android', 'Editor', 'OSXUniversal', 'Win64')}
+    exclusions.update({'Linux64': '1', 'VisionOS': '1', 'WebGL': '1', 'Win': '1',
+                       'WindowsStoreApps': '1', 'iOS': '1', 'tvOS': '1'})
+    for name, expected in exclusions.items():
+        if blocks['Any']['settings'].get('Exclude ' + name) != expected:
+            raise ValueError('native_import_exclusion_conflict: ' + target + ':' + name)
+    if target == 'windows-x86_64':
+        checks = [('Editor', 'CPU', 'x86_64'), ('Editor', 'OS', 'Windows'), ('Win64', 'CPU', 'x86_64')]
+    elif target == 'macos-universal':
+        checks = [('Editor', 'CPU', 'AnyCPU'), ('Editor', 'OS', 'OSX'), ('OSXUniversal', 'CPU', 'AnyCPU')]
+    else:
+        checks = [('Android', 'CPU', 'ARM64'), ('Android', 'Is16KbAligned', 'true')]
+    for platform, key, expected in checks:
+        if blocks[platform]['settings'].get(key) != expected:
+            raise ValueError('native_import_setting_conflict: ' + target + ':' + platform + ':' + key)
+    return True
+
+
 def validate_native_manifest(manifest, output, qualification=None, expected_pinvoke=None):
     if manifest.get('duplicateUpmAcquisitionAllowed') is not False:
         raise ValueError('duplicate_upm_acquisition_not_forbidden')
@@ -207,7 +294,8 @@ def validate_native_manifest(manifest, output, qualification=None, expected_pinv
             raise ValueError('native_target_missing: ' + target)
         if item['sha256'] != qualified[target]['sha256'] or digest(path) != item['sha256']:
             raise ValueError('native_target_hash_mismatch: ' + target)
-        if item.get('importMetadataSha256') != qualified[target]['importMetadataSha256'] or digest(meta) != item['importMetadataSha256']:
+        validate_native_importer(meta.read_text(encoding='utf-8'), target)
+        if item.get('importMetadataSha256') != qualified[target]['generatedImportMetadataSha256'] or digest(meta) != item['importMetadataSha256']:
             raise ValueError('native_import_metadata_hash_mismatch: ' + target)
     if manifest.get('pinvoke') != (expected_pinvoke or pinvoke_inventory()):
         raise ValueError('pinvoke_inventory_mismatch')
@@ -230,8 +318,10 @@ def validate_licenses(output, packages):
             raise ValueError('package_license_declaration_missing: ' + item['id'])
 
 
-def verify_bundle(output, qualification=None, expected_packages=None, expected_pinvoke=None):
+def verify_bundle(output, qualification=None, expected_packages=None, expected_pinvoke=None, allow_development=False):
     manifest = json.loads((output / 'dependency-manifest.json').read_text())
+    if (manifest.get('sourceDirty') is not False or manifest.get('build', {}).get('buildSkipped') is not False) and not allow_development:
+        raise ValueError('development_bundle_not_importable')
     expected = {entry['path']: entry for entry in manifest['files']}
     if len(expected) != len(manifest['files']):
         raise ValueError('duplicate_bundle_path')
@@ -309,11 +399,12 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
             destination = stage / 'native' / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, destination)
-            shutil.copy2(source.with_name(source.name + '.meta'), destination.with_name(destination.name + '.meta'))
+            meta_destination = destination.with_name(destination.name + '.meta')
+            meta_destination.write_text(native_meta(target), encoding='utf-8', newline='\n')
             native_entries.append({'target': target, 'path': destination.relative_to(stage).as_posix(),
-                                   'importMetadata': destination.with_name(destination.name + '.meta').relative_to(stage).as_posix(),
+                                   'importMetadata': meta_destination.relative_to(stage).as_posix(),
                                    'sha256': qualified[target]['sha256'],
-                                   'importMetadataSha256': qualified[target]['importMetadataSha256'],
+                                   'importMetadataSha256': qualified[target]['generatedImportMetadataSha256'],
                                    'execution': qualified[target]['execution']})
         aot = stage / 'aot'
         aot.mkdir()
@@ -341,7 +432,7 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
                       'buildSkipped': skip_build}, 'files': files,
         }
         (stage / 'dependency-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
-        verify_bundle(stage)
+        verify_bundle(stage, allow_development=dirty or skip_build)
         backup = artifacts / 'sdk-previous'
         if backup.exists():
             if backup.is_symlink() or backup.resolve() != root / 'artifacts/sdk-previous':
@@ -355,7 +446,10 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
             if backup.exists():
                 backup.rename(output)
             raise
-        print(f'Packaged {len(metadata)} managed assemblies and {len(native_entries)} native targets with exact notices at {output}; nothing published.')
+        if dirty or skip_build:
+            print(f'Generated DEVELOPMENT-ONLY bundle at {output}; default verification rejects it and it must not be imported or published.')
+        else:
+            print(f'Packaged {len(metadata)} managed assemblies and {len(native_entries)} native targets with exact notices at {output}; nothing published.')
         return manifest
     finally:
         if stage.exists() and stage.parent == artifacts.resolve():
@@ -367,13 +461,20 @@ def main():
     parser.add_argument('--allow-dirty', action='store_true', help='Mark development bundle dirty; not for pinned import.')
     parser.add_argument('--no-build', action='store_true', help='Inspect existing outputs; records buildSkipped=true.')
     parser.add_argument('--verify', action='store_true', help='Verify existing inventory, hashes and declared closure.')
+    parser.add_argument('--verify-development', action='store_true',
+                        help='Inspect a dirty/skipped artifact as DEVELOPMENT ONLY; never makes it importable.')
     parser.add_argument('--sqlite-source', type=Path, default=ROOT / 'artifacts/acquisition/unity-sqlite-net',
                         help='Clean exact candidate checkout; cloned into artifacts/acquisition by default.')
     args = parser.parse_args()
     output = ROOT / 'artifacts/sdk'
-    if args.verify:
-        verify_bundle(output)
-        print('Bundle inventory, hashes, managed closure, licenses, native targets and AOT metadata verified.')
+    if args.verify and args.verify_development:
+        parser.error('--verify and --verify-development are mutually exclusive')
+    if args.verify or args.verify_development:
+        verify_bundle(output, allow_development=args.verify_development)
+        if args.verify_development:
+            print('DEVELOPMENT-ONLY inspection passed; artifact remains non-importable and unpublished.')
+        else:
+            print('Bundle inventory, hashes, managed closure, licenses, native targets and AOT metadata verified.')
     else:
         build_bundle(output, args.sqlite_source, args.allow_dirty, args.no_build)
 

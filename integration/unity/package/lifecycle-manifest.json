@@ -4,7 +4,7 @@
   "install": [
     "Verify dependency-manifest.json and every recorded SHA-256 before copying.",
     "Copy managed DLLs and their generated .meta files as one set; reference only the assemblies selected by the consumer asmdef plus their declared closure.",
-    "Copy only the native target subtree for the build host/target, retaining each adjacent upstream .meta file.",
+    "Copy only the native target subtree for the build host/target, retaining each adjacent generated and semantically validated target-isolated .meta file; upstream native importer metadata is not used.",
     "Copy link.xml and retain the installed dependency-manifest.json as the ownership record."
   ],
   "upgrade": [
@@ -27,5 +27,10 @@
       "Restore the previous managed files and consumer references together; CL-013 contains no native or MessagePack qualification assembly.",
       "Do not downgrade or delete databases; if the prior application cannot read the retained schema, leave rollback blocked and use forward recovery."
     ]
+  },
+  "verificationPolicy": {
+    "importable": "sourceDirty must be false and build.buildSkipped must be false; ordinary --verify rejects any development artifact.",
+    "developmentInspection": "--verify-development may inspect hashes and closure but prints DEVELOPMENT-ONLY and never makes the artifact importable or publishable.",
+    "nativeMetadata": "Windows x86_64, macOS universal and Android ARM64 metadata is generated deterministically and checked semantically for exclusive platform, CPU, OS, exclusion and alignment settings."
   }
 }
