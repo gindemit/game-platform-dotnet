@@ -18,7 +18,7 @@ qualification-only and does not implement production `IWireCodec`.
 
 Two clean builds produced identical 99-file manifests with SHA-256
 `2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe`.
-Fresh verification passed, as did 335/335 .NET tests, 44/44 script tests (22
+Fresh verification passed, as did 335/335 .NET tests, 45/45 script tests (23
 packaging cases), validation, 18-project locked restore/build with zero warnings
 or errors, the 52-task/16-ledger/21-wave manifest and 14/14 manifest tests. See
 [CL-015 evidence](implementation/evidence/CL-015/README.md).

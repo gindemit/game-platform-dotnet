@@ -80,7 +80,7 @@
     {
       "repository": "sdk",
       "path": "docs/implementation/evidence/CL-015/results.json",
-      "tests": {"dotnet": 335, "scripts": 44, "packaging": 22, "manifest": 14},
+      "tests": {"dotnet": 335, "scripts": 45, "packaging": 23, "manifest": 14},
       "note": "Two clean byte-identical 99-file manifests at fdc3f19;23 managed assemblies,three native targets,generated isolated importer metadata and exact notices verified. Dirty/skipped artifacts rejected by default. Unity/AOT/device execution unrun."
     },
     {
@@ -103,7 +103,7 @@
     "docs/implementation/evidence/P2/csharp-corpus.json": "c4988f5a1fee3eba832cfcfeed9dc2f561f5a17d0321c5db5afc93ad8d2aabc0",
     "docs/implementation/evidence/P2/results.json": "1cf3228297be1cd78a1601c80452049b882b5c64a4a22eec477a1cb708c42360",
     "docs/implementation/evidence/CL-013/results.json": "d6991daedd745becf72d739340a7521b88cdcbd068f84f44b20aa2219e3e808c",
-    "docs/implementation/evidence/CL-015/results.json": "0a9b021eb8f6996acb2be7969e8143b38843b46ab238eb08942bb811bcdfc953"
+    "docs/implementation/evidence/CL-015/results.json": "83404f4fca529dc5567075adce8ef985e4ac2a69bb9047d9ff63ba7def97864a"
   },
   "approved_schema": {
     "version": "0.2.0-core-schema.1",
@@ -231,7 +231,7 @@
       "CL-010_http_boundary": 27,
       "CL-010_migration_native": 5,
       "CL-007_010_durability_regression": 46,
-      "script": 44,
+      "script": 45,
       "manifest": 14
     },
     "unity_fresh_checks": {
@@ -273,7 +273,7 @@
       "status": "packaging_complete_execution_unverified",
       "manifest_sha256": "2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe",
       "inventory": {"managed_assemblies": 23, "managed_packages": 9, "native_targets": 3, "pinvoke_declarations": 38, "files": 99},
-      "verification": {"reproducible_builds": 2, "full_dotnet": 335, "script": 44, "packaging": 22, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0, "dirty_and_skipped_default_verify_rejected": true},
+      "verification": {"reproducible_builds": 2, "full_dotnet": 335, "script": 45, "packaging": 23, "manifest": 14, "projects": 18, "warnings": 0, "errors": 0, "dirty_and_skipped_default_verify_rejected": true, "android_alignment_semantic_negative": true},
       "native_import_metadata": {"source": "generated_target_isolated", "windows_x86_64": "b39d9d871b4bfdc044f3eebbb61ad41d32782cad58af7cd7650a5467caf247ae", "macos_universal": "209335ce1c0ebff68ce374d1a5f894af73b7569a2919585b0a1dc7e8a63869f3", "android_arm64": "67b379e32cf078ae5ba14c28538598fed2ba365f13285f1d44b40cba5e4894d2"},
       "remaining": "Unity import/stripping,IL2CPP/APK,Android device and macOS execution unrun; production IWireCodec remains unavailable."
     },

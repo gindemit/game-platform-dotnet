@@ -39,15 +39,17 @@ All canonical commands below exited 0 on Windows x86-64 with .NET SDK 9.0.203:
 - Release build: 18 projects, zero errors/warnings;
 - full SDK tests: 335/335;
 - `scripts/validate.py`: 15 projects and 16 evidence-aware feature states;
-- script tests: 44/44, including 22 packaging positive/negative cases;
+- script tests: 45/45, including 23 packaging positive/negative cases;
 - execution manifest: 52 tasks, 16 ledgers, 21 waves;
 - manifest tests: 14/14;
 - bundle build twice plus `--verify`: 23 assemblies, three native targets, exact
   identical manifest hash above.
 
 The added negatives mutate Windows cross-platform enablement, Any-platform
-exclusions, Windows/macOS Editor OS/CPU and Android CPU, and reject dirty/skipped
-artifacts under normal verification.
+exclusions, Windows/macOS Editor OS/CPU, Android CPU and Android 16 KiB alignment,
+and reject dirty/skipped artifacts under normal verification. The alignment case
+updates both manifest hashes before invoking default bundle verification, proving
+the semantic policy—not only hash validation—fails closed.
 
 One superseded attempt started build and test concurrently and produced 18
 MSBuild destination-copy retry warnings. No command failed; the canonical

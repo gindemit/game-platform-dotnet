@@ -24,8 +24,8 @@
   },
   "verification": {
     "dotnet_tests": 335,
-    "script_tests": 44,
-    "packaging_tests": 22,
+    "script_tests": 45,
+    "packaging_tests": 23,
     "manifest_tests": 14,
     "projects_restored_and_built": 18,
     "warnings": 0,

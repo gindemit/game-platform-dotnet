@@ -212,6 +212,25 @@ class PackageTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'setting_conflict'):
                     package.validate_native_importer(text, target)
 
+    def test_default_verify_rejects_android_alignment_conflict(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            manifest = self.bundle(root)
+            native = next(item for item in manifest['nativeLibraries']
+                          if item['target'] == 'android-arm64')
+            meta = root / native['importMetadata']
+            meta.write_text(meta.read_text().replace('Is16KbAligned: true',
+                                                      'Is16KbAligned: false'))
+            changed_hash = package.digest(meta)
+            native['importMetadataSha256'] = changed_hash
+            for item in manifest['files']:
+                if item['path'] == native['importMetadata']:
+                    item['sha256'] = changed_hash
+                    item['bytes'] = meta.stat().st_size
+            (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, 'native_import_setting_conflict'):
+                self.verify(root, manifest)
+
     def test_allow_dirty_artifact_is_rejected_by_default_verify(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
