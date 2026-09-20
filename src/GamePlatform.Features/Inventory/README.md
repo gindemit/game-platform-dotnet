@@ -11,5 +11,6 @@ and cursors atomically. `ApplyConfirmedProjection` borrows that caller-owned
 transaction for a strictly advancing, already-decoded confirmed projection; it
 does not advance a cursor or interpret an uncommitted page. Receipt acceptance
 only marks an intent `AcceptedAwaitingPull` with its expected resulting revision;
-only a later matching confirmed projection clears it. See
+the same or a later authoritative projection removes it from every durable read,
+including after a borrowed-transaction restart. See
 `docs/implementation/evidence/CL-104`.

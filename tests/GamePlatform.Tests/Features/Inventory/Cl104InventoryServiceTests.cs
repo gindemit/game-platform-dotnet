@@ -166,6 +166,34 @@ namespace GamePlatform.Tests.Features.Inventory
         }
 
         [Fact]
+        public async Task BorrowedProjectionCommitSuppressesMatchingAcceptedIntentAfterReopenButRetainsUnrelatedAwaitingIntent()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new PermitAuthority());
+            await service.ApplyConfirmedAsync(Context, Snapshot(1, 2, false), Catalog(true), CancellationToken.None);
+            var accepted = Request("0199f9a0-0000-7000-8000-000000000009", "inventory-borrowed-a");
+            var unrelated = Request("0199f9a0-0000-7000-8000-000000000010", "inventory-borrowed-b");
+            await service.SubmitIntentAsync(accepted, Catalog(true), CancellationToken.None);
+            await service.SubmitIntentAsync(unrelated, Catalog(true), CancellationToken.None);
+            await service.MarkAcceptedAwaitingPullAsync(new InventoryIntentAcceptance(Context, accepted.OperationId, 3), CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cursor_side_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                service.ApplyConfirmedProjection(transaction, Context, 1, Snapshot(3, 5, false), Catalog(true));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (3)"); return true;
+            }, CancellationToken.None);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, new PermitAuthority());
+            var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(5, cached.Value!.Confirmed!.Stacks.Single().Quantity);
+            Assert.Single(cached.Value.PendingIntents);
+            Assert.Equal(unrelated.OperationId, cached.Value.PendingIntents.Single().OperationId);
+            Assert.Equal(InventoryIntentStatus.AwaitingReceipt, cached.Value.PendingIntents.Single().Status);
+            Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cursor_side_sentinel WHERE value=3"), CancellationToken.None));
+            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task OfflineDeniedAndReplayCannotCreatePendingOrConsumeConfirmedQuantity()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
