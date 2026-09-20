@@ -1,5 +1,26 @@
 # Implementation status
 
+## P3 final G3 SDK/SQLite Unity bundle refresh — 2026-09-21
+
+An isolated source-clean build from primary `73cf2fe` packages all current SDK
+projects, including CL-107 atomic receipt correlation and the public CL-101
+Supabase anonymous-auth CAS/`AccountsLifecycleService.StopAsync` surface. The
+unpublished artifact has 23 managed assemblies (15 SDK plus the exact eight-DLL
+MessagePack runtime closure), nine package records, three reviewed SQLite native
+targets, 38 P/Invoke declarations and 100 files including its manifest. Manifest
+SHA-256: `14562ae0b16985d8a5de5c04a3374fd3f06e83289496810ba516afa7b3e6201e`.
+
+Locked Release packaging and ordinary verification pass with zero warnings/errors;
+package tests pass 29/29, full SDK Release tests 503/503, validation passes,
+validator tests 19/19 and manifest tests 14/14. Two independently cloned clean
+checkouts with varied origin metadata produced byte-identical 100-file artifacts.
+Exact immutable artifact/evidence facts are in
+[CL-015 final bundle](implementation/evidence/CL-015/g3-final-bundle-2026-09-21.json).
+
+This is no G3 approval: hosted TLS Supabase/backend HTTPS, Unity auth/secure-store
+bridges, refreshed Unity import/IL2CPP/device evidence, macOS native execution
+and the BE-025/INT-010 journey remain unrun. Nothing was published or deployed.
+
 ## P3 CL-101 auth-state and scope-retirement repair — 2026-09-21
 
 The earlier anonymous-auth increment is superseded by a versioned public-marker
