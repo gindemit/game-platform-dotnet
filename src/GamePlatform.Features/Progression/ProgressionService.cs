@@ -108,6 +108,14 @@ namespace GamePlatform.Features.Progression
             try
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
+                if (current.Confirmed != null && confirmation.Projection.Revision < current.Confirmed.Revision) return;
+                if (current.Confirmed != null && confirmation.Projection.Revision == current.Confirmed.Revision)
+                {
+                    var priorEvidence = current.Confirmations.SingleOrDefault(value => value.ProjectionRevision == confirmation.Projection.Revision);
+                    if (!Equivalent(current.Confirmed, confirmation.Projection) || priorEvidence == null || !SameOperationSet(priorEvidence.OperationIds, confirmation.ConfirmedOperationIds))
+                        throw new ProgressionConflictException("A same-revision progression pull must exactly replay its immutable projection and confirmation evidence.");
+                    return;
+                }
                 ValidateNewConfirmation(current.Pending, current.Confirmations, confirmation);
                 await transactions.ExecuteAsync(scope, transaction =>
                 {
@@ -229,6 +237,7 @@ namespace GamePlatform.Features.Progression
         private static bool Equivalent(PendingProgressionCompletion existing, ProgressionCompletionRequest request) => existing.StreamId == request.StreamId && string.Equals(existing.BusinessSource, request.BusinessSource, StringComparison.Ordinal) && existing.ContentVersion == request.ContentVersion && existing.OutcomeAuthority == request.OutcomeAuthority && Equivalent(existing.Outcome, request.Outcome);
         private static bool Equivalent(GameplayOutcome left, GameplayOutcome right) => left.Session.Equals(right.Session) && left.Mode.Equals(right.Mode) && left.Content.Equals(right.Content) && left.Difficulty.Equals(right.Difficulty) && left.Success == right.Success && left.Score == right.Score && left.DurationTicks == right.DurationTicks && left.TicksPerSecond == right.TicksPerSecond && string.Equals(left.ValidationReference, right.ValidationReference, StringComparison.Ordinal) && left.Metrics.Count == right.Metrics.Count && left.Metrics.All(value => right.Metrics.TryGetValue(value.Key, out var matched) && matched == value.Value);
         private static bool Equivalent(ProgressionConfirmedProjection left, ProgressionConfirmedProjection right) => left.Revision == right.Revision && left.ConfirmedAtMilliseconds == right.ConfirmedAtMilliseconds && left.States.Count == right.States.Count && left.States.All(value => right.States.Any(other => other.StateKey == value.StateKey && other.Value == value.Value));
+        private static bool SameOperationSet(IReadOnlyList<OperationId> left, IReadOnlyList<OperationId> right) => left.Count == right.Count && left.All(value => right.Contains(value));
         private static IReadOnlyList<PendingProgressionCompletion> SuppressConfirmed(IReadOnlyList<PendingProgressionCompletion> pending, IReadOnlyList<ProgressionConfirmationEvidence> evidence)
         {
             var confirmed = new HashSet<OperationId>(evidence.SelectMany(value => value.OperationIds));

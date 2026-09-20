@@ -98,6 +98,25 @@ namespace GamePlatform.Tests.Features.Progression
         }
 
         [Fact]
+        public async Task ConveniencePullIsMonotonicNoopForOlderAndExactReplayButRejectsChangedSameRevision()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(2, 20), Array.Empty<OperationId>()), CancellationToken.None);
+            await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()), CancellationToken.None);
+            var afterOlder = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(20, afterOlder.Value!.Confirmed!.States.Single().Value);
+            await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(2, 20), Array.Empty<OperationId>()), CancellationToken.None);
+            await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(2, 21), Array.Empty<OperationId>()), CancellationToken.None));
+            var accepted = Request("0199f9a0-0000-7000-8000-000000000125", "run-same-revision", 1);
+            await service.CompleteAsync(accepted, CancellationToken.None);
+            await service.MarkAcceptedAwaitingPullAsync(new ProgressionAcceptance(Context, accepted.OperationId), CancellationToken.None);
+            await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(3, 30), new[] { accepted.OperationId }), CancellationToken.None);
+            await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(3, 30), new[] { accepted.OperationId }), CancellationToken.None);
+            await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(3, 30), Array.Empty<OperationId>()), CancellationToken.None));
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task BorrowedProjectionAndCursorSentinelRollbackTogetherThenCommitAndReopen()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
