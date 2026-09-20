@@ -69,12 +69,31 @@ namespace GamePlatform.Tests.Features.Progression
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()), CancellationToken.None);
             Assert.Equal(ProgressionPendingStatus.AwaitingReceipt, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions.Single().Status);
             await service.MarkAcceptedAwaitingPullAsync(new ProgressionAcceptance(Context, request.OperationId), CancellationToken.None);
+            var unrelated = Request("0199f9a0-0000-7000-8000-000000000120", "run-c-unrelated", 1);
+            await service.CompleteAsync(unrelated, CancellationToken.None);
             var accepted = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(ProgressionPendingStatus.AcceptedAwaitingPull, accepted.Value!.PendingCompletions.Single().Status);
+            Assert.Equal(2, accepted.Value!.PendingCompletions.Count);
+            Assert.Equal(ProgressionPendingStatus.AcceptedAwaitingPull, accepted.Value.PendingCompletions.Single(value => value.OperationId == request.OperationId).Status);
             Assert.Equal(10, accepted.Value.Confirmed!.States.Single().Value);
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(2, 11), new[] { request.OperationId }), CancellationToken.None);
             var confirmed = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Empty(confirmed.Value!.PendingCompletions); Assert.Equal(11, confirmed.Value.Confirmed!.States.Single().Value);
+            Assert.Single(confirmed.Value!.PendingCompletions); Assert.Equal(unrelated.OperationId, confirmed.Value.PendingCompletions.Single().OperationId);
+            Assert.Equal(11, confirmed.Value.Confirmed!.States.Single().Value);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task UnknownOrPrematureConfirmationIsRejectedBeforeProjectionOrPendingMutation()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            var awaiting = Request("0199f9a0-0000-7000-8000-000000000121", "run-confirmation", 1);
+            await service.CompleteAsync(awaiting, CancellationToken.None);
+            var unknown = new OperationId(Guid.Parse("0199f9a0-0000-7000-8000-000000000122"));
+            await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), new[] { unknown }), CancellationToken.None));
+            await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), new[] { awaiting.OperationId }), CancellationToken.None));
+            var unchanged = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Null(unchanged.Value!.Confirmed); Assert.Single(unchanged.Value.PendingCompletions);
+            Assert.Equal(ProgressionPendingStatus.AwaitingReceipt, unchanged.Value.PendingCompletions.Single().Status);
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
