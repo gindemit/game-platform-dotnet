@@ -78,4 +78,25 @@ namespace GamePlatform.Backend.Contracts.Remote
     public enum RemoteCommandStatus{Accepted,TerminalRejected}
     public sealed class RemoteCommandOutcome{private readonly byte[]? result;public RemoteCommandOutcome(RemoteCommandStatus status,byte[]? result){if((result?.Length??0)>65_536)throw new ArgumentOutOfRangeException(nameof(result));Status=status;this.result=result==null?null:(byte[])result.Clone();}public RemoteCommandStatus Status{get;}public byte[]? Result=>result==null?null:(byte[])result.Clone();}
     public interface ICommandRemote{Task<RemoteResult<RemoteCommandOutcome>> SendAsync(RemoteCommand command,CancellationToken cancellationToken);}
+
+    public sealed class RemoteCommandReceipt
+    {
+        public RemoteCommandReceipt(bool found, RemoteCommandOutcome? outcome, long observedFinalizedThrough)
+        {
+            if (found != (outcome != null)) throw new ArgumentException("A found receipt requires exactly one terminal outcome.", nameof(outcome));
+            if (observedFinalizedThrough < 0) throw new ArgumentOutOfRangeException(nameof(observedFinalizedThrough));
+            Found = found;
+            Outcome = outcome;
+            ObservedFinalizedThrough = observedFinalizedThrough;
+        }
+
+        public bool Found { get; }
+        public RemoteCommandOutcome? Outcome { get; }
+        public long ObservedFinalizedThrough { get; }
+    }
+
+    public interface ICommandReceiptRemote
+    {
+        Task<RemoteResult<RemoteCommandReceipt>> LookupAsync(RemoteCommand command, CancellationToken cancellationToken);
+    }
 }

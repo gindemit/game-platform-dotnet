@@ -19,10 +19,17 @@ owner disposes it only after all borrowing providers and admitted requests have
 quiesced. Page and pull responses are bounded by both the global cap and their
 requested budget; error correlation and reset reasons are closed protocol data.
 
+The CL-009 command-receipt provider maps the frozen authenticated lookup route
+through the same ports. It binds app, account, installation, stream, operation,
+sequence and fingerprint; returns only retained terminal outcomes; rejects a
+missing receipt at or below the observed finalized watermark; and preserves the
+encoded terminal result for durable sender finalization. Receipt absence never
+permits a new operation identity.
+
 The semantic providers remain portable boundaries, not production composition.
 Desktop tests exercise the `DesktopQualificationWireCodec` only through an
 explicit test-local `IWireCodec` bridge. Production remains fail-closed through
 the unavailable codec seam, and no concrete HTTP executor or host is registered.
-Push, receipt, account, profile and recovery operations remain unsupported.
+Push, account, profile and stream recovery operations remain unsupported.
 Backend BE-016, UnityWebRequest, codec/native packaging, IL2CPP/AOT/stripping and
 device execution remain separate gates. Gates: A02, A11, A12.
