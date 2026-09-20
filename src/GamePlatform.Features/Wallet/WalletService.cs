@@ -111,11 +111,11 @@ namespace GamePlatform.Features.Wallet
         }
 
         /// <summary>Moves only the matching local intent to receipt-accepted. The balance changes only when a confirming pull arrives.</summary>
-        public async Task<FeatureSnapshot<WalletSnapshot>> MarkAcceptedAwaitingPullAsync(WalletSpendAcceptance acceptance, WalletCurrency currency, CatalogSnapshot catalog, CancellationToken cancellationToken)
+        /// <summary>Records a matching retained receipt even after presentation visibility was revoked. This never changes a balance.</summary>
+        public async Task<FeatureSnapshot<WalletSnapshot>> MarkAcceptedAwaitingPullAsync(WalletSpendAcceptance acceptance, WalletCurrency currency, CancellationToken cancellationToken)
         {
             if (acceptance == null) throw new ArgumentNullException(nameof(acceptance));
             var exactOwner = EnsureOwner(acceptance.Owner);
-            ValidateVisibleCatalog(exactOwner, currency, catalog);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -130,14 +130,14 @@ namespace GamePlatform.Features.Wallet
                 await WritePendingAsync(exactOwner, updated, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
-            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), null, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<FeatureSnapshot<WalletSnapshot>> MarkRejectedAsync(WalletSpendRejection rejection, WalletCurrency currency, CatalogSnapshot catalog, CancellationToken cancellationToken)
+        /// <summary>Records a matching retained rejection even after presentation visibility was revoked. This never changes a balance.</summary>
+        public async Task<FeatureSnapshot<WalletSnapshot>> MarkRejectedAsync(WalletSpendRejection rejection, WalletCurrency currency, CancellationToken cancellationToken)
         {
             if (rejection == null) throw new ArgumentNullException(nameof(rejection));
             var exactOwner = EnsureOwner(rejection.Owner);
-            ValidateVisibleCatalog(exactOwner, currency, catalog);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -152,7 +152,7 @@ namespace GamePlatform.Features.Wallet
                 await WritePendingAsync(exactOwner, updated, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
-            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+            return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, currency), null, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>Applies monotonic server state only. It neither debits nor credits from local intent or receipt information.</summary>
@@ -190,9 +190,10 @@ namespace GamePlatform.Features.Wallet
 
         public void Dispose() { if (disposed) return; disposed = true; reads.Dispose(); mutation.Dispose(); }
 
-        private async Task<FeatureSnapshot<WalletSnapshot>> ReadSnapshotAsync(WalletBalanceRequest exact, CatalogSnapshot catalog, SnapshotFreshness freshness, CancellationToken cancellationToken)
+        /// <summary>A null catalog is reserved for owner/operation-fenced receipt reconciliation output; public display reads always supply one.</summary>
+        private async Task<FeatureSnapshot<WalletSnapshot>> ReadSnapshotAsync(WalletBalanceRequest exact, CatalogSnapshot? catalog, SnapshotFreshness freshness, CancellationToken cancellationToken)
         {
-            ValidateVisibleCatalog(exact.Owner, exact.Currency, catalog);
+            if (catalog != null) ValidateVisibleCatalog(exact.Owner, exact.Currency, catalog);
             var durable = await ReadDurableAsync(exact.Owner, exact.Currency, cancellationToken).ConfigureAwait(false);
             if (durable.Confirmed == null && durable.Pending == null)
                 return new FeatureSnapshot<WalletSnapshot>(exact.Owner, 0, FeatureSnapshotState.Missing, SnapshotFreshness.Missing, null, null, null);
