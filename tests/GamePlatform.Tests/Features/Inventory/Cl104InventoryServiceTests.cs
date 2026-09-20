@@ -87,6 +87,20 @@ namespace GamePlatform.Tests.Features.Inventory
         }
 
         [Fact]
+        public async Task SameRevisionWithChangedInstancePayloadOrAuditBytesFailsClosed()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
+            await service.ApplyConfirmedAsync(Context, Snapshot(5, 3, true), Catalog(true), CancellationToken.None);
+            var changedPayload = new InventoryConfirmedSnapshot(5, 100, new[] { new InventoryStack(Definition, 3, 5) },
+                new[] { new InventoryInstance(Instance, Definition, 5, InventoryInstanceState.Active, new byte[] { 8 }, new byte[] { 5 }) });
+            var changedAudit = new InventoryConfirmedSnapshot(5, 100, new[] { new InventoryStack(Definition, 3, 5) },
+                new[] { new InventoryInstance(Instance, Definition, 5, InventoryInstanceState.Active, new byte[] { 9 }, new byte[] { 4 }) });
+            await Assert.ThrowsAsync<InventoryProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, changedPayload, Catalog(true), CancellationToken.None));
+            await Assert.ThrowsAsync<InventoryProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, changedAudit, Catalog(true), CancellationToken.None));
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task OfflineDeniedAndReplayCannotCreatePendingOrConsumeConfirmedQuantity()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
