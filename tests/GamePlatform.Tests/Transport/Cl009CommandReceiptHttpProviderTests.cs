@@ -178,7 +178,7 @@ namespace GamePlatform.Tests.Transport
         {
             var executor = new ScriptedExecutor(_ => Success());
             var auth = new AuthSession();
-            var command = new RemoteCommand(Operation, Stream, 155, "gameplay.session.completed", 1, 2, new byte[] { 8 }, new byte[31]);
+            var command = new RemoteCommand(Operation, Stream, Installation, 155, "gameplay.session.completed", 1, 2, 1_789_555_200_000, new byte[] { 8 }, new byte[31]);
 
             var result = await Provider(executor, new StubCodec(new object()), auth: auth).LookupAsync(command, CancellationToken.None);
 
@@ -202,7 +202,7 @@ namespace GamePlatform.Tests.Transport
                 executor, codec, auth ?? new AuthSession(), refresh, representation);
         }
 
-        private static RemoteCommand Command() => new RemoteCommand(Operation, Stream, 155, "gameplay.session.completed", 1, 1, new byte[] { 8 }, new byte[32]);
+        private static RemoteCommand Command() => new RemoteCommand(Operation, Stream, Installation, 155, "gameplay.session.completed", 1, 1, 1_789_555_200_000, new byte[] { 8 }, new byte[32]);
         private static HttpResponseData Success(string mediaType = PrivateSyncHttpProvider.MessagePackMediaType) => new HttpResponseData(200, Headers(mediaType), new byte[] { 9 });
         private static HttpResponseData Plain(int status) => new HttpResponseData(status, new Dictionary<string, string> { ["Content-Type"] = "text/plain" }, new byte[] { 9 });
         private static Dictionary<string, string> Headers(string mediaType = PrivateSyncHttpProvider.MessagePackMediaType) =>

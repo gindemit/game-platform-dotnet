@@ -17,7 +17,7 @@ namespace GamePlatform.Tests.Sqlite
         private static readonly StorageScope Scope = new StorageScope("test-backend", new PlatformId("01890f3e-7a6b-7c8d-9e0f-102030405060"), new PlatformId("00112233-4455-4677-8899-aabbccddeeff"));
 
         [Fact]
-        public async Task FreshDatabaseInstallsPlatformV4V5AndExplicitExtension()
+        public async Task FreshDatabaseInstallsPlatformV4V6AndExplicitExtension()
         {
             using var files = new TemporaryDatabase();
             var database = await SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { Extension(1) }, CancellationToken.None);
@@ -26,7 +26,7 @@ namespace GamePlatform.Tests.Sqlite
                 var session = (SqliteTransactionSession)transaction;
                 return (Platform: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"), Extensions: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_extension_migrations"), Accounts: Exists(session, "gp_accounts_directory"), Consumer: Exists(session, "consumer_notes"));
             }, CancellationToken.None);
-            Assert.Equal(5, observed.Platform);
+            Assert.Equal(6, observed.Platform);
             Assert.Equal(1, observed.Extensions);
             Assert.Equal(1, observed.Accounts);
             Assert.Equal(1, observed.Consumer);
@@ -42,17 +42,17 @@ namespace GamePlatform.Tests.Sqlite
             await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("INSERT INTO consumer_notes(id, body) VALUES ('retained', 'before-v6')"); return true; }, CancellationToken.None);
             Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
 
-            var v6 = SqlitePlatformMigrationRegistry.Migrations.Concat(new[] { new SqliteMigration(6, "platform-review-v6", new[] { "CREATE TABLE platform_review_v6 (id TEXT PRIMARY KEY)" }) }).ToArray();
-            database = await SqliteDatabase.OpenAsync(files.Path, Scope, v6, new[] { extension }, CancellationToken.None);
+            var v7 = SqlitePlatformMigrationRegistry.Migrations.Concat(new[] { new SqliteMigration(7, "platform-review-v7", new[] { "CREATE TABLE platform_review_v7 (id TEXT PRIMARY KEY)" }) }).ToArray();
+            database = await SqliteDatabase.OpenAsync(files.Path, Scope, v7, new[] { extension }, CancellationToken.None);
             var observed = await database.ExecuteAsync(Scope, transaction =>
             {
                 var session = (SqliteTransactionSession)transaction;
-                return (Platform: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"), Extensions: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_extension_migrations"), Note: session.ExecuteScalar<string>("SELECT body FROM consumer_notes WHERE id = 'retained'"), V6: Exists(session, "platform_review_v6"));
+                return (Platform: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"), Extensions: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_extension_migrations"), Note: session.ExecuteScalar<string>("SELECT body FROM consumer_notes WHERE id = 'retained'"), V7: Exists(session, "platform_review_v7"));
             }, CancellationToken.None);
-            Assert.Equal(6, observed.Platform);
+            Assert.Equal(7, observed.Platform);
             Assert.Equal(1, observed.Extensions);
             Assert.Equal("before-v6", observed.Note);
-            Assert.Equal(1, observed.V6);
+            Assert.Equal(1, observed.V7);
             Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
 
             var newerPlatform = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { extension }, CancellationToken.None));
@@ -87,10 +87,10 @@ namespace GamePlatform.Tests.Sqlite
             Assert.Equal(StorageFailure.Migration, omitted.Failure);
             var newer = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { Extension(1) }, CancellationToken.None));
             Assert.Equal(StorageFailure.Migration, newer.Failure);
-            var drift = new SqliteExtensionDescriptor("consumer.example", 5, new[] { new SqliteExtensionMigration(1, "notes-v1", new[] { "CREATE TABLE consumer_notes (id TEXT PRIMARY KEY, changed INTEGER NOT NULL)" }), new SqliteExtensionMigration(2, "tags-v1", new[] { "CREATE TABLE consumer_tags (id TEXT PRIMARY KEY)" }) });
+            var drift = new SqliteExtensionDescriptor("consumer.example", 6, new[] { new SqliteExtensionMigration(1, "notes-v1", new[] { "CREATE TABLE consumer_notes (id TEXT PRIMARY KEY, changed INTEGER NOT NULL)" }), new SqliteExtensionMigration(2, "tags-v1", new[] { "CREATE TABLE consumer_tags (id TEXT PRIMARY KEY)" }) });
             var changed = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { drift }, CancellationToken.None));
             Assert.Equal(StorageFailure.Migration, changed.Failure);
-            Assert.Throws<ArgumentException>(() => new SqliteExtensionDescriptor("consumer.gap", 5, new[] { new SqliteExtensionMigration(2, "gap", new[] { "CREATE TABLE consumer_gap (id TEXT)" }) }));
+            Assert.Throws<ArgumentException>(() => new SqliteExtensionDescriptor("consumer.gap", 6, new[] { new SqliteExtensionMigration(2, "gap", new[] { "CREATE TABLE consumer_gap (id TEXT)" }) }));
             Assert.Throws<ArgumentException>(() => new SqliteExtensionMigration(1, "platform-touch", new[] { "CREATE TABLE gp_not_allowed (id TEXT)" }));
         }
 
@@ -123,7 +123,7 @@ namespace GamePlatform.Tests.Sqlite
             Assert.Equal(StorageFailure.Migration, unsorted.Failure);
             var duplicate = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { alpha, alpha }, CancellationToken.None));
             Assert.Equal(StorageFailure.Migration, duplicate.Failure);
-            var unmet = new SqliteExtensionDescriptor("minimum.example", 6, new[] { new SqliteExtensionMigration(1, "minimum-v1", new[] { "CREATE TABLE minimum_notes (id TEXT PRIMARY KEY)" }) });
+            var unmet = new SqliteExtensionDescriptor("minimum.example", 7, new[] { new SqliteExtensionMigration(1, "minimum-v1", new[] { "CREATE TABLE minimum_notes (id TEXT PRIMARY KEY)" }) });
             var minimumError = await Assert.ThrowsAsync<StorageException>(() => SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, new[] { unmet }, CancellationToken.None));
             Assert.Equal(StorageFailure.Migration, minimumError.Failure);
         }
@@ -160,7 +160,7 @@ namespace GamePlatform.Tests.Sqlite
         {
             var extension = Extension(1);
             var first = extension.GetChecksum(extension.Migrations[0]);
-            var renamed = new SqliteExtensionDescriptor("consumer.other", 5, extension.Migrations);
+            var renamed = new SqliteExtensionDescriptor("consumer.other", 6, extension.Migrations);
             var minimumChanged = new SqliteExtensionDescriptor("consumer.example", 4, extension.Migrations);
             Assert.NotEqual(first, renamed.GetChecksum(renamed.Migrations[0]));
             Assert.NotEqual(first, minimumChanged.GetChecksum(minimumChanged.Migrations[0]));
@@ -168,7 +168,7 @@ namespace GamePlatform.Tests.Sqlite
             // Exercise both platform and extension journals from fresh files. The
             // barrier deliberately releases all initializers together; this
             // regresses the historical platform DDL race without sleeps.
-            for (var iteration = 0; iteration < 16; iteration++)
+            for (var iteration = 0; iteration < 125; iteration++)
             {
                 using var files = new TemporaryDatabase();
                 using var start = new Barrier(8);
@@ -183,17 +183,17 @@ namespace GamePlatform.Tests.Sqlite
                     var session = (SqliteTransactionSession)transaction;
                     return (Platform: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations"), Extensions: session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_extension_migrations"));
                 }, CancellationToken.None);
-                Assert.Equal(5, observed.Platform);
+                Assert.Equal(6, observed.Platform);
                 Assert.Equal(1, observed.Extensions);
                 foreach (var database in databases) Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
             }
         }
 
-        private static SqliteExtensionDescriptor Extension(int version) => new SqliteExtensionDescriptor("consumer.example", 5, version == 1
+        private static SqliteExtensionDescriptor Extension(int version) => new SqliteExtensionDescriptor("consumer.example", 6, version == 1
             ? new[] { new SqliteExtensionMigration(1, "notes-v1", new[] { "CREATE TABLE consumer_notes (id TEXT PRIMARY KEY, body TEXT NOT NULL)" }) }
             : new[] { new SqliteExtensionMigration(1, "notes-v1", new[] { "CREATE TABLE consumer_notes (id TEXT PRIMARY KEY, body TEXT NOT NULL)" }), new SqliteExtensionMigration(2, "tags-v1", new[] { "CREATE TABLE consumer_tags (id TEXT PRIMARY KEY, note_id TEXT NOT NULL)" }) });
 
-        private static SqliteExtensionDescriptor OtherExtension(string extensionNamespace, string table) => new SqliteExtensionDescriptor(extensionNamespace, 5, new[]
+        private static SqliteExtensionDescriptor OtherExtension(string extensionNamespace, string table) => new SqliteExtensionDescriptor(extensionNamespace, 6, new[]
         {
             new SqliteExtensionMigration(1, table + "-v1", new[] { "CREATE TABLE " + table + " (id TEXT PRIMARY KEY)" })
         });

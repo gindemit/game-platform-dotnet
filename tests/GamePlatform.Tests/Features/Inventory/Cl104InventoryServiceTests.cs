@@ -32,9 +32,10 @@ namespace GamePlatform.Tests.Features.Inventory
         private static readonly StorageScope Scope = new StorageScope("inventory-test", new PlatformId(App.ToString()), new PlatformId(User.ToString()));
         private static readonly ScopedOwnerContext Context = new ScopedOwnerContext(Owner, new SemanticId("private"), 4);
         private static readonly ClientStreamId Stream = new ClientStreamId(Guid.Parse("0199f9a0-0000-7000-8000-000000000003"));
+        private static readonly Guid Installation = Guid.Parse("0199f9a0-0000-7000-8000-000000000004");
         private static readonly PlatformId Definition = new PlatformId("test-item");
         private static readonly PlatformId Instance = new PlatformId("instance-1");
-        private static readonly IReadOnlyList<SqliteMigration> Migrations = new[] { SqliteOutboxMigration.Create(1), SqliteFeatureStateMigration.Create(2) };
+        private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations;
 
         [Fact]
         public async Task RealSqliteConfirmedStacksInstancesAndPendingIntentSurviveReopenWithoutChangingHoldings()
@@ -79,7 +80,7 @@ namespace GamePlatform.Tests.Features.Inventory
             var other = new ScopedOwnerContext(Owner, new SemanticId("other-view"), 1);
             var otherScope = new StorageScope("inventory-test", new PlatformId(App.ToString()), new PlatformId(User.ToString()));
             using var second = new InventoryService(other, otherScope, new SqliteDurableFeatureStateStore(database, otherScope), database,
-                new SqliteAtomicCommandStore(database, otherScope, Owner, new Fingerprint()), new Codec(), new DenyAuthority(), () => 100);
+                new SqliteAtomicCommandStore(database, otherScope, Owner, new Fingerprint(), new FixedClock()), new Codec(), new DenyAuthority(), () => 100);
             await second.ApplyConfirmedAsync(other, Snapshot(1, 9, false), Catalog(true, other), CancellationToken.None);
             Assert.Equal(3, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.Confirmed!.Stacks.Single().Quantity);
             Assert.Equal(9, (await second.ReadCachedAsync(other, CancellationToken.None)).Value!.Confirmed!.Stacks.Single().Quantity);
@@ -226,7 +227,7 @@ namespace GamePlatform.Tests.Features.Inventory
         }
 
         private static InventoryService Create(SqliteDatabase database, IInventoryIntentAuthority authority) => new InventoryService(Context, Scope,
-            new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new Fingerprint()), new Codec(), authority, () => 100);
+            new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new Fingerprint(), new FixedClock()), new Codec(), authority, () => 100);
         private static InventoryConfirmedSnapshot Snapshot(long revision, long quantity, bool instance) => new InventoryConfirmedSnapshot(revision, 100,
             new[] { new InventoryStack(Definition, quantity, revision) }, instance ? new[] { new InventoryInstance(Instance, Definition, revision, InventoryInstanceState.Active, new byte[] { 9 }, new byte[] { 5 }) } : Array.Empty<InventoryInstance>());
         private static CatalogSnapshot Catalog(bool visible, ScopedOwnerContext? context = null, PlatformId? secondDefinition = null) => new CatalogSnapshot(new CatalogSnapshotRequest(context ?? Context, 1, "en", "adult"), 1, 1, 100,
@@ -238,14 +239,15 @@ namespace GamePlatform.Tests.Features.Inventory
             var database = await SqliteDatabase.OpenAsync(path, Scope, Migrations, CancellationToken.None);
             if (seed) await database.ExecuteAsync(Scope, transaction =>
             {
-                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString()); return true;
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D")); return true;
             }, CancellationToken.None);
             return database;
         }
 
         private sealed class PermitAuthority : IInventoryIntentAuthority { public InventoryIntentAuthorization Authorize(InventoryIntentRequest _) => new InventoryIntentAuthorization(true, "inventory.use", "online"); }
         private sealed class DenyAuthority : IInventoryIntentAuthority { public InventoryIntentAuthorization Authorize(InventoryIntentRequest _) => new InventoryIntentAuthorization(false, null, "inventory_offline_denied"); }
-        private sealed class Fingerprint : ICommandFingerprint { public int GetFingerprintLength(int version) => version == 1 ? 32 : 0; public void Compute(OwnerScope _, OperationId __, ClientStreamId ___, long ____, string _____, int ______, int _______, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination); }
+        private sealed class Fingerprint : ICommandFingerprint { public int GetFingerprintLength(int version) => version == 1 ? 32 : 0; public void Compute(OwnerScope _, OperationId __, ClientStreamId ___, Guid ____, long _____, string ______, int _______, int ________, long _________, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination); }
+        private sealed class FixedClock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1_789_555_200_000; }
         private sealed class Codec : IInventoryStateCodec
         {
             public byte[] EncodeConfirmed(InventoryConfirmedSnapshot value) => Text("C", string.Join(",", value.Stacks.Select(stack => stack.DefinitionId.Value + ":" + stack.Quantity + ":" + stack.Revision)), string.Join(",", value.Instances.Select(instance => instance.InstanceId.Value + ":" + instance.DefinitionId.Value + ":" + instance.Revision + ":" + (int)instance.State + ":" + Convert.ToBase64String(instance.CopyPayload()) + ":" + Convert.ToBase64String(instance.CopyAuditExtensions()))));
