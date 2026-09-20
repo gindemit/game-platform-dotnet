@@ -1,5 +1,21 @@
 # Implementation status
 
+## Initial MrSquare outcome/reward decision mirrored — 2026-09-20
+
+`DEC-CONTENT-VALIDATION` / `EXT-GAME-OUTCOME-POLICY` is accepted for one
+intentionally unvalidated casual/noncompetitive test tier. The architecture
+supports client-side and server-side rewards; rewards are initially client-side.
+If G3 requires the bounded server path, it may accept the authenticated client's
+completion report under explicit client trust without game/session/replay
+validation, then issue exactly one nonpremium `test.coin` through the normal
+authorized Wallet/receipt and operation/business-source-idempotency flow.
+
+This is a policy mirror, not SDK or Unity behavior. No runtime, artifact, test,
+capability, A01-A13 result or G3 result changed. TypeScript replay and the
+existing .NET game DLL are not required; the latter may become an optional future
+game-owned validator adapter. `DEC-LEGACY-TRUST` remains unresolved and no
+historical/import reward is authorized.
+
 ## CL-015 complete bundle checkpoint — 2026-09-20
 
 Replacement packaging source `7c1f9534df3b245c6d0d30f5b56fc183a1f7758a`
