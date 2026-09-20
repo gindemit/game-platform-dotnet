@@ -20,7 +20,8 @@ namespace GamePlatform.Backend.Contracts.Remote
         public bool Required { get; }
     }
 
-    public enum ProjectionMutationKind { Upsert, RemoveFromView, Tombstone }
+    /// <summary>Internal semantic mirror of the frozen private-feed change literal.</summary>
+    public enum ProjectionMutationKind { Upsert, RemoveFromView, Tombstone, Invalidation }
 
     public sealed class RemoteProjectionMutation
     {
