@@ -41,6 +41,22 @@ injected. Test fakes are not production providers. No wire DTO, HTTP route,
 server-side funds algorithm, wallet ledger, reward grant, Unity composition or
 migration registration was added.
 
+### G3 frozen semantic-wallet compatibility path
+
+`G3WalletProjectionService` is separately namespaced and semantic-key-only for
+the frozen G3 wallet payload. It does not fabricate a catalog definition ID or
+weaken `WalletService` catalog/spend admission. There is no convenience async
+write: a bootstrap/pull owner must borrow its existing SQLite transaction and
+provide the observed prior source revision. Revision zero is valid; absent,
+removal, and reset reads are `Missing`, never a zero balance. The local envelope
+is bounded and versioned, and durable extensions fail closed.
+
+Real SQLite tests cover absence, revision zero and signed-64 balance extrema,
+rollback/commit/reopen with a cursor sentinel, equal/lower changed payload
+rejection, explicit reset, and exact account/view isolation. This remains only
+a portable cached projection: it adds no wallet wire/API, codec composition,
+backend transcript, spend, credit, grant, or Unity composition.
+
 ## Local Windows x64 evidence
 
 At task worktree head (uncommitted while this evidence was written):
