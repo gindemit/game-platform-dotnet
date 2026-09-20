@@ -1,5 +1,28 @@
 # Implementation status
 
+## P3 CL-101 auth-state and scope-retirement repair — 2026-09-21
+
+The earlier anonymous-auth increment is superseded by a versioned public-marker
+plus secure-secret compare-exchange boundary. It has explicit
+FreshAuthorized/SignupPending/Known/RefreshPending/RecoveryRequired states;
+missing marker, torn/corrupt/missing known secret, uncertain sends and CAS
+conflicts fail closed. Only an explicit host `AuthorizeFreshAsync` CAS permits
+the first anonymous signup, and only definite NotSent can restore FreshAuthorized.
+Neither access nor refresh token is exposed through the public marker; access
+is memory-only and a rotated refresh secret is stored before a session appears.
+
+The bounded auth executor now owns a nonredirecting handler and is disposable;
+there is no public injected HttpClient path. Its internal test seam verifies
+authority, route, redirect and body limits, but no real local TLS redirect host
+or Unity/device execution is claimed. The Unity bridge must implement logical
+atomic public-marker/keystore-secret CAS and use a separate `/auth/v1/` executor.
+
+Accounts lifecycle now exposes terminal `StopAsync`: it fences active/late
+generations, stops admissions, drains/retires exactly once with lifecycle-owned
+timeout semantics and leaves a non-ready terminal result. Focused auth/account
+tests pass 20/20. This remains bounded SDK behavior only; secure-store bridge,
+hosted Supabase, A05/A07/A12, INT-006 and G3 remain unverified.
+
 ## P3 CL-101 bounded nonproduction Supabase anonymous-auth adapter — 2026-09-21
 
 `GamePlatform.Transport.Http` now carries the reviewed outer adapter for the

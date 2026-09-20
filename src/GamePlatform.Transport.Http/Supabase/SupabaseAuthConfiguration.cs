@@ -68,16 +68,63 @@ namespace GamePlatform.Transport.Http.Supabase
         }
     }
 
+    public enum SupabaseAnonymousSessionState { FreshAuthorized, SignupPending, Known, RefreshPending, RecoveryRequired }
+
+    /// <summary>Non-secret public marker. It intentionally contains neither access nor refresh credentials.</summary>
+    public sealed class SupabaseAnonymousSessionPublicRecord
+    {
+        public SupabaseAnonymousSessionPublicRecord(long version, SupabaseAnonymousSessionState state, string? subject)
+        {
+            if (version < 0 || !Enum.IsDefined(typeof(SupabaseAnonymousSessionState), state)) throw new ArgumentOutOfRangeException(nameof(version));
+            if ((state == SupabaseAnonymousSessionState.Known || state == SupabaseAnonymousSessionState.RefreshPending) == string.IsNullOrWhiteSpace(subject)) throw new ArgumentException("Known session states require exactly one subject.", nameof(subject));
+            if (subject != null && (!Guid.TryParseExact(subject, "D", out var id) || id == Guid.Empty)) throw new ArgumentOutOfRangeException(nameof(subject));
+            Version = version; State = state; Subject = subject == null ? null : Guid.ParseExact(subject, "D").ToString("D");
+        }
+        public long Version { get; } public SupabaseAnonymousSessionState State { get; } public string? Subject { get; }
+    }
+
+    /// <summary>Defensively copied logical public/secret record. The public portion has no secret.</summary>
+    public sealed class SupabaseAnonymousSessionSnapshot
+    {
+        public SupabaseAnonymousSessionSnapshot(SupabaseAnonymousSessionPublicRecord? @public, byte[]? secret)
+        {
+            if (@public == null && secret != null) throw new ArgumentException("An absent marker cannot carry a secret.", nameof(secret));
+            Public = @public; this.secret = secret == null ? null : (byte[])secret.Clone();
+        }
+        private readonly byte[]? secret;
+        public SupabaseAnonymousSessionPublicRecord? Public { get; }
+        public bool Exists => Public != null;
+        public byte[]? CopySecret() => secret == null ? null : (byte[])secret.Clone();
+        public static SupabaseAnonymousSessionSnapshot Absent() => new SupabaseAnonymousSessionSnapshot(null, null);
+    }
+
+    public sealed class SupabaseAnonymousSessionTransition
+    {
+        public SupabaseAnonymousSessionTransition(SupabaseAnonymousSessionState state, string? subject)
+        {
+            State = state; Subject = subject;
+            _ = new SupabaseAnonymousSessionPublicRecord(0, state, subject);
+        }
+        public SupabaseAnonymousSessionState State { get; } public string? Subject { get; }
+    }
+
+    public sealed class SupabaseAnonymousSessionCompareExchangeResult
+    {
+        public SupabaseAnonymousSessionCompareExchangeResult(bool applied, SupabaseAnonymousSessionSnapshot current) { Applied = applied; Current = current ?? throw new ArgumentNullException(nameof(current)); }
+        public bool Applied { get; } public SupabaseAnonymousSessionSnapshot Current { get; }
+    }
+
     /// <summary>
-    /// Host-owned secure storage for the small opaque refresh-session record.
-    /// The Unity integration adapts its existing Android-keystore secret port;
-    /// this SDK assembly deliberately has no Unity reference or fallback store.
+    /// Host-owned versioned logical public+secret store. A successful compare-exchange
+    /// atomically publishes a next public marker and matching secret. Implementations
+    /// must defend-copy all secret bytes and never emulate CAS with delete/recreate.
     /// </summary>
     public interface ISupabaseAnonymousSessionStore
     {
         bool IsAvailable { get; }
-        System.Threading.Tasks.Task<byte[]?> ReadAsync(string key, System.Threading.CancellationToken cancellationToken);
-        System.Threading.Tasks.Task WriteAsync(string key, byte[] secret, System.Threading.CancellationToken cancellationToken);
-        System.Threading.Tasks.Task DeleteAsync(string key, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<SupabaseAnonymousSessionSnapshot> ReadAsync(string key, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<SupabaseAnonymousSessionCompareExchangeResult> CompareExchangeAsync(string key,
+            SupabaseAnonymousSessionSnapshot expected, SupabaseAnonymousSessionTransition next, byte[]? secret,
+            System.Threading.CancellationToken cancellationToken);
     }
 }

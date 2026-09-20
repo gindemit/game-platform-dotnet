@@ -10,7 +10,7 @@ using GamePlatform.Transport.Abstractions;
 namespace GamePlatform.Transport.Http.Supabase
 {
     /// <summary>Caller-owned HttpClient executor for the two Supabase Auth JSON routes only.</summary>
-    public sealed class BoundedSupabaseAuthHttpExecutor : IHttpExecutor
+    public sealed class BoundedSupabaseAuthHttpExecutor : IHttpExecutor, IDisposable
     {
         private const int MaximumRequestBytes = 65_536;
         private const int MaximumHeaderCount = 16;
@@ -19,17 +19,26 @@ namespace GamePlatform.Transport.Http.Supabase
         private readonly HttpClient client;
         private readonly SupabaseAuthConfiguration configuration;
         private readonly string basePath;
+        private int disposed;
 
-        public BoundedSupabaseAuthHttpExecutor(HttpClient client, SupabaseAuthConfiguration configuration)
+        /// <summary>The host owns and disposes this executor. It owns a handler with redirects disabled.</summary>
+        public BoundedSupabaseAuthHttpExecutor(SupabaseAuthConfiguration configuration)
+            : this(configuration, new HttpClientHandler { AllowAutoRedirect = false }) { }
+
+        internal BoundedSupabaseAuthHttpExecutor(SupabaseAuthConfiguration configuration, HttpMessageHandler handler)
         {
-            this.client = client ?? throw new ArgumentNullException(nameof(client));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
+            client = new HttpClient(handler, true);
             basePath = configuration.AuthBaseUri.AbsolutePath;
         }
+
+        public void Dispose() { if (Interlocked.Exchange(ref disposed, 1) == 0) client.Dispose(); }
 
         public async Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
+            if (Volatile.Read(ref disposed) != 0) throw new ObjectDisposedException(nameof(BoundedSupabaseAuthHttpExecutor));
             cancellationToken.ThrowIfCancellationRequested();
             ValidateRequest(request);
             using var message = CreateMessage(request);
