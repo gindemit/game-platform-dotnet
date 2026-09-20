@@ -10,7 +10,13 @@ changed MessagePack and dependent HTTP DLL/PDB/MVID identities at the same sourc
 revision. Source Link, symbols and all package/native/license checks are retained.
 The corrected check rejected the existing CRLF file, regeneration restored the
 canonical LF bytes without a tracked generated-source diff, and packaging tests
-pass 29/29. Two-clean-clone verification is pending at this source checkpoint.
+pass 29/29. Source `67f79fc600ec90b9465f1c9a78ae123a4fe03c4d` passes the
+independent two-clean-clone verifier once: 100 byte-identical files, 23 equal
+MVIDs and 15 equal portable PDBs, with manifest SHA-256
+`851856125f7109b871699a8a04bbe1ac1ddc8de9cb795d3a69b83eaf041907cc`.
+An ordinary package/verify from the corrected working checkout also passes and
+matches all 100 files. Locked restore/Release rebuild report zero warnings/errors.
+See [archived evidence](implementation/evidence/CL-015/lf-reproduction/reproducibility-summary.json).
 CL-015 remains M2/C, A09/A13, `in_progress`; macOS and new HTTP Unity/device/live
 acceptance remain unverified.
 

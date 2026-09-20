@@ -1,0 +1,35 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  GamePlatform.Transport.Abstractions -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Transport.Abstractions\bin\Release\netstandard2.1\GamePlatform.Transport.Abstractions.dll
+  GamePlatform.Diagnostics.Abstractions -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Diagnostics.Abstractions\bin\Release\netstandard2.1\GamePlatform.Diagnostics.Abstractions.dll
+  GamePlatform.Core -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Core\bin\Release\netstandard2.1\GamePlatform.Core.dll
+  GamePlatform.Wire.Contracts -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Wire.Contracts\bin\Release\netstandard2.1\GamePlatform.Wire.Contracts.dll
+  GamePlatform.Features.Contracts -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Features.Contracts\bin\Release\netstandard2.1\GamePlatform.Features.Contracts.dll
+  GamePlatform.Storage.Abstractions -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Storage.Abstractions\bin\Release\netstandard2.1\GamePlatform.Storage.Abstractions.dll
+  GamePlatform.Navigation -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Navigation\bin\Release\netstandard2.1\GamePlatform.Navigation.dll
+  GamePlatform.Serialization.Json -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Serialization.Json\bin\Release\netstandard2.1\GamePlatform.Serialization.Json.dll
+  GamePlatform.Features.Presentation -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Features.Presentation\bin\Release\netstandard2.1\GamePlatform.Features.Presentation.dll
+  GamePlatform.Storage.Sqlite -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Storage.Sqlite\bin\Release\netstandard2.1\GamePlatform.Storage.Sqlite.dll
+  GamePlatform.Serialization.MessagePack -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Serialization.MessagePack\bin\Release\netstandard2.1\GamePlatform.Serialization.MessagePack.dll
+  GamePlatform.Backend.Contracts -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Backend.Contracts\bin\Release\netstandard2.1\GamePlatform.Backend.Contracts.dll
+  GamePlatform.Sync -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Sync\bin\Release\netstandard2.1\GamePlatform.Sync.dll
+  GamePlatform.Features -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Features\bin\Release\netstandard2.1\GamePlatform.Features.dll
+  GamePlatform.Transport.Http -> C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Transport.Http\bin\Release\netstandard2.1\GamePlatform.Transport.Http.dll
+  GamePlatform.CodecHarness -> C:\Work\git\gindemit\game-platform-dotnet\tests\acceptance\GamePlatform.CodecHarness\bin\Release\net9.0\GamePlatform.CodecHarness.dll
+  GamePlatform.Tests -> C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.91
+From https://github.com/gilzoide/unity-sqlite-net
+ * branch            08248bd5884d8eb932a837aa56d4ff456daf913f -> FETCH_HEAD
+HEAD is now at 08248bd Bump version to 1.3.2
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.89
+Packaged 23 managed assemblies and 3 native targets with exact notices at C:\Work\git\gindemit\game-platform-dotnet\artifacts\sdk; nothing published.

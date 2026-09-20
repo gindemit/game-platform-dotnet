@@ -1,5 +1,17 @@
 {
   "task": "CL-015",
+  "http_lf_reproduction": {
+    "source_commit": "67f79fc600ec90b9465f1c9a78ae123a4fe03c4d",
+    "manifest_sha256": "851856125f7109b871699a8a04bbe1ac1ddc8de9cb795d3a69b83eaf041907cc",
+    "path": "docs/implementation/evidence/CL-015/lf-reproduction",
+    "independent_clean_clones": 2,
+    "verifier_invocations": 1,
+    "complete_files_byte_equal": 100,
+    "working_checkout_complete_files_also_equal": 100,
+    "ordinary_verify_passes": 3,
+    "packaging_tests": 29,
+    "root_cause": "Generated DTO mapper used Windows CRLF while the committed source is LF; text-mode check normalized away the PDB source-checksum difference. Explicit LF writes and byte checks preserve exact debug/source identity."
+  },
   "date": "2026-09-20",
   "status": "in_progress_packaging_complete_execution_unverified",
   "source_commit": "7c1f9534df3b245c6d0d30f5b56fc183a1f7758a",
@@ -78,7 +90,7 @@
     "explicit_inspection": "verify-development_non-importable_only"
   },
   "unrun": [
-    "two-clean-clone reproducibility rerun for production-adapter artifact",
-    "macOS native execution"
+    "macOS native execution",
+    "new HTTP Unity/device/live acceptance"
   ]
 }

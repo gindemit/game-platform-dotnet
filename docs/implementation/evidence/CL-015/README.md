@@ -102,3 +102,40 @@ verify pass with manifest SHA-256
 CL-015 remains `in_progress`: the promoted artifact has not yet received the
 two-clean-clone reproducibility rerun, and macOS native execution remains unrun.
 No package was published.
+
+## HTTP artifact source-byte correction — 2026-09-20
+
+At source `81376de9c0375da7091c59797283678ae527a29d`, the working checkout
+manifest `538c133332a91b136758027f7a7dda0ddc78b05583b0607e86f17bfa6b993fce`
+differed from fresh clone manifest
+`78fc59e55f14728d64e692fea8d57b836416d54bc9b9e9b513f492a620607389`.
+The only source-byte difference in the affected projects was the generated
+`TypedQualificationCodec.g.cs`: 109094 bytes with 1149 CR characters versus
+107945 LF-only bytes, identical after CR removal. Git's LF normalization and the
+generator's text-mode check hid this difference. Portable PDB document checksums
+changed the MessagePack DLL/PDB/MVID and dependent HTTP DLL/PDB/MVID.
+
+Source `67f79fc600ec90b9465f1c9a78ae123a4fe03c4d` makes the generator write
+explicit UTF-8/LF and check exact bytes. The new check rejected the old file;
+regeneration passed without a tracked generated-source content change. Symbols,
+Source Link and exact package/native/license checks are preserved. Packaging
+regressions pass 29/29.
+
+One invocation of `scripts/verify-package-reproducibility.py --source
+C:/Work/git/gindemit/game-platform-dotnet --revision
+67f79fc600ec90b9465f1c9a78ae123a4fe03c4d --sqlite-source
+C:/Work/git/gindemit/game-platform-dotnet/artifacts/acquisition/unity-sqlite-net
+--evidence-output C:/Work/git/gindemit/game-platform-dotnet/artifacts/cl015-lf-reproduction`
+passes with 100 byte-identical files, 23 equal MVIDs and 15 equal PDB hashes.
+The manifest SHA-256 is
+`851856125f7109b871699a8a04bbe1ac1ddc8de9cb795d3a69b83eaf041907cc`.
+Both clean-clone ordinary verifies pass. The corrected working checkout's ordinary
+package and verify also pass and all 100 files match the independent inventory.
+An initial local packaging attempt correctly rejected a stale Git stat entry after
+LF regeneration; refreshing that unchanged index entry enabled the clean build.
+Locked restore/Release rebuild report zero warnings/errors. Logs, manifests and
+the complete hash comparison are archived in `lf-reproduction/`.
+
+This anchor supersedes the HTTP artifact above. CL-015 remains `in_progress` for
+macOS native execution; new HTTP Unity/device/live acceptance remains unverified.
+No runtime behavior, dependency pin, protocol or Unity import changed.
