@@ -29,6 +29,8 @@ namespace GamePlatform.Tests.Features.Entitlements
         private static readonly ScopedOwnerContext Context = new ScopedOwnerContext(Owner, new SemanticId("private"), 4);
         private static readonly PlatformId RightId = new PlatformId("premium-pass");
         private static readonly PlatformId ReceiptId = new PlatformId("receipt-1");
+        private static readonly PlatformId SecondRightId = new PlatformId("season-pass");
+        private static readonly PlatformId SecondReceiptId = new PlatformId("receipt-2");
 
         [Fact]
         public async Task RealSqliteActivationDuplicateAndReopenPreserveServerConfirmedOrigin()
@@ -67,6 +69,58 @@ namespace GamePlatform.Tests.Features.Entitlements
             Assert.Equal(3, cached.Revision);
             Assert.Equal(EntitlementRightState.Revoked, right.Right.State);
             Assert.Equal(EntitlementOfflineEligibility.Ineligible, right.OfflineEligibility);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task SameRevisionComparisonIsOrderIndependentButRejectsChangedRightContent()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            var first = new EntitlementConfirmedSnapshot(5, 105, new[]
+            {
+                Right(RightId, ReceiptId, 5, EntitlementRightState.Active, null, new byte[] { 1 }),
+                Right(SecondRightId, SecondReceiptId, 5, EntitlementRightState.Unknown, null, new byte[] { 2 })
+            });
+            var reorderedEquivalent = new EntitlementConfirmedSnapshot(5, 105, new[]
+            {
+                Right(SecondRightId, SecondReceiptId, 5, EntitlementRightState.Unknown, null, new byte[] { 2 }),
+                Right(RightId, ReceiptId, 5, EntitlementRightState.Active, null, new byte[] { 1 })
+            });
+            await service.ApplyConfirmedAsync(Context, first, Catalog(Context, true, RightId, SecondRightId), CancellationToken.None);
+            await service.ApplyConfirmedAsync(Context, reorderedEquivalent, Catalog(Context, true, RightId, SecondRightId), CancellationToken.None);
+            var changed = new EntitlementConfirmedSnapshot(5, 105, new[]
+            {
+                Right(RightId, ReceiptId, 5, EntitlementRightState.Active, null, new byte[] { 9 }),
+                Right(SecondRightId, SecondReceiptId, 5, EntitlementRightState.Unknown, null, new byte[] { 2 })
+            });
+            await Assert.ThrowsAsync<EntitlementProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, changed, Catalog(Context, true, RightId, SecondRightId), CancellationToken.None));
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task BorrowedTransactionCommitsEntitlementsWithCursorSideEffectAndRollsBothBack()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cl106_cursor_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
+            await Assert.ThrowsAsync<InjectedFailure>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                service.ApplyConfirmedInTransaction(transaction, Context, Snapshot(1, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl106_cursor_sentinel VALUES (?)", 1);
+                throw new InjectedFailure();
+            }, CancellationToken.None));
+            Assert.Null(await new SqliteDurableFeatureStateStore(database, Scope).ReadAsync(Context, "entitlements", "confirmed", CancellationToken.None));
+            var afterRollback = await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl106_cursor_sentinel"), CancellationToken.None);
+            Assert.Equal(0, afterRollback);
+
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                service.ApplyConfirmedInTransaction(transaction, Context, Snapshot(1, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl106_cursor_sentinel VALUES (?)", 1);
+                return true;
+            }, CancellationToken.None);
+            Assert.NotNull(await new SqliteDurableFeatureStateStore(database, Scope).ReadAsync(Context, "entitlements", "confirmed", CancellationToken.None));
+            var afterCommit = await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl106_cursor_sentinel"), CancellationToken.None);
+            Assert.Equal(1, afterCommit);
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
@@ -111,13 +165,16 @@ namespace GamePlatform.Tests.Features.Entitlements
             new SqliteDurableFeatureStateStore(database, Scope), database, new Codec());
 
         private static EntitlementConfirmedSnapshot Snapshot(long revision, EntitlementRightState state, long? expiry, byte[] payload) =>
-            new EntitlementConfirmedSnapshot(revision, 100 + revision, new[] { new EntitlementRight(RightId, revision, state,
-                new EntitlementOriginReceipt(ReceiptId, "purchase.receipt-1"), expiry, payload) });
+            new EntitlementConfirmedSnapshot(revision, 100 + revision, new[] { Right(RightId, ReceiptId, revision, state, expiry, payload) });
 
-        private static CatalogSnapshot Catalog(ScopedOwnerContext context, bool visible) => new CatalogSnapshot(
+        private static EntitlementRight Right(PlatformId rightId, PlatformId receiptId, long revision, EntitlementRightState state, long? expiry, byte[] payload) =>
+            new EntitlementRight(rightId, revision, state, new EntitlementOriginReceipt(receiptId, "purchase." + receiptId.Value), expiry, payload);
+
+        private static CatalogSnapshot Catalog(ScopedOwnerContext context, bool visible, params PlatformId[] definitions) => new CatalogSnapshot(
             new CatalogSnapshotRequest(context, 1, "en", "adult"), 1, 1, 100,
-            visible ? new[] { new CatalogEntry(new CatalogDefinition(RightId, CatalogResourceKind.Entitlement, new SemanticId("premium.pass"), 1, 1, Array.Empty<byte>()),
-                new CatalogAppBinding(RightId, 1, true, true, false, false, false, Array.Empty<byte>())) } : Array.Empty<CatalogEntry>());
+            visible ? (definitions.Length == 0 ? new[] { RightId } : definitions).Select(definition => new CatalogEntry(
+                new CatalogDefinition(definition, CatalogResourceKind.Entitlement, new SemanticId("test." + definition.Value), 1, 1, Array.Empty<byte>()),
+                new CatalogAppBinding(definition, 1, true, true, false, false, false, Array.Empty<byte>()))).ToArray() : Array.Empty<CatalogEntry>());
 
         private static Task<SqliteDatabase> OpenAsync(string path) => SqliteDatabase.OpenAsync(path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
 
@@ -149,6 +206,8 @@ namespace GamePlatform.Tests.Features.Entitlements
                 if (extensions.Length != 0) throw new InvalidOperationException("Unsupported entitlement extension.");
             }
         }
+
+        private sealed class InjectedFailure : Exception { }
 
         private sealed class TemporaryDatabase : IDisposable
         {
