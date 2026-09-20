@@ -23,6 +23,11 @@ consumer-owned conditional-insert seam; its successful callback writes the
 operation presentation record in the same storage transaction. Composition must
 provide a real atomic store implementation, never an in-memory lock.
 
+`IRewardProjectionEvidenceStore` similarly inserts immutable group evidence or
+verifies the exact retained canonical bytes at the same feed revision. It never
+uses generic equal-revision upsert replacement; a replay is idempotent while an
+operation/source/line/revision change for an existing grant fails closed.
+
 The receipt endpoint/feed adapter remains a composition owner. It maps frozen
 backend receipt and group semantics into these contracts after component
 projections commit. G3 peer, production codec/HTTP, Unity wiring and A06/A08

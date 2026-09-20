@@ -15,6 +15,9 @@ revision membership only. `StageProjectionGroup` accepts the caller's borrowed
 `ILocalStorageTransaction`, so the adapter can persist that evidence atomically
 with component projections and its pull cursor. The service confirms only an
 exact receipt/group match; partial or conflicting group evidence fails closed.
+`IRewardProjectionEvidenceStore` makes the borrowed write insert-or-verify
+immutable canonical evidence rather than relying on generic equal-revision
+feature-state upsert behavior.
 
 Exactly-once UI display is not implemented with an in-process lock or a
 feature-state read/upsert race. The feature requires a narrow
@@ -28,17 +31,19 @@ Focused evidence on Windows x64 / .NET SDK 9.0.203:
 dotnet test tests\GamePlatform.Tests\GamePlatform.Tests.csproj -c Release --no-restore --filter FullyQualifiedName~Cl107RewardFulfillmentServiceTests
 ```
 
-Result: 7 passed, 0 failed, 0 warnings. The tests use the pinned real SQLite
+Result: 8 passed, 0 failed, 0 warnings. The tests use the pinned real SQLite
 executor and durable feature-state migration, covering accepted-before-pull,
 response-loss group-before-receipt, repeated receipts, a different idempotent
 operation for the same grant/source, partial-group rejection, terminal rejection,
 foreign owner fencing, reopen, and grant-keyed exactly-once presentation.
 They also prove rollback versus commit of the borrowed projection/cursor
 transaction before later receipt reconciliation, and two-instance/reopen claim
-exclusivity.
+exclusivity. They additionally prove exact group replay is idempotent while an
+equal-revision group with changed operation/source/line revision is rejected and
+the original proof survives reopen.
 
 The locked Release build and full SDK test suite were also run on the corrected task head:
-422 passed, 0 failed, 0 skipped, 0 warnings. `python scripts/validate.py` passed
+423 passed, 0 failed, 0 skipped, 0 warnings. `python scripts/validate.py` passed
 and `python -m unittest discover -s scripts -p test_*.py` passed 51/51.
 The first full-suite attempt exposed the pre-existing CL-007 concurrent-open
 race (`gp_sync_state already exists`); the immediate unchanged rerun passed
