@@ -18,6 +18,30 @@ namespace GamePlatform.Tests.Serialization
         private const string ProvisionResponseHex = "86af70726f746f636f6c56657273696f6e01a76163636f756e7483ae706c6174666f726d557365724964c41000112233445546778899aabbccddeeffa9637265617465644174cf000001a0a9cbc960a87265766973696f6e01aa6d656d6265727368697084a56170704964c41001890f3e7a6b7c8d9e0f102030405060a6737461747573a6616374697665a9637265617465644174cf000001a0a9cbc960a87265766973696f6e01ae636c69656e7453747265616d4964c41001890f3e7a6b7c8d9e0f102030405060ac6e65787453657175656e636501aa73657276657254696d65cf000001a0a9cd53e8";
 
         [Fact]
+        public void ProductionAdapterImplementsWirePortWithApprovedBytes()
+        {
+            IWireCodec codec = new MessagePackWireCodec();
+            var request = new ProvisionRequest(
+                Guid.Parse("00112233-4455-4677-8899-aabbccddeeff"),
+                Guid.Parse("01890f3e-7a6b-7c8d-9e0f-102030405060"));
+
+            Assert.Equal(ProvisionRequestHex, Convert.ToHexString(codec.Encode(request)).ToLowerInvariant());
+            Assert.Equal(request.InstallationId, codec.Decode<ProvisionRequest>(Convert.FromHexString(ProvisionRequestHex)).InstallationId);
+        }
+
+        [Fact]
+        public void ProductionAdapterFailsClosedForUnsupportedTypesAndHostileInput()
+        {
+            IWireCodec codec = new MessagePackWireCodec();
+
+            Assert.Throws<QualificationCodecException>(() => codec.Encode(42));
+            Assert.Throws<QualificationCodecException>(() => codec.Decode<int>(new byte[] { 0x2a }));
+            Assert.Throws<QualificationCodecException>(() => codec.Decode<ProvisionRequest>(new byte[262_145]));
+            Assert.Throws<QualificationCodecException>(() => codec.Decode<ProvisionRequest>(
+                Convert.FromHexString("82af70726f746f636f6c56657273696f6e01af70726f746f636f6c56657273696f6e01")));
+        }
+
+        [Fact]
         public void CandidateMatchesApprovedProducerBytes()
         {
             var codec = new DesktopQualificationWireCodec();

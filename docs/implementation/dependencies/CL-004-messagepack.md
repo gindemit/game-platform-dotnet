@@ -9,12 +9,12 @@ versions and content hashes are recorded in generated NuGet lockfiles.
 
 Use only explicit bounded reader/writer paths. No typeless resolver, reflection
 serializer, runtime code generation, compression or serializer annotations in
-portable contracts are authorized. `DesktopQualificationWireCodec` is a
-desktop-only candidate over the same generated mapping and bounded reader/writer;
-it deliberately does not implement or register production `IWireCodec`.
-IL2CPP, stripping, device execution and complete transitive bundle/license
-delivery remain CL-015 and INT-009 work. No package is published or automatically
-installed in Unity.
+portable contracts are authorized. `MessagePackWireCodec` is the production
+`IWireCodec` adapter over the same generated mapping and bounded reader/writer
+that passed the approved G2 corpus on Android ARM64 IL2CPP with high stripping.
+It does not provide HTTP execution or host registration. Complete transitive
+bundle/license delivery remains CL-015 evidence. No package is published or
+automatically installed in Unity.
 
 Diagnostic JSON parsing for the peer CLI uses the .NET 9 test host's BCL. It
 does not select a JSON library for the portable JSON adapter.

@@ -25,8 +25,9 @@ diagnostic roundtrips reserve four, including the still-retained input graph.
 same generated mapping and bounded reader/writer. It does not implement
 `IWireCodec` and is exposed only to the test assembly; arbitrary generic values,
 unknown union implementations and unreviewed top-level DTOs fail closed.
-Provider-fit tests use an explicit test-local adapter. Production composition
-remains unavailable.
+`MessagePackWireCodec` is the production `IWireCodec` adapter over that exact
+qualified implementation. It adds no resolver, fallback or alternate encoding;
+the same unsupported values continue to fail closed.
 
 Bounds include 262144-byte bodies and fixed-capacity output buffering, strict
 local collection/string/binary limits, 32 container levels, 16384 decoded nodes,
@@ -50,9 +51,10 @@ vectors, compact/full-width integer tokens, RFC UUID bytes, hostile UTF-8,
 duplicate keys, reference siblings, actual depth/node/allocation limits,
 extension boundaries and aggregate feed groups.
 
-`UnavailableMessagePackCodec` remains the production-facing fail-closed seam.
-CL-015 packages this assembly and its exact runtime dependency closure with
-targeted preservation metadata, still labeled qualification-only. Packaging is
-not production `IWireCodec` availability, Unity integration, IL2CPP/AOT/stripping,
-physical-device, concrete HTTP executor or host acceptance. The candidate never
-authenticates, grants, acknowledges synchronization or advances checkpoints.
+`UnavailableMessagePackCodec` remains for callers explicitly selecting an
+unavailable capability. CL-015 packages this assembly and its exact runtime
+dependency closure with targeted preservation metadata. The production adapter
+was promoted only after the approved G2 corpus passed on Android ARM64 IL2CPP
+with high stripping. It is not a concrete HTTP executor, host registration or
+live-service acceptance. The codec never authenticates, grants, acknowledges
+synchronization or advances checkpoints.

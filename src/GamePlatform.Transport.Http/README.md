@@ -26,10 +26,9 @@ missing receipt at or below the observed finalized watermark; and preserves the
 encoded terminal result for durable sender finalization. Receipt absence never
 permits a new operation identity.
 
-The semantic providers remain portable boundaries, not production composition.
-Desktop tests exercise the `DesktopQualificationWireCodec` only through an
-explicit test-local `IWireCodec` bridge. Production remains fail-closed through
-the unavailable codec seam, and no concrete HTTP executor or host is registered.
+The semantic providers remain portable boundaries, not host composition.
+`MessagePackWireCodec` is the qualified production `IWireCodec` implementation
+and remains constructor-injected. No concrete HTTP executor or host is registered.
 Push, account, profile and stream recovery operations remain unsupported.
-Backend BE-016, UnityWebRequest, codec/native packaging, IL2CPP/AOT/stripping and
-device execution remain separate gates. Gates: A02, A11, A12.
+Backend BE-016, UnityWebRequest and live hosted execution remain separate gates.
+Gates: A02, A11, A12.
