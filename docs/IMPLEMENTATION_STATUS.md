@@ -1,5 +1,31 @@
 # Implementation status
 
+## P3 CL-101 bounded nonproduction Supabase anonymous-auth adapter — 2026-09-21
+
+`GamePlatform.Transport.Http` now carries the reviewed outer adapter for the
+consumer-owned CL-101 auth port. It has a strict separate HTTPS
+`.../auth/v1/` configuration and a caller-owned bounded HttpClient executor
+for only anonymous signup and refresh. The adapter never validates or derives
+identity from JWT claims: a returned Supabase user UUID is paired with the
+explicitly configured non-secret backend namespace/issuer descriptor, while
+backend issuer/audience authorization remains backend-owned.
+
+Before first signup it writes a secure pending marker; only definitely-not-sent
+work may clear it. Uncertain signup, malformed replies, corrupt/missing known
+credentials, subject mismatch and secure-store failure require recovery rather
+than another anonymous account. Known refresh transport failure reopens offline
+with the saved principal. The access token is memory-only; the framed refresh
+record is rotated through an injected secure-session port before publishing the
+new session. No credentials are logged or written to ordinary storage.
+
+Focused deterministic tests pass 11/11, including success, malformed data,
+expired/rotated refresh, restart, uncertainty, not-sent cleanup, cancellation,
+store failure, subject mismatch, duplicate-signup fencing, authority/route,
+redirect and response-size checks. This is not hosted Supabase, Unity/device,
+secure-store bridge, account-scope, A05/A07/A12 or G3 evidence. Unity must use
+two separately bounded executors: its existing functions root and a new auth
+root; see CL-101 evidence.
+
 ## P3 current SDK/SQLite Unity bundle refresh — 2026-09-20
 
 The current coordinated SDK head `686721a` was packaged in an isolated clean

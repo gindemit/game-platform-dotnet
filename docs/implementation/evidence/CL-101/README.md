@@ -30,4 +30,32 @@ Architecture review allocates the Accounts directory as SDK platform migration
 immutable entry with concurrent migrations. A host must also
 provide the dedicated principal-directory database scope plus a scope-lease factory
 that reads `SqlitePrivateSyncStore` readiness. These missing composition steps mean
+## 2026-09-21 nonproduction Supabase auth boundary increment
+
+Source paths:
+
+- `src/GamePlatform.Transport.Http/Supabase/SupabaseAuthConfiguration.cs`
+- `src/GamePlatform.Transport.Http/Supabase/BoundedSupabaseAuthHttpExecutor.cs`
+- `src/GamePlatform.Transport.Http/Supabase/SupabaseAnonymousAuthLifecycle.cs`
+- `tests/GamePlatform.Tests/Transport/SupabaseAnonymousAuthLifecycleTests.cs`
+
+The outer transport adapter implements the Accounts-owned lifecycle port under
+the reviewed one-way dependency edge. It requires a separate exact HTTPS
+`.../auth/v1/` root, an injected secure-session store and an injected bounded
+executor. It sends only GoTrue anonymous signup and refresh JSON. It does not
+parse JWT claims, validate issuer/audience, log secrets, retain access tokens
+outside memory, or silently create a replacement anonymous user after a sent
+or uncertain signup.
+
+`dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-restore --filter FullyQualifiedName~SupabaseAnonymousAuthLifecycleTests`
+passed **11/11** deterministic tests: signup persistence, malformed response,
+expiry/refresh rotation, restart, subject mismatch, uncertain and not-sent
+signup, offline refresh, secure-store failure, cancellation, concurrency
+fencing and executor authority/route/redirect/body limits.
+
+Unity remains unedited. Its actual integration must adapt the existing Android
+keystore secret port and create a second auth-root executor; the existing
+functions-root executor cannot admit `/auth/v1/` calls. No live endpoint,
+device, A05/A07/A12, INT-006 or G3 result is claimed.
+
 CL-101 remains in progress and neither A05/A07/A12 nor Unity/G3 is claimed.

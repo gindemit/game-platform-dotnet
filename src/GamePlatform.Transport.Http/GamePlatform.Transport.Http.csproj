@@ -8,6 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="../GamePlatform.Core/GamePlatform.Core.csproj" />
     <ProjectReference Include="../GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.csproj" />
+    <ProjectReference Include="../GamePlatform.Features/GamePlatform.Features.csproj" />
+    <ProjectReference Include="../GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.csproj" />
     <ProjectReference Include="../GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions.csproj" />
     <ProjectReference Include="../GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.csproj" />
     <ProjectReference Include="../GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack.csproj" />

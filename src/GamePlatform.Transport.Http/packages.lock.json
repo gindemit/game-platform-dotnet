@@ -64,6 +64,25 @@
       "gameplatform.core": {
         "type": "Project"
       },
+      "gameplatform.diagnostics.abstractions": {
+        "type": "Project"
+      },
+      "gameplatform.features": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Backend.Contracts": "[0.1.0-draft, )",
+          "GamePlatform.Core": "[0.1.0-draft, )",
+          "GamePlatform.Diagnostics.Abstractions": "[0.1.0-draft, )",
+          "GamePlatform.Features.Contracts": "[0.1.0-draft, )",
+          "GamePlatform.Storage.Abstractions": "[0.1.0-draft, )"
+        }
+      },
+      "gameplatform.features.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Core": "[0.1.0-draft, )"
+        }
+      },
       "gameplatform.serialization.messagepack": {
         "type": "Project",
         "dependencies": {
