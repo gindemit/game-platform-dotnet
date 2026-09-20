@@ -15,3 +15,10 @@ outer transport composition: it implements this module's consumer-owned
 Its secure-store bridge, account scope lease factory, shared migration
 registration, Unity integration, and live backend proof remain host/coordinator
 work.
+
+`AccountsLifecycleService.StopAsync` is the explicit terminal scope-quiescence
+boundary for a host composition. It fences the generation before waiting for
+the lifecycle-owned bounded stop/drain timeout; even an already-cancelled
+caller cannot leave an admitted writer active. Repeated/concurrent calls share
+one terminal outcome, and later starts remain unavailable. Failed retirement is
+quarantined as recovery-required.

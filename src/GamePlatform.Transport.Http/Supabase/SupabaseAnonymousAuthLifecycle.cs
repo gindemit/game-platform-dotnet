@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,13 +13,7 @@ using GamePlatform.Transport.Abstractions;
 
 namespace GamePlatform.Transport.Http.Supabase
 {
-    /// <summary>
-    /// Bounded nonproduction Supabase anonymous-auth adapter. It speaks only the
-    /// vendor's explicit JSON auth protocol, never interprets JWT claims, and
-    /// maps the returned user id to the configured non-secret principal issuer.
-    /// Access tokens are memory-only; the injected secure store receives just a
-    /// framed refresh token and subject record.
-    /// </summary>
+    /// <summary>CAS-fenced nonproduction Supabase anonymous-auth adapter.</summary>
     public sealed class SupabaseAnonymousAuthLifecycle : IAccountsAuthLifecycle
     {
         private const string JsonMediaType = "application/json";
@@ -40,10 +33,24 @@ namespace GamePlatform.Transport.Http.Supabase
             this.clock = clock ?? new SystemUnixMillisecondClock();
         }
 
-        /// <summary>Convenience composition for desktop/non-Unity hosts. The caller owns HttpClient and disables redirects on its handler.</summary>
-        public static SupabaseAnonymousAuthLifecycle CreateNonProduction(SupabaseAuthConfiguration configuration,
-            HttpClient client, ISupabaseAnonymousSessionStore store, IUnixMillisecondClock? clock = null) =>
-            new SupabaseAnonymousAuthLifecycle(configuration, new BoundedSupabaseAuthHttpExecutor(client, configuration), store, clock);
+        /// <summary>
+        /// Explicit host-only fresh authorization. The host must first decide that no
+        /// account directory or recovery data exists; this class never scans it.
+        /// Authentication itself treats an absent marker as recovery.
+        /// </summary>
+        public async Task<bool> AuthorizeFreshAsync(CancellationToken cancellationToken)
+        {
+            if (!store.IsAvailable) return false;
+            try
+            {
+                var current = await store.ReadAsync(configuration.SessionStorageKey, cancellationToken).ConfigureAwait(false);
+                if (current == null || current.Exists) return false;
+                return (await store.CompareExchangeAsync(configuration.SessionStorageKey, current,
+                    new SupabaseAnonymousSessionTransition(SupabaseAnonymousSessionState.FreshAuthorized, null), null, cancellationToken).ConfigureAwait(false)).Applied;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return false; }
+            catch { return false; }
+        }
 
         public async Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken cancellationToken)
         {
@@ -52,77 +59,82 @@ namespace GamePlatform.Transport.Http.Supabase
             try
             {
                 if (!store.IsAvailable) return AccountAuthLifecycleResult.RecoveryRequired(null);
-                byte[]? raw;
-                try { raw = await store.ReadAsync(configuration.SessionStorageKey, cancellationToken).ConfigureAwait(false); }
+                SupabaseAnonymousSessionSnapshot current;
+                try { current = await store.ReadAsync(configuration.SessionStorageKey, cancellationToken).ConfigureAwait(false); }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return AccountAuthLifecycleResult.Cancelled(); }
                 catch { return AccountAuthLifecycleResult.RecoveryRequired(null); }
-
-                if (raw == null)
+                if (current == null || !current.Exists || current.Public == null) return AccountAuthLifecycleResult.RecoveryRequired(null);
+                switch (current.Public.State)
                 {
-                    try { await store.WriteAsync(configuration.SessionStorageKey, StoredSessionRecord.Pending().Encode(), cancellationToken).ConfigureAwait(false); }
-                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return AccountAuthLifecycleResult.Cancelled(); }
-                    catch { return AccountAuthLifecycleResult.RecoveryRequired(null); }
-                    return await SignUpAsync(cancellationToken).ConfigureAwait(false);
+                    case SupabaseAnonymousSessionState.FreshAuthorized: return await BeginSignupAsync(current, cancellationToken).ConfigureAwait(false);
+                    case SupabaseAnonymousSessionState.Known: return await BeginRefreshAsync(current, cancellationToken).ConfigureAwait(false);
+                    case SupabaseAnonymousSessionState.SignupPending:
+                    case SupabaseAnonymousSessionState.RefreshPending:
+                    case SupabaseAnonymousSessionState.RecoveryRequired:
+                    default: return AccountAuthLifecycleResult.RecoveryRequired(Principal(current.Public.Subject));
                 }
-
-                if (!StoredSessionRecord.TryDecode(raw, out var record) || record == null) return AccountAuthLifecycleResult.RecoveryRequired(null);
-                if (record.IsPending) return AccountAuthLifecycleResult.RecoveryRequired(record.Principal(configuration));
-                return await RefreshAuthenticatedAsync(record, cancellationToken).ConfigureAwait(false);
             }
             finally { authenticateGate.Release(); }
         }
 
-        private async Task<AccountAuthLifecycleResult> SignUpAsync(CancellationToken cancellationToken)
+        private async Task<AccountAuthLifecycleResult> BeginSignupAsync(SupabaseAnonymousSessionSnapshot current, CancellationToken cancellationToken)
         {
+            var pending = await TransitionAsync(current, SupabaseAnonymousSessionState.SignupPending, null, null, cancellationToken).ConfigureAwait(false);
+            if (pending.Cancelled) return AccountAuthLifecycleResult.Cancelled();
+            if (!pending.Applied || pending.Current == null) return AccountAuthLifecycleResult.RecoveryRequired(null);
             var result = await SendAsync("signup", SignupBody, cancellationToken).ConfigureAwait(false);
             if (result.Cancelled) return AccountAuthLifecycleResult.Cancelled();
             if (result.Certainty == HttpDeliveryCertainty.NotSent)
             {
-                await ClearPendingAfterNotSentAsync(cancellationToken).ConfigureAwait(false);
+                await TransitionAsync(pending.Current, SupabaseAnonymousSessionState.FreshAuthorized, null, null, cancellationToken).ConfigureAwait(false);
                 return AccountAuthLifecycleResult.UnavailableOffline(null);
             }
-            // A sent anonymous signup can have created a principal even if the response was lost.
-            // Retain the pending marker and force explicit recovery rather than creating another guest.
-            if (result.Certainty == HttpDeliveryCertainty.Uncertain || result.Response == null) return AccountAuthLifecycleResult.RecoveryRequired(null);
-            if (!IsSuccess(result.Response) || !TryDecode(result.Response, out var payload)) return AccountAuthLifecycleResult.RecoveryRequired(null);
-            var record = StoredSessionRecord.Active(payload.Subject, payload.RefreshToken);
-            try { await store.WriteAsync(configuration.SessionStorageKey, record.Encode(), cancellationToken).ConfigureAwait(false); }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return AccountAuthLifecycleResult.Cancelled(); }
-            catch { return AccountAuthLifecycleResult.RecoveryRequired(record.Principal(configuration)); }
-            return Authenticated(record, payload);
+            if (result.Certainty == HttpDeliveryCertainty.Uncertain || result.Response == null || !IsSuccess(result.Response) || !TryDecode(result.Response, out var payload)) { await RecoverAsync(pending.Current, null, cancellationToken).ConfigureAwait(false); return AccountAuthLifecycleResult.RecoveryRequired(null); }
+            var known = await TransitionAsync(pending.Current, SupabaseAnonymousSessionState.Known, payload.Subject, EncodeRefresh(payload.RefreshToken), cancellationToken).ConfigureAwait(false);
+            if (known.Cancelled) return AccountAuthLifecycleResult.Cancelled();
+            if (!known.Applied || known.Current?.Public == null) return AccountAuthLifecycleResult.RecoveryRequired(null);
+            return Authenticated(known.Current, payload);
         }
 
-        private async Task<AccountAuthLifecycleResult> RefreshAuthenticatedAsync(StoredSessionRecord record, CancellationToken cancellationToken)
+        private async Task<AccountAuthLifecycleResult> BeginRefreshAsync(SupabaseAnonymousSessionSnapshot current, CancellationToken cancellationToken)
         {
-            var refreshed = await RefreshRecordAsync(record, cancellationToken).ConfigureAwait(false);
-            if (refreshed.Cancelled) return AccountAuthLifecycleResult.Cancelled();
-            if (refreshed.Unavailable) return AccountAuthLifecycleResult.UnavailableOffline(record.Principal(configuration));
-            if (!refreshed.Success || refreshed.Record == null || refreshed.Payload == null) return AccountAuthLifecycleResult.RecoveryRequired(record.Principal(configuration));
-            return Authenticated(refreshed.Record, refreshed.Payload);
+            var subject = current.Public!.Subject; var refresh = DecodeRefresh(current.CopySecret());
+            if (subject == null || refresh == null) return AccountAuthLifecycleResult.RecoveryRequired(Principal(subject));
+            var pending = await TransitionAsync(current, SupabaseAnonymousSessionState.RefreshPending, subject, EncodeRefresh(refresh), cancellationToken).ConfigureAwait(false);
+            if (pending.Cancelled) return AccountAuthLifecycleResult.Cancelled();
+            if (!pending.Applied || pending.Current == null) return AccountAuthLifecycleResult.RecoveryRequired(Principal(subject));
+            return await RefreshPendingAsync(pending.Current, subject, refresh, cancellationToken).ConfigureAwait(false);
         }
 
-        private AccountAuthLifecycleResult Authenticated(StoredSessionRecord record, AuthPayload payload)
+        private async Task<AccountAuthLifecycleResult> RefreshPendingAsync(SupabaseAnonymousSessionSnapshot pending, string subject, string refresh, CancellationToken cancellationToken)
         {
-            var principal = record.Principal(configuration);
-            if (principal == null) throw new InvalidOperationException("An active Supabase Auth session requires a principal.");
-            return AccountAuthLifecycleResult.Authenticated(principal, new SupabaseAuthSession(this, record, payload));
+            var result = await SendAsync("token?grant_type=refresh_token", RefreshBody(refresh), cancellationToken).ConfigureAwait(false);
+            if (result.Cancelled) return AccountAuthLifecycleResult.Cancelled();
+            if (result.Certainty == HttpDeliveryCertainty.NotSent)
+            {
+                var restored = await TransitionAsync(pending, SupabaseAnonymousSessionState.Known, subject, EncodeRefresh(refresh), cancellationToken).ConfigureAwait(false);
+                return restored.Applied ? AccountAuthLifecycleResult.UnavailableOffline(Principal(subject)) : AccountAuthLifecycleResult.RecoveryRequired(Principal(subject));
+            }
+            if (result.Certainty == HttpDeliveryCertainty.Uncertain || result.Response == null || !IsSuccess(result.Response) || !TryDecode(result.Response, out var payload) || !string.Equals(subject, payload.Subject, StringComparison.Ordinal)) { await RecoverAsync(pending, subject, cancellationToken).ConfigureAwait(false); return AccountAuthLifecycleResult.RecoveryRequired(Principal(subject)); }
+            var known = await TransitionAsync(pending, SupabaseAnonymousSessionState.Known, subject, EncodeRefresh(payload.RefreshToken), cancellationToken).ConfigureAwait(false);
+            if (known.Cancelled) return AccountAuthLifecycleResult.Cancelled();
+            return known.Applied && known.Current != null ? Authenticated(known.Current, payload) : AccountAuthLifecycleResult.RecoveryRequired(Principal(subject));
         }
 
-        private async Task<RefreshResult> RefreshRecordAsync(StoredSessionRecord oldRecord, CancellationToken cancellationToken)
+        private AccountAuthLifecycleResult Authenticated(SupabaseAnonymousSessionSnapshot current, AuthPayload payload)
         {
-            var result = await SendAsync("token?grant_type=refresh_token", RefreshBody(oldRecord.RefreshToken!), cancellationToken).ConfigureAwait(false);
-            if (result.Cancelled) return RefreshResult.CancelledResult();
-            if (result.Certainty == HttpDeliveryCertainty.NotSent || result.Certainty == HttpDeliveryCertainty.Uncertain || result.Response == null)
-                return RefreshResult.UnavailableResult();
-            if (IsTransient(result.Response.StatusCode)) return RefreshResult.UnavailableResult();
-            if (!IsSuccess(result.Response) || !TryDecode(result.Response, out var payload) || !string.Equals(payload.Subject, oldRecord.Subject, StringComparison.Ordinal))
-                return RefreshResult.RecoveryResult();
-            var updated = StoredSessionRecord.Active(payload.Subject, payload.RefreshToken);
-            try { await store.WriteAsync(configuration.SessionStorageKey, updated.Encode(), cancellationToken).ConfigureAwait(false); }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return RefreshResult.CancelledResult(); }
-            catch { return RefreshResult.RecoveryResult(); }
-            return RefreshResult.SuccessResult(updated, payload);
+            var principal = Principal(current.Public?.Subject); if (principal == null) throw new InvalidOperationException("A durable known session requires a principal.");
+            return AccountAuthLifecycleResult.Authenticated(principal, new SupabaseAuthSession(this, current, payload));
         }
+
+        private async Task<TransitionResult> TransitionAsync(SupabaseAnonymousSessionSnapshot expected, SupabaseAnonymousSessionState state, string? subject, byte[]? secret, CancellationToken cancellationToken)
+        {
+            try { var result = await store.CompareExchangeAsync(configuration.SessionStorageKey, expected, new SupabaseAnonymousSessionTransition(state, subject), secret, cancellationToken).ConfigureAwait(false); return new TransitionResult(result.Applied, result.Current, false); }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new TransitionResult(false, null, true); }
+            catch { return new TransitionResult(false, null, false); }
+        }
+        private async Task RecoverAsync(SupabaseAnonymousSessionSnapshot expected, string? subject, CancellationToken token) => await TransitionAsync(expected, SupabaseAnonymousSessionState.RecoveryRequired, subject, expected.CopySecret(), token).ConfigureAwait(false);
+        private AccountPrincipalDescriptor? Principal(string? subject) => subject == null ? null : new AccountPrincipalDescriptor(configuration.BackendNamespace, configuration.PrincipalIssuer, subject);
 
         private async Task<SendResult> SendAsync(string path, string json, CancellationToken cancellationToken)
         {
@@ -153,14 +165,7 @@ namespace GamePlatform.Transport.Http.Supabase
             catch { return false; }
         }
 
-        private async Task ClearPendingAfterNotSentAsync(CancellationToken cancellationToken)
-        {
-            try { await store.DeleteAsync(configuration.SessionStorageKey, cancellationToken).ConfigureAwait(false); }
-            catch { /* The next launch must fail closed if a stale marker remains. */ }
-        }
-
         private static bool IsSuccess(HttpResponseData response) => response.StatusCode == 200 || response.StatusCode == 201;
-        private static bool IsTransient(int statusCode) => statusCode == 408 || statusCode == 429 || statusCode == 502 || statusCode == 503 || statusCode == 504 || statusCode >= 500;
         private static bool IsJsonMediaType(string value)
         {
             var separator = value.IndexOf(';');
@@ -183,20 +188,26 @@ namespace GamePlatform.Transport.Http.Supabase
             return output.Append('"').ToString();
         }
 
+        private static byte[] EncodeRefresh(string value) => Encoding.UTF8.GetBytes(value);
+        private static string? DecodeRefresh(byte[]? value)
+        {
+            try { var token = value == null ? null : new UTF8Encoding(false, true).GetString(value); return ValidToken(token) ? token : null; } catch { return null; }
+        }
+
         private sealed class SupabaseAuthSession : IAuthSession
         {
             private readonly SupabaseAnonymousAuthLifecycle owner;
             private readonly SemaphoreSlim gate = new SemaphoreSlim(1, 1);
-            private StoredSessionRecord record;
+            private SupabaseAnonymousSessionSnapshot record;
             private AuthPayload payload;
             private long generation;
 
-            internal SupabaseAuthSession(SupabaseAnonymousAuthLifecycle owner, StoredSessionRecord record, AuthPayload payload)
+            internal SupabaseAuthSession(SupabaseAnonymousAuthLifecycle owner, SupabaseAnonymousSessionSnapshot record, AuthPayload payload)
             {
                 this.owner = owner; this.record = record; this.payload = payload;
             }
 
-            public string SessionKey => owner.configuration.BackendNamespace.Value + ":" + record.Subject;
+            public string SessionKey => owner.configuration.BackendNamespace.Value + ":" + record.Public!.Subject;
 
             public async Task<AccessTokenSnapshot> GetAsync(CancellationToken cancellationToken)
             {
@@ -219,16 +230,25 @@ namespace GamePlatform.Transport.Http.Supabase
             private async Task<AccessTokenSnapshot> RefreshLockedAsync(long expectedGeneration, CancellationToken cancellationToken)
             {
                 if (expectedGeneration != generation) return Snapshot();
-                var refreshed = await owner.RefreshRecordAsync(record, cancellationToken).ConfigureAwait(false);
-                if (refreshed.Cancelled) throw new OperationCanceledException(cancellationToken);
-                if (!refreshed.Success || refreshed.Record == null || refreshed.Payload == null)
+                var subject = record.Public!.Subject!; var refresh = DecodeRefresh(record.CopySecret());
+                if (refresh == null) throw new InvalidOperationException("The Supabase Auth session requires recovery.");
+                var pending = await owner.TransitionAsync(record, SupabaseAnonymousSessionState.RefreshPending, subject, EncodeRefresh(refresh), cancellationToken).ConfigureAwait(false);
+                if (pending.Cancelled) throw new OperationCanceledException(cancellationToken);
+                if (!pending.Applied || pending.Current == null) throw new InvalidOperationException("The Supabase Auth session requires recovery.");
+                var result = await owner.SendAsync("token?grant_type=refresh_token", RefreshBody(refresh), cancellationToken).ConfigureAwait(false);
+                if (result.Cancelled) throw new OperationCanceledException(cancellationToken);
+                if (result.Certainty == HttpDeliveryCertainty.NotSent) { await owner.TransitionAsync(pending.Current, SupabaseAnonymousSessionState.Known, subject, EncodeRefresh(refresh), cancellationToken).ConfigureAwait(false); throw new InvalidOperationException("The Supabase Auth session is temporarily unavailable."); }
+                if (result.Response == null || !IsSuccess(result.Response) || !owner.TryDecode(result.Response, out var next) || !string.Equals(next.Subject, subject, StringComparison.Ordinal))
                     throw new InvalidOperationException("The Supabase Auth session requires recovery or is temporarily unavailable.");
-                record = refreshed.Record; payload = refreshed.Payload; generation = checked(generation + 1); return Snapshot();
+                var known = await owner.TransitionAsync(pending.Current, SupabaseAnonymousSessionState.Known, subject, EncodeRefresh(next.RefreshToken), cancellationToken).ConfigureAwait(false);
+                if (!known.Applied || known.Current == null) throw new InvalidOperationException("The Supabase Auth session requires recovery.");
+                record = known.Current; payload = next; generation = checked(generation + 1); return Snapshot();
             }
 
             private AccessTokenSnapshot Snapshot() => new AccessTokenSnapshot(payload.AccessToken, generation);
         }
 
+        private sealed class TransitionResult { public TransitionResult(bool applied, SupabaseAnonymousSessionSnapshot? current, bool cancelled) { Applied = applied; Current = current; Cancelled = cancelled; } public bool Applied { get; } public SupabaseAnonymousSessionSnapshot? Current { get; } public bool Cancelled { get; } }
         private sealed class SendResult
         {
             private SendResult(HttpResponseData? response, HttpDeliveryCertainty? certainty, bool cancelled) { Response = response; Certainty = certainty; Cancelled = cancelled; }
@@ -236,53 +256,6 @@ namespace GamePlatform.Transport.Http.Supabase
             public static SendResult ResponseResult(HttpResponseData response) => new SendResult(response, null, false);
             public static SendResult Failed(HttpDeliveryCertainty certainty) => new SendResult(null, certainty, false);
             public static SendResult CancelledResult() => new SendResult(null, null, true);
-        }
-
-        private sealed class RefreshResult
-        {
-            private RefreshResult(bool success, bool unavailable, bool cancelled, StoredSessionRecord? record, AuthPayload? payload) { Success = success; Unavailable = unavailable; Cancelled = cancelled; Record = record; Payload = payload; }
-            public bool Success { get; } public bool Unavailable { get; } public bool Cancelled { get; } public StoredSessionRecord? Record { get; } public AuthPayload? Payload { get; }
-            public static RefreshResult SuccessResult(StoredSessionRecord record, AuthPayload payload) => new RefreshResult(true, false, false, record, payload);
-            public static RefreshResult UnavailableResult() => new RefreshResult(false, true, false, null, null);
-            public static RefreshResult RecoveryResult() => new RefreshResult(false, false, false, null, null);
-            public static RefreshResult CancelledResult() => new RefreshResult(false, false, true, null, null);
-        }
-
-        private sealed class StoredSessionRecord
-        {
-            private static readonly byte[] Prefix = { (byte)'G', (byte)'P', (byte)'S', (byte)'1', 1 };
-            private StoredSessionRecord(bool pending, string? subject, string? refreshToken) { IsPending = pending; Subject = subject; RefreshToken = refreshToken; }
-            public bool IsPending { get; } public string? Subject { get; } public string? RefreshToken { get; }
-            public static StoredSessionRecord Pending() => new StoredSessionRecord(true, null, null);
-            public static StoredSessionRecord Active(string subject, string refreshToken) => new StoredSessionRecord(false, subject, refreshToken);
-            public AccountPrincipalDescriptor? Principal(SupabaseAuthConfiguration configuration) => Subject == null ? null : new AccountPrincipalDescriptor(configuration.BackendNamespace, configuration.PrincipalIssuer, Subject);
-            public byte[] Encode()
-            {
-                if (IsPending) return new[] { Prefix[0], Prefix[1], Prefix[2], Prefix[3], Prefix[4], (byte)0 };
-                var subject = Encoding.UTF8.GetBytes(Subject!); var token = Encoding.UTF8.GetBytes(RefreshToken!);
-                if (subject.Length == 0 || subject.Length > 64 || token.Length == 0 || token.Length > 16_384) throw new InvalidOperationException("The Supabase Auth session record is invalid.");
-                var result = new byte[10 + subject.Length + token.Length];
-                Buffer.BlockCopy(Prefix, 0, result, 0, Prefix.Length); result[5] = 1;
-                result[6] = (byte)(subject.Length >> 8); result[7] = (byte)subject.Length; result[8] = (byte)(token.Length >> 8); result[9] = (byte)token.Length;
-                Buffer.BlockCopy(subject, 0, result, 10, subject.Length); Buffer.BlockCopy(token, 0, result, 10 + subject.Length, token.Length); return result;
-            }
-            public static bool TryDecode(byte[] bytes, out StoredSessionRecord? value)
-            {
-                value = null;
-                if (bytes == null || bytes.Length < 6 || bytes[0] != Prefix[0] || bytes[1] != Prefix[1] || bytes[2] != Prefix[2] || bytes[3] != Prefix[3] || bytes[4] != Prefix[4]) return false;
-                if (bytes[5] == 0) { if (bytes.Length != 6) return false; value = Pending(); return true; }
-                if (bytes[5] != 1 || bytes.Length < 10) return false;
-                var subjectLength = (bytes[6] << 8) | bytes[7]; var tokenLength = (bytes[8] << 8) | bytes[9];
-                if (subjectLength == 0 || subjectLength > 64 || tokenLength == 0 || tokenLength > 16_384 || bytes.Length != 10 + subjectLength + tokenLength) return false;
-                try
-                {
-                    var subject = new UTF8Encoding(false, true).GetString(bytes, 10, subjectLength);
-                    var token = new UTF8Encoding(false, true).GetString(bytes, 10 + subjectLength, tokenLength);
-                    if (!Guid.TryParseExact(subject, "D", out var id) || id == Guid.Empty || !ValidToken(token)) return false;
-                    value = Active(id.ToString("D"), token); return true;
-                }
-                catch { return false; }
-            }
         }
 
         private sealed class AuthPayload

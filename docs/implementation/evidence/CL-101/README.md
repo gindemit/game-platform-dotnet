@@ -32,6 +32,30 @@ provide the dedicated principal-directory database scope plus a scope-lease fact
 that reads `SqlitePrivateSyncStore` readiness. These missing composition steps mean
 ## 2026-09-21 nonproduction Supabase auth boundary increment
 
+### Security repair — 2026-09-21
+
+The original raw read/write/delete store contract is superseded. The adapter now
+requires defensive versioned public-marker/secret compare-exchange records and
+never deletes/recreates a marker. Marker absence is recovery. A host must make
+the explicit fresh-account decision through `AuthorizeFreshAsync`; the adapter
+does not scan account ownership. Signup and refresh claim CAS pending fences,
+and a successful response publishes a session only after winning the durable
+Known CAS. The public record carries no credential.
+
+`AccountsLifecycleService.StopAsync` now terminally fences and retires account
+scope writers, including already-cancelled callers; failed retirement remains
+recovery-required. Focused command:
+
+`dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-restore --filter FullyQualifiedName~SupabaseAnonymousAuthLifecycleTests|FullyQualifiedName~Cl101AccountsLifecycleTests`
+
+passed **20/20**. It covers explicit initialization/absence, public-secret
+separation, pending restart, missing/torn secret, NotSent cleanup, uncertain
+failure, refresh CAS race/rotation, post-success conflict, cancellation,
+unavailable/overflow state, executor bounds, active stop, concurrent start/stop,
+repeat stop and failed retirement. The redirect case uses the executor's
+internal handler seam; a real local HTTPS redirect listener was not added and
+is not claimed.
+
 Source paths:
 
 - `src/GamePlatform.Transport.Http/Supabase/SupabaseAuthConfiguration.cs`

@@ -91,6 +91,27 @@ namespace GamePlatform.Tests.Features.Accounts
         }
 
         [Fact]
+        public async Task StopRetiresReadyScopeEvenWhenCallerIsAlreadyCancelledAndIsIdempotent()
+        {
+            var leases = new Leases(); var service = Service(new Auth(A), new Remote(), new Directory(), leases);
+            Assert.Equal(AccountsReadiness.Ready, (await service.StartAsync(App, CancellationToken.None)).Readiness);
+            using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+            Assert.Equal(AccountsReadiness.Unavailable, (await service.StopAsync(cancelled.Token)).Readiness);
+            Assert.Equal(1, leases.Stopped); Assert.Equal(1, leases.Retired); Assert.Equal(AccountsReadiness.Unavailable, service.Snapshot.Readiness);
+            Assert.Equal(AccountsReadiness.Unavailable, (await service.StopAsync(CancellationToken.None)).Readiness); Assert.Equal(1, leases.Retired);
+        }
+
+        [Fact]
+        public async Task StopFencesConcurrentStartAndRetirementFailureRequiresRecovery()
+        {
+            var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var opened = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var leases = new Leases { FirstOpenGate = gate, FirstLeaseOpened = opened };
+            var service = Service(new Auth(A), new Remote(), new Directory(), leases); var starting = service.StartAsync(App, CancellationToken.None); await opened.Task;
+            var stopping = service.StopAsync(CancellationToken.None); gate.SetResult(true);
+            Assert.Equal(AccountsReadiness.LateResultRejected, (await starting).Readiness); Assert.Equal(AccountsReadiness.Unavailable, (await stopping).Readiness); Assert.Equal(1, leases.Retired);
+            var failing = Service(new Auth(A), new Remote(), new Directory(), new Leases { DrainFailures = 1 }); Assert.Equal(AccountsReadiness.Ready, (await failing.StartAsync(App, CancellationToken.None)).Readiness); Assert.Equal(AccountsReadiness.RecoveryRequired, (await failing.StopAsync(CancellationToken.None)).Readiness);
+        }
+
+        [Fact]
         public async Task SqliteDirectoryReopensReservationBeforeIssuedAccountBinding()
         {
             var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");

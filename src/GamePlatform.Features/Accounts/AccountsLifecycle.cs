@@ -64,6 +64,7 @@ namespace GamePlatform.Features.Accounts
         private readonly IAccountsAuthLifecycle auth; private readonly IProvisioningRemote provisioning; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
         private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1); private readonly object gate = new object();
         private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private IAccountScopeLease? failedRetirement; private bool scopeRecoveryRequired;
+        private bool stopped; private TaskCompletionSource<AccountsLifecycleSnapshot>? stoppedCompletion;
 
         public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemote provisioning, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null)
         {
@@ -74,9 +75,61 @@ namespace GamePlatform.Features.Accounts
 
         public AccountsLifecycleSnapshot Snapshot { get { lock (gate) return new AccountsLifecycleSnapshot(readiness, current, generation); } }
 
+        /// <summary>
+        /// Permanently fences the current generation and synchronously retires any
+        /// admitted account scope. Caller cancellation cannot leave an active writer:
+        /// retirement uses the lifecycle's own bounded timeout token.
+        /// </summary>
+        public async Task<AccountsLifecycleSnapshot> StopAsync(CancellationToken cancellationToken)
+        {
+            IAccountScopeLease? retiring;
+            AccountDirectoryEntry? entry;
+            long request;
+            Task<AccountsLifecycleSnapshot>? existing;
+            TaskCompletionSource<AccountsLifecycleSnapshot>? completion;
+            lock (gate)
+            {
+                if (stoppedCompletion != null) { existing = stoppedCompletion.Task; retiring = null; entry = null; request = generation; completion = null; }
+                else
+                {
+                existing = null; completion = stoppedCompletion = new TaskCompletionSource<AccountsLifecycleSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+                stopped = true; generation = checked(generation + 1); request = generation; entry = current;
+                retiring = active ?? failedRetirement;
+                active = null;
+                if (retiring != null) { failedRetirement = retiring; scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; }
+                else { current = null; readiness = AccountsReadiness.Unavailable; }
+                }
+            }
+            if (existing != null) return await existing.ConfigureAwait(false);
+            AccountsLifecycleSnapshot outcome;
+            // Do not use the caller token here. Once stop is accepted, it must quiesce
+            // an admitted writer even when the caller has already been cancelled.
+            await activation.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                if (retiring == null) outcome = Capture(request, AccountsReadiness.Unavailable, null);
+                else
+                {
+                var retired = await RetireLeaseAsync(retiring).ConfigureAwait(false);
+                lock (gate)
+                {
+                    if (ReferenceEquals(failedRetirement, retiring)) failedRetirement = retired ? null : retiring;
+                    scopeRecoveryRequired = !retired;
+                    current = retired ? null : entry;
+                    readiness = retired ? AccountsReadiness.Unavailable : AccountsReadiness.RecoveryRequired;
+                    outcome = new AccountsLifecycleSnapshot(readiness, current, request);
+                }
+                }
+            }
+            catch { lock (gate) { readiness = AccountsReadiness.RecoveryRequired; outcome = new AccountsLifecycleSnapshot(readiness, current, request); } }
+            finally { activation.Release(); }
+            completion!.TrySetResult(outcome); return outcome;
+        }
+
         public async Task<AccountsLifecycleSnapshot> StartAsync(AppId appId, CancellationToken cancellationToken)
         {
             if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
+            lock (gate) if (stopped) return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
             var request = Begin(AccountsReadiness.Authenticating);
             AccountAuthLifecycleResult result;
             try { result = await auth.AuthenticateAsync(cancellationToken).ConfigureAwait(false); }
