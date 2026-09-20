@@ -16,8 +16,9 @@ assembly and its runtime dependencies. CL-015 now produces a separate unpublishe
 23-assembly bundle: all 15 SDK assemblies plus the exact eight-assembly runtime
 closure for the nine pinned MessagePack packages (the analyzer is build-only).
 It carries exact notices, hashes and deterministic explicit-reference Unity
-metadata. This does not alter the existing Core/Features.Contracts consumer import
-or make the qualification codec a production `IWireCodec`.
+metadata. The later `MessagePackWireCodec` promotion reuses the same bounded
+implementation after Android ARM64 IL2CPP/high-stripping corpus acceptance; it
+does not alter the existing Core/Features.Contracts consumer import.
 
 P1 qualifies `gilzoide/unity-sqlite-net` 1.3.2 at `08248bd5884d8eb932a837aa56d4ff456daf913f` using a real Windows x64 desktop transaction/reopen probe. See the [qualification decision](implementation/dependencies/CL-006-sqlite-candidate.md) and [exact input manifest](../integration/unity/sqlite-qualification/qualification.json).
 
@@ -31,5 +32,6 @@ All three MIT notices are retained. This does not install a Unity package or
 complete Unity/device acceptance. CL-015 packaging now includes the reviewed
 Windows x86-64, macOS universal and Android ARM64 binaries, generated narrowed
 Unity import metadata, all three SQLite notices, the exact 38-entry P/Invoke inventory
-and targeted linker metadata. Unity import/stripping, IL2CPP/APK and physical-device
-execution remain unrun under INT-009. Do not install a duplicate UPM copy.
+and targeted linker metadata. Android ARM64 import, IL2CPP/high stripping, APK
+inspection and physical-device database/codec execution subsequently passed under
+INT-009. macOS native execution remains unrun. Do not install a duplicate UPM copy.

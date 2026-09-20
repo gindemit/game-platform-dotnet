@@ -6,6 +6,9 @@
   "superseded_source_commit": "fdc3f19285b83bd011c91f4b16ed090125d023d9",
   "superseded_manifest_sha256": "2357a74cc7ab4efe94a35275a1c5977976c1cdff845e6e149b22fd4e46ae94fe",
   "manifest_sha256": "a4c36e6c8bbb19821b8f79dbd71622da1a22e85f5ea3b51b01d46a3f38a813b7",
+  "production_adapter_commit": "684ed49c832f203326270546414244bc2adb78e8",
+  "promotion_manifest_sha256": "34febc70a5cc0b1b01f05075b3c26c75e131acc055511c038b033cd40e726893",
+  "unity_int009_evidence_commit": "ff65dbed550b390c4129f471bf098559be37f5ea",
   "reproducible_builds": 2,
   "manifests_byte_equal": true,
   "complete_artifacts_byte_equal": true,
@@ -62,10 +65,10 @@
   },
   "capabilities": {
     "bundle": "complete_for_reviewed_targets",
-    "messagepack": "qualification_only",
-    "production_iwirecodec": "unavailable",
-    "unity_import": "metadata_only_unverified",
-    "aot_and_device": "unverified",
+    "messagepack": "production_bounded_reviewed_catalog",
+    "production_iwirecodec": "available",
+    "unity_import": "android_verified",
+    "aot_and_device": "android_arm64_il2cpp_high_stripping_passed",
     "published": false,
     "duplicate_upm_acquisition": false
   },
@@ -75,11 +78,7 @@
     "explicit_inspection": "verify-development_non-importable_only"
   },
   "unrun": [
-    "Unity Editor import and compilation",
-    "managed stripping",
-    "IL2CPP generation and link",
-    "APK native-library inspection",
-    "Android ARM64 physical-device database and codec execution",
+    "two-clean-clone reproducibility rerun for production-adapter artifact",
     "macOS native execution"
   ]
 }

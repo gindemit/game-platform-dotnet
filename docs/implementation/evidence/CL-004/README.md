@@ -53,3 +53,32 @@ transcript or independent review was performed. The earlier G2 bidirectional cor
 exchange remains the peer evidence; this checkpoint does not rerun or broaden it.
 Production `IWireCodec` remains a blocker for CL-005/CL-010 until required AOT
 acceptance. No G3 assessment or P4 work occurred.
+
+## Production adapter promotion — 2026-09-20
+
+Source `684ed49c832f203326270546414244bc2adb78e8` promotes the exact bounded
+implementation through public `MessagePackWireCodec : IWireCodec`. The adapter
+delegates directly to the generated DTO mapping and low-level bounded codec; it
+adds no alternate serializer, JSON fallback, reflection, typeless resolver,
+runtime code generation, compression or game semantics.
+
+The required AOT evidence is Unity INT-009 commit
+`ff65dbed550b390c4129f471bf098559be37f5ea`, consumer source
+`c2335be613fed95a1997f2718679e2f309eba7df`. On an authorized physical Android
+API 31 ARM64 device, Unity 6000.5.3f1 built IL2CPP with high stripping and ran the
+complete pinned approved G2 corpus on initial launch and after force-stop/relaunch.
+Each run passed 34 accepted/39 rejected diagnostics, 34 TypeScript-consumed and
+34 C#-produced exchange cases, 24 accepted/8 rejected fingerprints and 14
+accepted/18 rejected raw probes with identical provenance hashes.
+
+Production-interface tests pass 9/9 and the full SDK passes 351/351. Locked
+restore/build pass for 18 projects with zero warnings/errors; validation, 48
+script tests, 14 manifest tests and both generator checks pass. A fresh ordinary
+package and verify at the promotion source pass with 23 managed assemblies,
+three native targets and manifest SHA-256
+`34febc70a5cc0b1b01f05075b3c26c75e131acc055511c038b033cd40e726893`.
+
+CL-004 remains `in_progress` pending independent completion review. The codec
+port is production-available, but no concrete HTTP executor or host composition,
+HTTPS/live backend transcript, G3 or P4 is claimed. CL-015 remains `in_progress`
+for independent reproducibility of the promoted bundle and macOS native execution.

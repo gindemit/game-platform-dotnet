@@ -15,8 +15,9 @@ exclusions, CPU, Editor OS and Android alignment before packaging succeeds.
 
 The manifest inventories 23 assemblies, nine packages, three native targets,
 38 SQLite P/Invoke entry points and 99 hashed files. It forbids duplicate UPM
-acquisition. The included MessagePack codec remains explicitly
-`qualification-only`; production `IWireCodec` is unavailable. `link.xml` preserves
+acquisition. At this packaging checkpoint the included MessagePack codec remained
+explicitly `qualification-only`; the promotion follow-up below supersedes that
+availability limit. `link.xml` preserves
 only the bounded qualification codec types and `SQLite.SQLite3`; the current
 storage adapter uses raw SQL and has no ORM generic materialization path.
 
@@ -86,3 +87,18 @@ and pins the prior CL-013 manifest for rollback. Rollback never deletes or
 downgrades databases, identities, cursors, immutable commands or player saves.
 If an earlier application cannot read the retained schema, rollback is blocked
 and forward recovery is required.
+
+## Production codec promotion follow-up — 2026-09-20
+
+Unity INT-009 commit `ff65dbed550b390c4129f471bf098559be37f5ea`
+consumed the independently accepted replacement anchor and passed its complete
+pinned approved G2 codec corpus twice on physical Android ARM64 under IL2CPP and
+high stripping. SDK source `684ed49c832f203326270546414244bc2adb78e8`
+therefore adds the production `MessagePackWireCodec` adapter and targeted linker
+entry over the unchanged qualified implementation. A fresh ordinary package and
+verify pass with manifest SHA-256
+`34febc70a5cc0b1b01f05075b3c26c75e131acc055511c038b033cd40e726893`.
+
+CL-015 remains `in_progress`: the promoted artifact has not yet received the
+two-clean-clone reproducibility rerun, and macOS native execution remains unrun.
+No package was published.

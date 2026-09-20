@@ -1,5 +1,31 @@
 # Implementation status
 
+## CL-004 production wire adapter promoted — 2026-09-20
+
+Source `684ed49c832f203326270546414244bc2adb78e8` adds the public
+`MessagePackWireCodec` production `IWireCodec` adapter over the already qualified
+generated DTO mapping and bounded low-level reader/writer. It adds no JSON
+fallback, resolver, reflection, typeless behavior, runtime code generation,
+compression or game semantics. Unknown types and union implementations continue
+to fail closed.
+
+Promotion is supported by the prior G2 desktop bidirectional exchange and Unity
+INT-009 evidence commit `ff65dbed550b390c4129f471bf098559be37f5ea`:
+the pinned approved corpus passed twice on a physical Android API 31 ARM64 device
+under Unity 6000.5.3f1, IL2CPP and high managed stripping, including 34 accepted/
+39 rejected diagnostics, 34 TypeScript-consumed and 34 C#-produced exchanges,
+24 accepted/8 rejected fingerprints and 14 accepted/18 rejected raw probes.
+
+Focused production-interface tests pass 9/9; the full SDK passes 351/351.
+Locked restore/build cover 18 projects with zero warnings/errors; 48 script tests,
+14 manifest tests, generator checks and validation pass. A fresh unpublished
+23-assembly/three-native-target bundle at the promotion source verifies with
+manifest SHA-256 `34febc70a5cc0b1b01f05075b3c26c75e131acc055511c038b033cd40e726893`.
+CL-004 remains `in_progress` only for independent completion review; CL-015
+remains `in_progress` for independent reproducibility of the promoted artifact
+and macOS native execution. Concrete HTTP execution/host composition, HTTPS,
+live backend acceptance, G3 and P4 remain open.
+
 ## Initial MrSquare outcome/reward decision mirrored — 2026-09-20
 
 `DEC-CONTENT-VALIDATION` / `EXT-GAME-OUTCOME-POLICY` is accepted for one
@@ -30,7 +56,8 @@ closed. Semantic validation prevents Windows binaries from enabling Linux,
 macOS or WSA and enforces isolated macOS/Android CPU/OS/alignment policies.
 Ordinary verification rejects dirty-source and skipped-build artifacts; explicit
 development inspection remains non-importable. The included codec remains
-qualification-only and does not implement production `IWireCodec`.
+qualification-only and did not implement production `IWireCodec` at that
+checkpoint; the promotion recorded above supersedes that availability limit.
 
 The earlier same-checkout `2357a74...` anchor is superseded: ambient Git-origin
 discovery changed Source Link presence, portable PDBs, MVIDs and DLLs between
@@ -45,11 +72,10 @@ packaging cases), validation,
 or errors, the 52-task/16-ledger/21-wave manifest and 14/14 manifest tests. See
 [CL-015 evidence](implementation/evidence/CL-015/README.md).
 
-CL-015 remains `in_progress` at this packaging-complete checkpoint: Unity import,
-stripping, IL2CPP/APK inspection, Android device database/codec execution and
-macOS native execution were not run. INT-009, production codec/composition, G3
-and P4 remain open; no Unity/backend repository, package feed or deployment was
-changed.
+CL-015 remains `in_progress`: Android import, stripping, IL2CPP/APK inspection
+and physical-device database/codec execution later passed under INT-009, while
+the promoted artifact still needs its two-clean-clone reproduction and macOS
+native execution. G3 and P4 remain open; no package feed or deployment changed.
 
 ## CL-004 desktop wire candidate checkpoint — 2026-09-20; corrected
 
@@ -63,7 +89,7 @@ absent/null semantics, duplicate-key rejection and body/depth/string/collection/
 allocation bounds remain unchanged. No JSON, typeless, reflection or runtime-code
 generation fallback was added, and dependency pins/lockfiles are unchanged.
 
-Focused desktop-candidate tests pass 7/7, serialization tests 171/171, combined
+At this checkpoint, focused desktop-candidate tests passed 7/7, serialization tests 171/171, combined
 CL-005/CL-010/codec provider-boundary tests 46/46, and the full SDK 335/335. The
 existing codec harness self-test passes 73 schema cases, 32 fingerprint cases and
 five hostile JSON cases. Locked restore/build cover 18 projects with zero warnings
@@ -71,12 +97,9 @@ or errors; validation, 33 script tests, the 52-task/16-ledger/21-wave manifest a
 14 manifest tests pass. Packaging still emits the intentional 14-assembly early
 bundle and publishes nothing.
 
-CL-004 remains `in_progress`: desktop qualification does not supply production
-`IWireCodec`, CL-015 transitive codec packaging, Unity import,
-IL2CPP/AOT/stripping, device, concrete
-HTTP executor/host, live transcript or independent-review evidence. Production
-codec availability remains a CL-005/CL-010 blocker. G3 was not assessed and P4
-was not started. See
+This checkpoint preceded the production adapter promotion recorded above.
+Concrete HTTP executor/host, live transcript and independent-review evidence
+remain open. G3 was not assessed and P4 was not started. See
 [CL-004 evidence](implementation/evidence/CL-004/README.md).
 
 ## CL-010 private pull/bootstrap increment — 2026-09-19; corrected 2026-09-20
@@ -106,7 +129,7 @@ Focused storage/policy CL-010 tests passed 20/20 and combined CL-007/008/009/010
 regressions passed 41/41. The original full SDK suite passed 296/296; locked restore/build
 covered 18 projects with zero warnings/errors, architecture validation and 33
 script tests passed, and the 52-task/16-ledger/21-wave manifest plus 14 tests
-passed. CL-010 remains `in_progress`: production codec and concrete executor/host
+passed. CL-010 remains `in_progress`: concrete executor/host
 composition, live backend transcript, process-kill/disk/corruption, multi-app shared projection
 provider, Unity/AOT/device and independent-review evidence remain unrun.
 G3 was not assessed and P4 was not started. See
@@ -122,8 +145,8 @@ envelope errors, final-page cursor handoff and reset mapping. Twenty-one new
 scripted boundary tests bring the focused CL-005/CL-010 selection to 53/53 and
 the full SDK to 317/317. At that checkpoint they were not live or production-
 composition evidence; the later CL-004 section records only a desktop candidate
-behind a test-local port adapter. No production codec, concrete HTTP executor or
-host is registered.
+behind a test-local port adapter. The codec was later promoted as recorded above;
+no concrete HTTP executor or host is registered.
 
 Hardening source `6462d471d498eb92c4a773cd008e979924afd6dc`
 scopes private sync to the expected platform account, shares externally owned
@@ -195,7 +218,7 @@ ports. Focused tests pass 12/12 and the full suite passes 264/264 with zero buil
 warnings/errors. See [CL-005 evidence](implementation/evidence/CL-005/README.md).
 
 CL-005 remains `in_progress`: provisioning plus portable bootstrap/pull semantic
-providers are implemented, while the other frozen operations, production codec,
+providers are implemented, while the other frozen operations,
 host registration, BE-016 composition, Unity executor and live/device evidence
 remain unavailable. The provider does not make incomplete BE-008 provisioning
 truthful and does not enable a route, feature, G3 or P4.
@@ -203,7 +226,8 @@ truthful and does not enable a route, feature, G3 or P4.
 The provider boundary is actionable independently of host composition. Its
 original scripted tests verify the injected-port contract only. The later CL-004
 checkpoint supplies a desktop candidate behind a test-local port adapter; no
-production codec or real executor/host is registered. CL-005 remains partial.
+the then-unavailable codec or real executor/host was registered. The codec was
+later promoted; CL-005 remains partial for its other operations and host work.
 
 ## CL-008 atomic projection/sequence/outbox — 2026-09-19
 
