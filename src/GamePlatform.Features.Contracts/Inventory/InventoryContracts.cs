@@ -19,7 +19,7 @@ namespace GamePlatform.Features.Contracts.Inventory
         {
             if (!definitionId.IsValid) throw new ArgumentException("A definition ID is required.", nameof(definitionId));
             if (quantity <= 0) throw new ArgumentOutOfRangeException(nameof(quantity));
-            if (revision <= 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             DefinitionId = definitionId; Quantity = quantity; Revision = revision;
         }
         public PlatformId DefinitionId { get; }
@@ -38,7 +38,7 @@ namespace GamePlatform.Features.Contracts.Inventory
             InventoryInstanceState state, ReadOnlySpan<byte> payload, ReadOnlySpan<byte> auditExtensions)
         {
             if (!instanceId.IsValid || !definitionId.IsValid) throw new ArgumentException("Instance and definition IDs are required.");
-            if (revision <= 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             if (!Enum.IsDefined(typeof(InventoryInstanceState), state)) throw new ArgumentOutOfRangeException(nameof(state));
             if (payload.Length > MaximumPayloadBytes || auditExtensions.Length > MaximumAuditBytes) throw new ArgumentOutOfRangeException(nameof(payload));
             if (state == InventoryInstanceState.Tombstoned && payload.Length != 0) throw new ArgumentException("A tombstone carries no instance payload.", nameof(payload));
@@ -60,7 +60,7 @@ namespace GamePlatform.Features.Contracts.Inventory
         private readonly InventoryInstance[] instances;
         public InventoryConfirmedSnapshot(long revision, long confirmedAtMilliseconds, IEnumerable<InventoryStack> stacks, IEnumerable<InventoryInstance> instances)
         {
-            if (revision <= 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             if (confirmedAtMilliseconds < 0 || confirmedAtMilliseconds > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(confirmedAtMilliseconds));
             this.stacks = Copy(stacks); this.instances = Copy(instances);
             if (this.stacks.Length > 512 || this.instances.Length > 512) throw new ArgumentOutOfRangeException(nameof(stacks));
@@ -96,7 +96,7 @@ namespace GamePlatform.Features.Contracts.Inventory
             if (!operationId.IsValid || !streamId.IsValid || !targetId.IsValid) throw new ArgumentException("Valid command identities are required.");
             if (!Enum.IsDefined(typeof(InventoryIntentKind), kind) || !Enum.IsDefined(typeof(InventoryEntryKind), targetKind)) throw new ArgumentOutOfRangeException(nameof(kind));
             InventoryValidation.BusinessSource(businessSource, nameof(businessSource));
-            if (expectedInventoryRevision <= 0 || localRevision <= 0) throw new ArgumentOutOfRangeException(nameof(expectedInventoryRevision));
+            if (expectedInventoryRevision < 0 || localRevision <= 0) throw new ArgumentOutOfRangeException(nameof(expectedInventoryRevision));
             if (!Enum.IsDefined(typeof(InventoryIntentStatus), status)) throw new ArgumentOutOfRangeException(nameof(status));
             if (status == InventoryIntentStatus.AcceptedAwaitingPull && (!acceptedInventoryRevision.HasValue || acceptedInventoryRevision.Value <= expectedInventoryRevision))
                 throw new ArgumentException("An accepted inventory intent requires a newer resulting revision.", nameof(acceptedInventoryRevision));

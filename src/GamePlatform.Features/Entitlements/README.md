@@ -9,7 +9,13 @@ account/view/generation and must be present in the exact app-visible catalog.
 `ApplyConfirmedInTransaction` is a narrow borrowed-transaction mutation seam
 for a future private-feed adapter to commit entitlement effects with its cursor
 and other group effects. The adapter must pass the durable prior revision read
-inside that same transaction; non-advancing mutations fail closed.
+inside that same transaction; `null` means absent while revision `0` is real,
+and non-advancing mutations fail closed.
+
+SQLite's current `gp_feature_state` constraint reserves positive row revisions,
+so this module uses a private `semantic + 1` envelope. Public snapshots and
+codecs retain semantic revision `0`; a v6 storage-contract migration must remove
+this temporary envelope with compatibility coverage.
 
 The feature is portable only. There is no purchase/IAP provider, private-feed
 adapter, production codec, Unity composition, or peer evidence yet. INT-011 is

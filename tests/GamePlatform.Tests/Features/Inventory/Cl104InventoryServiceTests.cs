@@ -69,6 +69,23 @@ namespace GamePlatform.Tests.Features.Inventory
         }
 
         [Fact]
+        public async Task SemanticRevisionZeroIsDistinctFromAbsenceReplaysExactlyRejectsConflictAndAdvancesToOne()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
+            Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
+            var zero = Snapshot(0, 2, false);
+            await service.ApplyConfirmedAsync(Context, zero, Catalog(true), CancellationToken.None);
+            Assert.Equal(1L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='inventory' AND entity_key='confirmed'"), CancellationToken.None));
+            var installed = await service.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(0, installed.Revision); Assert.Equal(0, installed.Value!.Confirmed!.Revision);
+            await service.ApplyConfirmedAsync(Context, zero, Catalog(true), CancellationToken.None);
+            await Assert.ThrowsAsync<InventoryProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, Snapshot(0, 3, false), Catalog(true), CancellationToken.None));
+            await service.ApplyConfirmedAsync(Context, Snapshot(1, 4, false), Catalog(true), CancellationToken.None);
+            Assert.Equal(1, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.Confirmed!.Revision);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task OlderSameRevisionAndUnboundCatalogFailClosedWhileDistinctViewsRemainIndependent()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
@@ -144,13 +161,13 @@ namespace GamePlatform.Tests.Features.Inventory
         }
 
         [Fact]
-        public async Task BorrowedConfirmedProjectionSharesCallerTransactionRollbackAndCommit()
+        public async Task BorrowedSemanticRevisionZeroProjectionRollsBackCommitsAndReopensWithCursorSideEffect()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
             await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cursor_side_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
             await Assert.ThrowsAsync<InvalidOperationException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 0, Snapshot(1, 2, false), Catalog(true));
+                service.ApplyConfirmedProjection(transaction, Context, null, Snapshot(0, 2, false), Catalog(true));
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (1)");
                 throw new InvalidOperationException("simulate cursor failure");
             }, CancellationToken.None));
@@ -158,29 +175,34 @@ namespace GamePlatform.Tests.Features.Inventory
             Assert.Equal(0, rolledBack);
             await database.ExecuteAsync(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 0, Snapshot(1, 2, false), Catalog(true));
+                service.ApplyConfirmedProjection(transaction, Context, null, Snapshot(0, 2, false), Catalog(true));
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (1)"); return true;
             }, CancellationToken.None);
             var committed = await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cursor_side_sentinel") + ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='inventory'"), CancellationToken.None);
             Assert.Equal(2, committed);
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, new DenyAuthority());
+            var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(0, cached.Revision); Assert.Equal(0, cached.Value!.Confirmed!.Revision);
+            Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cursor_side_sentinel"), CancellationToken.None));
+            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task BorrowedProjectionCommitSuppressesMatchingAcceptedIntentAfterReopenButRetainsUnrelatedAwaitingIntent()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new PermitAuthority());
-            await service.ApplyConfirmedAsync(Context, Snapshot(1, 2, false), Catalog(true), CancellationToken.None);
+            await service.ApplyConfirmedAsync(Context, Snapshot(0, 2, false), Catalog(true), CancellationToken.None);
             var accepted = Request("0199f9a0-0000-7000-8000-000000000009", "inventory-borrowed-a");
             var unrelated = Request("0199f9a0-0000-7000-8000-000000000010", "inventory-borrowed-b");
             await service.SubmitIntentAsync(accepted, Catalog(true), CancellationToken.None);
             await service.SubmitIntentAsync(unrelated, Catalog(true), CancellationToken.None);
-            await service.MarkAcceptedAwaitingPullAsync(new InventoryIntentAcceptance(Context, accepted.OperationId, 3), CancellationToken.None);
+            await service.MarkAcceptedAwaitingPullAsync(new InventoryIntentAcceptance(Context, accepted.OperationId, 1), CancellationToken.None);
             await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cursor_side_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
             await database.ExecuteAsync(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 1, Snapshot(3, 5, false), Catalog(true));
-                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (3)"); return true;
+                service.ApplyConfirmedProjection(transaction, Context, 0, Snapshot(1, 5, false), Catalog(true));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (1)"); return true;
             }, CancellationToken.None);
             service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
 
@@ -190,7 +212,7 @@ namespace GamePlatform.Tests.Features.Inventory
             Assert.Single(cached.Value.PendingIntents);
             Assert.Equal(unrelated.OperationId, cached.Value.PendingIntents.Single().OperationId);
             Assert.Equal(InventoryIntentStatus.AwaitingReceipt, cached.Value.PendingIntents.Single().Status);
-            Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cursor_side_sentinel WHERE value=3"), CancellationToken.None));
+            Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cursor_side_sentinel WHERE value=1"), CancellationToken.None));
             restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
@@ -224,6 +246,17 @@ namespace GamePlatform.Tests.Features.Inventory
             Assert.Throws<ArgumentException>(() => new InventoryInstance(Instance, Definition, 1, InventoryInstanceState.Tombstoned, new byte[] { 1 }, Array.Empty<byte>()));
             var tombstone = new InventoryInstance(Instance, Definition, 2, InventoryInstanceState.Tombstoned, Array.Empty<byte>(), Array.Empty<byte>());
             Assert.Equal(InventoryInstanceState.Tombstoned, tombstone.State);
+        }
+
+        [Fact]
+        public async Task SemanticRevisionMaximumFailsClosedWithoutPersistingAnOverflowingEnvelope()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, new DenyAuthority());
+            var exhausted = new InventoryConfirmedSnapshot(long.MaxValue, 100,
+                new[] { new InventoryStack(Definition, 1, long.MaxValue) }, Array.Empty<InventoryInstance>());
+            await Assert.ThrowsAsync<InventoryProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, exhausted, Catalog(true), CancellationToken.None));
+            Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         private static InventoryService Create(SqliteDatabase database, IInventoryIntentAuthority authority) => new InventoryService(Context, Scope,
