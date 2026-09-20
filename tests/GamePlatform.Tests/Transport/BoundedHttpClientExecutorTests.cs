@@ -161,6 +161,7 @@ namespace GamePlatform.Tests.Transport
             Assert.True(result.IsSuccess);
             Assert.Equal(Account, result.Value!.AccountId);
             Assert.IsType<PrivateSyncHttpProvider>(accountProviders.PrivateSync);
+            Assert.IsType<CommandPushHttpProvider>(accountProviders.CommandPush);
             Assert.IsType<CommandReceiptHttpProvider>(accountProviders.CommandReceipts);
             Assert.Equal(1, handler.Calls);
         }

@@ -3,19 +3,20 @@ using System;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
 using GamePlatform.Serialization.MessagePack;
+using GamePlatform.Transport.Abstractions;
 
 namespace GamePlatform.Transport.Http
 {
     /// <summary>
     /// Explicit production MessagePack composition for only the implemented
-    /// provisioning, private bootstrap/pull and receipt providers. The caller
+    /// provisioning, private bootstrap/pull, command-push and receipt providers. The caller
     /// owns and quiesces the executor, auth session and refresh coordinator.
     /// </summary>
     public sealed class ProductionBackendHttpProviders
     {
         public ProductionBackendHttpProviders(
             BackendHttpConfiguration configuration,
-            BoundedHttpClientExecutor executor,
+            IHttpExecutor executor,
             IAuthSession auth,
             AuthRefreshCoordinator refresh)
         {
@@ -28,7 +29,7 @@ namespace GamePlatform.Transport.Http
         }
 
         private readonly BackendHttpConfiguration configuration;
-        private readonly BoundedHttpClientExecutor executor;
+        private readonly IHttpExecutor executor;
         private readonly IAuthSession auth;
         private readonly AuthRefreshCoordinator refresh;
         private readonly MessagePackWireCodec codec;
@@ -46,7 +47,7 @@ namespace GamePlatform.Transport.Http
             PlatformUserId accountId,
             Guid installationId,
             BackendHttpConfiguration configuration,
-            BoundedHttpClientExecutor executor,
+            IHttpExecutor executor,
             MessagePackWireCodec codec,
             IAuthSession auth,
             AuthRefreshCoordinator refresh)
@@ -55,10 +56,12 @@ namespace GamePlatform.Transport.Http
             if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
             if (installationId == Guid.Empty) throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
             PrivateSync = new PrivateSyncHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh);
+            CommandPush = new CommandPushHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh);
             CommandReceipts = new CommandReceiptHttpProvider(appId, accountId, installationId, configuration, executor, codec, auth, refresh);
         }
 
         public IPrivateSyncRemote PrivateSync { get; }
+        public ICommandRemote CommandPush { get; }
         public ICommandReceiptRemote CommandReceipts { get; }
     }
 }

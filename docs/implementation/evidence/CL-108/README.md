@@ -1,5 +1,20 @@
 # CL-108 — Progression portable-service evidence
 
+## 2026-09-20 consumer transaction callback increment
+
+`ProgressionService.CompleteAsync` now has an additive synchronous callback for
+the consumer's game-owned checkpoint/progress/client-presentation writes. It is
+invoked inside the same SQLite transaction as pending progression, checked
+sequence allocation and immutable outbox admission. Cancellation/failure rolls
+back all effects; exact replay skips the callback. The contract forbids retaining
+the transaction, nested transactions, UI publication, external side effects and
+authoritative platform-value allocation.
+
+Focused CL-108 passes 12/12 and the integrated SDK passes 473/473. This is the
+portable transaction contract needed by INT-007; real MrSquare wiring and live
+INT-007/INT-010 evidence remain unrun and unpassed. Full evidence and remaining
+G3 blockers are recorded in `../P3-live-composition/README.md`.
+
 Task state: dependency-ready SDK implementation, M3/C-D. This is local Windows
 x64 SQLite evidence only; A03/A05/A07, PEER-CORE, Unity/device integration and
 G3 are not passed.

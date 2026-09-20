@@ -62,6 +62,43 @@ namespace GamePlatform.Tests.Features.Progression
         }
 
         [Fact]
+        public async Task GameOwnedCompletionCallbackSharesAdmissionTransactionAndDoesNotReplay()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            var failed = Request("0199f9a0-0000-7000-8000-000000000130", "run-game-failed", 1);
+            using var cancelled = new CancellationTokenSource();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.CompleteAsync(failed, (transaction, revision) =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_feature_state VALUES (?,?,?,?,?,?,?)", Context.ViewKey.Value, "game-owned", "checkpoint", revision, 100L, new byte[] { 1 }, Array.Empty<byte>());
+                cancelled.Cancel(); cancelled.Token.ThrowIfCancellationRequested();
+            }, CancellationToken.None));
+            var afterFailure = await database.ExecuteAsync(Scope, transaction =>
+            {
+                var sql = (SqliteTransactionSession)transaction;
+                return (sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox"), sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state"));
+            }, CancellationToken.None);
+            Assert.Equal((0, 0), afterFailure);
+
+            var accepted = Request("0199f9a0-0000-7000-8000-000000000131", "run-game-accepted", 1);
+            var callbackCalls = 0;
+            Action<ILocalStorageTransaction, long> callback = (transaction, revision) =>
+            {
+                callbackCalls++;
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_feature_state VALUES (?,?,?,?,?,?,?)", Context.ViewKey.Value, "game-owned", "checkpoint", revision, 100L, new byte[] { 2 }, Array.Empty<byte>());
+            };
+            await service.CompleteAsync(accepted, callback, CancellationToken.None);
+            await service.CompleteAsync(accepted, callback, CancellationToken.None);
+            Assert.Equal(1, callbackCalls);
+            var committed = await database.ExecuteAsync(Scope, transaction =>
+            {
+                var sql = (SqliteTransactionSession)transaction;
+                return (sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox"), sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='progression'"), sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='game-owned'"));
+            }, CancellationToken.None);
+            Assert.Equal((1, 1, 1), committed);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task LostAckRetainsPendingUntilExplicitAcceptedThenPullConfirmationWithoutAllocatingValue()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);

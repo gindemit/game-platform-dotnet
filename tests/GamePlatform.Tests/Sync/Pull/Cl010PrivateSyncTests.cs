@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
+using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Storage.Abstractions;
 using GamePlatform.Storage.Abstractions.Sync;
 using GamePlatform.Storage.Sqlite.Executor;
@@ -14,6 +15,7 @@ using GamePlatform.Storage.Sqlite.Migrations;
 using GamePlatform.Storage.Sqlite.Outbox;
 using GamePlatform.Storage.Sqlite.Sync;
 using GamePlatform.Sync.Pull;
+using GamePlatform.Wire.Contracts;
 
 namespace GamePlatform.Tests.Sync.Pull
 {
@@ -161,6 +163,14 @@ namespace GamePlatform.Tests.Sync.Pull
         }
 
         [Fact]
+        public async Task ObservedProjectorReceivesFixedBoundaryServerTimeAndRevisionZero()
+        {
+            using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);var projector=new ObservedProjector();var store=new SqlitePrivateSyncStore(db,Scope,projector,_=>{});
+            await store.ApplyPullPageAsync(new StoredPullPage(6,new[]{new StoredPullGroup(6,new[]{Mutation("wallet","coins",0,1)})},Token(4),false,1234),CancellationToken.None);
+            Assert.Equal(new long[]{6},projector.FixedThrough);Assert.Equal(new long[]{1234},projector.ServerTimes);Assert.Equal(0,projector.FirstEntityRevision);Assert.Equal("visible",await Text(db,"SELECT state FROM gp_confirmed_projection WHERE collection='wallet' AND entity_key='coins'"));await Dispose(db);
+        }
+
+        [Fact]
         public async Task ProjectorFailureRollsBackRawTypedOverlayAndCheckpointThenSurvivesReopen()
         {
             using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);await db.ExecuteAsync(Scope,t=>{var s=(SqliteTransactionSession)t;s.Execute("CREATE TABLE test_typed_projection (feed_revision INTEGER NOT NULL)");s.Execute("INSERT INTO test_overlay VALUES ('rebuild',0)");return true;},CancellationToken.None);
@@ -176,6 +186,21 @@ namespace GamePlatform.Tests.Sync.Pull
             using var files=new TemporaryDatabase();var db=await OpenReady(files.Path);await db.ExecuteAsync(Scope,t=>{((SqliteTransactionSession)t).Execute("CREATE TABLE test_snapshot_projection (entity_key TEXT NOT NULL)");return true;},CancellationToken.None);var projector=new RecordingProjector();var store=new SqlitePrivateSyncStore(db,Scope,projector,_=>{});
             await store.BeginBootstrapAsync(Boundary(10,Token(7)),CancellationToken.None);await store.StageBootstrapPageAsync(Page(Token(1),Token(7),10,false,null,Token(8),Mutation("profile","self",2,10),Mutation("wallet","coins",1,11)),CancellationToken.None);
             Assert.Equal(1,projector.SnapshotCalls);Assert.Equal(new[]{"profile:self","wallet:coins"},projector.SnapshotKeys);Assert.Equal(5,projector.CheckpointDuringSnapshot);var checkpoint=await store.GetPullCheckpointAsync(CancellationToken.None);Assert.Equal(10,checkpoint.CommittedThrough);Assert.Equal(Token(8),checkpoint.CopyCursor());await Dispose(db);
+        }
+
+        [Fact]
+        public async Task G3TypedProjectorDecodesReplacementAndRemovalWithoutFabricatingRichCollections()
+        {
+            using var files=new TemporaryDatabase();var db=await Open(files.Path);var codec=new MessagePackWireCodec();var sink=new G3Sink();var store=new SqlitePrivateSyncStore(db,Scope,new G3PrivateSyncProjector(codec,sink),_=>{});
+            await store.BeginBootstrapAsync(Boundary(5,Token(1)),CancellationToken.None);
+            var progression=new ProjectionProgressionSnapshot(new ProjectionProgressionKey("campaign.level"),0,new ProjectionProgressionData(2));
+            var wallet=new ProjectionWalletSnapshot(new ProjectionWalletKey("test.coin"),0,new ProjectionWalletData(0));
+            await store.StageBootstrapPageAsync(new StagedBootstrapPage(Token(1),Token(1),5,new[]{new StoredProjectionMutation("progression","campaign.level",0,StoredProjectionKind.Upsert,codec.Encode<IProjectionSnapshotEntity>(progression)),new StoredProjectionMutation("wallet","test.coin",0,StoredProjectionKind.Upsert,codec.Encode<IProjectionSnapshotEntity>(wallet))},false,null,Token(3),1000),CancellationToken.None);
+            Assert.Equal(5,sink.SnapshotObservation.FixedThrough);Assert.Equal(1000,sink.SnapshotObservation.ServerTimeMilliseconds);Assert.Single(sink.Progression);Assert.Single(sink.Wallet);
+            await store.ApplyPullPageAsync(new StoredPullPage(6,new[]{new StoredPullGroup(6,new[]{new StoredProjectionMutation("wallet","test.coin",1,StoredProjectionKind.RemoveFromView,Array.Empty<byte>())})},Token(4),false,1001),CancellationToken.None);
+            var removal=Assert.IsType<ProjectionWalletRemoval>(Assert.Single(sink.GroupChanges));Assert.Equal("view_remove",removal.Kind);Assert.Equal(6,sink.GroupRevision);Assert.Equal(1001,sink.GroupObservation.ServerTimeMilliseconds);
+            await Assert.ThrowsAsync<InvalidOperationException>(()=>store.ApplyPullPageAsync(new StoredPullPage(7,new[]{new StoredPullGroup(7,new[]{new StoredProjectionMutation("inventory","fixture.item",0,StoredProjectionKind.Upsert,codec.Encode<IProjectionChange>(new ProjectionInventoryUpsert(new ProjectionInventoryKey("fixture.item"),0,new ProjectionInventoryData(1))))})},Token(5),false,1002),CancellationToken.None));
+            Assert.Equal(0,await Scalar(db,"SELECT COUNT(*) FROM gp_confirmed_projection WHERE collection='inventory'"));await Dispose(db);
         }
 
         [Fact]
@@ -215,6 +240,20 @@ namespace GamePlatform.Tests.Sync.Pull
             public List<long> Revisions { get; }=new List<long>();public List<long> RawRevisions { get; }=new List<long>();public List<string> Keys { get; }=new List<string>();public int SnapshotCalls { get; private set; }public List<string> SnapshotKeys { get; }=new List<string>();public long CheckpointDuringSnapshot { get; private set; }
             public void ProjectConfirmedGroup(ILocalStorageTransaction transaction,StoredPullGroup group){var s=(SqliteTransactionSession)transaction;Revisions.Add(group.Revision);foreach(var change in group.Changes){Keys.Add(change.Collection+":"+change.EntityKey);RawRevisions.Add(s.ExecuteScalar<long>("SELECT entity_revision FROM gp_confirmed_projection WHERE collection=? AND entity_key=?",change.Collection,change.EntityKey));}}
             public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction,IReadOnlyList<StoredProjectionMutation> snapshot){var s=(SqliteTransactionSession)transaction;SnapshotCalls++;foreach(var entity in snapshot)SnapshotKeys.Add(entity.Collection+":"+entity.EntityKey);CheckpointDuringSnapshot=s.ExecuteScalar<long>("SELECT committed_through FROM gp_sync_state WHERE singleton=1");}
+        }
+        private sealed class ObservedProjector:IObservedPrivateSyncProjectionProjector
+        {
+            public List<long> FixedThrough{get;}=new List<long>();public List<long> ServerTimes{get;}=new List<long>();public long FirstEntityRevision{get;private set;}=long.MinValue;
+            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction,StoredPullGroup group)=>throw new InvalidOperationException();
+            public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction,IReadOnlyList<StoredProjectionMutation> snapshot)=>throw new InvalidOperationException();
+            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction,StoredPullGroup group,PrivateSyncProjectionObservation observation){FixedThrough.Add(observation.FixedThrough);ServerTimes.Add(observation.ServerTimeMilliseconds);if(FirstEntityRevision==long.MinValue)FirstEntityRevision=((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT entity_revision FROM gp_confirmed_projection WHERE collection='wallet' AND entity_key='coins'");}
+            public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction,IReadOnlyList<StoredProjectionMutation> snapshot,PrivateSyncProjectionObservation observation){FixedThrough.Add(observation.FixedThrough);ServerTimes.Add(observation.ServerTimeMilliseconds);}
+        }
+        private sealed class G3Sink:IG3PrivateProjectionSink
+        {
+            public PrivateSyncProjectionObservation SnapshotObservation{get;private set;}public PrivateSyncProjectionObservation GroupObservation{get;private set;}public IReadOnlyList<ProjectionProgressionSnapshot> Progression{get;private set;}=Array.Empty<ProjectionProgressionSnapshot>();public IReadOnlyList<ProjectionWalletSnapshot> Wallet{get;private set;}=Array.Empty<ProjectionWalletSnapshot>();public IReadOnlyList<IProjectionChange> GroupChanges{get;private set;}=Array.Empty<IProjectionChange>();public long GroupRevision{get;private set;}
+            public void ReplaceSnapshot(ILocalStorageTransaction transaction,PrivateSyncProjectionObservation observation,ProfileProfile? profile,IReadOnlyList<ProjectionProgressionSnapshot> progression,IReadOnlyList<ProjectionWalletSnapshot> wallet){SnapshotObservation=observation;Progression=progression;Wallet=wallet;}
+            public void ApplyGroup(ILocalStorageTransaction transaction,long feedRevision,PrivateSyncProjectionObservation observation,IReadOnlyList<IProjectionChange> changes){GroupRevision=feedRevision;GroupObservation=observation;GroupChanges=changes;}
         }
         private sealed class WritingProjector:IPrivateSyncProjectionProjector
         {

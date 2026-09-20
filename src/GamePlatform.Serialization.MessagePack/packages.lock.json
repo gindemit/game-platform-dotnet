@@ -70,6 +70,12 @@
       "gameplatform.core": {
         "type": "Project"
       },
+      "gameplatform.storage.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "GamePlatform.Core": "[0.1.0-draft, )"
+        }
+      },
       "gameplatform.transport.abstractions": {
         "type": "Project"
       },
