@@ -22,7 +22,7 @@ namespace GamePlatform.Features.Profiles
             else if (avatarKey != null) throw new ArgumentException("An absent avatar key cannot carry a value.", nameof(avatarKey));
             if (hasLocale) ProfileValidation.Locale(locale, nameof(locale));
             else if (locale != null) throw new ArgumentException("An absent locale cannot carry a value.", nameof(locale));
-            if (revision < 1) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
             ProfileValidation.Timestamp(updatedAtMilliseconds, nameof(updatedAtMilliseconds));
             if (extensions.Length > ProfileValidation.MaximumExtensionBytes) throw new ArgumentOutOfRangeException(nameof(extensions));
             DisplayName = displayName; HasAvatarKey = hasAvatarKey; AvatarKey = avatarKey;

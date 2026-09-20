@@ -150,6 +150,43 @@ namespace GamePlatform.Tests.Features
         }
 
         [Fact]
+        public async Task ConfirmedRevisionZeroIsDistinctFromAbsenceAndSurvivesBorrowedRollbackCommitAndReopen()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path);
+            var service = Create(database, new ImmediateRemote(Context, Confirmed("Bootstrap", 0, new byte[] { 4 })));
+            Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
+            await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cl102_zero_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
+
+            await Assert.ThrowsAsync<InjectedFailure>(() => database.ExecuteAsync<bool>(Scope, transaction =>
+            {
+                service.ApplyConfirmedProjection(transaction, Context, null, Confirmed("Bootstrap", 0, new byte[] { 4 }));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_zero_sentinel VALUES (?)", 1);
+                throw new InjectedFailure();
+            }, CancellationToken.None));
+            Assert.Equal(0, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl102_zero_sentinel"), CancellationToken.None));
+            Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
+
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                service.ApplyConfirmedProjection(transaction, Context, null, Confirmed("Bootstrap", 0, new byte[] { 4 }));
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cl102_zero_sentinel VALUES (?)", 2); return true;
+            }, CancellationToken.None);
+            Assert.Equal(1L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='profiles' AND entity_key='self'"), CancellationToken.None));
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, new ImmediateRemote(Context, Confirmed("Bootstrap", 0, new byte[] { 4 })));
+            var zero = await restored.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(FeatureSnapshotState.Stale, zero.State); Assert.Equal(0, zero.Revision); Assert.Equal(0, zero.Value!.Confirmed!.Revision);
+            await restored.ApplyConfirmedAsync(Context, Confirmed("Bootstrap", 0, new byte[] { 4 }), CancellationToken.None);
+            await Assert.ThrowsAsync<ProfileConflictException>(() => restored.ApplyConfirmedAsync(Context, Confirmed("Changed", 0, new byte[] { 4 }), CancellationToken.None));
+            await restored.ApplyConfirmedAsync(Context, Confirmed("First", 1, new byte[] { 5 }), CancellationToken.None);
+            var one = await restored.ReadCachedAsync(Context, CancellationToken.None);
+            Assert.Equal(1, one.Revision); Assert.Equal(1, one.Value!.Confirmed!.Revision);
+            Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl102_zero_sentinel WHERE value=2"), CancellationToken.None));
+            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task NewerForeignRevisionMarksUnreceiptedLocalEditAsConflict()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path);

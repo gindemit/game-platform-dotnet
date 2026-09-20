@@ -148,7 +148,7 @@ namespace GamePlatform.Features.Profiles
 
                 await transactions.ExecuteAsync(storageScope, transaction =>
                 {
-                    ApplyConfirmedProjection(transaction, exactOwner, current.Confirmed?.Revision ?? 0, confirmed);
+                    ApplyConfirmedProjection(transaction, exactOwner, current.Confirmed == null ? (long?)null : current.Confirmed.Revision, confirmed);
                     return true;
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -157,24 +157,25 @@ namespace GamePlatform.Features.Profiles
 
         /// <summary>
         /// Applies a validated server profile in the caller-owned private-feed transaction. The caller supplies the
-        /// confirmed durable revision read in that same transaction; this method neither advances nor acknowledges a cursor.
+        /// confirmed durable revision read in that same transaction; null means absent while zero is a real
+        /// confirmed revision. This method neither advances nor acknowledges a cursor.
         /// </summary>
         public void ApplyConfirmedProjection(ILocalStorageTransaction transaction, ScopedOwnerContext requestedOwner,
-            long durablePriorRevision, ProfileConfirmed confirmed)
+            long? durablePriorRevision, ProfileConfirmed confirmed)
         {
             var exactOwner = EnsureOwner(requestedOwner);
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (!transaction.Scope.Equals(storageScope)) throw new StorageException(StorageFailure.InvalidOwner, "The profile transaction belongs to another scope.");
-            if (durablePriorRevision < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
             if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
-            if (confirmed.Revision <= durablePriorRevision)
+            if (durablePriorRevision.HasValue && confirmed.Revision <= durablePriorRevision.Value)
                 throw new ProfileConflictException("A borrowed confirmed profile projection must advance its durable revision.");
             var extensions = confirmed.CopyExtensions();
             codec.ValidateExtensions(extensions);
             var payload = codec.EncodeConfirmed(confirmed);
             ValidatePayload(payload, "confirmed profile");
             state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, ConfirmedKey,
-                confirmed.Revision, confirmed.UpdatedAtMilliseconds, payload, extensions));
+                ToStorageRevision(confirmed.Revision), confirmed.UpdatedAtMilliseconds, payload, extensions));
         }
 
         public void Dispose()
@@ -209,8 +210,9 @@ namespace GamePlatform.Features.Profiles
             if (confirmed != null)
             {
                 codec.ValidateExtensions(confirmed.CopyExtensions());
-                decodedConfirmed = codec.DecodeConfirmed(confirmed.Revision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
-                if (decodedConfirmed == null || decodedConfirmed.Revision != confirmed.Revision) throw new InvalidOperationException("The profile state codec returned an invalid confirmed record.");
+                var semanticRevision = FromStorageRevision(confirmed.Revision);
+                decodedConfirmed = codec.DecodeConfirmed(semanticRevision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
+                if (decodedConfirmed == null || decodedConfirmed.Revision != semanticRevision) throw new InvalidOperationException("The profile state codec returned an invalid confirmed record.");
             }
             if (pending != null && pending.PayloadLength != 0)
             {
@@ -265,5 +267,9 @@ namespace GamePlatform.Features.Profiles
             if (left.Length != right.Length) return false;
             var difference = 0; for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index]; return difference == 0;
         }
+        // gp_feature_state reserves positive row revisions for durable-record identity. This is an envelope only:
+        // semantic profile revision zero round-trips as zero and is never surfaced as revision one.
+        private static long ToStorageRevision(long semanticRevision) => semanticRevision == long.MaxValue ? throw new ProfileConflictException("The profile revision is exhausted.") : checked(semanticRevision + 1);
+        private static long FromStorageRevision(long storageRevision) => storageRevision <= 0 ? throw new ProfileConflictException("The profile storage revision is invalid.") : storageRevision - 1;
     }
 }
