@@ -40,7 +40,7 @@ class PackageTests(unittest.TestCase):
     def test_debug_identity_requires_revision_bound_source_link_for_projects(self):
         revision = 'c' * 40
         item = assembly()
-        item['sourceLink'] = package.canonical_source_link(revision).rstrip('\n')
+        item['sourceLink'] = package.canonical_source_link(revision)
         package.validate_debug_identity([item], ['A'], revision)
         item['sourceLink'] = None
         with self.assertRaisesRegex(ValueError, 'canonical_source_link_missing'):

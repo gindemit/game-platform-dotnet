@@ -102,7 +102,7 @@ def validate_closure(metadata, expected_names):
 
 
 def validate_debug_identity(metadata, project_names, revision):
-    expected = canonical_source_link(revision).rstrip('\n')
+    expected = canonical_source_link(revision)
     by_name = {item['name']: item for item in metadata}
     for name in project_names:
         if by_name[name].get('sourceLink') != expected:
