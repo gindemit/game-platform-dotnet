@@ -38,7 +38,15 @@ namespace GamePlatform.Storage.Sqlite.Executor
             StorageScope scope,
             IReadOnlyList<SqliteMigration> migrations,
             CancellationToken cancellationToken) =>
-            OpenAsync(databasePath, scope, migrations, SqliteDatabaseOptions.Default, null, cancellationToken);
+            OpenAsync(databasePath, scope, migrations, Array.Empty<SqliteExtensionDescriptor>(), SqliteDatabaseOptions.Default, null, null, cancellationToken);
+
+        public static Task<SqliteDatabase> OpenAsync(
+            string databasePath,
+            StorageScope scope,
+            IReadOnlyList<SqliteMigration> migrations,
+            IReadOnlyList<SqliteExtensionDescriptor> extensions,
+            CancellationToken cancellationToken) =>
+            OpenAsync(databasePath, scope, migrations, extensions, SqliteDatabaseOptions.Default, null, null, cancellationToken);
 
         public static Task<SqliteDatabase> OpenAsync(
             string databasePath,
@@ -46,22 +54,44 @@ namespace GamePlatform.Storage.Sqlite.Executor
             IReadOnlyList<SqliteMigration> migrations,
             SqliteDatabaseOptions options,
             CancellationToken cancellationToken) =>
-            OpenAsync(databasePath, scope, migrations, options, null, cancellationToken);
+            OpenAsync(databasePath, scope, migrations, Array.Empty<SqliteExtensionDescriptor>(), options, null, null, cancellationToken);
 
-        internal static async Task<SqliteDatabase> OpenAsync(
+        public static Task<SqliteDatabase> OpenAsync(
+            string databasePath,
+            StorageScope scope,
+            IReadOnlyList<SqliteMigration> migrations,
+            IReadOnlyList<SqliteExtensionDescriptor> extensions,
+            SqliteDatabaseOptions options,
+            CancellationToken cancellationToken) =>
+            OpenAsync(databasePath, scope, migrations, extensions, options, null, null, cancellationToken);
+
+        internal static Task<SqliteDatabase> OpenAsync(
             string databasePath,
             StorageScope scope,
             IReadOnlyList<SqliteMigration> migrations,
             SqliteDatabaseOptions options,
             Action<MigrationCheckpoint, SqliteMigration>? checkpoint,
             CancellationToken cancellationToken)
+            => OpenAsync(databasePath, scope, migrations, Array.Empty<SqliteExtensionDescriptor>(), options, checkpoint, null, cancellationToken);
+
+        internal static async Task<SqliteDatabase> OpenAsync(
+            string databasePath,
+            StorageScope scope,
+            IReadOnlyList<SqliteMigration> migrations,
+            IReadOnlyList<SqliteExtensionDescriptor> extensions,
+            SqliteDatabaseOptions options,
+            Action<MigrationCheckpoint, SqliteMigration>? checkpoint,
+            Action<ExtensionMigrationCheckpoint, SqliteExtensionDescriptor, SqliteExtensionMigration>? extensionCheckpoint,
+            CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(databasePath)) throw new ArgumentException("A database path is required.", nameof(databasePath));
             if (migrations == null) throw new ArgumentNullException(nameof(migrations));
+            if (extensions == null) throw new ArgumentNullException(nameof(extensions));
             if (options == null) throw new ArgumentNullException(nameof(options));
             ValidateMigrationOrder(migrations);
+            ValidateExtensionOrder(extensions, migrations.Count);
             cancellationToken.ThrowIfCancellationRequested();
-            return await Task.Run(() => OpenCore(Path.GetFullPath(databasePath), scope, migrations, options, checkpoint, cancellationToken), cancellationToken).ConfigureAwait(false);
+            return await Task.Run(() => OpenCore(Path.GetFullPath(databasePath), scope, migrations, extensions, options, checkpoint, extensionCheckpoint, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<T> ExecuteAsync<T>(
@@ -124,8 +154,39 @@ namespace GamePlatform.Storage.Sqlite.Executor
             string databasePath,
             StorageScope scope,
             IReadOnlyList<SqliteMigration> migrations,
+            IReadOnlyList<SqliteExtensionDescriptor> extensions,
             SqliteDatabaseOptions options,
             Action<MigrationCheckpoint, SqliteMigration>? checkpoint,
+            Action<ExtensionMigrationCheckpoint, SqliteExtensionDescriptor, SqliteExtensionMigration>? extensionCheckpoint,
+            CancellationToken cancellationToken)
+        {
+            StorageException? lastBusy = null;
+            for (var attempt = 0; attempt != 8; attempt++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    return OpenCoreOnce(databasePath, scope, migrations, extensions, options, checkpoint, extensionCheckpoint, cancellationToken);
+                }
+                catch (StorageException error) when (error.Failure == StorageFailure.Busy && attempt != 7)
+                {
+                    lastBusy = error;
+                    Thread.Sleep((attempt + 1) * 10);
+                }
+            }
+            throw lastBusy!;
+        }
+
+        // SQLite itself owns cross-process schema serialization. A new connection
+        // re-reads the committed journals after a bounded Busy/Locked retry.
+        private static SqliteDatabase OpenCoreOnce(
+            string databasePath,
+            StorageScope scope,
+            IReadOnlyList<SqliteMigration> migrations,
+            IReadOnlyList<SqliteExtensionDescriptor> extensions,
+            SqliteDatabaseOptions options,
+            Action<MigrationCheckpoint, SqliteMigration>? checkpoint,
+            Action<ExtensionMigrationCheckpoint, SqliteExtensionDescriptor, SqliteExtensionMigration>? extensionCheckpoint,
             CancellationToken cancellationToken)
         {
             SQLiteConnection? connection = null;
@@ -145,6 +206,11 @@ namespace GamePlatform.Storage.Sqlite.Executor
                     throw new StorageException(StorageFailure.Unavailable, "SQLite WAL journal mode is unavailable.");
                 BootstrapScope(connection, scope);
                 ApplyMigrations(connection, scope, migrations, options, checkpoint, cancellationToken);
+                var extensionJournalExists = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'gp_extension_migrations'") == 1;
+                if (!extensionJournalExists && extensions.Count != 0)
+                    throw new StorageException(StorageFailure.Migration, "Explicit extension migrations require the platform extension journal.");
+                if (extensionJournalExists)
+                    ApplyExtensionMigrations(connection, scope, extensions, migrations.Count, options, extensionCheckpoint, cancellationToken);
                 return new SqliteDatabase(connection, scope);
             }
             catch (Exception error)
@@ -292,6 +358,106 @@ namespace GamePlatform.Storage.Sqlite.Executor
                 if (migrations[index] == null || migrations[index].Version != expected)
                     throw new StorageException(StorageFailure.Migration, "Migrations must be complete and ordered from version one.");
             }
+        }
+
+        private static void ApplyExtensionMigrations(
+            SQLiteConnection connection,
+            StorageScope scope,
+            IReadOnlyList<SqliteExtensionDescriptor> extensions,
+            int platformVersion,
+            SqliteDatabaseOptions options,
+            Action<ExtensionMigrationCheckpoint, SqliteExtensionDescriptor, SqliteExtensionMigration>? checkpoint,
+            CancellationToken cancellationToken)
+        {
+            var foreignOwner = connection.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM gp_extension_migrations WHERE backend_namespace <> ? OR app_id <> ? OR account_id <> ?",
+                scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
+            if (foreignOwner != 0) throw new StorageException(StorageFailure.InvalidOwner, "An extension migration marker belongs to another owner scope.");
+
+            var recordedNamespaces = connection.Query<ExtensionNamespaceRow>("SELECT DISTINCT extension_namespace AS ExtensionNamespace FROM gp_extension_migrations");
+            foreach (var recorded in recordedNamespaces)
+            {
+                var found = false;
+                for (var index = 0; index < extensions.Count; index++)
+                    if (string.Equals(extensions[index].ExtensionNamespace, recorded.ExtensionNamespace, StringComparison.Ordinal)) { found = true; break; }
+                if (!found) throw new StorageException(StorageFailure.Migration, "The database retains an extension that was not explicitly supplied.");
+            }
+
+            foreach (var extension in extensions)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (extension.MinimumPlatformVersion > platformVersion)
+                    throw new StorageException(StorageFailure.Migration, "An extension requires a newer platform schema.");
+                var recordedMaximum = connection.ExecuteScalar<int>(
+                    "SELECT COALESCE(MAX(version), 0) FROM gp_extension_migrations WHERE extension_namespace = ?",
+                    extension.ExtensionNamespace);
+                var supportedMaximum = extension.Migrations.Count;
+                if (recordedMaximum > supportedMaximum)
+                    throw new StorageException(StorageFailure.Migration, "An extension schema is newer than this SDK supports.");
+
+                foreach (var migration in extension.Migrations)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var existing = connection.ExecuteScalar<int>(
+                        "SELECT COUNT(*) FROM gp_extension_migrations WHERE extension_namespace = ? AND version = ?",
+                        extension.ExtensionNamespace, migration.Version);
+                    var checksum = extension.GetChecksum(migration);
+                    if (existing == 1)
+                    {
+                        var identityMatches = connection.ExecuteScalar<int>(
+                            "SELECT COUNT(*) FROM gp_extension_migrations WHERE extension_namespace = ? AND version = ? AND migration_id = ? AND checksum = ? AND minimum_platform_version = ? AND backend_namespace = ? AND app_id = ? AND account_id = ?",
+                            extension.ExtensionNamespace, migration.Version, migration.Id, checksum, extension.MinimumPlatformVersion,
+                            scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
+                        if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "An applied extension migration identity or checksum changed.");
+                        continue;
+                    }
+                    if (migration.Version <= recordedMaximum)
+                        throw new StorageException(StorageFailure.Migration, "The extension migration journal has a gap or conflicting version.");
+
+                    connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var statement in migration.Statements) connection.Execute(statement);
+                        checkpoint?.Invoke(ExtensionMigrationCheckpoint.EffectsApplied, extension, migration);
+                        var appliedAt = options.NowMilliseconds();
+                        if (appliedAt < 0 || appliedAt > 253_402_300_799_999L)
+                            throw new StorageException(StorageFailure.Migration, "Migration clock returned an invalid timestamp.");
+                        connection.Execute(
+                            "INSERT INTO gp_extension_migrations(extension_namespace, version, migration_id, checksum, minimum_platform_version, backend_namespace, app_id, account_id, applied_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            extension.ExtensionNamespace, migration.Version, migration.Id, checksum, extension.MinimumPlatformVersion,
+                            scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value, appliedAt);
+                        checkpoint?.Invoke(ExtensionMigrationCheckpoint.MarkerInserted, extension, migration);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        connection.Commit();
+                        recordedMaximum = migration.Version;
+                    }
+                    catch
+                    {
+                        connection.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        private static void ValidateExtensionOrder(IReadOnlyList<SqliteExtensionDescriptor> extensions, int platformVersion)
+        {
+            string? previous = null;
+            for (var index = 0; index < extensions.Count; index++)
+            {
+                var extension = extensions[index];
+                if (extension == null) throw new StorageException(StorageFailure.Migration, "Extension descriptors cannot be null.");
+                if (extension.MinimumPlatformVersion > platformVersion)
+                    throw new StorageException(StorageFailure.Migration, "An extension requires a platform migration that was not supplied.");
+                if (previous != null && string.CompareOrdinal(previous, extension.ExtensionNamespace) >= 0)
+                    throw new StorageException(StorageFailure.Migration, "Extension namespaces must be unique and supplied in deterministic ordinal order.");
+                previous = extension.ExtensionNamespace;
+            }
+        }
+
+        private sealed class ExtensionNamespaceRow
+        {
+            public string ExtensionNamespace { get; set; } = string.Empty;
         }
 
         private static Exception Map(Exception error, StorageFailure fallback, string message)

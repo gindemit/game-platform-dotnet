@@ -86,7 +86,7 @@ namespace GamePlatform.Tests.Features.Accounts
         public async Task SqliteDirectoryReopensReservationBeforeIssuedAccountBinding()
         {
             var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
-            var scope = new StorageScope("test-backend", new PlatformId(App.ToString()), new PlatformId("principal-directory")); var migrations = SqlitePlatformMigrationRegistry.Migrations.Concat(new[] { SqliteAccountsDirectoryMigration.Create(4) }).ToArray();
+            var scope = new StorageScope("test-backend", new PlatformId(App.ToString()), new PlatformId("principal-directory")); var migrations = SqlitePlatformMigrationRegistry.Migrations;
             try
             {
                 var db = await SqliteDatabase.OpenAsync(path, scope, migrations, CancellationToken.None); var store = new SqliteAccountsDirectoryStore(db, scope); var generator = new UuidV7Generator(new Clock(), new Random()); var installation = generator.NewId(); var stream = new ClientStreamId(generator.NewId()); var reserved = await store.ReserveAsync(A, App, installation, stream, CancellationToken.None); Assert.False(reserved.HasIssuedAccount); Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
