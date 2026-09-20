@@ -1,0 +1,66 @@
+# CL-105 — wallet portable service evidence
+
+Task state: bounded SDK implementation; M4/C-D. This evidence does not pass
+A01, A06, A07, G3 or any Unity/live-backend gate.
+
+## Implemented boundary
+
+`WalletService` is constructed for one captured backend/app/account/view/
+generation. It persists server-confirmed `long` balances under a wallet-scoped
+feature namespace, carrying a stable definition ID and semantic key. It has no
+local credit, grant, balance arithmetic or offline purchase authority.
+
+An immutable spend intent carries operation, stream, business-source, expected
+confirmed revision, currency and positive exact amount. The service calls its
+injected remote boundary for fresh online authorization of that exact intent
+before atomically committing `wallet.spend` and the separately labelled pending
+state. A matching receipt moves only the intent to `AcceptedAwaitingPull`; the
+balance remains unchanged until a monotonic confirmed pull reaches the receipt's
+resulting revision. A retained rejection remains an explicit error state.
+
+The remote, codec, SQLite composition and command fingerprint interfaces are
+injected. Test fakes are not production providers. No wire DTO, HTTP route,
+catalog permission interpretation, server-side funds algorithm, wallet ledger,
+reward grant, Unity composition or migration registration was added.
+
+## Local Windows x64 evidence
+
+At task worktree head (uncommitted while this evidence was written):
+
+```text
+rtk dotnet build GamePlatform.sln -c Release --no-restore
+exit 0; 18 projects, zero warnings/errors
+
+rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-build --no-restore --filter FullyQualifiedName~Cl105WalletServiceTests
+exit 0; 5 passed, 0 failed/skipped/warnings
+
+rtk dotnet test GamePlatform.sln -c Release --no-build --no-restore
+exit 0; 403 passed, 0 failed/skipped/warnings
+```
+
+The real pinned SQLite cases prove confirmed/pending/outbox atomicity and reopen,
+`long.MinValue`/`long.MaxValue` preservation, invalid/overflow-sign spend amount
+rejection, stale and offline spend denial without an outbox row, duplicate
+receipt idempotency, receipt followed by an older pull then confirming group,
+two-device divergent accepted/rejected outcomes, rejection visibility, and
+same-currency view namespace/owner fencing.
+
+## Remaining limits
+
+The required `PEER-VALUE` server/provider contract remains unavailable at this
+feature boundary. There is no real backend transcript, production codec/HTTP
+adapter, server authorization/funds validation evidence, shared-row multi-app
+exercise, physical kill/disk/corruption test, Unity IL2CPP/AOT/device test,
+INT-010 journey or independent review. Cached balances remain display-only until
+such an online backend authority is composed and verified.
+
+## Inherited storage-runner observation
+
+One earlier full-suite attempt in this isolated worktree failed only the
+storage-owned `Cl007P3ExtensionMigrationTests.ConcurrentOpenUsesOneExtensionJournalAndChecksumsIncludeDescriptorIdentity`
+case: 402 passed/1 failed, where a concurrent initializer observed
+`table gp_stream_state already exists`. No CL-105 code owns or changes that
+test/migration boundary. The immediate repeat passed 403/403, and five focused
+repetitions of that exact CL-007 case passed 1/1 each (0/5 failures). The
+observation was reported to the coordinator; it is not treated as CL-105
+acceptance evidence or as a storage fix.
