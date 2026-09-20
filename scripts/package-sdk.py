@@ -115,7 +115,8 @@ def package_lock(project):
 
 def validate_inputs(root, projects):
     for project in projects:
-        references = [item.attrib['Include'] for item in ET.parse(project).findall('.//PackageReference')]
+        document = ET.parse(project)
+        references = [item.attrib['Include'] for item in document.findall('.//PackageReference')]
         lock_packages = {}
         for group in package_lock(project).get('dependencies', {}).values():
             lock_packages.update({name: item for name, item in group.items() if item.get('type') != 'Project'})
@@ -125,6 +126,23 @@ def validate_inputs(root, projects):
             for name, version in MESSAGEPACK_PACKAGES.items():
                 if lock_packages[name].get('resolved') != version or not lock_packages[name].get('contentHash'):
                     raise ValueError('messagepack_package_pin_mismatch: ' + name)
+        elif project.stem == 'GamePlatform.Transport.Http':
+            # HTTP composes the reviewed codec; it does not acquire packages itself.
+            project_references = {Path(item.attrib['Include']).stem
+                                  for item in document.findall('.//ProjectReference')}
+            if references or MESSAGEPACK_PROJECT not in project_references:
+                raise ValueError('runtime_package_requires_bundle_license_review: ' + project.stem)
+            if set(lock_packages) != set(MESSAGEPACK_PACKAGES):
+                raise ValueError('http_messagepack_package_inventory_mismatch')
+            reviewed = package_lock(root / f'src/{MESSAGEPACK_PROJECT}/{MESSAGEPACK_PROJECT}.csproj')
+            reviewed_packages = reviewed['dependencies']['.NETStandard,Version=v2.1']
+            for name, version in MESSAGEPACK_PACKAGES.items():
+                item = lock_packages[name]
+                if (item.get('type') not in ('Transitive', 'CentralTransitive') or
+                        item.get('resolved') != version or not item.get('contentHash') or
+                        item.get('contentHash') != reviewed_packages[name].get('contentHash') or
+                        item.get('dependencies', {}) != reviewed_packages[name].get('dependencies', {})):
+                    raise ValueError('http_messagepack_package_pin_mismatch: ' + name)
         elif references or lock_packages:
             raise ValueError('runtime_package_requires_bundle_license_review: ' + project.stem)
     for required in ('LICENSE-NOTICE.md', 'integration/unity/package/LICENSE.MessagePack-CSharp.txt',

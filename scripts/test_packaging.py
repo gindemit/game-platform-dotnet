@@ -94,6 +94,53 @@ class PackageTests(unittest.TestCase):
                 package.build_bundle(root, root / 'sqlite')
             self.assertEqual('keep', sentinel.read_text())
 
+    def test_http_composition_reuses_reviewed_messagepack_closure(self):
+        projects = sorted((package.ROOT / 'src').glob('*/*.csproj'))
+        package.validate_inputs(package.ROOT, projects)
+
+    def test_http_rejects_unreviewed_dependency_changes(self):
+        source = package.ROOT / 'src/GamePlatform.Transport.Http/GamePlatform.Transport.Http.csproj'
+        cases = ('extra', 'missing', 'version', 'hash', 'missing_hash', 'direct_lock',
+                 'dependencies', 'direct_reference', 'missing_codec_reference')
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temp:
+                project = Path(temp) / source.name
+                project.write_text(source.read_text())
+                locked = package.package_lock(source)
+                packages = locked['dependencies']['.NETStandard,Version=v2.1']
+                if case == 'extra':
+                    packages['New'] = {'type': 'Transitive', 'resolved': '1.0.0', 'contentHash': 'new'}
+                elif case == 'missing':
+                    del packages['System.Memory']
+                elif case == 'version':
+                    packages['MessagePack']['resolved'] = '3.1.9'
+                elif case == 'hash':
+                    packages['MessagePack']['contentHash'] = 'different'
+                elif case == 'missing_hash':
+                    del packages['MessagePack']['contentHash']
+                elif case == 'direct_lock':
+                    packages['MessagePack']['type'] = 'Direct'
+                elif case == 'dependencies':
+                    packages['MessagePack']['dependencies']['New'] = '1.0.0'
+                elif case == 'direct_reference':
+                    project.write_text(project.read_text().replace('</Project>',
+                        '<ItemGroup><PackageReference Include="MessagePack"/></ItemGroup></Project>'))
+                elif case == 'missing_codec_reference':
+                    project.write_text('<Project/>')
+                project.with_name('packages.lock.json').write_text(json.dumps(locked))
+                with self.assertRaisesRegex(ValueError,
+                        'http_messagepack_package_|runtime_package_requires_bundle_license_review'):
+                    package.validate_inputs(package.ROOT, [project])
+
+    def test_reviewed_package_is_not_implicitly_allowed_in_other_projects(self):
+        with tempfile.TemporaryDirectory() as temp:
+            project = Path(temp) / 'A.csproj'
+            project.write_text('<Project/>')
+            source = package.ROOT / 'src/GamePlatform.Transport.Http/GamePlatform.Transport.Http.csproj'
+            project.with_name('packages.lock.json').write_text(json.dumps(package.package_lock(source)))
+            with self.assertRaisesRegex(ValueError, 'runtime_package_requires_bundle_license_review'):
+                package.validate_inputs(package.ROOT, [project])
+
     def bundle(self, root):
         (root / 'A.dll').write_bytes(b'fixture')
         (root / 'aot').mkdir()

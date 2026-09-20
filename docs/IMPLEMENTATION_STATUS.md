@@ -1,5 +1,22 @@
 # Implementation status
 
+## CL-015 HTTP transitive closure validation — 2026-09-20
+
+Packaging input validation now accepts the HTTP composition's already reviewed
+MessagePack project dependency. HTTP must have no direct package references and
+must retain the codec project reference, the exact nine-package inventory and
+versions, transitive lock types, and hashes/dependency edges matching the codec
+lock. All other runtime projects still require explicit package review; bundle
+resolution, notices, hashes and duplicate-acquisition checks are unchanged.
+
+The original `runtime_package_requires_bundle_license_review` failure was
+reproduced at `94b70628eedff9d1b4da3e05b0fb83447b7f6464`. Focused packaging
+regressions pass 29/29, including the real input graph and nine rejected HTTP
+dependency mutations. A fresh ordinary package/verify is the next check after
+this source commit. CL-015 remains `in_progress` under M2/C, A09/A13; independent
+reproduction, macOS native execution and new HTTP Unity/device/live acceptance
+remain unverified. No runtime dependency pin or Unity import changed.
+
 ## Bounded production HTTP composition increment — 2026-09-20
 
 The SDK now has a concrete portable `System.Net.Http` executor for exactly the
