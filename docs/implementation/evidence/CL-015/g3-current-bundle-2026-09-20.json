@@ -1,0 +1,45 @@
+{
+  "task": "CL-015",
+  "date": "2026-09-20",
+  "requestedCoordinatedHead": "686721a6a5f0fcd3525d4b6a0002406abbad061a",
+  "artifactSourceCommit": "0b180ac07bdcbb4362c62412ec8e65c9b1533a9b",
+  "artifactPath": "C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920/artifacts/sdk",
+  "manifestSha256": "3eae6d4e278b9162101f566df25520542616619c480482e2ecce6c4d18155230",
+  "inventory": {
+    "sdkAssemblies": 15,
+    "managedAssemblies": 23,
+    "messagePackRuntimeAssemblies": 8,
+    "messagePackPackageRecords": 9,
+    "nativeTargets": 3,
+    "pinvokeDeclarations": 38,
+    "filesIncludingManifest": 100
+  },
+  "capabilities": {
+    "productionMessagePack": "included",
+    "published": false,
+    "duplicateUpmAcquisitionAllowed": false,
+    "unityImport": "metadata-only-unverified",
+    "aotAndDevice": "unverified",
+    "liveBackendIntegration": "unverified"
+  },
+  "verification": {
+    "packagingTests": "29/29",
+    "sdkTests": "485/485",
+    "validatorTests": "19/19",
+    "lockedRestoreAndReleaseBuild": "passed; 0 warnings; 0 errors",
+    "ordinaryBundleVerification": "passed",
+    "independentCleanClones": 2,
+    "manifestsByteEqual": true,
+    "completeArtifactsByteEqual": true,
+    "reproductionSummary": "C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920/reproducibility-summary.json"
+  },
+  "commands": [
+    "python -m unittest discover -s scripts -p test_packaging.py",
+    "python scripts/package-sdk.py",
+    "python scripts/package-sdk.py --verify",
+    "dotnet test GamePlatform.sln -c Release --no-build --no-restore --nologo",
+    "python scripts/validate.py",
+    "python scripts/test_validation.py",
+    "python scripts/verify-package-reproducibility.py --source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920 --revision 0b180ac07bdcbb4362c62412ec8e65c9b1533a9b --sqlite-source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920/artifacts/acquisition/unity-sqlite-net --evidence-output C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920"
+  ]
+}
