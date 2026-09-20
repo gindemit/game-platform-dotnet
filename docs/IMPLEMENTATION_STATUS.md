@@ -1,5 +1,31 @@
 # Implementation status
 
+## Bounded production HTTP composition increment — 2026-09-20
+
+The SDK now has a concrete portable `System.Net.Http` executor for exactly the
+frozen provisioning, bootstrap start/page, pull and command-receipt routes plus
+an explicit production provider bundle using `MessagePackWireCodec`. The
+executor confines requests to the configured HTTPS authority, rejects
+unsupported routes/methods/headers/media types and redirects, caps request and
+response bodies plus response headers, copies correlation/media headers and
+preserves cancellation and not-sent/uncertain/response-received delivery
+semantics. Composition carries no endpoint, token or provider credential and
+leaves `HttpClient`, auth-session and refresh-coordinator lifecycle with the
+application host.
+
+Focused executor/composition plus existing provisioning/bootstrap/pull/receipt
+provider tests pass 59/59. The transport/serialization regression passes
+231/231; Release build covers 18 projects with zero warnings/errors and
+architecture/contract validation passes. The existing MessagePack dependency
+versions are unchanged; the HTTP project lock now records the already pinned
+transitive codec closure.
+
+This is not live-host or G3 evidence. Automatic redirects must be disabled by
+the caller-owned handler. UnityWebRequest/device execution, BE-016 runtime
+composition, HTTPS against a compatible nonproduction backend, push/account/
+profile/stream-recovery providers, live credentials and A01–A13 acceptance
+remain unavailable or unverified.
+
 ## CL-004 production wire adapter promoted — 2026-09-20
 
 Source `684ed49c832f203326270546414244bc2adb78e8` adds the public
@@ -129,8 +155,8 @@ Focused storage/policy CL-010 tests passed 20/20 and combined CL-007/008/009/010
 regressions passed 41/41. The original full SDK suite passed 296/296; locked restore/build
 covered 18 projects with zero warnings/errors, architecture validation and 33
 script tests passed, and the 52-task/16-ledger/21-wave manifest plus 14 tests
-passed. CL-010 remains `in_progress`: concrete executor/host
-composition, live backend transcript, process-kill/disk/corruption, multi-app shared projection
+passed. CL-010 remains `in_progress`: live backend transcript,
+process-kill/disk/corruption, multi-app shared projection
 provider, Unity/AOT/device and independent-review evidence remain unrun.
 G3 was not assessed and P4 was not started. See
 [CL-010 evidence](implementation/evidence/CL-010/README.md).
@@ -145,8 +171,8 @@ envelope errors, final-page cursor handoff and reset mapping. Twenty-one new
 scripted boundary tests bring the focused CL-005/CL-010 selection to 53/53 and
 the full SDK to 317/317. At that checkpoint they were not live or production-
 composition evidence; the later CL-004 section records only a desktop candidate
-behind a test-local port adapter. The codec was later promoted as recorded above;
-no concrete HTTP executor or host is registered.
+behind a test-local port adapter. The codec and bounded portable HTTP composition
+were later promoted as recorded above; live-host evidence remains unrun.
 
 Hardening source `6462d471d498eb92c4a773cd008e979924afd6dc`
 scopes private sync to the expected platform account, shares externally owned

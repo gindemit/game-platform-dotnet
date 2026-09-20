@@ -10,6 +10,7 @@
     <ProjectReference Include="../GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.csproj" />
     <ProjectReference Include="../GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions.csproj" />
     <ProjectReference Include="../GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.csproj" />
+    <ProjectReference Include="../GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack.csproj" />
   </ItemGroup>
 
 </Project>

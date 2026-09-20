@@ -20,6 +20,12 @@ metadata. The later `MessagePackWireCodec` promotion reuses the same bounded
 implementation after Android ARM64 IL2CPP/high-stripping corpus acceptance; it
 does not alter the existing Core/Features.Contracts consumer import.
 
+The bounded production HTTP composition references
+`GamePlatform.Serialization.MessagePack`, so its lockfile records the same exact
+nine-package MessagePack closure. It adds no new package or version and does not
+enable JSON, reflection, runtime code generation, Unity networking or a second
+acquisition path.
+
 P1 qualifies `gilzoide/unity-sqlite-net` 1.3.2 at `08248bd5884d8eb932a837aa56d4ff456daf913f` using a real Windows x64 desktop transaction/reopen probe. See the [qualification decision](implementation/dependencies/CL-006-sqlite-candidate.md) and [exact input manifest](../integration/unity/sqlite-qualification/qualification.json).
 
 CL-007 compiles the pinned managed source into `GamePlatform.Storage.Sqlite`.

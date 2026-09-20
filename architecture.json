@@ -13,7 +13,7 @@
     "GamePlatform.Features.Presentation": ["GamePlatform.Core", "GamePlatform.Features.Contracts", "GamePlatform.Navigation"],
     "GamePlatform.Wire.Contracts": [],
     "GamePlatform.Transport.Abstractions": [],
-    "GamePlatform.Transport.Http": ["GamePlatform.Core", "GamePlatform.Backend.Contracts", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"],
+    "GamePlatform.Transport.Http": ["GamePlatform.Core", "GamePlatform.Backend.Contracts", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts", "GamePlatform.Serialization.MessagePack"],
     "GamePlatform.Storage.Sqlite": ["GamePlatform.Core", "GamePlatform.Storage.Abstractions"],
     "GamePlatform.Serialization.MessagePack": ["GamePlatform.Core", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"],
     "GamePlatform.Serialization.Json": ["GamePlatform.Core", "GamePlatform.Transport.Abstractions", "GamePlatform.Wire.Contracts"]
@@ -30,7 +30,7 @@
     "GamePlatform.Features.Presentation": [],
     "GamePlatform.Wire.Contracts": [],
     "GamePlatform.Transport.Abstractions": [],
-    "GamePlatform.Transport.Http": [],
+    "GamePlatform.Transport.Http": ["MessagePack", "MessagePack.Annotations", "MessagePackAnalyzer", "Microsoft.NET.StringTools", "System.Collections.Immutable", "System.Memory", "System.Runtime.CompilerServices.Unsafe", "System.Buffers", "System.Numerics.Vectors"],
     "GamePlatform.Storage.Sqlite": [],
     "GamePlatform.Serialization.MessagePack": ["MessagePack", "MessagePack.Annotations", "MessagePackAnalyzer", "Microsoft.NET.StringTools", "System.Collections.Immutable", "System.Memory", "System.Runtime.CompilerServices.Unsafe", "System.Buffers", "System.Numerics.Vectors"],
     "GamePlatform.Serialization.Json": []

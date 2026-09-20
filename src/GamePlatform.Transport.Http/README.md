@@ -26,9 +26,19 @@ missing receipt at or below the observed finalized watermark; and preserves the
 encoded terminal result for durable sender finalization. Receipt absence never
 permits a new operation identity.
 
-The semantic providers remain portable boundaries, not host composition.
-`MessagePackWireCodec` is the qualified production `IWireCodec` implementation
-and remains constructor-injected. No concrete HTTP executor or host is registered.
-Push, account, profile and stream recovery operations remain unsupported.
-Backend BE-016, UnityWebRequest and live hosted execution remain separate gates.
+`BoundedHttpClientExecutor` is the portable `System.Net.Http` production executor
+for these frozen operations. It admits only the configured HTTPS authority and
+the provisioning, bootstrap, pull and receipt routes, accepts only the frozen
+MessagePack media type, bounds request/response bodies and response headers,
+rejects redirects and preserves caller cancellation plus delivery certainty.
+The caller owns its `HttpClient` and must disable automatic redirects.
+
+`ProductionBackendHttpProviders` is the explicit manual composition path. It
+uses `MessagePackWireCodec`, exposes provisioning before an account exists and
+creates an immutable account-owned private-sync/receipt scope only after
+provisioning; the caller owns and quiesces the executor, auth session and shared
+refresh coordinator. Push, account, profile and stream recovery
+operations remain fail-closed and unsupported. No credentials or endpoint are
+embedded. Backend BE-016, UnityWebRequest and live hosted execution remain
+separate gates.
 Gates: A02, A11, A12.
