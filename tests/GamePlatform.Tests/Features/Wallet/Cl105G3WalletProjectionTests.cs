@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,11 +27,10 @@ namespace GamePlatform.Tests.Features.Wallet
         private static readonly StorageScope Scope = new StorageScope("g3-wallet-test", new PlatformId(App.ToString()), new PlatformId(User.ToString()));
         private static readonly ScopedOwnerContext Context = new ScopedOwnerContext(Owner, new SemanticId("private"), 7);
         private static readonly SemanticId Coin = new SemanticId("test.coin");
-        private static readonly IReadOnlyList<SqliteMigration> Migrations = new[]
+        private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations.Concat(new[]
         {
-            SqliteFeatureStateMigration.Create(1),
-            new SqliteMigration(2, "g3-wallet-cursor-sentinel", new[] { "CREATE TABLE g3_wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
-        };
+            new SqliteMigration(7, "g3-wallet-cursor-sentinel", new[] { "CREATE TABLE g3_wallet_cursor_sentinel (singleton INTEGER PRIMARY KEY, value INTEGER NOT NULL)" })
+        }).ToArray();
 
         [Fact]
         public async Task MissingNeverSynthesizesZeroAndRevisionZeroPreservesSigned64Balance()
