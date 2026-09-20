@@ -8,8 +8,8 @@ authority source. Active rights with a server expiry are explicitly
 account/view/generation and must be present in the exact app-visible catalog.
 `ApplyConfirmedInTransaction` is a narrow borrowed-transaction mutation seam
 for a future private-feed adapter to commit entitlement effects with its cursor
-and other group effects; the adapter remains responsible for complete-group
-revision admission.
+and other group effects. The adapter must pass the durable prior revision read
+inside that same transaction; non-advancing mutations fail closed.
 
 The feature is portable only. There is no purchase/IAP provider, private-feed
 adapter, production codec, Unity composition, or peer evidence yet. INT-011 is

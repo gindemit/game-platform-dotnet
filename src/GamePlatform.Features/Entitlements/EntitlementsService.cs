@@ -62,7 +62,7 @@ namespace GamePlatform.Features.Entitlements
 
                 await transactions.ExecuteAsync(scope, transaction =>
                 {
-                    ApplyConfirmedInTransaction(transaction, exactOwner, confirmed, catalog);
+                    ApplyConfirmedInTransaction(transaction, exactOwner, current?.Revision ?? 0, confirmed, catalog);
                     return true;
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -71,15 +71,19 @@ namespace GamePlatform.Features.Entitlements
 
         /// <summary>
         /// Adds this projection to an already-open caller-owned transaction, so a private-feed adapter can commit it with
-        /// its cursor and sibling effects. The caller remains responsible for complete group ordering and revision admission.
+        /// its cursor and sibling effects. The caller supplies the projection revision read from that same group transaction;
+        /// it must advance before this service can mutate durable state.
         /// </summary>
         public void ApplyConfirmedInTransaction(ILocalStorageTransaction transaction, ScopedOwnerContext requestedOwner,
-            EntitlementConfirmedSnapshot confirmed, CatalogSnapshot catalog)
+            long durablePriorRevision, EntitlementConfirmedSnapshot confirmed, CatalogSnapshot catalog)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             var exactOwner = EnsureOwner(requestedOwner);
             if (!transaction.Scope.Equals(scope)) throw new EntitlementOwnerMismatchException();
+            if (durablePriorRevision < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
             if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (confirmed.Revision <= durablePriorRevision)
+                throw new EntitlementProjectionConflictException("A borrowed entitlement projection must advance its durable prior revision.");
             ValidateCatalog(exactOwner, confirmed, catalog);
             var payload = codec.EncodeConfirmed(confirmed);
             // An empty byte payload is the valid canonical encoding of a server-confirmed empty app-visible projection.
