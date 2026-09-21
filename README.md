@@ -19,6 +19,7 @@ Use the [detailed implementation plan](docs/implementation/README.md) and [launc
 python scripts/validate.py
 python -m unittest discover -s scripts -p "test_*.py"
 dotnet restore GamePlatform.sln --locked-mode
+dotnet format GamePlatform.sln whitespace --verify-no-changes --no-restore --exclude src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs
 dotnet build GamePlatform.sln -c Release --no-restore
 dotnet test GamePlatform.sln -c Release --no-build --no-restore
 python scripts/package-sdk.py

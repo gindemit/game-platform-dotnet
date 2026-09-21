@@ -52,9 +52,14 @@ public sealed class SafeAppLogTests
         var log = new SafeAppLog(sink, Context());
         var fields = new Dictionary<string, object?>
         {
-            ["accessToken"] = 123L, ["RECEIPT"] = "test-receipt", ["description"] = new string('x', 10000),
-            ["unknown"] = new ExplodingText(), ["count"] = long.MaxValue, ["ok"] = true,
-            ["notFinite"] = double.NaN, ["nothing"] = null
+            ["accessToken"] = 123L,
+            ["RECEIPT"] = "test-receipt",
+            ["description"] = new string('x', 10000),
+            ["unknown"] = new ExplodingText(),
+            ["count"] = long.MaxValue,
+            ["ok"] = true,
+            ["notFinite"] = double.NaN,
+            ["nothing"] = null
         };
         log.Write(AppLogLevel.Error, "Sync", "Rejected", () => fields, new Exception("private-message"));
         var record = Assert.Single(sink.Records);
@@ -72,8 +77,13 @@ public sealed class SafeAppLogTests
         var sink = new CollectingSink();
         var fields = new Dictionary<string, object?>
         {
-            ["apiKey"] = 1234, ["sessionId"] = 1234, ["deviceId"] = 1234, ["pin"] = 1234,
-            ["arbitraryNewSecret"] = 1234, ["durationMs"] = 25L, ["count"] = "test-private"
+            ["apiKey"] = 1234,
+            ["sessionId"] = 1234,
+            ["deviceId"] = 1234,
+            ["pin"] = 1234,
+            ["arbitraryNewSecret"] = 1234,
+            ["durationMs"] = 25L,
+            ["count"] = "test-private"
         };
         new SafeAppLog(sink, Context()).Write(AppLogLevel.Information, "Sync", "Done", () => fields);
         var record = Assert.Single(sink.Records);

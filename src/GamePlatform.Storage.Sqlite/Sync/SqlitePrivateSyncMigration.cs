@@ -4,7 +4,7 @@ namespace GamePlatform.Storage.Sqlite.Sync
 {
     public static class SqlitePrivateSyncMigration
     {
-        public static SqliteMigration Create(int version) => new SqliteMigration(version,"platform-private-sync-v1",new[]
+        public static SqliteMigration Create(int version) => new SqliteMigration(version, "platform-private-sync-v1", new[]
         {
             "CREATE TABLE gp_sync_state (singleton INTEGER PRIMARY KEY CHECK(singleton = 1), client_stream_id TEXT NOT NULL, ready INTEGER NOT NULL CHECK(ready IN (0,1)), pull_cursor BLOB NULL, committed_through INTEGER NOT NULL CHECK(committed_through >= 0), fixed_through INTEGER NULL CHECK(fixed_through >= 0), visibility_generation INTEGER NOT NULL CHECK(visibility_generation >= 0), log_epoch TEXT NULL)",
             "CREATE TABLE gp_confirmed_projection (collection TEXT NOT NULL, entity_key TEXT NOT NULL, entity_revision INTEGER NOT NULL CHECK(entity_revision > 0), state TEXT NOT NULL CHECK(state IN ('visible','removed','tombstone')), payload BLOB NULL, PRIMARY KEY(collection,entity_key))",

@@ -190,9 +190,13 @@ namespace GamePlatform.Transport.Http.Supabase
             {
                 switch (character)
                 {
-                    case '"': output.Append("\\\""); break; case '\\': output.Append("\\\\"); break;
-                    case '\b': output.Append("\\b"); break; case '\f': output.Append("\\f"); break;
-                    case '\n': output.Append("\\n"); break; case '\r': output.Append("\\r"); break; case '\t': output.Append("\\t"); break;
+                    case '"': output.Append("\\\""); break;
+                    case '\\': output.Append("\\\\"); break;
+                    case '\b': output.Append("\\b"); break;
+                    case '\f': output.Append("\\f"); break;
+                    case '\n': output.Append("\\n"); break;
+                    case '\r': output.Append("\\r"); break;
+                    case '\t': output.Append("\\t"); break;
                     default: if (character < 32) output.Append("\\u").Append(((int)character).ToString("x4", CultureInfo.InvariantCulture)); else output.Append(character); break;
                 }
             }
@@ -263,7 +267,9 @@ namespace GamePlatform.Transport.Http.Supabase
         private sealed class SendResult
         {
             private SendResult(HttpResponseData? response, HttpDeliveryCertainty? certainty, bool cancelled) { Response = response; Certainty = certainty; Cancelled = cancelled; }
-            public HttpResponseData? Response { get; } public HttpDeliveryCertainty? Certainty { get; } public bool Cancelled { get; }
+            public HttpResponseData? Response { get; }
+            public HttpDeliveryCertainty? Certainty { get; }
+            public bool Cancelled { get; }
             public static SendResult ResponseResult(HttpResponseData response) => new SendResult(response, null, false);
             public static SendResult Failed(HttpDeliveryCertainty certainty) => new SendResult(null, certainty, false);
             public static SendResult CancelledResult() => new SendResult(null, null, true);
@@ -272,7 +278,10 @@ namespace GamePlatform.Transport.Http.Supabase
         private sealed class AuthPayload
         {
             private AuthPayload(string accessToken, string refreshToken, string subject, long expiresAtMilliseconds) { AccessToken = accessToken; RefreshToken = refreshToken; Subject = subject; ExpiresAtMilliseconds = expiresAtMilliseconds; }
-            public string AccessToken { get; } public string RefreshToken { get; } public string Subject { get; } public long ExpiresAtMilliseconds { get; }
+            public string AccessToken { get; }
+            public string RefreshToken { get; }
+            public string Subject { get; }
+            public long ExpiresAtMilliseconds { get; }
             public static bool TryDecode(byte[] body, long nowMilliseconds, out AuthPayload payload)
             {
                 payload = null!;
@@ -333,13 +342,18 @@ namespace GamePlatform.Transport.Http.Supabase
                 if (text[index] == '"') { String(); return; }
                 if (text[index] == '{') { index++; White(); if (Try('}')) return; while (true) { String(); White(); Expect(':'); Skip(depth + 1); White(); if (Try('}')) return; Expect(','); White(); } }
                 if (text[index] == '[') { index++; White(); if (Try(']')) return; while (true) { Skip(depth + 1); White(); if (Try(']')) return; Expect(','); White(); } }
-                if (Starts("true")) { index += 4; return; } if (Starts("false")) { index += 5; return; } if (Starts("null")) { index += 4; return; } Number();
+                if (Starts("true")) { index += 4; return; }
+                if (Starts("false")) { index += 5; return; }
+                if (Starts("null")) { index += 4; return; }
+                Number();
             }
             private long Integer() { var value = Number(); if (value.IndexOfAny(new[] { '.', 'e', 'E' }) >= 0 || !long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var result)) throw new FormatException(); return result; }
             private string Number()
             {
-                var start = index; if (Try('-')) { } if (index >= text.Length) throw new FormatException(); if (text[index] == '0') index++; else { Digit19(); while (index < text.Length && Digit(text[index])) index++; }
-                if (Try('.')) { Digit0(); while (index < text.Length && Digit(text[index])) index++; } if (index < text.Length && (text[index] == 'e' || text[index] == 'E')) { index++; if (index < text.Length && (text[index] == '+' || text[index] == '-')) index++; Digit0(); while (index < text.Length && Digit(text[index])) index++; }
+                var start = index; if (Try('-')) { }
+                if (index >= text.Length) throw new FormatException(); if (text[index] == '0') index++; else { Digit19(); while (index < text.Length && Digit(text[index])) index++; }
+                if (Try('.')) { Digit0(); while (index < text.Length && Digit(text[index])) index++; }
+                if (index < text.Length && (text[index] == 'e' || text[index] == 'E')) { index++; if (index < text.Length && (text[index] == '+' || text[index] == '-')) index++; Digit0(); while (index < text.Length && Digit(text[index])) index++; }
                 return text.Substring(start, index - start);
             }
             private string String()

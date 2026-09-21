@@ -24,6 +24,7 @@ jobs:
       - run: python scripts/validate.py
       - run: python -m unittest discover -s scripts -p "test_*.py"
       - run: dotnet restore GamePlatform.sln --locked-mode
+      - run: dotnet format GamePlatform.sln whitespace --verify-no-changes --no-restore --exclude src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs
       - run: dotnet build GamePlatform.sln -c Release --no-restore
       - run: dotnet test GamePlatform.sln -c Release --no-build --no-restore
       - run: python scripts/package-sdk.py

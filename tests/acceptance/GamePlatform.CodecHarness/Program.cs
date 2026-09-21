@@ -159,8 +159,15 @@ internal static class Program
             { rejected = true; }
             if (!rejected) throw new InvalidDataException("hostile_json_accepted");
         }
-        Console.WriteLine(JsonSerializer.Serialize(new { mode = "self-test", schemaCases = passed, fingerprintCases = fingerprintCount,
-            hostileJsonCases = 5, peerInteroperability = "unverified", production = "unavailable" }));
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            mode = "self-test",
+            schemaCases = passed,
+            fingerprintCases = fingerprintCount,
+            hostileJsonCases = 5,
+            peerInteroperability = "unverified",
+            production = "unavailable"
+        }));
     }
 
     private static void Produce(string root, JsonElement[] cases, Dictionary<string, string> options)
@@ -175,14 +182,27 @@ internal static class Program
         using var kat = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, "contracts/v1/fixtures/semantic/fingerprint-vectors.json")));
         var fingerprints = kat.RootElement.GetProperty("vectors").EnumerateArray().Where(x => x.GetProperty("valid").GetBoolean()).Select(item =>
             new { id = item.GetProperty("name").GetString(), sha256 = Codec.Fingerprint(DiagnosticJson.Read(item.GetProperty("input"))) }).ToArray();
-        byte[] output = JsonSerializer.SerializeToUtf8Bytes(new { formatVersion = 1, contractVersion = Version, producer = "csharp",
-            commits, cases = produced, fingerprints }, new JsonSerializerOptions { WriteIndented = true });
+        byte[] output = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            formatVersion = 1,
+            contractVersion = Version,
+            producer = "csharp",
+            commits,
+            cases = produced,
+            fingerprints
+        }, new JsonSerializerOptions { WriteIndented = true });
         string path = Path.GetFullPath(Required(options, "output"));
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
         stream.Write(output);
-        Console.WriteLine(JsonSerializer.Serialize(new { mode = "produce", cases = produced.Length, fingerprints = fingerprints.Length,
-            sha256 = Hex(SHA256.HashData(output)), peerInteroperability = "unverified" }));
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            mode = "produce",
+            cases = produced.Length,
+            fingerprints = fingerprints.Length,
+            sha256 = Hex(SHA256.HashData(output)),
+            peerInteroperability = "unverified"
+        }));
     }
 
     private static void Consume(string root, JsonElement[] cases, Dictionary<string, string> options)
@@ -221,8 +241,18 @@ internal static class Program
                 item.GetProperty("sha256").GetString() != expected) throw new InvalidDataException("peer_fingerprint_mismatch");
         }
         if (fingerprintSeen.Count == 0 || fingerprintSeen.Count != expectedFingerprints.Count) throw new InvalidDataException("missing_fingerprints");
-        Console.WriteLine(JsonSerializer.Serialize(new { mode = "consume", direction = "typescript_to_csharp", cases = seen.Count,
-            fingerprints = fingerprintSeen.Count, sdk, backend, unity, reverseDirection = "requires_backend_consumer", gateG2 = "not_approved_by_this_command" }));
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            mode = "consume",
+            direction = "typescript_to_csharp",
+            cases = seen.Count,
+            fingerprints = fingerprintSeen.Count,
+            sdk,
+            backend,
+            unity,
+            reverseDirection = "requires_backend_consumer",
+            gateG2 = "not_approved_by_this_command"
+        }));
     }
 
     private static void Transcode(Dictionary<string, string> options, bool encode)
@@ -236,8 +266,12 @@ internal static class Program
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
         stream.Write(output);
-        Console.WriteLine(JsonSerializer.Serialize(new { mode = encode ? "encode" : "decode", bytes = output.Length,
-            acceptance = "single_conversion_only_no_peer_or_gate_verdict" }));
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            mode = encode ? "encode" : "decode",
+            bytes = output.Length,
+            acceptance = "single_conversion_only_no_peer_or_gate_verdict"
+        }));
     }
 
     private static byte[] ReadBounded(string path, long maximum)

@@ -80,7 +80,9 @@ namespace GamePlatform.Transport.Http.Supabase
             if (subject != null && (!Guid.TryParseExact(subject, "D", out var id) || id == Guid.Empty)) throw new ArgumentOutOfRangeException(nameof(subject));
             Version = version; State = state; Subject = subject == null ? null : Guid.ParseExact(subject, "D").ToString("D");
         }
-        public long Version { get; } public SupabaseAnonymousSessionState State { get; } public string? Subject { get; }
+        public long Version { get; }
+        public SupabaseAnonymousSessionState State { get; }
+        public string? Subject { get; }
     }
 
     /// <summary>Defensively copied logical public/secret record. The public portion has no secret.</summary>
@@ -106,13 +108,15 @@ namespace GamePlatform.Transport.Http.Supabase
             State = state; Subject = subject;
             _ = new SupabaseAnonymousSessionPublicRecord(0, state, subject);
         }
-        public SupabaseAnonymousSessionState State { get; } public string? Subject { get; }
+        public SupabaseAnonymousSessionState State { get; }
+        public string? Subject { get; }
     }
 
     public sealed class SupabaseAnonymousSessionCompareExchangeResult
     {
         public SupabaseAnonymousSessionCompareExchangeResult(bool applied, SupabaseAnonymousSessionSnapshot current) { Applied = applied; Current = current ?? throw new ArgumentNullException(nameof(current)); }
-        public bool Applied { get; } public SupabaseAnonymousSessionSnapshot Current { get; }
+        public bool Applied { get; }
+        public SupabaseAnonymousSessionSnapshot Current { get; }
     }
 
     /// <summary>

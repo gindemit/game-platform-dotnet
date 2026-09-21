@@ -92,12 +92,12 @@ namespace GamePlatform.Features.Accounts
                 if (stoppedCompletion != null) { existing = stoppedCompletion.Task; retiring = null; entry = null; request = generation; completion = null; }
                 else
                 {
-                existing = null; completion = stoppedCompletion = new TaskCompletionSource<AccountsLifecycleSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
-                stopped = true; generation = checked(generation + 1); request = generation; entry = current;
-                retiring = active ?? failedRetirement;
-                active = null;
-                if (retiring != null) { failedRetirement = retiring; scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; }
-                else { current = null; readiness = AccountsReadiness.Unavailable; }
+                    existing = null; completion = stoppedCompletion = new TaskCompletionSource<AccountsLifecycleSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    stopped = true; generation = checked(generation + 1); request = generation; entry = current;
+                    retiring = active ?? failedRetirement;
+                    active = null;
+                    if (retiring != null) { failedRetirement = retiring; scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; }
+                    else { current = null; readiness = AccountsReadiness.Unavailable; }
                 }
             }
             if (existing != null) return await existing.ConfigureAwait(false);
@@ -117,15 +117,15 @@ namespace GamePlatform.Features.Accounts
                 if (retiring == null) outcome = ScopeRecoveryRequired() ? Capture(request, AccountsReadiness.RecoveryRequired, current) : Capture(request, AccountsReadiness.Unavailable, null);
                 else
                 {
-                var retired = await RetireLeaseAsync(retiring).ConfigureAwait(false);
-                lock (gate)
-                {
-                    if (ReferenceEquals(failedRetirement, retiring)) failedRetirement = retired ? null : retiring;
-                    scopeRecoveryRequired = !retired;
-                    current = retired ? null : entry;
-                    readiness = retired ? AccountsReadiness.Unavailable : AccountsReadiness.RecoveryRequired;
-                    outcome = new AccountsLifecycleSnapshot(readiness, current, request);
-                }
+                    var retired = await RetireLeaseAsync(retiring).ConfigureAwait(false);
+                    lock (gate)
+                    {
+                        if (ReferenceEquals(failedRetirement, retiring)) failedRetirement = retired ? null : retiring;
+                        scopeRecoveryRequired = !retired;
+                        current = retired ? null : entry;
+                        readiness = retired ? AccountsReadiness.Unavailable : AccountsReadiness.RecoveryRequired;
+                        outcome = new AccountsLifecycleSnapshot(readiness, current, request);
+                    }
                 }
             }
             catch { lock (gate) { readiness = AccountsReadiness.RecoveryRequired; outcome = new AccountsLifecycleSnapshot(readiness, current, request); } }
