@@ -153,7 +153,7 @@
     },
     {
       "scope": "Live migration/rewards",
-      "reason": "DEC-LEGACY-TRUST and DEC-CONTENT-VALIDATION unresolved; no historical reward replay or live grants."
+      "reason": "DEC-CONTENT-VALIDATION is accepted for the bounded test tier. Legacy-save policy is resolved as no migration: old gameplay PlayerPrefs/checkpoints are ignored and obsolete staging/import code must be removed; no historical reward replay exists."
     }
   ],
   "unrun_gates": [
@@ -245,11 +245,11 @@
     "unity_dependency_assessment": {
       "INT-003": "blocked by incomplete INT-001",
       "INT-004": "blocked by INT-003 and real executor/device acceptance",
-      "INT-005": "blocked by DEC-LEGACY-TRUST despite qualified CL-007/008 desktop slices",
+      "INT-005": "owner decision resolved: fresh-start game-owned SQLite only; remove obsolete legacy staging/import code; no external policy blocker remains",
       "INT-008": "blocked by CL-102/105/107 and INT-007",
       "INT-009": "CL-015 packaging input available; blocked by INT-006 and authorized Unity Android/device workflow"
     },
-    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "CL-004 production IWireCodec after required AOT acceptance", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 Unity import/IL2CPP/AOT/device execution", "actual Unity PlayMode/IL2CPP/device journey"],
+    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "CL-004 production IWireCodec after required AOT acceptance", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 Unity import/IL2CPP/AOT/device execution", "actual Unity PlayMode/IL2CPP/device journey"],
     "cl010_http_increment": {
       "date": "2026-09-20",
       "sdk_baseline": "568d945c5597f085484465ac4372e4d2e2a3b9b3",

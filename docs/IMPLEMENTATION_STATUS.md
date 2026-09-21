@@ -1,5 +1,18 @@
 # Implementation status
 
+## Legacy gameplay-save policy supersession — 2026-09-21
+
+The owner has resolved the former `DEC-LEGACY-TRUST` question by dropping
+legacy gameplay migration entirely. There are no production users whose
+pre-platform MrSquare PlayerPrefs, difficulty snapshots or persisted gameplay
+checkpoints need preservation. Account-owned startup must not read, import,
+merge or reward those old saves. The prior read-only staging/import work is
+obsolete implementation to remove; fresh platform/game-owned SQLite state
+starts from authentication/provisioning/bootstrap and the current persistence
+model. Historical sections below that describe this decision as unresolved are
+retained only as provenance and are superseded by this section.
+
+
 ## P3 final G3 SDK/SQLite Unity bundle refresh — 2026-09-21
 
 An isolated source-clean build from primary `73cf2fe` packages all current SDK

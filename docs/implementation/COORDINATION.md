@@ -40,6 +40,6 @@ Backend execution.json owns BE task status. This repository's execution-manifest
 
 ## Non-negotiable boundaries
 
-No automatic main merge, Android distribution, deployment, publication, production data migration, secret changes or force push. Preserve newer Unity work when incorporating the planning branch into the separate execution branch. DEC-LEGACY-TRUST and DEC-CONTENT-VALIDATION stay unresolved until actual authorized decisions. A client checkpoint signature is not trusted outcome proof, and fixture success does not authorize real grants or provider activation.
+No automatic main merge, Android distribution, deployment, publication, production data migration, secret changes or force push. Preserve newer Unity work when incorporating the planning branch into the separate execution branch. `DEC-CONTENT-VALIDATION` is accepted only for the bounded unvalidated casual test tier. The former `DEC-LEGACY-TRUST` question is resolved: no legacy gameplay PlayerPrefs/checkpoint migration is supported because there are no production users to preserve; old gameplay saves are ignored and obsolete import/staging code is removed. A client checkpoint signature is not trusted outcome proof, and fixture success does not authorize real grants or provider activation.
 
 At a phase boundary commit actual results, then a handoff referencing those already existing commits; mark workers quiescent and stop. On failure record blocked/unrun evidence and bounded requests. Only CODEX_SYNC can approve the next phase, and only after inspecting/testing the corresponding evidence.
