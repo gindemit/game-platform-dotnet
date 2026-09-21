@@ -1,17 +1,7 @@
-# One agent for backend + .NET SDK + MrSquare — P3
+# SDK entry — one shared plan
 
-Updated 2026-09-19. This file is a pointer, not a second implementation plan.
+Use the latest execution branch `impl/platform-coordinated-2026-09-19` in backend, SDK and MrSquareUnity. The sole runner is [backend CODEX_SINGLE_AGENT.md](https://github.com/gindemit/game-platform-backend/blob/impl/platform-coordinated-2026-09-19/CODEX_SINGLE_AGENT.md).
 
-## Launch
+In the backend checkout run `python scripts/agent_context.py`. It prints the current checkpoint and exactly one bounded P3 task. Read this repository's applicable AGENTS.md and only that task's SDK source/tests. No parallel workers, historical runbook read-list or independent SDK implementation plan. Missing peer access is a blocker, not permission to recreate contracts from memory.
 
-> Follow game-platform-backend/CODEX_SINGLE_AGENT.md on impl/platform-coordinated-2026-09-19. Work sequentially across all three repositories, implement only dependency-ready P3 scope, maintain the committed checkpoint, and stop after the G3 result or a documented blocker. Do not spawn subagents or start parallel sessions.
-
-Canonical entry: [backend CODEX_SINGLE_AGENT.md](https://github.com/gindemit/game-platform-backend/blob/impl/platform-coordinated-2026-09-19/CODEX_SINGLE_AGENT.md).
-
-Canonical scheduling amendment: [backend PROTOCOL.md](https://github.com/gindemit/game-platform-backend/blob/impl/platform-coordinated-2026-09-19/docs/implementation/coordination/PROTOCOL.md).
-
-Required repositories are `gindemit/game-platform-backend`, `gindemit/game-platform-dotnet` and `gindemit/MrSquareUnity`, each on the existing `impl/platform-coordinated-2026-09-19` branch. Discover actual checkout paths and preserve dirty files/worktrees. An inaccessible canonical entry or peer repository is a blocker, not permission to use old parallel instructions or a planning-branch P1 seed.
-
-The operator selects the requested 5.6 Sol/Solo model in the agent runner. These instructions neither change the selected model nor require Astra. Use a single agent and ordinary sequential tools.
-
-Read root/scoped AGENTS.md as required. Load the existing SDK manifest and only the next task's cards/sources. Keep SDK implementation, game integration, device/AOT qualification and service acceptance separate. P3 includes real Unity adoption, not just libraries. No automatic P4 implementation, main push/merge, deployment, distribution, secret change or production-data modification.
+Finish one step with evidence and a queue update, then stop. Review-required steps remain paused until an actual focused review exists. G3/G4 remain pending; no P4, publication, distribution or main merge is authorized.
