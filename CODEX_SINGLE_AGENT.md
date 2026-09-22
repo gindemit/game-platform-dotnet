@@ -1,7 +1,7 @@
-# SDK entry — one shared plan
+# SDK entry — shared autonomous P3
 
-Use the latest execution branch `impl/platform-coordinated-2026-09-19` in backend, SDK and MrSquareUnity. The sole runner is [backend CODEX_SINGLE_AGENT.md](https://github.com/gindemit/game-platform-backend/blob/impl/platform-coordinated-2026-09-19/CODEX_SINGLE_AGENT.md).
+The canonical workflow is [backend CODEX_ORCHESTRATOR.md](https://github.com/gindemit/game-platform-backend/blob/impl/platform-coordinated-2026-09-19/CODEX_ORCHESTRATOR.md). Open the backend as coordinator; use the latest `impl/platform-coordinated-2026-09-19` checkout of all three repositories.
 
-In the backend checkout run `python scripts/agent_context.py`. It prints the current checkpoint and exactly one bounded P3 task. Read this repository's applicable AGENTS.md and only that task's SDK source/tests. No parallel workers, historical runbook read-list or independent SDK implementation plan. Missing peer access is a blocker, not permission to recreate contracts from memory.
+A coordinator reads the short checkpoint and runs `python scripts/orchestrator_context.py --ready` from backend. A delegated worker reads only its supplied card/ticket and applicable scoped AGENTS.md; it must not launch another coordinator. One implementation writer across the workspace, bounded subagents, automatic independent reviews and automatic next-card continuation replace manual one-step sessions.
 
-Finish one step with evidence and a queue update, then stop. Review-required steps remain paused until an actual focused review exists. G3/G4 remain pending; no P4, publication, distribution or main merge is authorized.
+The coordinator alone commits/pushes task-owned changes and updates the shared queue/gates. Preserve original acceptance, existing source/artifact pins and unrelated work. No legacy gameplay import, fake Ready, main merge, deployment, publication or distribution. Finish P3/G3 and prepare the P4 handoff; do not implement P4. Missing peers/runtime or actual review remains a blocker, not an inferred pass.
