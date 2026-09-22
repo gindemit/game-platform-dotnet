@@ -33,6 +33,12 @@ namespace GamePlatform.Features.Accounts
 
     public interface IAccountsAuthLifecycle { Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken cancellationToken); }
 
+    /// <summary>Consumer-owned construction boundary for authenticated provisioning remotes.</summary>
+    public interface IProvisioningRemoteFactory
+    {
+        IProvisioningRemote Create(IAuthSession authenticatedSession);
+    }
+
     /// <summary>One account-private scope; its implementation reads actual private-sync readiness and owns admission draining.</summary>
     public interface IAccountScopeLease
     {
@@ -61,14 +67,14 @@ namespace GamePlatform.Features.Accounts
     /// <summary>Portable account lifecycle. It persists reservation before provisioning and never derives a principal from a session key.</summary>
     public sealed class AccountsLifecycleService
     {
-        private readonly IAccountsAuthLifecycle auth; private readonly IProvisioningRemote provisioning; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
+        private readonly IAccountsAuthLifecycle auth; private readonly IProvisioningRemoteFactory provisioningFactory; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
         private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1); private readonly object gate = new object();
         private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private IAccountScopeLease? failedRetirement; private bool scopeRecoveryRequired;
         private bool stopped; private TaskCompletionSource<AccountsLifecycleSnapshot>? stoppedCompletion;
 
-        public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemote provisioning, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null)
+        public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemoteFactory provisioningFactory, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null)
         {
-            this.auth = auth ?? throw new ArgumentNullException(nameof(auth)); this.provisioning = provisioning ?? throw new ArgumentNullException(nameof(provisioning)); this.directory = directory ?? throw new ArgumentNullException(nameof(directory)); this.scopes = scopes ?? throw new ArgumentNullException(nameof(scopes)); this.ids = ids ?? throw new ArgumentNullException(nameof(ids));
+            this.auth = auth ?? throw new ArgumentNullException(nameof(auth)); this.provisioningFactory = provisioningFactory ?? throw new ArgumentNullException(nameof(provisioningFactory)); this.directory = directory ?? throw new ArgumentNullException(nameof(directory)); this.scopes = scopes ?? throw new ArgumentNullException(nameof(scopes)); this.ids = ids ?? throw new ArgumentNullException(nameof(ids));
             this.lateLeaseDrainTimeout = lateLeaseDrainTimeout ?? TimeSpan.FromSeconds(5);
             if (this.lateLeaseDrainTimeout < TimeSpan.FromMilliseconds(1) || this.lateLeaseDrainTimeout > TimeSpan.FromSeconds(30)) throw new ArgumentOutOfRangeException(nameof(lateLeaseDrainTimeout));
         }
@@ -142,6 +148,7 @@ namespace GamePlatform.Features.Accounts
             try { result = await auth.AuthenticateAsync(cancellationToken).ConfigureAwait(false); }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return Finish(request, AccountsReadiness.Cancelled, null); }
             if (!Current(request)) return Late(request);
+            if (cancellationToken.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, null);
             if (result.Kind == AccountAuthLifecycleKind.Cancelled) return Finish(request, AccountsReadiness.Cancelled, null);
             if (result.Kind == AccountAuthLifecycleKind.RecoveryRequired) return Finish(request, AccountsReadiness.RecoveryRequired, null);
             if (result.Kind == AccountAuthLifecycleKind.UnavailableOffline) return await ReopenOfflineAsync(request, appId, result.Principal, cancellationToken).ConfigureAwait(false);
@@ -178,24 +185,43 @@ namespace GamePlatform.Features.Accounts
 
         private async Task<AccountsLifecycleSnapshot> ProvisionAndBootstrapAsync(long request, AppId appId, AccountPrincipalDescriptor principal, IAuthSession session, CancellationToken token)
         {
-            var entry = await directory.FindAsync(principal, appId, token).ConfigureAwait(false);
-            if (!Current(request)) return Late(request);
-            if (entry == null)
+            AccountDirectoryEntry? entry = null;
+            try
             {
-                var installation = ids.NewId(); var stream = new ClientStreamId(ids.NewId());
-                entry = await directory.ReserveAsync(principal, appId, installation, stream, token).ConfigureAwait(false);
+                entry = await directory.FindAsync(principal, appId, token).ConfigureAwait(false);
                 if (!Current(request)) return Late(request);
+                if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                if (entry == null)
+                {
+                    var installation = ids.NewId(); var stream = new ClientStreamId(ids.NewId());
+                    entry = await directory.ReserveAsync(principal, appId, installation, stream, token).ConfigureAwait(false);
+                    if (!Current(request)) return Late(request);
+                    if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                }
+                Set(request, AccountsReadiness.Provisioning, entry);
+                IProvisioningRemote remote;
+                lock (gate)
+                {
+                    if (generation != request) return Late(request);
+                    if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                    remote = provisioningFactory.Create(session) ?? throw new InvalidOperationException("Provisioning remote factory returned null.");
+                    if (generation != request) return Late(request);
+                    if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                }
+                var provisioned = await remote.ProvisionAsync(appId, entry.InstallationId, entry.StreamId, token).ConfigureAwait(false);
+                if (!Current(request)) return Late(request);
+                if (!provisioned.IsSuccess) return Finish(request, provisioned.Failure.Kind == RemoteFailureKind.Authentication ? AccountsReadiness.RecoveryRequired : AccountsReadiness.Unavailable, entry);
+                var value = provisioned.Value!;
+                if (value.AppId != appId || value.StreamId != entry.StreamId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
+                if (entry.HasIssuedAccount && entry.AccountId != value.AccountId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
+                entry = await directory.BindIssuedAccountAsync(entry, value.AccountId, value.MembershipStatus, token).ConfigureAwait(false);
+                if (!Current(request)) return Late(request);
+                return await ActivateAuthenticatedAsync(request, entry, session, token).ConfigureAwait(false);
             }
-            Set(request, AccountsReadiness.Provisioning, entry);
-            var provisioned = await provisioning.ProvisionAsync(appId, entry.InstallationId, entry.StreamId, token).ConfigureAwait(false);
-            if (!Current(request)) return Late(request);
-            if (!provisioned.IsSuccess) return Finish(request, provisioned.Failure.Kind == RemoteFailureKind.Authentication ? AccountsReadiness.RecoveryRequired : AccountsReadiness.Unavailable, entry);
-            var value = provisioned.Value!;
-            if (value.AppId != appId || value.StreamId != entry.StreamId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-            if (entry.HasIssuedAccount && entry.AccountId != value.AccountId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-            entry = await directory.BindIssuedAccountAsync(entry, value.AccountId, value.MembershipStatus, token).ConfigureAwait(false);
-            if (!Current(request)) return Late(request);
-            return await ActivateAuthenticatedAsync(request, entry, session, token).ConfigureAwait(false);
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                return Finish(request, AccountsReadiness.Cancelled, entry);
+            }
         }
 
         private async Task<AccountsLifecycleSnapshot> ActivateAuthenticatedAsync(long request, AccountDirectoryEntry entry, IAuthSession session, CancellationToken token)

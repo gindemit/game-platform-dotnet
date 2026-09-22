@@ -49,6 +49,56 @@ namespace GamePlatform.Tests.Features.Accounts
         }
 
         [Fact]
+        public async Task ProvisioningFactoryReceivesTheExactAuthenticatedSessionUsedForTheAccountScope()
+        {
+            var session = new Session(); var remote = new Remote(); var factory = new ProvisioningFactory(_ => remote); var leases = new Leases();
+            var service = Service(new Auth(AccountAuthLifecycleResult.Authenticated(A, session)), factory, new Directory(), leases);
+            Assert.Equal(AccountsReadiness.Ready, (await service.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, factory.Calls); Assert.Same(session, factory.LastSession); Assert.Same(session, leases.LastAuthenticatedSession);
+        }
+
+        [Fact]
+        public async Task ProvisioningFactoryIsNotUsedForKnownOfflineRecoveryOrCancellation()
+        {
+            var directory = new Directory(); var initialFactory = new ProvisioningFactory(_ => new Remote());
+            var initial = Service(new Auth(A), initialFactory, directory, new Leases());
+            Assert.Equal(AccountsReadiness.Ready, (await initial.StartAsync(App, CancellationToken.None)).Readiness);
+
+            var offlineFactory = new ProvisioningFactory(_ => new Remote());
+            var offline = Service(new Auth(AccountAuthLifecycleResult.UnavailableOffline(A)), offlineFactory, directory, new Leases());
+            Assert.Equal(AccountsReadiness.Ready, (await offline.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(0, offlineFactory.Calls);
+
+            var recoveryFactory = new ProvisioningFactory(_ => new Remote());
+            var recovery = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), recoveryFactory, directory, new Leases());
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await recovery.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(0, recoveryFactory.Calls);
+
+            var authCancelledFactory = new ProvisioningFactory(_ => new Remote());
+            var authCancelled = Service(new Auth(AccountAuthLifecycleResult.Cancelled()), authCancelledFactory, directory, new Leases());
+            Assert.Equal(AccountsReadiness.Cancelled, (await authCancelled.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(0, authCancelledFactory.Calls);
+
+            var cancellationFactory = new ProvisioningFactory(_ => new Remote()); using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+            var cancellation = Service(new Auth(A), cancellationFactory, new Directory(), new Leases());
+            Assert.Equal(AccountsReadiness.Cancelled, (await cancellation.StartAsync(App, cancelled.Token)).Readiness);
+            Assert.Equal(0, cancellationFactory.Calls);
+        }
+
+        [Fact]
+        public async Task StopWhileAuthenticationIsPendingPreventsProvisioningFactoryCreation()
+        {
+            var authenticated = new TaskCompletionSource<AccountAuthLifecycleResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var factory = new ProvisioningFactory(_ => new Remote());
+            var service = Service(new PendingAuth(authenticated.Task), factory, new Directory(), new Leases());
+            var starting = service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Unavailable, (await service.StopAsync(CancellationToken.None)).Readiness);
+            authenticated.SetResult(AccountAuthLifecycleResult.Authenticated(A, new Session()));
+            Assert.Equal(AccountsReadiness.LateResultRejected, (await starting).Readiness);
+            Assert.Equal(0, factory.Calls);
+        }
+
+        [Fact]
         public async Task LatePrincipalResultIsRejectedAfterSwitch()
         {
             var delayed = new TaskCompletionSource<AccountAuthLifecycleResult>(TaskCreationOptions.RunContinuationsAsynchronously); var auth = new SequenceAuth(delayed.Task, Task.FromResult(AccountAuthLifecycleResult.Authenticated(B, new Session()))); var service = Service(auth, new Remote(), new Directory(), new Leases());
@@ -125,7 +175,7 @@ namespace GamePlatform.Tests.Features.Accounts
         public async Task StopBoundsAConcurrentNoncooperativeOpenAndPublishesRecovery()
         {
             var gate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var opened = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); var leases = new Leases { FirstOpenGate = gate, FirstLeaseOpened = opened };
-            var service = new AccountsLifecycleService(new Auth(A), new Remote(), new Directory(), leases, new UuidV7Generator(new Clock(), new Random()), TimeSpan.FromMilliseconds(25));
+            var service = new AccountsLifecycleService(new Auth(A), new ProvisioningFactory(_ => new Remote()), new Directory(), leases, new UuidV7Generator(new Clock(), new Random()), TimeSpan.FromMilliseconds(25));
             var starting = service.StartAsync(App, CancellationToken.None); await opened.Task;
             var stopped = await service.StopAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(2)); Assert.Equal(AccountsReadiness.RecoveryRequired, stopped.Readiness); Assert.Equal(AccountsReadiness.RecoveryRequired, service.Snapshot.Readiness);
             gate.SetResult(true); Assert.Equal(AccountsReadiness.LateResultRejected, (await starting).Readiness);
@@ -144,14 +194,17 @@ namespace GamePlatform.Tests.Features.Accounts
             finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
         }
 
-        private static AccountsLifecycleService Service(IAccountsAuthLifecycle auth, Remote remote, Directory directory, Leases leases) => new AccountsLifecycleService(auth, remote, directory, leases, new UuidV7Generator(new Clock(), new Random()));
+        private static AccountsLifecycleService Service(IAccountsAuthLifecycle auth, Remote remote, Directory directory, Leases leases) => Service(auth, new ProvisioningFactory(_ => remote), directory, leases);
+        private static AccountsLifecycleService Service(IAccountsAuthLifecycle auth, ProvisioningFactory factory, Directory directory, Leases leases) => new AccountsLifecycleService(auth, factory, directory, leases, new UuidV7Generator(new Clock(), new Random()));
         private sealed class Auth : IAccountsAuthLifecycle { private readonly AccountAuthLifecycleResult result; public Auth(AccountPrincipalDescriptor principal) : this(AccountAuthLifecycleResult.Authenticated(principal, new Session())) { } public Auth(AccountAuthLifecycleResult result) { this.result = result; } public Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken token) => Task.FromResult(result); }
+        private sealed class PendingAuth : IAccountsAuthLifecycle { private readonly Task<AccountAuthLifecycleResult> result; public PendingAuth(Task<AccountAuthLifecycleResult> result) { this.result = result; } public Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken token) => result; }
         private sealed class SequenceAuth : IAccountsAuthLifecycle { private readonly Queue<Task<AccountAuthLifecycleResult>> values; public SequenceAuth(params Task<AccountAuthLifecycleResult>[] values) { this.values = new Queue<Task<AccountAuthLifecycleResult>>(values); } public Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken token) => values.Dequeue(); }
         private sealed class FirstCancellationThenAuthenticated : IAccountsAuthLifecycle { private int calls; public async Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken token) { if (Interlocked.Increment(ref calls) == 1) { await Task.Delay(Timeout.Infinite, token); } return AccountAuthLifecycleResult.Authenticated(B, new Session()); } }
         private sealed class Session : IAuthSession { public string SessionKey => "test-session"; public Task<AccessTokenSnapshot> GetAsync(CancellationToken token) => Task.FromResult(new AccessTokenSnapshot("opaque", 0)); public Task<AccessTokenSnapshot> RefreshAsync(long generation, CancellationToken token) => GetAsync(token); }
+        private sealed class ProvisioningFactory : IProvisioningRemoteFactory { private readonly Func<IAuthSession, IProvisioningRemote> create; public ProvisioningFactory(Func<IAuthSession, IProvisioningRemote> create) { this.create = create; } public int Calls; public IAuthSession? LastSession; public IProvisioningRemote Create(IAuthSession authenticatedSession) { Calls++; LastSession = authenticatedSession; return create(authenticatedSession); } }
         private sealed class Remote : IProvisioningRemote { public int Calls; public bool FailFirst; public Task<RemoteResult<ProvisioningSnapshot>> ProvisionAsync(AppId app, Guid installation, ClientStreamId stream, CancellationToken token) { Calls++; if (FailFirst && Calls == 1) return Task.FromResult(RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.OutcomeUncertain))); return Task.FromResult(RemoteResult<ProvisioningSnapshot>.Success(new ProvisioningSnapshot(new PlatformUserId(Guid.Parse("0199f9a0-2222-7777-8888-999999999999")), app, "active", stream, 1, 1))); } }
         private sealed class Directory : IAccountDirectoryStore { private readonly Dictionary<string, AccountDirectoryEntry> values = new Dictionary<string, AccountDirectoryEntry>(); private static string Key(AccountPrincipalDescriptor p, AppId a) => p.BackendNamespace + ":" + a + ":" + p.Issuer + ":" + p.Subject; public Task<AccountDirectoryEntry?> FindAsync(AccountPrincipalDescriptor p, AppId a, CancellationToken t) => Task.FromResult(values.TryGetValue(Key(p, a), out var value) ? value : null); public Task<AccountDirectoryEntry> ReserveAsync(AccountPrincipalDescriptor p, AppId a, Guid i, ClientStreamId s, CancellationToken t) { var key = Key(p, a); if (!values.TryGetValue(key, out var value)) values[key] = value = new AccountDirectoryEntry(p, a, i, s, null, null); return Task.FromResult(value); } public Task<AccountDirectoryEntry> BindIssuedAccountAsync(AccountDirectoryEntry r, PlatformUserId id, string membership, CancellationToken t) { var value = new AccountDirectoryEntry(r.Principal, r.AppId, r.InstallationId, r.StreamId, id, membership); values[Key(r.Principal, r.AppId)] = value; return Task.FromResult(value); } }
-        private sealed class Leases : IAccountScopeLeaseFactory { private readonly List<string> events = new List<string>(); public bool Ready = true; public AccountBootstrapResult Bootstrap = AccountBootstrapResult.Complete; public int DrainFailures; public int Opened; public int Retired; public int Stopped; public TaskCompletionSource<bool>? FirstOpenGate; public TaskCompletionSource<bool>? FirstLeaseOpened; public TaskCompletionSource<bool>? FirstDrainGate; public TaskCompletionSource<bool>? FirstDrainStarted; public async Task<IAccountScopeLease> OpenAuthenticatedAsync(AccountDirectoryEntry e, IAuthSession s, long g, CancellationToken t) { var lease = new Lease(e, g, Ready, Bootstrap, this); if (lease.Ordinal == 1 && FirstOpenGate != null) { FirstLeaseOpened!.SetResult(true); await FirstOpenGate.Task.ConfigureAwait(false); } return lease; } public Task<IAccountScopeLease> ReopenOfflineAsync(AccountDirectoryEntry e, long g, CancellationToken t) => Task.FromResult<IAccountScopeLease>(new Lease(e, g, Ready, Bootstrap, this)); public int EventIndex(string value) { lock (events) return events.IndexOf(value); } public void OpenedEvent(int ordinal) { lock (events) events.Add("open-" + ordinal); } public void RetiredEvent(int ordinal) { lock (events) events.Add("retire-" + ordinal); } }
+        private sealed class Leases : IAccountScopeLeaseFactory { private readonly List<string> events = new List<string>(); public bool Ready = true; public AccountBootstrapResult Bootstrap = AccountBootstrapResult.Complete; public int DrainFailures; public int Opened; public int Retired; public int Stopped; public IAuthSession? LastAuthenticatedSession; public TaskCompletionSource<bool>? FirstOpenGate; public TaskCompletionSource<bool>? FirstLeaseOpened; public TaskCompletionSource<bool>? FirstDrainGate; public TaskCompletionSource<bool>? FirstDrainStarted; public async Task<IAccountScopeLease> OpenAuthenticatedAsync(AccountDirectoryEntry e, IAuthSession s, long g, CancellationToken t) { LastAuthenticatedSession = s; var lease = new Lease(e, g, Ready, Bootstrap, this); if (lease.Ordinal == 1 && FirstOpenGate != null) { FirstLeaseOpened!.SetResult(true); await FirstOpenGate.Task.ConfigureAwait(false); } return lease; } public Task<IAccountScopeLease> ReopenOfflineAsync(AccountDirectoryEntry e, long g, CancellationToken t) => Task.FromResult<IAccountScopeLease>(new Lease(e, g, Ready, Bootstrap, this)); public int EventIndex(string value) { lock (events) return events.IndexOf(value); } public void OpenedEvent(int ordinal) { lock (events) events.Add("open-" + ordinal); } public void RetiredEvent(int ordinal) { lock (events) events.Add("retire-" + ordinal); } }
         private sealed class Lease : IAccountScopeLease { private readonly bool ready; private readonly AccountBootstrapResult bootstrap; private readonly Leases owner; public Lease(AccountDirectoryEntry e, long g, bool ready, AccountBootstrapResult bootstrap, Leases owner) { Entry = e; Generation = g; this.ready = ready; this.bootstrap = bootstrap; this.owner = owner; Ordinal = Interlocked.Increment(ref owner.Opened); owner.OpenedEvent(Ordinal); } public int Ordinal { get; } public AccountDirectoryEntry Entry { get; } public long Generation { get; } public Task<bool> IsBootstrapReadyAsync(CancellationToken t) => Task.FromResult(ready); public Task<AccountBootstrapResult> BootstrapAsync(CancellationToken t) => Task.FromResult(bootstrap); public Task StopAdmissionsAsync(CancellationToken t) { Interlocked.Increment(ref owner.Stopped); return Task.CompletedTask; } public async Task DrainAndRetireAsync(CancellationToken t) { if (Ordinal == 1 && owner.FirstDrainGate != null) { owner.FirstDrainStarted!.SetResult(true); await owner.FirstDrainGate.Task.ConfigureAwait(false); } if (Interlocked.CompareExchange(ref owner.DrainFailures, 0, 0) > 0) { Interlocked.Decrement(ref owner.DrainFailures); throw new InvalidOperationException("drain failure"); } Interlocked.Increment(ref owner.Retired); owner.RetiredEvent(Ordinal); } }
         private sealed class Clock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1; }
         private sealed class Random : IUuidRandomSource { public void Fill(Span<byte> destination) { for (var i = 0; i < destination.Length; i++) destination[i] = (byte)(i + 1); } }
