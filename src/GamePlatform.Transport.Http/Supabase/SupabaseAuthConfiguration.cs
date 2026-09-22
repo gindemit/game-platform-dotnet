@@ -76,7 +76,10 @@ namespace GamePlatform.Transport.Http.Supabase
         public SupabaseAnonymousSessionPublicRecord(long version, SupabaseAnonymousSessionState state, string? subject)
         {
             if (version < 0 || !Enum.IsDefined(typeof(SupabaseAnonymousSessionState), state)) throw new ArgumentOutOfRangeException(nameof(version));
-            if ((state == SupabaseAnonymousSessionState.Known || state == SupabaseAnonymousSessionState.RefreshPending) == string.IsNullOrWhiteSpace(subject)) throw new ArgumentException("Known session states require exactly one subject.", nameof(subject));
+            bool subjectRequired = state == SupabaseAnonymousSessionState.Known || state == SupabaseAnonymousSessionState.RefreshPending;
+            bool subjectAllowed = subjectRequired || state == SupabaseAnonymousSessionState.RecoveryRequired;
+            if ((subjectRequired && string.IsNullOrWhiteSpace(subject)) || (!subjectAllowed && !string.IsNullOrWhiteSpace(subject)))
+                throw new ArgumentException("Session state and subject do not match.", nameof(subject));
             if (subject != null && (!Guid.TryParseExact(subject, "D", out var id) || id == Guid.Empty)) throw new ArgumentOutOfRangeException(nameof(subject));
             Version = version; State = state; Subject = subject == null ? null : Guid.ParseExact(subject, "D").ToString("D");
         }
