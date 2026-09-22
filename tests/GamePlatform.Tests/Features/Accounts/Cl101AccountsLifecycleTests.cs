@@ -99,6 +99,61 @@ namespace GamePlatform.Tests.Features.Accounts
         }
 
         [Fact]
+        public async Task StopDuringBlockedProvisioningFactoryDoesNotWaitForFactoryAndRejectsLateResult()
+        {
+            var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var release = new ManualResetEventSlim();
+            var remote = new Remote(); var leases = new Leases();
+            var factory = new ProvisioningFactory(_ =>
+            {
+                entered.TrySetResult(true);
+                if (!release.Wait(TimeSpan.FromSeconds(3))) throw new TimeoutException("Test factory was not released.");
+                return remote;
+            });
+            var service = Service(new Auth(A), factory, new Directory(), leases);
+            var starting = Task.Run(async () => await service.StartAsync(App, CancellationToken.None));
+            try
+            {
+                await entered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                Assert.Equal(AccountsReadiness.Unavailable,
+                    (await service.StopAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(2))).Readiness);
+            }
+            finally { release.Set(); }
+            Assert.Equal(AccountsReadiness.LateResultRejected, (await starting).Readiness);
+            Assert.Equal(0, remote.Calls); Assert.Equal(0, leases.Opened);
+        }
+
+        [Fact]
+        public async Task ThrowingOrNullProvisioningFactoryKeepsReservationUnavailableAndCanRetry()
+        {
+            var directory = new Directory(); var remote = new Remote(); var attempts = 0;
+            var factory = new ProvisioningFactory(_ =>
+            {
+                var attempt = Interlocked.Increment(ref attempts);
+                if (attempt == 1) throw new InvalidOperationException("provider construction failed");
+                if (attempt == 2) return null!;
+                return remote;
+            });
+            var leases = new Leases(); var service = Service(new Auth(A), factory, directory, leases);
+
+            var failed = await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Unavailable, failed.Readiness); Assert.NotNull(failed.Entry);
+            Assert.Equal(0, remote.Calls); Assert.Equal(0, leases.Opened);
+            var reservationAfterThrow = await directory.FindAsync(A, App, CancellationToken.None);
+            Assert.NotNull(reservationAfterThrow); Assert.Equal(failed.Entry!.InstallationId, reservationAfterThrow!.InstallationId);
+
+            var nullRemote = await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Unavailable, nullRemote.Readiness); Assert.NotNull(nullRemote.Entry);
+            Assert.Equal(failed.Entry.InstallationId, nullRemote.Entry!.InstallationId);
+            Assert.Equal(0, remote.Calls); Assert.Equal(0, leases.Opened);
+
+            var retried = await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Ready, retried.Readiness);
+            Assert.Equal(failed.Entry.InstallationId, retried.Entry!.InstallationId);
+            Assert.Equal(1, remote.Calls); Assert.Equal(1, leases.Opened); Assert.Equal(3, factory.Calls);
+        }
+
+        [Fact]
         public async Task LatePrincipalResultIsRejectedAfterSwitch()
         {
             var delayed = new TaskCompletionSource<AccountAuthLifecycleResult>(TaskCreationOptions.RunContinuationsAsynchronously); var auth = new SequenceAuth(delayed.Task, Task.FromResult(AccountAuthLifecycleResult.Authenticated(B, new Session()))); var service = Service(auth, new Remote(), new Directory(), new Leases());

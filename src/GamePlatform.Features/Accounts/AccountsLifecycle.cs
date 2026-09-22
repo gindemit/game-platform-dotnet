@@ -199,15 +199,19 @@ namespace GamePlatform.Features.Accounts
                     if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
                 }
                 Set(request, AccountsReadiness.Provisioning, entry);
-                IProvisioningRemote remote;
-                lock (gate)
+                if (!Current(request)) return Late(request);
+                if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                IProvisioningRemote? remote;
+                try { remote = provisioningFactory.Create(session); }
+                catch
                 {
-                    if (generation != request) return Late(request);
+                    if (!Current(request)) return Late(request);
                     if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
-                    remote = provisioningFactory.Create(session) ?? throw new InvalidOperationException("Provisioning remote factory returned null.");
-                    if (generation != request) return Late(request);
-                    if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                    return Finish(request, AccountsReadiness.Unavailable, entry);
                 }
+                if (!Current(request)) return Late(request);
+                if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                if (remote == null) return Finish(request, AccountsReadiness.Unavailable, entry);
                 var provisioned = await remote.ProvisionAsync(appId, entry.InstallationId, entry.StreamId, token).ConfigureAwait(false);
                 if (!Current(request)) return Late(request);
                 if (!provisioned.IsSuccess) return Finish(request, provisioned.Failure.Kind == RemoteFailureKind.Authentication ? AccountsReadiness.RecoveryRequired : AccountsReadiness.Unavailable, entry);
