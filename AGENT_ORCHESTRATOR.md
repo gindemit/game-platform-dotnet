@@ -1,0 +1,5 @@
+# SDK entry — shared Claude Code / Codex workflow
+
+The canonical workflow is [backend AGENT_ORCHESTRATOR.md](https://github.com/gindemit/game-platform-backend/blob/impl/platform-coordinated-2026-09-19/AGENT_ORCHESTRATOR.md). Launch the coordinator from the local backend checkout with access to all three latest `impl/platform-coordinated-2026-09-19` checkouts; native role configuration is backend-local. Select the Claude Code or Codex profile in backend AGENT_RUNTIME.md. Do not launch separate coordinators per repository.
+
+Workers read only the supplied card/ticket, applicable scoped AGENTS.md and named files. One writer, automatic independent review and next-card continuation; coordinator alone commits/pushes task-owned changes and updates shared queue/gates. Preserve original acceptance, unrelated work and source/artifact pins. Default goal P3 stops at G3 decision plus P4 preparation. Explicit P3_AND_P4 requires genuine G3 release and a separate phase plan; see backend AGENT_RUNTIME.md. No legacy import, fake Ready, main merge, deployment, publication or distribution. Missing runtime/review remains a blocker.

@@ -1,7 +1,7 @@
 # SDK agent instructions
 
 ## Small startup context
-For coordinated platform work start at CODEX_SINGLE_AGENT.md, which routes the coordinator to the backend autonomous workflow. Workers read only their assigned card/ticket, applicable scoped AGENTS.md and named source/tests; do not launch another coordinator. No recursive docs/reports/archives/ledger/history loading. Use latest `impl/platform-coordinated-2026-09-19`; preserve unrelated work and fast-forward only after inspecting remote changes.
+For coordinated platform work start at AGENT_ORCHESTRATOR.md, which routes the coordinator to the backend shared Claude/Codex workflow. Workers read only their assigned card/ticket, applicable scoped AGENTS.md and named source/tests; do not launch another coordinator. No recursive docs/reports/archives/ledger/history loading. Use latest `impl/platform-coordinated-2026-09-19`; preserve unrelated work and fast-forward only after inspecting remote changes.
 
 One coordinator, bounded subagents, ONE implementation writer across all three repositories. The coordinator commits/pushes and updates shared queue/gates; workers return results and it continues automatically. No main push/merge, package publication, deployment, distribution, production data/secrets, reset or force-push. Preserve exact source/artifact identities: documentation-only descendants do not require new DLLs.
 
@@ -13,4 +13,4 @@ First account-owned gameplay requires online anonymous provisioning AND complete
 Do not fake authentication, Ready, confirmed value, transactions, sync acknowledgement or provider success. Fakes are test/sample-only. No secrets/tokens/receipts/personal payloads in logs or source. Owner decision 2026-09-21: no old gameplay PlayerPrefs/checkpoint migration, merge or historical reward replay. This does not authorize erasing new SQLite/outbox/identity state.
 
 ## Finish
-Run focused tests then affected regression. Return compact exact source/runtime evidence, failures and unrun checks. Required independent reviews are spawned automatically before dependent activation. A card's Stop boundary returns the worker, not the overall workflow. Full original acceptance remains binding; a small step is not G3. Preserve tests/immutable evidence; do not reread G1/G2 history absent a concrete regression. The coordinator finishes P3/G3 and prepares P4 documentation only.
+Run focused tests then affected regression. Return compact exact source/runtime evidence, failures and unrun checks. Required independent reviews are spawned automatically in the active provider before dependent activation. A card's Stop boundary returns the worker, not the overall workflow. Full original acceptance remains binding; a small step is not G3. Preserve tests/immutable evidence; do not reread G1/G2 history absent a concrete regression. Default P3 ends at G3 decision and P4 preparation; optional P4 requires the explicit launch goal and genuine release in backend AGENT_RUNTIME.md.
