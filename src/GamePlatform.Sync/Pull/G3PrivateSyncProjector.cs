@@ -12,7 +12,7 @@ namespace GamePlatform.Sync.Pull
     public interface IG3PrivateProjectionSink
     {
         void ReplaceSnapshot(ILocalStorageTransaction transaction, PrivateSyncProjectionObservation observation,
-            ProfileProfile? profile, IReadOnlyList<ProjectionProgressionSnapshot> progression,
+            ProjectionProfileSnapshot? profile, IReadOnlyList<ProjectionProgressionSnapshot> progression,
             IReadOnlyList<ProjectionWalletSnapshot> wallet);
         void ApplyGroup(ILocalStorageTransaction transaction, long feedRevision, PrivateSyncProjectionObservation observation,
             IReadOnlyList<IProjectionChange> changes);
@@ -45,7 +45,7 @@ namespace GamePlatform.Sync.Pull
         public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot, PrivateSyncProjectionObservation observation)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction)); if (snapshot == null) throw new ArgumentNullException(nameof(snapshot));
-            ProfileProfile? profile = null; var progression = new List<ProjectionProgressionSnapshot>(); var wallet = new List<ProjectionWalletSnapshot>();
+            ProjectionProfileSnapshot? profile = null; var progression = new List<ProjectionProgressionSnapshot>(); var wallet = new List<ProjectionWalletSnapshot>();
             foreach (var mutation in snapshot)
             {
                 if (mutation == null || mutation.Kind != StoredProjectionKind.Upsert) throw new InvalidOperationException("A G3 snapshot contains an invalid mutation.");
@@ -53,7 +53,7 @@ namespace GamePlatform.Sync.Pull
                 switch (value)
                 {
                     case ProjectionProfileSnapshot item:
-                        Match(mutation, item.Collection, item.EntityKey.Profile, item.Revision); if (profile != null) throw new InvalidOperationException("The G3 snapshot contains more than one profile."); profile = item.Data; break;
+                        Match(mutation, item.Collection, item.EntityKey.Profile, item.Revision); if (profile != null) throw new InvalidOperationException("The G3 snapshot contains more than one profile."); profile = item; break;
                     case ProjectionProgressionSnapshot item:
                         Match(mutation, item.Collection, item.EntityKey.StateKey, item.Revision); progression.Add(item); break;
                     case ProjectionWalletSnapshot item:
