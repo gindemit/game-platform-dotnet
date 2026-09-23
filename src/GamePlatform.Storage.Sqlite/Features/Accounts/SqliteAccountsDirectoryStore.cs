@@ -166,8 +166,12 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         {
             const string tableName = "gp_account_principal_directory";
             const string indexName = "gp_account_principal_directory_issued_account";
+            var migration = SqlitePrincipalDirectoryMigration.Create();
             if (connection.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", tableName) != 1)
                 throw new StorageException(StorageFailure.Migration, "The principal directory data table is missing.");
+            var tableSql = connection.ExecuteScalar<string>("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", tableName);
+            if (!string.Equals(tableSql, migration.Statements[0], StringComparison.Ordinal))
+                throw new StorageException(StorageFailure.Migration, "The principal directory data table constraints changed.");
 
             var columns = connection.Query<DirectoryColumn>("PRAGMA table_info('gp_account_principal_directory')");
             var expected = new[]
@@ -199,9 +203,8 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             if (indexColumns.Count != 3 || indexColumns[0].Name != "backend_namespace" || indexColumns[1].Name != "app_id" || indexColumns[2].Name != "platform_user_id")
                 throw new StorageException(StorageFailure.Migration, "The principal directory issued-account index columns changed.");
             var indexSql = connection.ExecuteScalar<string>("SELECT sql FROM sqlite_master WHERE type='index' AND name=?", indexName);
-            var normalizedIndexSql = (indexSql ?? string.Empty).Replace(" ", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty).ToLowerInvariant();
-            if (!normalizedIndexSql.Contains("whereplatform_user_idisnotnull"))
-                throw new StorageException(StorageFailure.Migration, "The principal directory issued-account index predicate changed.");
+            if (!string.Equals(indexSql, migration.Statements[1], StringComparison.Ordinal))
+                throw new StorageException(StorageFailure.Migration, "The principal directory issued-account index definition changed.");
         }
 
         private sealed class DirectoryColumn

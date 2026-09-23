@@ -377,6 +377,56 @@ namespace GamePlatform.Tests.Features.Accounts
             finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
         }
 
+        [Theory]
+        [InlineData("installation-unique")]
+        [InlineData("stream-unique")]
+        [InlineData("issued-membership-check")]
+        [InlineData("issued-index-extra-predicate")]
+        public async Task SqlitePrincipalDirectoryRejectsConstraintRemovalOnReopen(string mutation)
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N"));
+            System.IO.Directory.CreateDirectory(folder);
+            var path = Path.Combine(folder, "directory.sqlite3");
+            var scope = new AccountDirectoryScope(new BackendNamespace("test-backend"), App);
+            try
+            {
+                var db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None);
+                Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                using (var raw = new SQLiteConnection(path))
+                {
+                    var migration = SqlitePrincipalDirectoryMigration.Create();
+                    var tableSql = migration.Statements[0];
+                    var indexSql = migration.Statements[1];
+                    raw.Execute("DROP TABLE gp_account_principal_directory");
+                    if (mutation == "installation-unique")
+                        tableSql = tableSql.Replace(", UNIQUE(backend_namespace, app_id, installation_id)", string.Empty);
+                    else if (mutation == "stream-unique")
+                        tableSql = tableSql.Replace(", UNIQUE(backend_namespace, app_id, client_stream_id)", string.Empty);
+                    else if (mutation == "issued-membership-check")
+                        tableSql = tableSql.Replace(", CHECK((platform_user_id IS NULL AND membership_status IS NULL) OR (platform_user_id IS NOT NULL AND membership_status IS NOT NULL))", string.Empty);
+                    else
+                        indexSql += " AND 0";
+                    raw.Execute(tableSql);
+                    raw.Execute(indexSql);
+
+                    const string insert = "INSERT INTO gp_account_principal_directory(backend_namespace,app_id,issuer,subject,installation_id,client_stream_id,platform_user_id,membership_status) VALUES (?,?,?,?,?,?,?,?)";
+                    raw.Execute(insert, scope.BackendNamespace.Value, App.ToString(), "issuer", "subject-one", "installation-one", "stream-one",
+                        mutation == "issued-index-extra-predicate" ? "issued-one" : null,
+                        mutation == "issued-index-extra-predicate" ? "active" : null);
+                    raw.Execute(insert, scope.BackendNamespace.Value, App.ToString(), "issuer", "subject-two",
+                        mutation == "installation-unique" ? "installation-one" : "installation-two",
+                        mutation == "stream-unique" ? "stream-one" : "stream-two",
+                        mutation == "issued-index-extra-predicate" ? "issued-one" : mutation == "issued-membership-check" ? "issued-without-membership" : null,
+                        mutation == "issued-index-extra-predicate" ? "active" : null);
+                    Assert.Equal(2, raw.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_account_principal_directory"));
+                }
+
+                var error = await Assert.ThrowsAsync<StorageException>(() => SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None));
+                Assert.Equal(StorageFailure.Migration, error.Failure);
+            }
+            finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
+        }
+
         [Fact]
         public async Task SqlitePrincipalDirectorySerializesConcurrentReservationsAndDrainsBeforeStop()
         {
