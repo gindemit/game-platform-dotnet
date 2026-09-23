@@ -95,7 +95,7 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             if (lineIndex < 0 || lineIndex > 63) throw new ArgumentOutOfRangeException(nameof(lineIndex));
             if (!Enum.IsDefined(typeof(RewardReceiptLineKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind));
             if (!resourceId.IsValid) throw new ArgumentException("A projection resource identity is required.", nameof(resourceId));
-            if (projectionRevision <= 0) throw new ArgumentOutOfRangeException(nameof(projectionRevision));
+            if (projectionRevision < 0) throw new ArgumentOutOfRangeException(nameof(projectionRevision));
             LineIndex = lineIndex; Kind = kind; ResourceId = resourceId; ProjectionRevision = projectionRevision;
         }
         public int LineIndex { get; }

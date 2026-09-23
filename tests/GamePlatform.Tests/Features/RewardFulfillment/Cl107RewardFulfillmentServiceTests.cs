@@ -58,6 +58,131 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
         }
 
         [Fact]
+        public async Task RevisionZeroProjectionCorrelatesAcrossRestartWhileFeedRevisionMustRemainPositive()
+        {
+            var projection = new InstalledRewardProjection(RewardReceiptLineKind.Currency,
+                new PlatformId("test.coin"), 0);
+            var groupLine = new RewardProjectionLine(0, RewardReceiptLineKind.Currency,
+                new PlatformId("test.coin"), 0);
+            Assert.Equal(0, projection.ProjectionRevision);
+            Assert.Equal(0, groupLine.ProjectionRevision);
+            Assert.Throws<ArgumentOutOfRangeException>(() => new InstalledRewardProjection(
+                RewardReceiptLineKind.Currency, new PlatformId("test.coin"), -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new RewardProjectionLine(0,
+                RewardReceiptLineKind.Currency, new PlatformId("test.coin"), -1));
+
+            using var files = new TemporaryDatabase();
+            var receipt = CurrencyReceipt(Operation, Grant, Source, 10);
+            var database = await OpenAsync(files.Path);
+            var state = new SqliteDurableFeatureStateStore(database, Scope);
+            var service = DurableRewardFulfillmentComposition.Create(Context, Scope, state, database, () => 1_000);
+            var correlation = new DurableRewardReceiptCorrelation(Context, Scope, state, database, service, () => 1_000);
+            await correlation.ObserveReceiptAsync(new RewardReceiptObservation(Context, Operation, receipt), CancellationToken.None);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+            database = await OpenAsync(files.Path);
+            state = new SqliteDurableFeatureStateStore(database, Scope);
+            service = DurableRewardFulfillmentComposition.Create(Context, Scope, state, database, () => 1_000);
+            correlation = new DurableRewardReceiptCorrelation(Context, Scope, state, database, service, () => 1_000);
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                correlation.StageInstalledFeed(transaction, receipt.FeedRevision, new[] { projection });
+                return true;
+            }, CancellationToken.None);
+            Assert.Equal(RewardPresentationStatus.Confirmed,
+                (await service.ReadAsync(new RewardPresentationQuery(Context, Operation), CancellationToken.None)).Value!.Status);
+            Assert.Null(await state.ReadAsync(Context, "wallet", "test.coin", CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => database.ExecuteAsync(Scope, transaction =>
+            {
+                correlation.StageInstalledFeed(transaction, 0, Array.Empty<InstalledRewardProjection>());
+                return true;
+            }, CancellationToken.None));
+            Assert.Throws<ArgumentOutOfRangeException>(() => CurrencyReceipt(Operation, Grant, Source, 0));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task EmptyFeedMarkerReopensReplaysAndRejectsReceiptsInBothOrders()
+        {
+            using (var files = new TemporaryDatabase())
+            {
+                var database = await OpenAsync(files.Path);
+                var state = new SqliteDurableFeatureStateStore(database, Scope);
+                var service = DurableRewardFulfillmentComposition.Create(Context, Scope, state, database, () => 1_000);
+                var correlation = new DurableRewardReceiptCorrelation(Context, Scope, state, database, service, () => 1_000);
+                const long feedRevision = 20;
+                await database.ExecuteAsync(Scope, transaction =>
+                {
+                    correlation.StageInstalledFeed(transaction, feedRevision, Array.Empty<InstalledRewardProjection>());
+                    return true;
+                }, CancellationToken.None);
+                service.Dispose();
+                Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+                database = await OpenAsync(files.Path);
+                state = new SqliteDurableFeatureStateStore(database, Scope);
+                service = DurableRewardFulfillmentComposition.Create(Context, Scope, state, database, () => 1_000);
+                correlation = new DurableRewardReceiptCorrelation(Context, Scope, state, database, service, () => 1_000);
+                var marker = await state.ReadAsync(Context, "reward-correlation", "feed/" + feedRevision, CancellationToken.None);
+                Assert.NotNull(marker);
+                await database.ExecuteAsync(Scope, transaction =>
+                {
+                    correlation.StageInstalledFeed(transaction, feedRevision, Array.Empty<InstalledRewardProjection>());
+                    return true;
+                }, CancellationToken.None);
+                await Assert.ThrowsAsync<RewardFulfillmentConflictException>(() => database.ExecuteAsync(Scope, transaction =>
+                {
+                    correlation.StageInstalledFeed(transaction, feedRevision, new[]
+                    {
+                        new InstalledRewardProjection(RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 1)
+                    });
+                    return true;
+                }, CancellationToken.None));
+                Assert.Equal(marker!.Revision, (await state.ReadAsync(Context, "reward-correlation", "feed/" + feedRevision, CancellationToken.None))!.Revision);
+                var receipt = CurrencyReceipt(Operation, Grant, Source, feedRevision);
+                await Assert.ThrowsAsync<RewardFulfillmentConflictException>(() => correlation.ObserveReceiptAsync(
+                    new RewardReceiptObservation(Context, Operation, receipt), CancellationToken.None));
+                Assert.Equal(FeatureSnapshotState.Missing,
+                    (await service.ReadAsync(new RewardPresentationQuery(Context, Operation), CancellationToken.None)).State);
+                Assert.Null(await state.ReadAsync(Context, "reward-correlation", "receipt/" + feedRevision, CancellationToken.None));
+                Assert.NotNull(await state.ReadAsync(Context, "reward-correlation", "feed/" + feedRevision, CancellationToken.None));
+                service.Dispose();
+                Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            }
+
+            using (var files = new TemporaryDatabase())
+            {
+                var database = await OpenAsync(files.Path);
+                var state = new SqliteDurableFeatureStateStore(database, Scope);
+                var service = DurableRewardFulfillmentComposition.Create(Context, Scope, state, database, () => 1_000);
+                var correlation = new DurableRewardReceiptCorrelation(Context, Scope, state, database, service, () => 1_000);
+                const long feedRevision = 21;
+                var receipt = CurrencyReceipt(Operation, Grant, Source, feedRevision);
+                await correlation.ObserveReceiptAsync(new RewardReceiptObservation(Context, Operation, receipt), CancellationToken.None);
+                service.Dispose();
+                Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+
+                database = await OpenAsync(files.Path);
+                state = new SqliteDurableFeatureStateStore(database, Scope);
+                service = DurableRewardFulfillmentComposition.Create(Context, Scope, state, database, () => 1_000);
+                correlation = new DurableRewardReceiptCorrelation(Context, Scope, state, database, service, () => 1_000);
+                await Assert.ThrowsAsync<RewardFulfillmentConflictException>(() => database.ExecuteAsync(Scope, transaction =>
+                {
+                    correlation.StageInstalledFeed(transaction, feedRevision, Array.Empty<InstalledRewardProjection>());
+                    return true;
+                }, CancellationToken.None));
+                Assert.Null(await state.ReadAsync(Context, "reward-correlation", "feed/" + feedRevision, CancellationToken.None));
+                Assert.NotNull(await state.ReadAsync(Context, "reward-correlation", "receipt/" + feedRevision, CancellationToken.None));
+                Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull,
+                    (await service.ReadAsync(new RewardPresentationQuery(Context, Operation), CancellationToken.None)).Value!.Status);
+                service.Dispose();
+                Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            }
+        }
+
+        [Fact]
         public async Task InjectedReceiptCorrelationFaultRollsBackReceiptAndPresentationThenRetryCommitsBoth()
         {
             using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var durable = new SqliteDurableFeatureStateStore(database, Scope); var faulting = new FaultOnceState(durable); var service = DurableRewardFulfillmentComposition.Create(Context, Scope, faulting, database, () => 1_000); var correlation = new DurableRewardReceiptCorrelation(Context, Scope, faulting, database, service, () => 1_000); var receipt = Receipt(Operation, Grant, Source);
@@ -226,6 +351,9 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             new RewardReceiptLine(0, 1, RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 1, null),
             new RewardReceiptLine(1, 1, RewardReceiptLineKind.ItemStack, new PlatformId("test.item"), 2, null)
         });
+        private static RewardReceipt CurrencyReceipt(OperationId originating, Guid grant, string source, long feedRevision) =>
+            new RewardReceipt(grant, originating, feedRevision, 100, source, "mrsquare.test.coin", 1,
+                new[] { new RewardReceiptLine(0, 1, RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 2, null) });
         private static RewardProjectionGroup Group(ScopedOwnerContext owner, OperationId operation, RewardReceipt receipt) => new RewardProjectionGroup(owner, operation, receipt.GrantId, receipt.BusinessSource, receipt.FeedRevision, receipt.Lines.Select(line => new RewardProjectionLine(line.LineIndex, line.Kind, line.ResourceId, 10 + line.LineIndex)));
         private static InstalledRewardProjection[] Projections() => new[] { new InstalledRewardProjection(RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 10), new InstalledRewardProjection(RewardReceiptLineKind.ItemStack, new PlatformId("test.item"), 11) };
 
