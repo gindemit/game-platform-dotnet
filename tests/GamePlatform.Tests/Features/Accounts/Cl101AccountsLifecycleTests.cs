@@ -10,6 +10,7 @@ using GamePlatform.Features.Accounts;
 using GamePlatform.Storage.Abstractions.Accounts;
 using GamePlatform.Storage.Abstractions;
 using GamePlatform.Storage.Sqlite.Features.Accounts;
+using SQLite;
 
 namespace GamePlatform.Tests.Features.Accounts
 {
@@ -289,6 +290,89 @@ namespace GamePlatform.Tests.Features.Accounts
                 var failure = await Assert.ThrowsAsync<StorageException>(() => SqliteAccountsDirectoryDatabase.OpenAsync(path,
                     new AccountDirectoryScope(new BackendNamespace("test-backend"), App), CancellationToken.None));
                 Assert.Equal(StorageFailure.Corrupt, failure.Failure);
+            }
+            finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
+        }
+
+        [Fact]
+        public async Task SqlitePrincipalDirectoryHasAnyEntryFailsClosedWhenForeignScopeRowExists()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
+            var scope = new AccountDirectoryScope(new BackendNamespace("test-backend"), App);
+            try
+            {
+                var db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None);
+                Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                using (var raw = new SQLiteConnection(path))
+                {
+                    raw.Execute("INSERT INTO gp_account_principal_directory(backend_namespace,app_id,issuer,subject,installation_id,client_stream_id,platform_user_id,membership_status) VALUES (?,?,?,?,?,?,NULL,NULL)",
+                        "other-backend", App.ToString(), "https://issuer.test", "foreign-backend", "0199f9a1-1111-7777-8888-999999999999", "0199f9a1-2222-7777-8888-999999999999");
+                    raw.Execute("INSERT INTO gp_account_principal_directory(backend_namespace,app_id,issuer,subject,installation_id,client_stream_id,platform_user_id,membership_status) VALUES (?,?,?,?,?,?,NULL,NULL)",
+                        scope.BackendNamespace.Value, "0199f9a1-3333-7777-8888-999999999999", "https://issuer.test", "foreign-app", "0199f9a1-4444-7777-8888-999999999999", "0199f9a1-5555-7777-8888-999999999999");
+                }
+
+                db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None);
+                var store = new SqliteAccountsDirectoryStore(db, scope);
+                var error = await Assert.ThrowsAsync<StorageException>(() => store.HasAnyEntryAsync(CancellationToken.None));
+                Assert.Equal(StorageFailure.InvalidOwner, error.Failure);
+                Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+            }
+            finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
+        }
+
+        [Theory]
+        [InlineData("version-zero")]
+        [InlineData("extra-version")]
+        [InlineData("version-gap")]
+        public async Task SqlitePrincipalDirectoryRejectsNonExactMigrationJournal(string corruption)
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
+            var scope = new AccountDirectoryScope(new BackendNamespace("test-backend"), App);
+            try
+            {
+                var db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None);
+                Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                using (var raw = new SQLiteConnection(path))
+                {
+                    if (corruption == "version-zero")
+                        raw.Execute("INSERT INTO gp_principal_directory_schema_migrations(version,migration_id,checksum,backend_namespace,app_id,applied_at) VALUES (0,'review-version-zero','invalid',?,?,1)", scope.BackendNamespace.Value, App.ToString());
+                    else if (corruption == "extra-version")
+                        raw.Execute("INSERT INTO gp_principal_directory_schema_migrations(version,migration_id,checksum,backend_namespace,app_id,applied_at) VALUES (2,'review-extra-version','invalid',?,?,1)", scope.BackendNamespace.Value, App.ToString());
+                    else
+                        raw.Execute("UPDATE gp_principal_directory_schema_migrations SET version=2 WHERE version=1");
+                }
+
+                var error = await Assert.ThrowsAsync<StorageException>(() => SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None));
+                Assert.Equal(StorageFailure.Migration, error.Failure);
+            }
+            finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
+        }
+
+        [Theory]
+        [InlineData("data-table")]
+        [InlineData("issued-account-index")]
+        [InlineData("malformed-issued-account-index")]
+        public async Task SqlitePrincipalDirectoryRejectsMissingOrMalformedRequiredDataSchema(string objectToRemove)
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
+            var scope = new AccountDirectoryScope(new BackendNamespace("test-backend"), App);
+            try
+            {
+                var db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None);
+                Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                using (var raw = new SQLiteConnection(path))
+                {
+                    if (objectToRemove == "data-table") raw.Execute("DROP TABLE gp_account_principal_directory");
+                    else if (objectToRemove == "issued-account-index") raw.Execute("DROP INDEX gp_account_principal_directory_issued_account");
+                    else
+                    {
+                        raw.Execute("DROP INDEX gp_account_principal_directory_issued_account");
+                        raw.Execute("CREATE UNIQUE INDEX gp_account_principal_directory_issued_account ON gp_account_principal_directory(app_id) WHERE platform_user_id IS NOT NULL");
+                    }
+                }
+
+                var error = await Assert.ThrowsAsync<StorageException>(() => SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None));
+                Assert.Equal(StorageFailure.Migration, error.Failure);
             }
             finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
         }

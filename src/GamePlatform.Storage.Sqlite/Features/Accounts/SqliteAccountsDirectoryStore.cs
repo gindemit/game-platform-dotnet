@@ -135,22 +135,22 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
                 if (connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_principal_directory_schema_migrations WHERE backend_namespace<>? OR app_id<>?", scope.BackendNamespace.Value, scope.AppId.ToString()) != 0)
                     throw new StorageException(StorageFailure.InvalidOwner, "A principal directory migration marker belongs to another backend or app.");
 
-                var recordedMaximum = connection.ExecuteScalar<int>("SELECT COALESCE(MAX(version),0) FROM gp_principal_directory_schema_migrations");
-                if (recordedMaximum > migration.Version)
-                    throw new StorageException(StorageFailure.Migration, "The principal directory schema is newer than this SDK supports.");
-                var existing = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_principal_directory_schema_migrations WHERE version=?", migration.Version);
-                if (existing == 1)
+                var markerCount = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_principal_directory_schema_migrations");
+                if (markerCount == 0)
                 {
-                    var identityMatches = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_principal_directory_schema_migrations WHERE version=? AND migration_id=? AND checksum=? AND backend_namespace=? AND app_id=?", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace.Value, scope.AppId.ToString());
-                    if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "The principal directory migration identity or checksum changed.");
-                }
-                else
-                {
-                    if (recordedMaximum != 0) throw new StorageException(StorageFailure.Migration, "The principal directory migration journal has a gap.");
                     foreach (var statement in migration.Statements) connection.Execute(statement);
                     cancellationToken.ThrowIfCancellationRequested();
                     connection.Execute("INSERT INTO gp_principal_directory_schema_migrations(version,migration_id,checksum,backend_namespace,app_id,applied_at) VALUES (?,?,?,?,?,?)", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace.Value, scope.AppId.ToString(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
                 }
+                else
+                {
+                    if (markerCount != 1) throw new StorageException(StorageFailure.Migration, "The principal directory migration journal contains extra or duplicate version rows.");
+                    var markerVersion = connection.ExecuteScalar<int>("SELECT version FROM gp_principal_directory_schema_migrations");
+                    if (markerVersion != migration.Version) throw new StorageException(StorageFailure.Migration, "The principal directory migration journal has a gap or unsupported version.");
+                    var identityMatches = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_principal_directory_schema_migrations WHERE version=? AND migration_id=? AND checksum=? AND backend_namespace=? AND app_id=? AND applied_at BETWEEN 0 AND 253402300799999", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace.Value, scope.AppId.ToString());
+                    if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "The principal directory migration identity, checksum, owner or timestamp changed.");
+                }
+                ValidateRequiredSchema(connection);
                 cancellationToken.ThrowIfCancellationRequested();
                 connection.Execute("COMMIT");
             }
@@ -160,6 +160,73 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
                 catch { }
                 throw;
             }
+        }
+
+        private static void ValidateRequiredSchema(SQLiteConnection connection)
+        {
+            const string tableName = "gp_account_principal_directory";
+            const string indexName = "gp_account_principal_directory_issued_account";
+            if (connection.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", tableName) != 1)
+                throw new StorageException(StorageFailure.Migration, "The principal directory data table is missing.");
+
+            var columns = connection.Query<DirectoryColumn>("PRAGMA table_info('gp_account_principal_directory')");
+            var expected = new[]
+            {
+                new DirectoryColumn { Name = "backend_namespace", Type = "TEXT", IsNotNull = 1, PrimaryKey = 1 },
+                new DirectoryColumn { Name = "app_id", Type = "TEXT", IsNotNull = 1, PrimaryKey = 2 },
+                new DirectoryColumn { Name = "issuer", Type = "TEXT", IsNotNull = 1, PrimaryKey = 3 },
+                new DirectoryColumn { Name = "subject", Type = "TEXT", IsNotNull = 1, PrimaryKey = 4 },
+                new DirectoryColumn { Name = "installation_id", Type = "TEXT", IsNotNull = 1, PrimaryKey = 0 },
+                new DirectoryColumn { Name = "client_stream_id", Type = "TEXT", IsNotNull = 1, PrimaryKey = 0 },
+                new DirectoryColumn { Name = "platform_user_id", Type = "TEXT", IsNotNull = 0, PrimaryKey = 0 },
+                new DirectoryColumn { Name = "membership_status", Type = "TEXT", IsNotNull = 0, PrimaryKey = 0 }
+            };
+            if (columns.Count != expected.Length)
+                throw new StorageException(StorageFailure.Migration, "The principal directory data table has an unexpected column set.");
+            for (var i = 0; i < expected.Length; i++)
+            {
+                if (!string.Equals(columns[i].Name, expected[i].Name, StringComparison.Ordinal) ||
+                    !string.Equals(columns[i].Type, expected[i].Type, StringComparison.OrdinalIgnoreCase) ||
+                    columns[i].IsNotNull != expected[i].IsNotNull || columns[i].PrimaryKey != expected[i].PrimaryKey)
+                    throw new StorageException(StorageFailure.Migration, "The principal directory data table schema changed.");
+            }
+
+            var indexes = connection.Query<DirectoryIndex>("PRAGMA index_list('gp_account_principal_directory')");
+            var issuedIndex = indexes.Find(index => string.Equals(index.Name, indexName, StringComparison.Ordinal));
+            if (issuedIndex == null || issuedIndex.IsUnique != 1 || issuedIndex.IsPartial != 1)
+                throw new StorageException(StorageFailure.Migration, "The principal directory issued-account uniqueness index is missing or malformed.");
+            var indexColumns = connection.Query<DirectoryIndexColumn>("PRAGMA index_info('gp_account_principal_directory_issued_account')");
+            if (indexColumns.Count != 3 || indexColumns[0].Name != "backend_namespace" || indexColumns[1].Name != "app_id" || indexColumns[2].Name != "platform_user_id")
+                throw new StorageException(StorageFailure.Migration, "The principal directory issued-account index columns changed.");
+            var indexSql = connection.ExecuteScalar<string>("SELECT sql FROM sqlite_master WHERE type='index' AND name=?", indexName);
+            var normalizedIndexSql = (indexSql ?? string.Empty).Replace(" ", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty).ToLowerInvariant();
+            if (!normalizedIndexSql.Contains("whereplatform_user_idisnotnull"))
+                throw new StorageException(StorageFailure.Migration, "The principal directory issued-account index predicate changed.");
+        }
+
+        private sealed class DirectoryColumn
+        {
+            public int Cid { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string Type { get; set; } = string.Empty;
+            [Column("notnull")] public int IsNotNull { get; set; }
+            [Column("pk")] public int PrimaryKey { get; set; }
+        }
+
+        private sealed class DirectoryIndex
+        {
+            [Column("seq")] public int Sequence { get; set; }
+            public string Name { get; set; } = string.Empty;
+            [Column("unique")] public int IsUnique { get; set; }
+            public string Origin { get; set; } = string.Empty;
+            [Column("partial")] public int IsPartial { get; set; }
+        }
+
+        private sealed class DirectoryIndexColumn
+        {
+            [Column("seq")] public int Sequence { get; set; }
+            public int Cid { get; set; }
+            public string Name { get; set; } = string.Empty;
         }
 
         private T ExecuteCore<T>(Func<SQLiteConnection, T> operation, CancellationToken cancellationToken)
@@ -238,7 +305,13 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         }
 
         public Task<bool> HasAnyEntryAsync(CancellationToken cancellationToken) =>
-            database.ExecuteAsync(scope, connection => connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_account_principal_directory") != 0, cancellationToken);
+            database.ExecuteAsync(scope, connection =>
+            {
+                var total = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_account_principal_directory");
+                var inScope = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_account_principal_directory WHERE backend_namespace=? AND app_id=?", scope.BackendNamespace.Value, scope.AppId.ToString());
+                if (total != inScope) throw new StorageException(StorageFailure.InvalidOwner, "The principal directory contains an entry outside its backend/app scope.");
+                return inScope != 0;
+            }, cancellationToken);
 
         public Task<AccountDirectoryEntry?> FindAsync(AccountPrincipalDescriptor principal, AppId appId, CancellationToken cancellationToken)
         {
