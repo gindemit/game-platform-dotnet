@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
@@ -10,9 +9,7 @@ using GamePlatform.Core;
 using GamePlatform.Features.Accounts;
 using GamePlatform.Storage.Abstractions.Accounts;
 using GamePlatform.Storage.Abstractions;
-using GamePlatform.Storage.Sqlite.Executor;
 using GamePlatform.Storage.Sqlite.Features.Accounts;
-using GamePlatform.Storage.Sqlite.Migrations;
 
 namespace GamePlatform.Tests.Features.Accounts
 {
@@ -240,11 +237,84 @@ namespace GamePlatform.Tests.Features.Accounts
         public async Task SqliteDirectoryReopensReservationBeforeIssuedAccountBinding()
         {
             var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
-            var scope = new StorageScope("test-backend", new PlatformId(App.ToString()), new PlatformId("principal-directory")); var migrations = SqlitePlatformMigrationRegistry.Migrations;
+            var scope = new AccountDirectoryScope(new BackendNamespace("test-backend"), App);
             try
             {
-                var db = await SqliteDatabase.OpenAsync(path, scope, migrations, CancellationToken.None); var store = new SqliteAccountsDirectoryStore(db, scope); var generator = new UuidV7Generator(new Clock(), new Random()); var installation = generator.NewId(); var stream = new ClientStreamId(generator.NewId()); var reserved = await store.ReserveAsync(A, App, installation, stream, CancellationToken.None); Assert.False(reserved.HasIssuedAccount); Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
-                db = await SqliteDatabase.OpenAsync(path, scope, migrations, CancellationToken.None); store = new SqliteAccountsDirectoryStore(db, scope); var reopened = await store.FindAsync(A, App, CancellationToken.None); Assert.NotNull(reopened); Assert.Equal(installation, reopened!.InstallationId); var bound = await store.BindIssuedAccountAsync(reopened, new PlatformUserId(Guid.Parse("0199f9a0-2222-7777-8888-999999999999")), "active", CancellationToken.None); Assert.True(bound.HasIssuedAccount); Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                var db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None); var store = new SqliteAccountsDirectoryStore(db, scope); var generator = new UuidV7Generator(new Clock(), new Random()); var installation = generator.NewId(); var stream = new ClientStreamId(generator.NewId()); var reserved = await store.ReserveAsync(A, App, installation, stream, CancellationToken.None); Assert.False(reserved.HasIssuedAccount); Assert.True(await store.HasAnyEntryAsync(CancellationToken.None)); Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None); store = new SqliteAccountsDirectoryStore(db, scope); var reopened = await store.FindAsync(A, App, CancellationToken.None); Assert.NotNull(reopened); Assert.Equal(installation, reopened!.InstallationId); Assert.Equal(stream, reopened.StreamId); var issuedId = new PlatformUserId(Guid.Parse("0199f9a0-2222-7777-8888-999999999999")); var bound = await store.BindIssuedAccountAsync(reopened, issuedId, "active", CancellationToken.None); Assert.True(bound.HasIssuedAccount); Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None); store = new SqliteAccountsDirectoryStore(db, scope); var issued = await store.FindAsync(A, App, CancellationToken.None); Assert.NotNull(issued); Assert.Equal(installation, issued!.InstallationId); Assert.Equal(issuedId, issued.AccountId); Assert.Equal("active", issued.MembershipStatus); Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+            }
+            finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
+        }
+
+        [Fact]
+        public async Task SqlitePrincipalDirectoryStartsEmptyAndRejectsBackendOrAppScopeEscapes()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
+            var scope = new AccountDirectoryScope(new BackendNamespace("test-backend"), App);
+            try
+            {
+                var db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None); var store = new SqliteAccountsDirectoryStore(db, scope);
+                Assert.False(await store.HasAnyEntryAsync(CancellationToken.None));
+                Assert.Null(await store.FindAsync(A, App, CancellationToken.None));
+
+                var otherBackend = new AccountPrincipalDescriptor(new BackendNamespace("other-backend"), A.Issuer, A.Subject);
+                var otherApp = new AppId(Guid.Parse("0199f9a1-1111-7777-8888-999999999999"));
+                var installation = Guid.Parse("0199f9a1-2222-7777-8888-999999999999"); var stream = new ClientStreamId(Guid.Parse("0199f9a1-3333-7777-8888-999999999999"));
+                await Assert.ThrowsAsync<StorageException>(async () => await store.FindAsync(otherBackend, App, CancellationToken.None));
+                await Assert.ThrowsAsync<StorageException>(async () => await store.FindAsync(A, otherApp, CancellationToken.None));
+                await Assert.ThrowsAsync<StorageException>(async () => await store.ReserveAsync(otherBackend, App, installation, stream, CancellationToken.None));
+                await Assert.ThrowsAsync<StorageException>(async () => await store.ReserveAsync(A, otherApp, installation, stream, CancellationToken.None));
+                var foreignBackendReservation = new AccountDirectoryEntry(otherBackend, App, installation, stream, null, null);
+                var foreignAppReservation = new AccountDirectoryEntry(A, otherApp, installation, stream, null, null);
+                var issued = new PlatformUserId(Guid.Parse("0199f9a1-4444-7777-8888-999999999999"));
+                await Assert.ThrowsAsync<StorageException>(async () => await store.BindIssuedAccountAsync(foreignBackendReservation, issued, "active", CancellationToken.None));
+                await Assert.ThrowsAsync<StorageException>(async () => await store.BindIssuedAccountAsync(foreignAppReservation, issued, "active", CancellationToken.None));
+                Assert.True(await db.DisposeAsync(TimeSpan.FromSeconds(5)));
+                await Assert.ThrowsAsync<StorageException>(() => SqliteAccountsDirectoryDatabase.OpenAsync(path,
+                    new AccountDirectoryScope(new BackendNamespace("other-backend"), App), CancellationToken.None));
+                await Assert.ThrowsAsync<StorageException>(() => SqliteAccountsDirectoryDatabase.OpenAsync(path,
+                    new AccountDirectoryScope(new BackendNamespace("test-backend"), otherApp), CancellationToken.None));
+            }
+            finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
+        }
+
+        [Fact]
+        public async Task SqlitePrincipalDirectoryFailsClosedOnCorruptDatabase()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
+            try
+            {
+                await File.WriteAllBytesAsync(path, new byte[] { 0x13, 0x37, 0x00, 0x01, 0x02, 0x03 });
+                var failure = await Assert.ThrowsAsync<StorageException>(() => SqliteAccountsDirectoryDatabase.OpenAsync(path,
+                    new AccountDirectoryScope(new BackendNamespace("test-backend"), App), CancellationToken.None));
+                Assert.Equal(StorageFailure.Corrupt, failure.Failure);
+            }
+            finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
+        }
+
+        [Fact]
+        public async Task SqlitePrincipalDirectorySerializesConcurrentReservationsAndDrainsBeforeStop()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "game-platform-cl101", Guid.NewGuid().ToString("N")); System.IO.Directory.CreateDirectory(folder); var path = Path.Combine(folder, "directory.sqlite3");
+            var scope = new AccountDirectoryScope(new BackendNamespace("test-backend"), App);
+            try
+            {
+                var db = await SqliteAccountsDirectoryDatabase.OpenAsync(path, scope, CancellationToken.None); var store = new SqliteAccountsDirectoryStore(db, scope);
+                var reservations = new Task<AccountDirectoryEntry>[12];
+                for (var index = 0; index < reservations.Length; index++)
+                {
+                    var suffix = (index + 1).ToString("x12");
+                    var installation = Guid.Parse("0199f9a2-1111-7777-8888-" + suffix);
+                    var stream = new ClientStreamId(Guid.Parse("0199f9a2-2222-7777-8888-" + suffix));
+                    reservations[index] = store.ReserveAsync(A, App, installation, stream, CancellationToken.None);
+                }
+                var stopping = db.DisposeAsync(TimeSpan.FromSeconds(5));
+                var entries = await Task.WhenAll(reservations);
+                Assert.True(await stopping);
+                Assert.All(entries, entry => { Assert.Equal(entries[0].InstallationId, entry.InstallationId); Assert.Equal(entries[0].StreamId, entry.StreamId); });
+                Assert.Equal(0, db.ConnectionCount);
+                await Assert.ThrowsAsync<StorageException>(async () => await store.FindAsync(A, App, CancellationToken.None));
             }
             finally { try { if (System.IO.Directory.Exists(folder)) System.IO.Directory.Delete(folder, true); } catch (IOException) { } }
         }
@@ -258,7 +328,7 @@ namespace GamePlatform.Tests.Features.Accounts
         private sealed class Session : IAuthSession { public string SessionKey => "test-session"; public Task<AccessTokenSnapshot> GetAsync(CancellationToken token) => Task.FromResult(new AccessTokenSnapshot("opaque", 0)); public Task<AccessTokenSnapshot> RefreshAsync(long generation, CancellationToken token) => GetAsync(token); }
         private sealed class ProvisioningFactory : IProvisioningRemoteFactory { private readonly Func<IAuthSession, IProvisioningRemote> create; public ProvisioningFactory(Func<IAuthSession, IProvisioningRemote> create) { this.create = create; } public int Calls; public IAuthSession? LastSession; public IProvisioningRemote Create(IAuthSession authenticatedSession) { Calls++; LastSession = authenticatedSession; return create(authenticatedSession); } }
         private sealed class Remote : IProvisioningRemote { public int Calls; public bool FailFirst; public Task<RemoteResult<ProvisioningSnapshot>> ProvisionAsync(AppId app, Guid installation, ClientStreamId stream, CancellationToken token) { Calls++; if (FailFirst && Calls == 1) return Task.FromResult(RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.OutcomeUncertain))); return Task.FromResult(RemoteResult<ProvisioningSnapshot>.Success(new ProvisioningSnapshot(new PlatformUserId(Guid.Parse("0199f9a0-2222-7777-8888-999999999999")), app, "active", stream, 1, 1))); } }
-        private sealed class Directory : IAccountDirectoryStore { private readonly Dictionary<string, AccountDirectoryEntry> values = new Dictionary<string, AccountDirectoryEntry>(); private static string Key(AccountPrincipalDescriptor p, AppId a) => p.BackendNamespace + ":" + a + ":" + p.Issuer + ":" + p.Subject; public Task<AccountDirectoryEntry?> FindAsync(AccountPrincipalDescriptor p, AppId a, CancellationToken t) => Task.FromResult(values.TryGetValue(Key(p, a), out var value) ? value : null); public Task<AccountDirectoryEntry> ReserveAsync(AccountPrincipalDescriptor p, AppId a, Guid i, ClientStreamId s, CancellationToken t) { var key = Key(p, a); if (!values.TryGetValue(key, out var value)) values[key] = value = new AccountDirectoryEntry(p, a, i, s, null, null); return Task.FromResult(value); } public Task<AccountDirectoryEntry> BindIssuedAccountAsync(AccountDirectoryEntry r, PlatformUserId id, string membership, CancellationToken t) { var value = new AccountDirectoryEntry(r.Principal, r.AppId, r.InstallationId, r.StreamId, id, membership); values[Key(r.Principal, r.AppId)] = value; return Task.FromResult(value); } }
+        private sealed class Directory : IAccountDirectoryStore { private readonly Dictionary<string, AccountDirectoryEntry> values = new Dictionary<string, AccountDirectoryEntry>(); private static string Key(AccountPrincipalDescriptor p, AppId a) => p.BackendNamespace + ":" + a + ":" + p.Issuer + ":" + p.Subject; public Task<bool> HasAnyEntryAsync(CancellationToken t) => Task.FromResult(values.Count != 0); public Task<AccountDirectoryEntry?> FindAsync(AccountPrincipalDescriptor p, AppId a, CancellationToken t) => Task.FromResult(values.TryGetValue(Key(p, a), out var value) ? value : null); public Task<AccountDirectoryEntry> ReserveAsync(AccountPrincipalDescriptor p, AppId a, Guid i, ClientStreamId s, CancellationToken t) { var key = Key(p, a); if (!values.TryGetValue(key, out var value)) values[key] = value = new AccountDirectoryEntry(p, a, i, s, null, null); return Task.FromResult(value); } public Task<AccountDirectoryEntry> BindIssuedAccountAsync(AccountDirectoryEntry r, PlatformUserId id, string membership, CancellationToken t) { var value = new AccountDirectoryEntry(r.Principal, r.AppId, r.InstallationId, r.StreamId, id, membership); values[Key(r.Principal, r.AppId)] = value; return Task.FromResult(value); } }
         private sealed class Leases : IAccountScopeLeaseFactory { private readonly List<string> events = new List<string>(); public bool Ready = true; public AccountBootstrapResult Bootstrap = AccountBootstrapResult.Complete; public int DrainFailures; public int Opened; public int Retired; public int Stopped; public IAuthSession? LastAuthenticatedSession; public TaskCompletionSource<bool>? FirstOpenGate; public TaskCompletionSource<bool>? FirstLeaseOpened; public TaskCompletionSource<bool>? FirstDrainGate; public TaskCompletionSource<bool>? FirstDrainStarted; public async Task<IAccountScopeLease> OpenAuthenticatedAsync(AccountDirectoryEntry e, IAuthSession s, long g, CancellationToken t) { LastAuthenticatedSession = s; var lease = new Lease(e, g, Ready, Bootstrap, this); if (lease.Ordinal == 1 && FirstOpenGate != null) { FirstLeaseOpened!.SetResult(true); await FirstOpenGate.Task.ConfigureAwait(false); } return lease; } public Task<IAccountScopeLease> ReopenOfflineAsync(AccountDirectoryEntry e, long g, CancellationToken t) => Task.FromResult<IAccountScopeLease>(new Lease(e, g, Ready, Bootstrap, this)); public int EventIndex(string value) { lock (events) return events.IndexOf(value); } public void OpenedEvent(int ordinal) { lock (events) events.Add("open-" + ordinal); } public void RetiredEvent(int ordinal) { lock (events) events.Add("retire-" + ordinal); } }
         private sealed class Lease : IAccountScopeLease { private readonly bool ready; private readonly AccountBootstrapResult bootstrap; private readonly Leases owner; public Lease(AccountDirectoryEntry e, long g, bool ready, AccountBootstrapResult bootstrap, Leases owner) { Entry = e; Generation = g; this.ready = ready; this.bootstrap = bootstrap; this.owner = owner; Ordinal = Interlocked.Increment(ref owner.Opened); owner.OpenedEvent(Ordinal); } public int Ordinal { get; } public AccountDirectoryEntry Entry { get; } public long Generation { get; } public Task<bool> IsBootstrapReadyAsync(CancellationToken t) => Task.FromResult(ready); public Task<AccountBootstrapResult> BootstrapAsync(CancellationToken t) => Task.FromResult(bootstrap); public Task StopAdmissionsAsync(CancellationToken t) { Interlocked.Increment(ref owner.Stopped); return Task.CompletedTask; } public async Task DrainAndRetireAsync(CancellationToken t) { if (Ordinal == 1 && owner.FirstDrainGate != null) { owner.FirstDrainStarted!.SetResult(true); await owner.FirstDrainGate.Task.ConfigureAwait(false); } if (Interlocked.CompareExchange(ref owner.DrainFailures, 0, 0) > 0) { Interlocked.Decrement(ref owner.DrainFailures); throw new InvalidOperationException("drain failure"); } Interlocked.Increment(ref owner.Retired); owner.RetiredEvent(Ordinal); } }
         private sealed class Clock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1; }
