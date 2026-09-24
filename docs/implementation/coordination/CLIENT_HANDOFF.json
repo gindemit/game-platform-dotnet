@@ -4,14 +4,14 @@
   "track": "client_sdk_and_mrsquare",
   "phase": "P3",
   "observed_epoch": 3,
-  "observed_backend_state_commit": "d876473212fef6bfdce93760440079ff18f8b2d2",
-  "handoff_kind": "progress_checkpoint",
-  "status": "in_progress",
+  "observed_backend_state_commit": "548b32f491ed6f7a4e45e6678102e9bd65d470e5",
+  "handoff_kind": "gate_publication",
+  "status": "g3_passed_p4_not_released",
   "quiescent": true,
-  "next_gate": "G3",
+  "next_gate": "G4",
   "implementation_commits": {
-    "sdk": "7c1f9534df3b245c6d0d30f5b56fc183a1f7758a",
-    "unity": "84c2b1137a8dbde497f22495910c9117d3024c5f"
+    "sdk": "ff7177d2f49a0f39f5fa614bb585d033a87fdce7",
+    "unity": "d8242e6860db17f5b9658350e646af06faabf670"
   },
   "required_repository_keys": [
     "sdk",
@@ -279,39 +279,55 @@
     },
     "next_action": "Import and qualify the CL-015 bundle through the authorized INT-009 Unity IL2CPP/AOT/device workflow before production IWireCodec availability; then continue concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript. Do not assess G3 or start P4."
   },
-  "p3_continuation_2026_09_20": {
-    "status": "in_progress_g3_blocked",
-    "observed_backend_head": "0b1c3e3",
-    "sdk_source_head": "c2f878d",
-    "unity_head": "223ca88",
-    "implemented_bounded_scope": [
-      "portable CL-101 through CL-108 services retained as in_progress/unverified",
-      "transactional CL-010 group and snapshot hooks",
-      "platform SQLite migration v6 with complete durable command envelope and exact zero revisions",
-      "bounded MessagePack CommandPushHttpProvider for profile and gameplay commands"
+  "p3_current_checkpoint": {
+    "recorded_at": "2026-09-24",
+    "status": "g3_passed",
+    "central_gate": "G3_passed_pending_central_state_publication",
+    "gate_report": {
+      "repository": "gindemit/game-platform-backend",
+      "path": "docs/implementation/coordination/gates/G3-epoch-3-passed.json"
+    },
+    "observed_backend_head": "1233be346ed28a7603a4c9784c78d0a3d75c400c",
+    "backend_runtime": "e9d3563d601b9ef93efe6fec8e619b244e9a23ea",
+    "sdk_head": "ff7177d2f49a0f39f5fa614bb585d033a87fdce7",
+    "sdk_bundle_manifest_sha256": "38452e4b6148f96bac795c45db6bb9585538046b394860c94b749cb6faf1030d",
+    "unity_consumer_install_sha256": "7961700c1e6822c0a748dcb5509c4ebcd2e359fdb026c69696ec351ceada04db",
+    "unity_sdk_import": "be11d6c95b3c9f75ef29bd4cead818fb430e38dc",
+    "unity_run_source": "d8242e6860db17f5b9658350e646af06faabf670",
+    "unity_evidence_head": "95fdf26a77cf4449582fa4f858f5cb0c8e87ce82",
+    "evidence": [
+      "Unity Reports/PlatformIntegration/INT-010/README.md",
+      "backend docs/implementation/evidence/BE-025.md"
     ],
     "verification": {
-      "sdk_release_tests": "467/467",
-      "sdk_structure_validation": "passed",
-      "sdk_manifest_validation": "passed",
-      "unity_INT_005_portable": "5/5"
+      "sdk_dotnet_ff7177d": "527/527",
+      "sdk_validation": "passed (15 projects)",
+      "unity_editmode_full": "296/296",
+      "unity_playmode_graphics": "109 passed, 2 skipped, 0 failed",
+      "unity_journey_runner": "135/135 EditMode, 11/11 PlayMode",
+      "unity_editor_live": "online 1/1, offline 1/1",
+      "runner_harness": "84 OK",
+      "device_journey": "pass"
     },
-    "blockers": [
-      "production canonical fingerprint adapter",
-      "borrowed transactional feature-state reads",
-      "snapshot fixed-H and server-time propagation",
-      "remote revision-zero and invalidation handling",
-      "durable receipt/feed/operation correlation and complete typed projector composition",
-      "reviewed current SDK bundle and INT-006 through INT-009 Unity integration",
-      "exact Unity 6000.5.3f1 and current-bundle device execution",
-      "BE-016 managed Supabase/Deno/JWT/HTTPS qualification"
+    "device": "Samsung SM-G985F (coordinator-reported), API 33, arm64-v8a, IL2CPP High stripping; disposable local Supabase with per-run CA, not managed HTTPS",
+    "accepted_at_g3_scope": [
+      "INT-010"
+    ],
+    "caveats": [
+      "AutomatedTest composition entered through PlatformReadinessGate production-factory hook; production registration is P4",
+      "Reconnect is an online relaunch (offline scope cannot upgrade in-process)",
+      "N+1 is a hand-assembled resend through the captured production ICommandRemote; outbox post-rejection delivery cited from Cl009OrderedCommandSenderTests.TerminalRejectionFinalizesSequenceAndUnblocksNext",
+      "Campaign rejection label produced in memory, not rendered"
+    ],
+    "blocked": [
+      "Second device",
+      "Account switch with pending work and a late callback",
+      "Managed HTTPS"
     ],
     "unrun": [
-      "BE-025",
-      "INT-010",
-      "G3 synchronization review",
+      "G4",
       "P4"
     ],
-    "note": "The frozen schema is sufficient for the bounded test.coin journey, but rich inventory/entitlement models cannot be fabricated from the semantic rows. Keep empty authoritative raw collections until reviewed narrow adapters exist."
+    "next_action": "Coordinator publishes central state.json last. No P4 implementation without GOAL=P3_AND_P4 and a separate phase plan."
   }
 }
