@@ -41,6 +41,13 @@ revision and exact kind/resource membership; it stores component revisions but
 never stores or applies receipt quantities, advances component revisions, or
 creates value. Exact replay is idempotent and changed replay fails closed.
 
+After a reset the covering revision may arrive only inside a bootstrap snapshot.
+The snapshot sink calls `StageInstalledSnapshot` with its committed-through
+revision and every installed value projection, in the snapshot transaction. A
+receipt at or below that revision whose lines are all present in the snapshot is
+confirmed against the snapshot's projection revisions, in either order. A lower
+snapshot, a missing line or another view leaves the receipt pending.
+
 The Unity feed sink remains the composition owner for mapping its installed
 typed changes into that transaction. G3 live peer, Unity wiring
 and A06/A08 acceptance remain unverified.

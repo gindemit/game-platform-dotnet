@@ -118,6 +118,8 @@ namespace GamePlatform.Features.RewardFulfillment
             WriteRecord(transaction, observation.Owner, record, NextRevision(current.HasValue ? current.Value.Revision : (long?)null, observation.Receipt.FeedRevision));
         }
 
+        internal bool HasEvidence(ILocalStorageTransaction transaction, Guid grantId) { EnsureTransaction(transaction); return ReadEvidence(transaction, owner, grantId) != null; }
+
         /// <summary>Stages immutable evidence and its matching confirmation together in an existing caller-owned transaction.</summary>
         internal void StageProjectionGroupAndConfirm(ILocalStorageTransaction transaction, RewardProjectionGroup group)
         {
