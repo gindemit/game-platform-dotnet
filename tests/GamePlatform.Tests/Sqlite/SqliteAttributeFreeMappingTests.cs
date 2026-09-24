@@ -39,7 +39,8 @@ namespace GamePlatform.Tests.Sqlite
                 .Select(type => (string?)type.Attribute("fullname"))
                 .ToHashSet(StringComparer.Ordinal);
 
-            Assert.Contains("GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore+StagedProjectionRow", rowTypes);
+            Assert.DoesNotContain(preserved, name => name != null && name.Contains('+'));
+            Assert.Contains("GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow", rowTypes);
             var unpreserved = rowTypes.Where(name => !preserved.Contains(name)).ToArray();
             Assert.Empty(unpreserved);
         }
@@ -59,7 +60,7 @@ namespace GamePlatform.Tests.Sqlite
                         var called = TryResolve(method, BitConverter.ToInt32(il, i + 1));
                         if (called == null || !called.IsGenericMethod || !RowMaterializers.Contains(called.Name) || !IsSqliteNetEntryPoint(called.DeclaringType)) continue;
                         var rowType = called.GetGenericArguments()[0];
-                        if (!rowType.IsGenericParameter) rowTypes.Add(rowType.FullName!);
+                        if (!rowType.IsGenericParameter) rowTypes.Add(rowType.FullName!.Replace('+', '/'));
                     }
                 }
             }
