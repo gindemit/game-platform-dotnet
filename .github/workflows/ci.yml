@@ -1,8 +1,9 @@
 name: ci
 
 on:
+  workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, impl/platform-coordinated-2026-09-19]
   pull_request:
 
 permissions:
