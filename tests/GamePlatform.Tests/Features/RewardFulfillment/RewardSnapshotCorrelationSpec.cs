@@ -110,9 +110,58 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             }, CancellationToken.None));
             Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull, await session.StatusAsync());
             Assert.Null(await session.State.ReadAsync(Context, "reward-fulfillment", "evidence/" + Grant.ToString("N"), CancellationToken.None));
+            Assert.Null(await session.State.ReadAsync(Context, "reward-correlation", "snapshot", CancellationToken.None));
+            Assert.Equal(1, (await session.State.ReadAsync(Context, "reward-correlation", "pending", CancellationToken.None))!.Revision);
+
+            await session.ObserveAsync();
+            Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull, await session.StatusAsync());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task SnapshotWithManyValueProjectionsConfirmsTheCoveredReceipt(bool receiptFirst)
+        {
+            using var files = new TemporaryDatabase();
+            await using var session = await Session.OpenAsync(files.Path, Context);
+            if (receiptFirst) await session.ObserveAsync();
+            await session.StageSnapshotAsync(12, Many(199, Coin(12)));
+            if (!receiptFirst) await session.ObserveAsync();
+            Assert.Equal(RewardPresentationStatus.Confirmed, await session.StatusAsync());
+        }
+
+        [Fact]
+        public async Task SnapshotAboveTheProjectionBoundIsRejectedAndTheReceiptStaysPending()
+        {
+            using var files = new TemporaryDatabase();
+            await using var session = await Session.OpenAsync(files.Path, Context);
+            await session.ObserveAsync();
+            await Assert.ThrowsAsync<ArgumentException>(() => session.StageSnapshotAsync(12, Many(1024, Coin(12))));
+            Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull, await session.StatusAsync());
+            Assert.Null(await session.State.ReadAsync(Context, "reward-correlation", "snapshot", CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task LowerSnapshotReplacesTheRetainedSnapshot()
+        {
+            using var files = new TemporaryDatabase();
+            await using var session = await Session.OpenAsync(files.Path, Context);
+            await session.StageSnapshotAsync(15, Coin(15));
+            await session.StageSnapshotAsync(ReceiptRevision - 1, Coin(9));
+            await session.ObserveAsync();
+            Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull, await session.StatusAsync());
+            Assert.Equal(ReceiptRevision - 1, (await session.State.ReadAsync(Context, "reward-correlation", "snapshot", CancellationToken.None))!.Revision);
         }
 
         private static InstalledRewardProjection Coin(long revision) => new InstalledRewardProjection(RewardReceiptLineKind.Currency, new PlatformId("test.coin"), revision);
+        private static InstalledRewardProjection[] Many(int others, InstalledRewardProjection covered)
+        {
+            var result = new InstalledRewardProjection[others + 1];
+            for (var i = 0; i < others; i++) result[i] = new InstalledRewardProjection(RewardReceiptLineKind.ItemStack, new PlatformId("test.item." + i), i + 1);
+            result[others] = covered;
+            return result;
+        }
+
         private static InstalledRewardProjection Other(long revision) => new InstalledRewardProjection(RewardReceiptLineKind.Currency, new PlatformId("test.gem"), revision);
 
         private sealed class Session : IAsyncDisposable
