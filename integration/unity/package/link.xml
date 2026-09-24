@@ -7,5 +7,11 @@
   </assembly>
   <assembly fullname="GamePlatform.Storage.Sqlite">
     <type fullname="SQLite.SQLite3" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Executor.SqliteDatabase+ExtensionNamespaceRow" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase+DirectoryColumn" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase+DirectoryIndex" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase+DirectoryIndexColumn" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryStore+DirectoryRow" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore+StagedProjectionRow" preserve="all" />
   </assembly>
 </linker>
