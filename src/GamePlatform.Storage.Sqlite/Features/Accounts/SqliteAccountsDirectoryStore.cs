@@ -176,14 +176,14 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             var columns = connection.Query<DirectoryColumn>("PRAGMA table_info('gp_account_principal_directory')");
             var expected = new[]
             {
-                new DirectoryColumn { Name = "backend_namespace", Type = "TEXT", IsNotNull = 1, PrimaryKey = 1 },
-                new DirectoryColumn { Name = "app_id", Type = "TEXT", IsNotNull = 1, PrimaryKey = 2 },
-                new DirectoryColumn { Name = "issuer", Type = "TEXT", IsNotNull = 1, PrimaryKey = 3 },
-                new DirectoryColumn { Name = "subject", Type = "TEXT", IsNotNull = 1, PrimaryKey = 4 },
-                new DirectoryColumn { Name = "installation_id", Type = "TEXT", IsNotNull = 1, PrimaryKey = 0 },
-                new DirectoryColumn { Name = "client_stream_id", Type = "TEXT", IsNotNull = 1, PrimaryKey = 0 },
-                new DirectoryColumn { Name = "platform_user_id", Type = "TEXT", IsNotNull = 0, PrimaryKey = 0 },
-                new DirectoryColumn { Name = "membership_status", Type = "TEXT", IsNotNull = 0, PrimaryKey = 0 }
+                new DirectoryColumn { Name = "backend_namespace", Type = "TEXT", Notnull = 1, Pk = 1 },
+                new DirectoryColumn { Name = "app_id", Type = "TEXT", Notnull = 1, Pk = 2 },
+                new DirectoryColumn { Name = "issuer", Type = "TEXT", Notnull = 1, Pk = 3 },
+                new DirectoryColumn { Name = "subject", Type = "TEXT", Notnull = 1, Pk = 4 },
+                new DirectoryColumn { Name = "installation_id", Type = "TEXT", Notnull = 1, Pk = 0 },
+                new DirectoryColumn { Name = "client_stream_id", Type = "TEXT", Notnull = 1, Pk = 0 },
+                new DirectoryColumn { Name = "platform_user_id", Type = "TEXT", Notnull = 0, Pk = 0 },
+                new DirectoryColumn { Name = "membership_status", Type = "TEXT", Notnull = 0, Pk = 0 }
             };
             if (columns.Count != expected.Length)
                 throw new StorageException(StorageFailure.Migration, "The principal directory data table has an unexpected column set.");
@@ -191,13 +191,13 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             {
                 if (!string.Equals(columns[i].Name, expected[i].Name, StringComparison.Ordinal) ||
                     !string.Equals(columns[i].Type, expected[i].Type, StringComparison.OrdinalIgnoreCase) ||
-                    columns[i].IsNotNull != expected[i].IsNotNull || columns[i].PrimaryKey != expected[i].PrimaryKey)
+                    columns[i].Notnull != expected[i].Notnull || columns[i].Pk != expected[i].Pk)
                     throw new StorageException(StorageFailure.Migration, "The principal directory data table schema changed.");
             }
 
             var indexes = connection.Query<DirectoryIndex>("PRAGMA index_list('gp_account_principal_directory')");
             var issuedIndex = indexes.Find(index => string.Equals(index.Name, indexName, StringComparison.Ordinal));
-            if (issuedIndex == null || issuedIndex.IsUnique != 1 || issuedIndex.IsPartial != 1)
+            if (issuedIndex == null || issuedIndex.Unique != 1 || issuedIndex.Partial != 1)
                 throw new StorageException(StorageFailure.Migration, "The principal directory issued-account uniqueness index is missing or malformed.");
             var indexColumns = connection.Query<DirectoryIndexColumn>("PRAGMA index_info('gp_account_principal_directory_issued_account')");
             if (indexColumns.Count != 3 || indexColumns[0].Name != "backend_namespace" || indexColumns[1].Name != "app_id" || indexColumns[2].Name != "platform_user_id")
@@ -212,22 +212,22 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             public int Cid { get; set; }
             public string Name { get; set; } = string.Empty;
             public string Type { get; set; } = string.Empty;
-            [Column("notnull")] public int IsNotNull { get; set; }
-            [Column("pk")] public int PrimaryKey { get; set; }
+            public int Notnull { get; set; }
+            public int Pk { get; set; }
         }
 
         private sealed class DirectoryIndex
         {
-            [Column("seq")] public int Sequence { get; set; }
+            public int Seq { get; set; }
             public string Name { get; set; } = string.Empty;
-            [Column("unique")] public int IsUnique { get; set; }
+            public int Unique { get; set; }
             public string Origin { get; set; } = string.Empty;
-            [Column("partial")] public int IsPartial { get; set; }
+            public int Partial { get; set; }
         }
 
         private sealed class DirectoryIndexColumn
         {
-            [Column("seq")] public int Sequence { get; set; }
+            public int Seq { get; set; }
             public int Cid { get; set; }
             public string Name { get; set; } = string.Empty;
         }
