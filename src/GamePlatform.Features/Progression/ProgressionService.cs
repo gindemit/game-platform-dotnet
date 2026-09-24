@@ -112,6 +112,9 @@ namespace GamePlatform.Features.Progression
         }
 
         /// <summary>Applies an explicit pull-derived acknowledgement and authoritative projection, preserving unrelated pending completions.</summary>
+        /// <remarks>
+        /// At the installed revision, an identical projection may acknowledge further accepted operations as a new evidence group; the projection itself is never rewritten.
+        /// </remarks>
         public async Task ApplyConfirmedAsync(ProgressionConfirmation confirmation, CancellationToken cancellationToken)
         {
             if (confirmation == null) throw new ArgumentNullException(nameof(confirmation));
@@ -123,9 +126,18 @@ namespace GamePlatform.Features.Progression
                 if (current.Confirmed != null && confirmation.Projection.Revision < current.Confirmed.Revision) return;
                 if (current.Confirmed != null && confirmation.Projection.Revision == current.Confirmed.Revision)
                 {
-                    var priorEvidence = current.Confirmations.SingleOrDefault(value => value.ProjectionRevision == confirmation.Projection.Revision);
-                    if (!Equivalent(current.Confirmed, confirmation.Projection) || priorEvidence == null || !SameOperationSet(priorEvidence.OperationIds, confirmation.ConfirmedOperationIds))
+                    var priorEvidence = current.Confirmations.Where(value => value.ProjectionRevision == confirmation.Projection.Revision).ToArray();
+                    if (!Equivalent(current.Confirmed, confirmation.Projection) || priorEvidence.Length == 0)
                         throw new ProgressionConflictException("A same-revision progression pull must exactly replay its immutable projection and confirmation evidence.");
+                    if (priorEvidence.Any(value => SameOperationSet(value.OperationIds, confirmation.ConfirmedOperationIds))) return;
+                    if (confirmation.ConfirmedOperationIds.Count == 0)
+                        throw new ProgressionConflictException("A same-revision acknowledgement must name at least one accepted operation.");
+                    ValidateNewConfirmation(current.Pending, current.Confirmations, confirmation);
+                    await transactions.ExecuteAsync(scope, transaction =>
+                    {
+                        confirmations.ValidateAndInsert(transaction, exactOwner, new ProgressionConfirmationEvidence(confirmation.Projection.Revision, confirmation.ConfirmedOperationIds), codec);
+                        return true;
+                    }, cancellationToken).ConfigureAwait(false);
                     return;
                 }
                 ValidateNewConfirmation(current.Pending, current.Confirmations, confirmation);
@@ -258,8 +270,8 @@ namespace GamePlatform.Features.Progression
         }
         private static void ValidateEvidence(IReadOnlyList<ProgressionConfirmationEvidence>? evidence)
         {
-            if (evidence == null || evidence.Count > 1024 || evidence.Any(value => value == null) || evidence.GroupBy(value => value.ProjectionRevision).Any(group => group.Count() != 1) ||
-                evidence.Zip(evidence.Skip(1), (left, right) => left.ProjectionRevision < right.ProjectionRevision).Any(value => !value) ||
+            if (evidence == null || evidence.Count > 1024 || evidence.Any(value => value == null) ||
+                evidence.Zip(evidence.Skip(1), (left, right) => left.ProjectionRevision <= right.ProjectionRevision).Any(value => !value) ||
                 evidence.SelectMany(value => value.OperationIds).Count() > 1024 || evidence.SelectMany(value => value.OperationIds).GroupBy(value => value).Any(group => group.Count() != 1))
                 throw new ProgressionConflictException("The progression confirmation evidence is invalid or exceeds its durable bound.");
         }

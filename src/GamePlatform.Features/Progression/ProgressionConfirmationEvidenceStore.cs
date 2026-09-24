@@ -28,6 +28,7 @@ namespace GamePlatform.Features.Progression
     /// <summary>
     /// Consumer-owned evidence seam for a private-feed group. Implementations insert the exact group once or verify
     /// the immutable prior group in the same transaction; they must reject an operation ID under a different revision.
+    /// A non-empty group with only new operations may be appended at the latest revision; earlier groups never change.
     /// </summary>
     public interface IProgressionConfirmationEvidenceStore
     {
