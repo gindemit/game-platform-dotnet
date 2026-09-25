@@ -17,10 +17,7 @@ namespace GamePlatform.Serialization.MessagePack
         {
         }
 
-        /// <summary>
-        /// Enables store.offer.purchase and quest.claim only for a trusted store/quest capability composition.
-        /// </summary>
-        public CanonicalCommandFingerprint(bool storeQuestCapability)
+        internal CanonicalCommandFingerprint(bool storeQuestCapability)
         {
             storeQuest = storeQuestCapability;
         }

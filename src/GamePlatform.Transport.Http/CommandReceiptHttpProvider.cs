@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
+using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Transport.Abstractions;
 using GamePlatform.Wire.Contracts;
 
@@ -26,6 +27,7 @@ namespace GamePlatform.Transport.Http
         private readonly IAuthSession auth;
         private readonly AuthRefreshCoordinator refresh;
         private readonly string mediaType;
+        private readonly StoreQuestMessagePackCodec? storeQuest;
 
         public CommandReceiptHttpProvider(
             AppId appId,
@@ -37,6 +39,21 @@ namespace GamePlatform.Transport.Http
             IAuthSession auth,
             AuthRefreshCoordinator refresh,
             BackendWireRepresentation representation = BackendWireRepresentation.MessagePack)
+            : this(appId, accountId, installationId, configuration, executor, codec, auth, refresh, representation, new StoreQuestCapability(false))
+        {
+        }
+
+        internal CommandReceiptHttpProvider(
+            AppId appId,
+            PlatformUserId accountId,
+            Guid installationId,
+            BackendHttpConfiguration configuration,
+            IHttpExecutor executor,
+            IWireCodec codec,
+            IAuthSession auth,
+            AuthRefreshCoordinator refresh,
+            BackendWireRepresentation representation,
+            StoreQuestCapability storeQuest)
         {
             if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
             if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
@@ -51,6 +68,10 @@ namespace GamePlatform.Transport.Http
             this.appId = appId;
             this.accountId = accountId;
             this.installationId = installationId;
+            if (storeQuest == null) throw new ArgumentNullException(nameof(storeQuest));
+            if (storeQuest.Enabled && representation != BackendWireRepresentation.MessagePack)
+                throw new ArgumentException("The store/quest receipt superset is MessagePack only.", nameof(representation));
+            this.storeQuest = storeQuest.Codec;
             mediaType = representation == BackendWireRepresentation.MessagePack ? PrivateSyncHttpProvider.MessagePackMediaType : PrivateSyncHttpProvider.DiagnosticJsonMediaType;
         }
 
@@ -80,7 +101,7 @@ namespace GamePlatform.Transport.Http
             if (!ValidProtocolResponse(response)) return ProtocolFailure(response.StatusCode);
 
             RecoveryReceiptResponse value;
-            try { value = codec.Decode<RecoveryReceiptResponse>(response.CopyBody()); }
+            try { value = storeQuest != null ? storeQuest.DecodeReceiptResponse(response.CopyBody()) : codec.Decode<RecoveryReceiptResponse>(response.CopyBody()); }
             catch { return ProtocolFailure(response.StatusCode); }
             try
             {
@@ -99,7 +120,8 @@ namespace GamePlatform.Transport.Http
                 RemoteCommandStatus status;
                 switch (value.Result)
                 {
-                    case PushAccepted accepted when accepted.OperationId == command.OperationId.Value && accepted.Sequence == command.Sequence && accepted.FeedRevision >= 0:
+                    case PushAccepted accepted when accepted.OperationId == command.OperationId.Value && accepted.Sequence == command.Sequence && accepted.FeedRevision >= 0 &&
+                        (IsStoreQuestKind(command.OperationKind) ? StoreQuestResultBinding.Matches(storeQuest!, command, accepted.Result) : !StoreQuestResultBinding.IsStoreQuestResult(accepted.Result)):
                         status = RemoteCommandStatus.Accepted;
                         break;
                     case PushTerminalRejected rejected when rejected.OperationId == command.OperationId.Value && rejected.Sequence == command.Sequence && !rejected.Error.Retryable:
@@ -110,7 +132,7 @@ namespace GamePlatform.Transport.Http
                 }
 
                 byte[] terminalResult;
-                try { terminalResult = codec.Encode(value.Result); }
+                try { terminalResult = EncodeTerminal(command, value.Result); }
                 catch { return ProtocolFailure(response.StatusCode); }
                 if (terminalResult.Length == 0 || terminalResult.Length > 65_536) return ProtocolFailure(response.StatusCode);
                 var outcome = new RemoteCommandOutcome(status, terminalResult);
@@ -118,6 +140,15 @@ namespace GamePlatform.Transport.Http
             }
             catch { return ProtocolFailure(response.StatusCode); }
         }
+
+        private byte[] EncodeTerminal(RemoteCommand command, IPushFinalResult result)
+        {
+            if (IsStoreQuestKind(command.OperationKind)) return storeQuest!.EncodeResult((IPushResult)result);
+            return result is PushAccepted accepted ? codec.Encode(accepted) : codec.Encode((PushTerminalRejected)result);
+        }
+
+        private bool IsStoreQuestKind(string operationKind) =>
+            storeQuest != null && (operationKind == "store.offer.purchase" || operationKind == "quest.claim");
 
         private async Task<Attempt> SendAuthenticatedAsync(byte[] body, CancellationToken cancellationToken)
         {

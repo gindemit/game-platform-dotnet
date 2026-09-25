@@ -216,7 +216,7 @@ namespace GamePlatform.Tests.Transport
             ownedRefresh.Add(refresh);
             return new CommandPushHttpProvider(App, Account,
                 new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test")),
-                executor, codec, new AuthSession(), refresh, storeQuest);
+                executor, codec, new AuthSession(), refresh, new StoreQuestCapability(true));
         }
 
         private RemoteCommand PurchaseCommand(Guid key) => new RemoteCommand(Operation, Stream, Installation, 155, "store.offer.purchase", 1, 1, 1_789_555_200_000,

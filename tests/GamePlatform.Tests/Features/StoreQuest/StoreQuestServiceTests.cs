@@ -26,6 +26,7 @@ namespace GamePlatform.Tests.Features.StoreQuest
         private static readonly ClientStreamId Stream = new ClientStreamId(Guid.Parse("0199f9a0-0000-7000-8000-000000000003"));
         private static readonly Guid Installation = Guid.Parse("0199f9a0-0000-7000-8000-000000000004");
         private static readonly Guid PurchaseKey = Guid.Parse("019952d1-0000-7000-8000-0000000000a1");
+        private static readonly StoreQuestCapability Capability = new StoreQuestCapability(true);
         private readonly string directory = Path.Combine(Path.GetTempPath(), "game-platform-a06", Guid.NewGuid().ToString("N"));
         private readonly StoreQuestCommandBodyCodec bodies = new StoreQuestCommandBodyCodec(new StoreQuestMessagePackCodec());
         private readonly UuidV7Generator ids = new UuidV7Generator(new FixedClock(), new CryptographicUuidRandomSource());
@@ -33,7 +34,7 @@ namespace GamePlatform.Tests.Features.StoreQuest
         public StoreQuestServiceTests() => Directory.CreateDirectory(directory);
 
         [Fact]
-        public async Task RepeatingAPurchaseKeyKeepsOneDurableCommandIdentityAcrossReopen()
+        public async Task RepeatingAPurchaseKeyKeepsOneDurableCommandIdentity()
         {
             var database = await OpenReady();
             var first = await Store(database).PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
@@ -48,6 +49,65 @@ namespace GamePlatform.Tests.Features.StoreQuest
             var payload = new StoreQuestMessagePackCodec().DecodePurchaseCommand(body);
             Assert.Equal(("test.offer.starter", 1, PurchaseKey), (payload.OfferId, payload.OfferVersion, payload.PurchaseKey));
             Assert.Equal(7, first.OperationId.Value.ToString("D")[14] - '0');
+        }
+
+        [Fact]
+        public async Task APurchaseKeyRepeatedAfterReopeningTheDatabaseKeepsItsOperation()
+        {
+            var database = await OpenReady();
+            var first = await Store(database).PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(10)));
+
+            var reopened = await OpenReady(seed: false);
+            var second = await Store(reopened).PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
+
+            Assert.Equal(first.OperationId, second.OperationId);
+            Assert.Equal(first.Sequence, second.Sequence);
+            Assert.Equal(1, await Scalar<long>(reopened, "SELECT COUNT(*) FROM gp_outbox"));
+        }
+
+        [Fact]
+        public async Task AnotherAccountWithTheSamePurchaseKeyOwnsASeparateCommand()
+        {
+            var database = await OpenReady();
+            var first = await Store(database).PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
+            var otherOwner = new OwnerScope(Owner.Backend, App, new PlatformUserId(Guid.Parse("0199f9a0-0000-7000-8000-000000000009")));
+            var otherScope = new StorageScope("store-quest-test", new PlatformId(App.ToString()), new PlatformId(otherOwner.UserId.ToString()));
+            var other = await OpenReady(otherScope, otherOwner, "other.sqlite3");
+
+            var second = await new StoreService(new ScopedOwnerContext(otherOwner, new SemanticId("private"), 1), Stream, new SqliteDurableFeatureStateStore(other, otherScope),
+                new SqliteAtomicCommandStore(other, otherScope, otherOwner, Capability.CreateFingerprint(), new FixedClock()), bodies, ids).PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
+
+            Assert.NotEqual(first.OperationId, second.OperationId);
+            Assert.Equal(1, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_outbox"));
+            Assert.Equal(1, await Scalar<long>(other, "SELECT COUNT(*) FROM gp_outbox", otherScope));
+        }
+
+        [Fact]
+        public async Task AServiceForAnotherAccountCannotWriteThroughThisAccountsOutbox()
+        {
+            var database = await OpenReady();
+            var otherOwner = new OwnerScope(Owner.Backend, App, new PlatformUserId(Guid.Parse("0199f9a0-0000-7000-8000-000000000009")));
+            using var store = new StoreService(new ScopedOwnerContext(otherOwner, new SemanticId("private"), 1), Stream, new SqliteDurableFeatureStateStore(database, Scope), Commands(database), bodies, ids);
+
+            var failure = await Assert.ThrowsAnyAsync<Exception>(() => store.PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None));
+
+            Assert.True(failure is StorageException storage && storage.Failure == StorageFailure.InvalidOwner || failure is ArgumentException, failure.GetType().Name);
+            Assert.Equal(0, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_outbox"));
+        }
+
+        [Fact]
+        public async Task AnotherViewCannotReuseThisViewsRetainedOperation()
+        {
+            var database = await OpenReady();
+            await Store(database).PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
+            using var otherView = new StoreService(new ScopedOwnerContext(Owner, new SemanticId("other-view"), 1), Stream, new SqliteDurableFeatureStateStore(database, Scope), Commands(database), bodies, ids);
+
+            var conflict = await Assert.ThrowsAsync<StorageException>(() => otherView.PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None));
+
+            Assert.Equal(StorageFailure.IdentityConflict, conflict.Failure);
+            Assert.Equal(1, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_outbox"));
+            Assert.Equal(1, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_feature_state"));
         }
 
         [Fact]
@@ -117,22 +177,24 @@ namespace GamePlatform.Tests.Features.StoreQuest
         private QuestService Quests(SqliteDatabase database) => new QuestService(Context, Stream, new SqliteDurableFeatureStateStore(database, Scope), Commands(database), bodies, ids);
 
         private static SqliteAtomicCommandStore Commands(SqliteDatabase database) =>
-            new SqliteAtomicCommandStore(database, Scope, Owner, new CanonicalCommandFingerprint(true), new FixedClock());
+            new SqliteAtomicCommandStore(database, Scope, Owner, Capability.CreateFingerprint(), new FixedClock());
 
-        private async Task<SqliteDatabase> OpenReady()
+        private Task<SqliteDatabase> OpenReady(bool seed = true) => OpenReady(Scope, Owner, "platform.sqlite3", seed);
+
+        private async Task<SqliteDatabase> OpenReady(StorageScope scope, OwnerScope owner, string file, bool seed = true)
         {
-            var database = await SqliteDatabase.OpenAsync(Path.Combine(directory, "platform.sqlite3"), Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
-            await database.ExecuteAsync(Scope, transaction =>
+            var database = await SqliteDatabase.OpenAsync(Path.Combine(directory, file), scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
+            if (seed) await database.ExecuteAsync(scope, transaction =>
             {
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) VALUES (1, ?, ?, ?, ?, ?, 1, 1, 0, 0)",
-                    Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D"));
+                    owner.Backend.Value, owner.AppId.ToString(), owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D"));
                 return true;
             }, CancellationToken.None);
             return database;
         }
 
-        private static Task<T> Scalar<T>(SqliteDatabase database, string sql) =>
-            database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<T>(sql), CancellationToken.None);
+        private static Task<T> Scalar<T>(SqliteDatabase database, string sql, StorageScope? scope = null) =>
+            database.ExecuteAsync(scope ?? Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<T>(sql), CancellationToken.None);
 
         private sealed class FixedClock : IUnixMillisecondClock
         {

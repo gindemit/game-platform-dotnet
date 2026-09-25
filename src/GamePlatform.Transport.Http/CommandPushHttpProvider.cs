@@ -36,14 +36,11 @@ namespace GamePlatform.Transport.Http
             IWireCodec codec,
             IAuthSession auth,
             AuthRefreshCoordinator refresh)
-            : this(appId, accountId, configuration, executor, codec, auth, refresh, null)
+            : this(appId, accountId, configuration, executor, codec, auth, refresh, new StoreQuestCapability(false))
         {
         }
 
-        /// <summary>
-        /// A non-null store/quest codec is the trusted store.offer.purchase.v1 and quest.claim.v1 capability composition.
-        /// </summary>
-        public CommandPushHttpProvider(
+        internal CommandPushHttpProvider(
             AppId appId,
             PlatformUserId accountId,
             BackendHttpConfiguration configuration,
@@ -51,7 +48,7 @@ namespace GamePlatform.Transport.Http
             IWireCodec codec,
             IAuthSession auth,
             AuthRefreshCoordinator refresh,
-            StoreQuestMessagePackCodec? storeQuest)
+            StoreQuestCapability storeQuest)
         {
             if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
             if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
@@ -64,7 +61,7 @@ namespace GamePlatform.Transport.Http
                 throw new ArgumentException("The auth session key is invalid.", nameof(auth));
             this.appId = appId;
             this.accountId = accountId;
-            this.storeQuest = storeQuest;
+            this.storeQuest = (storeQuest ?? throw new ArgumentNullException(nameof(storeQuest))).Codec;
         }
 
         public async Task<RemoteResult<RemoteCommandOutcome>> SendAsync(RemoteCommand command, CancellationToken cancellationToken)
@@ -247,17 +244,7 @@ namespace GamePlatform.Transport.Http
         private bool IsExpectedAcceptedResult(RemoteCommand command, IPushAcceptedResult result)
         {
             var operationKind = command.OperationKind;
-            if (operationKind == "store.offer.purchase")
-            {
-                var sent = storeQuest!.DecodePurchaseCommand(command.SemanticBody);
-                return result is StoreOfferPurchasedResult purchase && purchase.OfferId == sent.OfferId &&
-                    purchase.OfferVersion == sent.OfferVersion && purchase.PurchaseKey == sent.PurchaseKey;
-            }
-            if (operationKind == "quest.claim")
-            {
-                var sent = storeQuest!.DecodeClaimCommand(command.SemanticBody);
-                return result is QuestClaimedResult claim && claim.QuestId == sent.QuestId && claim.OccurrenceKey == sent.OccurrenceKey;
-            }
+            if (IsStoreQuestKind(operationKind)) return StoreQuestResultBinding.Matches(storeQuest!, command, result);
             return (operationKind == "profile.patch" && result is PushProfileUpdatedResult profile && profile.ProfileRevision >= 0) ||
                 (operationKind == "gameplay.session.completed" && result is PushGameplayCompletionRecordedResult);
         }
