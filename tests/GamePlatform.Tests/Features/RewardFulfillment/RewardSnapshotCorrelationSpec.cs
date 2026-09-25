@@ -131,14 +131,33 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
         }
 
         [Fact]
-        public async Task SnapshotAboveTheProjectionBoundIsRejectedAndTheReceiptStaysPending()
+        public async Task SnapshotAboveTheProjectionBoundDegradesInsteadOfBlockingBootstrap()
         {
             using var files = new TemporaryDatabase();
             await using var session = await Session.OpenAsync(files.Path, Context);
             await session.ObserveAsync();
-            await Assert.ThrowsAsync<ArgumentException>(() => session.StageSnapshotAsync(12, Many(1024, Coin(12))));
+            await session.StageSnapshotAsync(12, Many(1024, Coin(12)));
             Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull, await session.StatusAsync());
             Assert.Null(await session.State.ReadAsync(Context, "reward-correlation", "snapshot", CancellationToken.None));
+
+            await session.Database.ExecuteAsync(Scope, transaction => { session.Correlation.StageInstalledFeed(transaction, ReceiptRevision, new[] { Coin(10) }); return true; }, CancellationToken.None);
+            Assert.Equal(RewardPresentationStatus.Confirmed, await session.StatusAsync());
+        }
+
+        [Fact]
+        public async Task SnapshotAtTheExactProjectionBoundConfirmsTheCoveredReceipt()
+        {
+            using var files = new TemporaryDatabase();
+            await using var session = await Session.OpenAsync(files.Path, Context);
+            await session.ObserveAsync();
+            var covered = new InstalledRewardProjection(RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 12);
+            var others = new InstalledRewardProjection[1023];
+            for (var i = 0; i < others.Length; i++) others[i] = new InstalledRewardProjection(RewardReceiptLineKind.ItemStack, new PlatformId(("item." + i).PadRight(128, 'x')), i + 1);
+            var projections = new InstalledRewardProjection[1024];
+            Array.Copy(others, projections, others.Length);
+            projections[others.Length] = covered;
+            await session.StageSnapshotAsync(12, projections);
+            Assert.Equal(RewardPresentationStatus.Confirmed, await session.StatusAsync());
         }
 
         [Fact]
@@ -151,6 +170,17 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             await session.ObserveAsync();
             Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull, await session.StatusAsync());
             Assert.Equal(ReceiptRevision - 1, (await session.State.ReadAsync(Context, "reward-correlation", "snapshot", CancellationToken.None))!.Revision);
+        }
+
+        [Fact]
+        public async Task DuplicateKindResourceLinesAreRejectedBeforeAnyTransaction()
+        {
+            var duplicate = new RewardReceipt(Grant, Operation, ReceiptRevision, 100, Source, "mrsquare.test.coin", 1,
+                new[] { new RewardReceiptLine(0, 1, RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 1, null), new RewardReceiptLine(1, 1, RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 1, null) });
+            using var files = new TemporaryDatabase();
+            await using var session = await Session.OpenAsync(files.Path, Context);
+            await Assert.ThrowsAsync<ArgumentException>(() => session.Correlation.ObserveReceiptAsync(new RewardReceiptObservation(Context, Operation, duplicate), CancellationToken.None));
+            Assert.Null(await session.State.ReadAsync(Context, "reward-fulfillment", "operation/" + Operation, CancellationToken.None));
         }
 
         private static InstalledRewardProjection Coin(long revision) => new InstalledRewardProjection(RewardReceiptLineKind.Currency, new PlatformId("test.coin"), revision);

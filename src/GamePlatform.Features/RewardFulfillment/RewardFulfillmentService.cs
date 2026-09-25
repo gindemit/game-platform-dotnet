@@ -61,7 +61,7 @@ namespace GamePlatform.Features.RewardFulfillment
         /// <summary>Records a trusted accepted receipt. It stays pending until matching ordered-feed group evidence arrives.</summary>
         public async Task<FeatureSnapshot<RewardPresentationRecord>> ObserveAcceptedReceiptAsync(RewardReceiptObservation observation, CancellationToken cancellationToken)
         {
-            if (observation == null) throw new ArgumentNullException(nameof(observation)); EnsureOwner(observation.Owner);
+            if (observation == null) throw new ArgumentNullException(nameof(observation)); EnsureOwner(observation.Owner); ValidateNoDuplicateResourceLines(observation);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -229,6 +229,12 @@ namespace GamePlatform.Features.RewardFulfillment
         private static void ValidateBusinessSource(string value, string parameter)
         {
             if (string.IsNullOrWhiteSpace(value) || value.Length > 256 || !System.Text.RegularExpressions.Regex.IsMatch(value, "^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant)) throw new ArgumentOutOfRangeException(parameter);
+        }
+        /// <summary>Rejects a receipt whose lines repeat a kind/resource identity, before any pull or snapshot transaction opens.</summary>
+        internal static void ValidateNoDuplicateResourceLines(RewardReceiptObservation observation)
+        {
+            if (observation.Receipt.Lines.GroupBy(line => ((int)line.Kind) + ":" + line.ResourceId.Value, StringComparer.Ordinal).Any(group => group.Count() != 1))
+                throw new ArgumentException("Receipt lines must have unique kind/resource identities.", nameof(observation));
         }
         private static bool Matches(StorageScope scope, OwnerScope owner) => string.Equals(scope.BackendNamespace, owner.Backend.Value, StringComparison.Ordinal) && string.Equals(scope.AppId.Value, owner.AppId.ToString(), StringComparison.Ordinal) && string.Equals(scope.AccountId.Value, owner.UserId.ToString(), StringComparison.Ordinal);
     }

@@ -46,7 +46,10 @@ The snapshot sink calls `StageInstalledSnapshot` with its committed-through
 revision and every installed value projection, in the snapshot transaction. A
 receipt at or below that revision whose lines are all present in the snapshot is
 confirmed against the snapshot's projection revisions, in either order. A lower
-snapshot, a missing line or another view leaves the receipt pending.
+snapshot, a missing line or another view leaves the receipt pending. A snapshot
+past its 1024 installed-projection ceiling degrades instead of throwing: it
+drops any retained snapshot and confirms nothing, so bootstrap still reaches
+Ready and receipts stay pending for the feed path.
 
 The Unity feed sink remains the composition owner for mapping its installed
 typed changes into that transaction. G3 live peer, Unity wiring
