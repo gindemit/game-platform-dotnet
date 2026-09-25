@@ -22,6 +22,7 @@ namespace GamePlatform.Tests.Transport
         private static readonly OperationId Operation = new OperationId(Guid.Parse("019952d1-0000-7000-8000-000000000003"));
         private static readonly Guid Installation = Guid.Parse("0199f9a0-1000-7777-8888-999999999999");
         private readonly MessagePackWireCodec codec = new MessagePackWireCodec();
+        private readonly StoreQuestMessagePackCodec storeQuest = new StoreQuestMessagePackCodec();
         private readonly List<AuthRefreshCoordinator> ownedRefresh = new List<AuthRefreshCoordinator>();
 
         [Fact]
@@ -161,6 +162,72 @@ namespace GamePlatform.Tests.Transport
             Assert.Empty(executor.Requests);
             Assert.Equal(0, auth.GetCount);
         }
+
+        [Fact]
+        public async Task StorePurchaseUsesTheA06SupersetAndMapsThePurchasedResult()
+        {
+            var key = Guid.Parse("019952d1-0000-7000-8000-0000000000a1");
+            var purchased = new StoreOfferPurchasedResult(Guid.Parse("019952d1-0000-7000-8000-0000000000d0"), Operation.Value, "test.offer.starter", 1, key,
+                new StoreOfferDebit("test.coin", 10), new ILiveSliceRewardLine[] { new LiveSliceStackRewardLine(0, 1, "test.item.hat", 1) });
+            var response = new PushResponse(Stream.Value, new IPushResult[] { new PushAccepted(Operation.Value, 155, 42, purchased) }, 155, 1_789_555_201_000);
+            var executor = new ScriptedExecutor(_ => StoreQuestResponse(response));
+
+            var result = await StoreQuestProvider(executor).SendAsync(PurchaseCommand(key), CancellationToken.None);
+
+            Assert.True(result.IsSuccess);
+            Assert.Equal(RemoteCommandStatus.Accepted, result.Value!.Status);
+            var terminal = Assert.IsType<PushAccepted>(storeQuest.DecodeResult(result.Value.Result!));
+            Assert.Equal(key, Assert.IsType<StoreOfferPurchasedResult>(terminal.Result).PurchaseKey);
+            var operation = Assert.Single(storeQuest.DecodePushRequest(Assert.Single(executor.Requests).CopyBody()).Operations);
+            Assert.Equal("store.offer.purchase", operation.Type);
+            Assert.Equal(key, Assert.IsType<StoreOfferPurchaseCommand>(operation.Payload).PurchaseKey);
+        }
+
+        [Fact]
+        public async Task StorePurchaseResultForAnotherPurchaseKeyIsAProtocolFailure()
+        {
+            var key = Guid.Parse("019952d1-0000-7000-8000-0000000000a1");
+            var purchased = new StoreOfferPurchasedResult(Guid.Parse("019952d1-0000-7000-8000-0000000000d0"), Operation.Value, "test.offer.starter", 1,
+                Guid.Parse("019952d1-0000-7000-8000-0000000000a2"), new StoreOfferDebit("test.coin", 10), new ILiveSliceRewardLine[] { new LiveSliceStackRewardLine(0, 1, "test.item.hat", 1) });
+            var response = new PushResponse(Stream.Value, new IPushResult[] { new PushAccepted(Operation.Value, 155, 42, purchased) }, 155, 1_789_555_201_000);
+
+            var result = await StoreQuestProvider(new ScriptedExecutor(_ => StoreQuestResponse(response))).SendAsync(PurchaseCommand(key), CancellationToken.None);
+
+            Assert.False(result.IsSuccess);
+            Assert.Equal(RemoteFailureKind.Protocol, result.Failure.Kind);
+        }
+
+        [Fact]
+        public async Task QuestClaimWithoutTheCapabilityIsNeverSent()
+        {
+            var executor = new ScriptedExecutor(_ => throw new InvalidOperationException());
+            var command = new RemoteCommand(Operation, Stream, Installation, 155, "quest.claim", 1, 1, 1_789_555_200_000,
+                storeQuest.EncodeClaimCommand(new QuestClaimCommand("test.quest", "test.quest:occ-1")), new byte[32]);
+
+            var result = await Provider(executor).SendAsync(command, CancellationToken.None);
+
+            Assert.Equal(RemoteFailureKind.Protocol, result.Failure.Kind);
+            Assert.Empty(executor.Requests);
+        }
+
+        private CommandPushHttpProvider StoreQuestProvider(IHttpExecutor executor)
+        {
+            var refresh = new AuthRefreshCoordinator();
+            ownedRefresh.Add(refresh);
+            return new CommandPushHttpProvider(App, Account,
+                new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test")),
+                executor, codec, new AuthSession(), refresh, storeQuest);
+        }
+
+        private RemoteCommand PurchaseCommand(Guid key) => new RemoteCommand(Operation, Stream, Installation, 155, "store.offer.purchase", 1, 1, 1_789_555_200_000,
+            storeQuest.EncodePurchaseCommand(new StoreOfferPurchaseCommand("test.offer.starter", 1, key)), new byte[32]);
+
+        private HttpResponseData StoreQuestResponse(PushResponse value) => new HttpResponseData(200,
+            new Dictionary<string, string>
+            {
+                ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType,
+                ["X-Correlation-Id"] = "correlation"
+            }, storeQuest.EncodePushResponse(value));
 
         public void Dispose()
         {

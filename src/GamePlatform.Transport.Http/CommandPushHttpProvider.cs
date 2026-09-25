@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
+using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Transport.Abstractions;
 using GamePlatform.Wire.Contracts;
 
@@ -25,6 +26,7 @@ namespace GamePlatform.Transport.Http
         private readonly IWireCodec codec;
         private readonly IAuthSession auth;
         private readonly AuthRefreshCoordinator refresh;
+        private readonly StoreQuestMessagePackCodec? storeQuest;
 
         public CommandPushHttpProvider(
             AppId appId,
@@ -34,6 +36,22 @@ namespace GamePlatform.Transport.Http
             IWireCodec codec,
             IAuthSession auth,
             AuthRefreshCoordinator refresh)
+            : this(appId, accountId, configuration, executor, codec, auth, refresh, null)
+        {
+        }
+
+        /// <summary>
+        /// A non-null store/quest codec is the trusted store.offer.purchase.v1 and quest.claim.v1 capability composition.
+        /// </summary>
+        public CommandPushHttpProvider(
+            AppId appId,
+            PlatformUserId accountId,
+            BackendHttpConfiguration configuration,
+            IHttpExecutor executor,
+            IWireCodec codec,
+            IAuthSession auth,
+            AuthRefreshCoordinator refresh,
+            StoreQuestMessagePackCodec? storeQuest)
         {
             if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
             if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
@@ -46,15 +64,17 @@ namespace GamePlatform.Transport.Http
                 throw new ArgumentException("The auth session key is invalid.", nameof(auth));
             this.appId = appId;
             this.accountId = accountId;
+            this.storeQuest = storeQuest;
         }
 
         public async Task<RemoteResult<RemoteCommandOutcome>> SendAsync(RemoteCommand command, CancellationToken cancellationToken)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
             if (!TryCreateRequest(command, out var request)) return ProtocolFailure();
+            var storeQuestKind = IsStoreQuestKind(command.OperationKind);
 
             byte[] body;
-            try { body = codec.Encode(request); }
+            try { body = storeQuestKind ? storeQuest!.EncodePushRequest(request) : codec.Encode(request); }
             catch { return ProtocolFailure(); }
             if (body.Length == 0 || body.Length > 262_144) return ProtocolFailure();
 
@@ -65,7 +85,7 @@ namespace GamePlatform.Transport.Http
             if (!ValidProtocolResponse(response)) return ProtocolFailure(response.StatusCode);
 
             PushResponse value;
-            try { value = codec.Decode<PushResponse>(response.CopyBody()); }
+            try { value = storeQuestKind ? storeQuest!.DecodePushResponse(response.CopyBody()) : codec.Decode<PushResponse>(response.CopyBody()); }
             catch { return ProtocolFailure(response.StatusCode); }
             if (value == null || value.ProtocolVersion != 1 || value.ClientStreamId != command.StreamId.Value ||
                 value.OperationResults == null || value.OperationResults.Count != 1 || value.FinalizedThrough < 0 ||
@@ -95,6 +115,12 @@ namespace GamePlatform.Transport.Http
                     case "gameplay.session.completed":
                         payload = codec.Decode<GameplayCompletionCommand>(semanticBody);
                         break;
+                    case "store.offer.purchase" when storeQuest != null:
+                        payload = storeQuest.DecodePurchaseCommand(semanticBody);
+                        break;
+                    case "quest.claim" when storeQuest != null:
+                        payload = storeQuest.DecodeClaimCommand(semanticBody);
+                        break;
                     default:
                         return false;
                 }
@@ -117,12 +143,12 @@ namespace GamePlatform.Transport.Http
             {
                 case PushAccepted accepted when Matches(command, accepted.OperationId, accepted.Sequence) &&
                     response.FinalizedThrough >= command.Sequence && accepted.FeedRevision >= 0 &&
-                    IsExpectedAcceptedResult(command.OperationKind, accepted.Result):
-                    return Terminal(RemoteCommandStatus.Accepted, accepted, httpResponse.StatusCode);
+                    IsExpectedAcceptedResult(command, accepted.Result):
+                    return Terminal(command, RemoteCommandStatus.Accepted, accepted, httpResponse.StatusCode);
 
                 case PushTerminalRejected rejected when Matches(command, rejected.OperationId, rejected.Sequence) &&
                     response.FinalizedThrough >= command.Sequence && rejected.Error != null && !rejected.Error.Retryable:
-                    return Terminal(RemoteCommandStatus.TerminalRejected, rejected, httpResponse.StatusCode);
+                    return Terminal(command, RemoteCommandStatus.TerminalRejected, rejected, httpResponse.StatusCode);
 
                 case PushRetryable retryable when Matches(command, retryable.OperationId, retryable.Sequence) &&
                     response.FinalizedThrough < command.Sequence && retryable.Error != null && retryable.Error.Retryable:
@@ -142,10 +168,10 @@ namespace GamePlatform.Transport.Http
             }
         }
 
-        private RemoteResult<RemoteCommandOutcome> Terminal(RemoteCommandStatus status, IPushResult result, int statusCode)
+        private RemoteResult<RemoteCommandOutcome> Terminal(RemoteCommand command, RemoteCommandStatus status, IPushResult result, int statusCode)
         {
             byte[] terminal;
-            try { terminal = codec.Encode(result); }
+            try { terminal = IsStoreQuestKind(command.OperationKind) ? storeQuest!.EncodeResult(result) : codec.Encode(result); }
             catch { return ProtocolFailure(statusCode); }
             if (terminal.Length == 0 || terminal.Length > 65_536) return ProtocolFailure(statusCode);
             return RemoteResult<RemoteCommandOutcome>.Success(new RemoteCommandOutcome(status, terminal));
@@ -218,9 +244,26 @@ namespace GamePlatform.Transport.Http
         private static bool Matches(RemoteCommand command, Guid operationId, long sequence) =>
             operationId == command.OperationId.Value && sequence == command.Sequence;
 
-        private static bool IsExpectedAcceptedResult(string operationKind, IPushAcceptedResult result) =>
-            (operationKind == "profile.patch" && result is PushProfileUpdatedResult profile && profile.ProfileRevision >= 0) ||
-            (operationKind == "gameplay.session.completed" && result is PushGameplayCompletionRecordedResult);
+        private bool IsExpectedAcceptedResult(RemoteCommand command, IPushAcceptedResult result)
+        {
+            var operationKind = command.OperationKind;
+            if (operationKind == "store.offer.purchase")
+            {
+                var sent = storeQuest!.DecodePurchaseCommand(command.SemanticBody);
+                return result is StoreOfferPurchasedResult purchase && purchase.OfferId == sent.OfferId &&
+                    purchase.OfferVersion == sent.OfferVersion && purchase.PurchaseKey == sent.PurchaseKey;
+            }
+            if (operationKind == "quest.claim")
+            {
+                var sent = storeQuest!.DecodeClaimCommand(command.SemanticBody);
+                return result is QuestClaimedResult claim && claim.QuestId == sent.QuestId && claim.OccurrenceKey == sent.OccurrenceKey;
+            }
+            return (operationKind == "profile.patch" && result is PushProfileUpdatedResult profile && profile.ProfileRevision >= 0) ||
+                (operationKind == "gameplay.session.completed" && result is PushGameplayCompletionRecordedResult);
+        }
+
+        private bool IsStoreQuestKind(string operationKind) =>
+            storeQuest != null && (operationKind == "store.offer.purchase" || operationKind == "quest.claim");
 
         private static bool TryRetryAfter(CommonError error, HttpResponseData response, out TimeSpan? retryAfter)
         {

@@ -10,6 +10,20 @@ namespace GamePlatform.Serialization.MessagePack
     public sealed class CanonicalCommandFingerprint : ICommandFingerprint
     {
         private readonly QualificationMessagePackCodec codec = new QualificationMessagePackCodec();
+        private readonly bool storeQuest;
+
+        public CanonicalCommandFingerprint()
+            : this(false)
+        {
+        }
+
+        /// <summary>
+        /// Enables store.offer.purchase and quest.claim only for a trusted store/quest capability composition.
+        /// </summary>
+        public CanonicalCommandFingerprint(bool storeQuestCapability)
+        {
+            storeQuest = storeQuestCapability;
+        }
 
         public int GetFingerprintLength(int fingerprintVersion) => fingerprintVersion == 1 ? 32 : 0;
 
@@ -39,7 +53,7 @@ namespace GamePlatform.Serialization.MessagePack
                 Pair("clientCreatedAt", QualificationValue.Integer(clientCreatedAt)),
                 Pair("payload", payload)
             });
-            var canonical = codec.CanonicalBytes(command);
+            var canonical = codec.CanonicalBytes(command, IsStoreQuest(operationKind) ? QualificationMessagePackCodec.StoreQuestOperationSchema : QualificationMessagePackCodec.V1OperationSchema);
             using (var sha = SHA256.Create())
             {
                 var digest = sha.ComputeHash(canonical);
@@ -47,8 +61,13 @@ namespace GamePlatform.Serialization.MessagePack
             }
         }
 
-        private static string PayloadSchema(string operationKind)
+        private static bool IsStoreQuest(string operationKind) =>
+            string.Equals(operationKind, "store.offer.purchase", StringComparison.Ordinal) || string.Equals(operationKind, "quest.claim", StringComparison.Ordinal);
+
+        private string PayloadSchema(string operationKind)
         {
+            if (storeQuest && string.Equals(operationKind, "store.offer.purchase", StringComparison.Ordinal)) return "a06/store-quest.schema.json#/$defs/purchaseCommand";
+            if (storeQuest && string.Equals(operationKind, "quest.claim", StringComparison.Ordinal)) return "a06/store-quest.schema.json#/$defs/claimCommand";
             if (string.Equals(operationKind, "profile.patch", StringComparison.Ordinal)) return "profile.schema.json#/$defs/patchCommand";
             if (string.Equals(operationKind, "gameplay.session.completed", StringComparison.Ordinal)) return "gameplay.schema.json#/$defs/completionCommand";
             throw new NotSupportedException("The command kind has no frozen fingerprint mapping.");

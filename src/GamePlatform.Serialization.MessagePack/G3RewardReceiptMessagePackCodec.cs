@@ -37,7 +37,7 @@ namespace GamePlatform.Serialization.MessagePack
             }
         }
         private static V WriteReceipt(LiveSliceRewardReceipt value) => Obj(("grantId", V.String(value.GrantId.ToString("D"))), ("originatingOperationId", V.String(value.OriginatingOperationId.ToString("D"))), ("feedRevision", Wide(value.FeedRevision)), ("recordedAt", V.Integer(value.RecordedAt)), ("source", Obj(("kind", V.String("gameplay.completion")), ("key", V.String(value.Source.Key)), ("rewardSlot", V.String(value.Source.RewardSlot)), ("policyId", V.String(value.Source.PolicyId)), ("policyVersion", V.Integer(value.Source.PolicyVersion)))), ("planId", V.String(value.PlanId)), ("planVersion", V.Integer(value.PlanVersion)), ("lines", V.Array(value.Lines.Select(WriteLine))));
-        private static V WriteLine(ILiveSliceRewardLine value)
+        internal static V WriteLine(ILiveSliceRewardLine value)
         {
             switch (value)
             {
@@ -53,7 +53,7 @@ namespace GamePlatform.Serialization.MessagePack
             var lines = p["lines"].Items.Select(ReadLine).ToArray();
             return new LiveSliceRewardReceipt(Guid.ParseExact(p["grantId"].StringValue, "D"), Guid.ParseExact(p["originatingOperationId"].StringValue, "D"), ReadWide(p["feedRevision"]), p["recordedAt"].IntegerValue, new LiveSliceRewardSource(source["key"].StringValue, source["rewardSlot"].StringValue, source["policyId"].StringValue, checked((int)source["policyVersion"].IntegerValue)), p["planId"].StringValue, checked((int)p["planVersion"].IntegerValue), lines);
         }
-        private static ILiveSliceRewardLine ReadLine(V value)
+        internal static ILiveSliceRewardLine ReadLine(V value)
         {
             var p = value.Properties; var index = checked((int)p["lineIndex"].IntegerValue); var version = checked((int)p["definitionVersion"].IntegerValue);
             switch (p["kind"].StringValue)

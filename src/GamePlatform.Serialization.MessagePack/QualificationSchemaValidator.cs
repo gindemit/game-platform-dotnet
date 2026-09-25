@@ -76,6 +76,7 @@ namespace GamePlatform.Serialization.MessagePack
             if (file.StartsWith(v1, StringComparison.Ordinal)) return file.Substring(v1.Length);
             if (file == "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json") return "live-slice/receipt.schema.json";
             if (file == "https://contracts.gindemit.invalid/g3/reward-receipt.2.schema.json") return "g3/reward-receipt.schema.json";
+            if (file == "https://contracts.gindemit.invalid/a06/store-quest.1.schema.json") return "a06/store-quest.schema.json";
             return file;
         }
         private static bool Matches(V schema, string file, V value)

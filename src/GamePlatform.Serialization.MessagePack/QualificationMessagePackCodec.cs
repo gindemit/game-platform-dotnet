@@ -15,6 +15,8 @@ namespace GamePlatform.Serialization.MessagePack
     /// <summary>Explicit desktop qualification surface. Production UnavailableMessagePackCodec remains unavailable pending peer/AOT acceptance.</summary>
     public sealed class QualificationMessagePackCodec
     {
+        public const string V1OperationSchema = "push.schema.json#/$defs/operation";
+        public const string StoreQuestOperationSchema = "a06/store-quest.schema.json#/$defs/operation";
         public byte[] Encode(string schemaRef, V diagnosticValue)
         {
             ValidateDiagnostic(schemaRef, diagnosticValue);
@@ -52,8 +54,10 @@ namespace GamePlatform.Serialization.MessagePack
             new Budget().Visit(value, 1);
             QualificationSchemaValidator.Validate(schemaRef, value);
         }
-        public byte[] CanonicalBytes(V input)
+        public byte[] CanonicalBytes(V input) => CanonicalBytes(input, V1OperationSchema);
+        public byte[] CanonicalBytes(V input, string operationSchema)
         {
+            if (operationSchema != V1OperationSchema && operationSchema != StoreQuestOperationSchema) throw new QualificationCodecException("Unsupported fingerprint operation schema.");
             if (input == null || input.Kind != K.Object) throw new QualificationCodecException("Fingerprint input must be an object.");
             var retained = new Budget(); for (int i = 0; i < 6; i++) retained.Visit(input, 1);
             var required = new[] { "backendNamespace", "authenticatedAppId", "authenticatedPlatformUserId", "clientStreamId", "operationId", "installationId", "sequence", "type", "schemaVersion", "clientCreatedAt", "payload" };
@@ -64,8 +68,8 @@ namespace GamePlatform.Serialization.MessagePack
             if (values["backendNamespace"].Kind != K.String || values["backendNamespace"].StringValue.Length == 0) throw new QualificationCodecException("Invalid namespace.");
             foreach (var key in new[] { "authenticatedAppId", "authenticatedPlatformUserId", "clientStreamId" }) QualificationSchemaValidator.Validate("common.schema.json#/$defs/uuid", values[key]);
             var command = V.Object(values.Where(p => p.Key != "backendNamespace" && p.Key != "authenticatedAppId" && p.Key != "authenticatedPlatformUserId" && p.Key != "clientStreamId"));
-            ValidateDiagnostic("push.schema.json#/$defs/operation", command);
-            var normalized = QualificationSchemaValidator.Validate("push.schema.json#/$defs/operation", command, QualificationSchemaValidator.Direction.ToWire);
+            ValidateDiagnostic(operationSchema, command);
+            var normalized = QualificationSchemaValidator.Validate(operationSchema, command, QualificationSchemaValidator.Direction.ToWire);
             // Semantic UUIDs are text; schema-declared int64 values alone change to integer tags.
             var canonicalCommand = NormalizeCanonical(command, normalized);
             foreach (var p in canonicalCommand.Properties) values[p.Key] = p.Value;
