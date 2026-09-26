@@ -19,6 +19,7 @@ def main():
     for key in ("sdkRevision", "backendRevision", "unityRevision"):
         require(len(probe.get(key, "")) == 40, "revision_missing_" + key)
     require(probe.get("ready") == 1 and probe.get("confirmed", 0) > 0, "local_projection_not_ready")
+    require(probe.get("rewardSeedVerified") is True, "live_reward_seed_not_verified")
     require(probe.get("ownerMismatchDenied") is True, "owner_mismatch_not_checked")
     require(probe.get("repeatedOperationAccepted") is True, "operation_replay_not_checked")
     require(probe.get("duplicateSourceAccepted") is True, "business_source_not_checked")

@@ -156,8 +156,23 @@ internal static class Program
                     "gameplay.session.completed", 1, 1, createdAt, commandBody, duplicateFingerprint), CancellationToken.None);
                 Require(duplicateSource.IsSuccess && duplicateSource.Value!.Status == RemoteCommandStatus.Accepted,
                     "duplicate_business_source_not_idempotent");
+                // A fresh account has no private projection before its first command. The live
+                // fixture is therefore proved by the production reward receipt, not by counting
+                // empty bootstrap rows or trusting the host's g3ContentId JSON field.
+                var rewardLookup = await new G3RewardReceiptHttpProvider(app, account, http, executor,
+                    new G3RewardReceiptMessagePackCodec(), codec, auth, refresh).LookupAsync(operation, CancellationToken.None);
+                Require(rewardLookup.IsSuccess && rewardLookup.Value is G3RewardReceiptCompletionResponse,
+                    "live_reward_receipt_absent");
+                var reward = ((G3RewardReceiptCompletionResponse)rewardLookup.Value!).Reward;
+                Require(reward != null && reward.GrantId != Guid.Empty && reward.OriginatingOperationId == operation.Value &&
+                    reward.FeedRevision > 0 && reward.Source.PolicyId == "mrsquare.casual.fixture" &&
+                    reward.Source.PolicyVersion == 1 && reward.Source.RewardSlot == "fixture.slot" &&
+                    !string.IsNullOrWhiteSpace(reward.Source.Key) && reward.PlanId == "test.coin.one" &&
+                    reward.PlanVersion == 1 && reward.Lines.Count == 1 &&
+                    reward.Lines[0] is LiveSliceCurrencyRewardLine { CurrencyId: "test.coin", Quantity: 1 },
+                    "live_reward_seed_absent_or_wrong");
                 var pulled = await coordinator.PullOnceAsync(CancellationToken.None);
-                Require(pulled == PrivateSyncResult.BoundaryComplete || pulled == PrivateSyncResult.PageApplied,
+                Require(pulled == PrivateSyncResult.BoundaryComplete,
                     "committed_pull_failed_" + pulled);
                 var confirmed = await db.ExecuteAsync(scope, transaction =>
                     ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_confirmed_projection"), CancellationToken.None);
@@ -166,7 +181,7 @@ internal static class Program
                 Require(readyState == 1 && confirmed > 0, "seed_or_ready_absent");
                 var checkpoint = await store.GetPullCheckpointAsync(CancellationToken.None);
                 Require(checkpoint.CopyCursor() is { Length: > 0 }, "pull_cursor_absent");
-                Console.WriteLine(JsonSerializer.Serialize(new { status = "passed", mode = "probe", sdkRevision = options["--sdk-revision"], backendRevision = options["--backend-revision"], unityRevision = options["--unity-revision"], provider = "CSharp production HTTP/MessagePack/SQLite", confirmed, ready = readyState, operation = operation.Value, ownerMismatchDenied = true, lostResponseRecovered = expectLost, repeatedOperationAccepted = true, duplicateSourceAccepted = true, stream = stream.Value, installation }));
+                Console.WriteLine(JsonSerializer.Serialize(new { status = "passed", mode = "probe", sdkRevision = options["--sdk-revision"], backendRevision = options["--backend-revision"], unityRevision = options["--unity-revision"], provider = "CSharp production HTTP/MessagePack/SQLite", confirmed, ready = readyState, operation = operation.Value, rewardSeedVerified = true, ownerMismatchDenied = true, lostResponseRecovered = expectLost, repeatedOperationAccepted = true, duplicateSourceAccepted = true, stream = stream.Value, installation }));
             }
             finally { Require(await db.DisposeAsync(TimeSpan.FromSeconds(5)), "sqlite_close_failed"); }
             return 0;
