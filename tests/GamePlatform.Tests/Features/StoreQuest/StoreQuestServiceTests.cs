@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ using GamePlatform.Transport.Http;
 
 namespace GamePlatform.Tests.Features.StoreQuest
 {
-    public sealed class StoreQuestServiceTests : IDisposable
+    public sealed class StoreQuestServiceTests : IAsyncLifetime
     {
         private static readonly AppId App = new AppId(Guid.Parse("0199f9a0-0000-7000-8000-000000000001"));
         private static readonly PlatformUserId User = new PlatformUserId(Guid.Parse("0199f9a0-0000-7000-8000-000000000002"));
@@ -28,6 +29,7 @@ namespace GamePlatform.Tests.Features.StoreQuest
         private static readonly Guid PurchaseKey = Guid.Parse("019952d1-0000-7000-8000-0000000000a1");
         private static readonly StoreQuestCapability Capability = new StoreQuestCapability(true);
         private readonly string directory = Path.Combine(Path.GetTempPath(), "game-platform-a06", Guid.NewGuid().ToString("N"));
+        private readonly List<SqliteDatabase> databases = new List<SqliteDatabase>();
         private readonly StoreQuestCommandBodyCodec bodies = new StoreQuestCommandBodyCodec(new StoreQuestMessagePackCodec());
         private readonly UuidV7Generator ids = new UuidV7Generator(new FixedClock(), new CryptographicUuidRandomSource());
 
@@ -63,7 +65,7 @@ namespace GamePlatform.Tests.Features.StoreQuest
 
             Assert.Equal(first.OperationId, second.OperationId);
             Assert.Equal(first.Sequence, second.Sequence);
-            Assert.Equal(1, await Scalar<long>(reopened, "SELECT COUNT(*) FROM gp_outbox"));
+            Assert.Equal(1, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_outbox"));
         }
 
         [Fact]
@@ -167,8 +169,18 @@ namespace GamePlatform.Tests.Features.StoreQuest
             await Assert.ThrowsAsync<ArgumentException>(() => Store(database).PurchaseAsync("test.offer.starter", 1, Guid.Parse("019952d1-0000-4000-8000-0000000000a1"), CancellationToken.None));
         }
 
-        public void Dispose()
+        public Task InitializeAsync() => Task.CompletedTask;
+
+        public async Task DisposeAsync()
         {
+            // Close every native connection, including reopened and alternate-account
+            // databases, before deleting SQLite's database/WAL/SHM files.
+            for (var index = databases.Count - 1; index >= 0; index--)
+            {
+                Assert.True(await databases[index].DisposeAsync(TimeSpan.FromSeconds(10)),
+                    "The test database did not drain before fixture cleanup.");
+            }
+            databases.Clear();
             if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
         }
 
@@ -184,6 +196,7 @@ namespace GamePlatform.Tests.Features.StoreQuest
         private async Task<SqliteDatabase> OpenReady(StorageScope scope, OwnerScope owner, string file, bool seed = true)
         {
             var database = await SqliteDatabase.OpenAsync(Path.Combine(directory, file), scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
+            databases.Add(database);
             if (seed) await database.ExecuteAsync(scope, transaction =>
             {
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) VALUES (1, ?, ?, ?, ?, ?, 1, 1, 0, 0)",
