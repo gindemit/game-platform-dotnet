@@ -30,12 +30,12 @@
   "previous_completed_task_ids": [
     "CL-001",
     "CL-006",
-    "CL-014"
+    "CL-014",
+    "CL-015",
+    "CL-016"
   ],
   "partial_task_ids": [
     "CL-004",
-    "CL-015",
-    "CL-016",
     "INT-001",
     "INT-002"
   ],
@@ -43,9 +43,9 @@
     "CL-002": "Canonical typed UUID/scope primitives and compatibility-preserving outcomes/state; original 14 Platform tests pass against canonical SDK types.",
     "CL-003": "G1 schema/mirror plus 64 immutable DTO shapes,12 unions,explicit presence and generated schema mapping. No canonical delta.",
     "CL-013": "14-assembly managed bundle with dependency closure,symbols,notices,hashes and identical retained build inventories. Qualification MessagePack excluded pending CL-015.",
-    "CL-015": "Packaging-complete unpublished 23-assembly bundle with exact MessagePack closure,three reviewed SQLite targets,canonical Source Link/debug inputs,notices,AOT/PInvoke inventory and independently reproducible complete artifact. Unity/IL2CPP/device execution unrun.",
+    "CL-015": "Unpublished 23-assembly bundle with exact MessagePack closure, reviewed SQLite targets, source/debug inputs, notices and AOT/PInvoke inventory; exact imported bundle and Android IL2CPP/native behavior qualified on both authorized phones in R10 at the approved P3 scope.",
     "CL-004": "Qualification-only bounded MessagePack,typed mapping,canonical fingerprints and hostile-input checks; actual G2 peer/AOT remains unverified.",
-    "CL-016": "Producer/consumer and raw encode/decode CLI;34 actual CSharp MessagePack fixtures plus24 fingerprints; service/fault modes unavailable.",
+    "CL-016": "Producer/consumer and raw codec modes remain; separate GamePlatform.LivePeerHarness at e66edd1 passed real local C#/TS service, post-commit lost response, owner mismatch, repeat operation/business source, reward seed and SQL inspection. P4 quarantine retry policy remains open.",
     "INT-002": "Real Core/Features import and duplicate removal,exact artifact verifier,selected Unity7/7 EditMode with both scene assets; visual/control PlayMode and tested rollback remain unrun."
   },
   "evidence": [
@@ -172,8 +172,8 @@
     "After BOTH implementation tracks stop, run backend CODEX_SYNC.md; do not infer quiescence from the old backend P1 handoff.",
     "Use tests/acceptance/README.md to produce/consume exact core corpus in both directions at actual runtime SHAs; exercise compact/extreme/hostile binary probes with raw encode/decode CLI and preserve command logs.",
     "Review and pin proposed minimal live-slice schema deltas before P3; preserve schema approval versus runtime interoperability distinction.",
-    "Keep production codec unavailable until required acceptance; retain partial CL-004/CL-016/INT-001/INT-002 and all native/device/product blockers.",
-    "Release P3 only through committed G2 synchronization evidence. Remaining transport/storage/lifecycle work stays dependency-ready scope, not claimed completed."
+    "Historical P2 action: keep production codec unavailable until required acceptance. Current R10 evidence verifies the production C#/TS peer, native/device and bounded CL-016 modes; retain partial CL-004/INT-001/INT-002 and P4/provider blockers separately.",
+    "P3 review closure requires the committed R10 qualification and central-state reconciliation; historical G2/G3 reports remain unchanged and P4 is not released."
   ],
   "prior_handoff_commit": "3992ad1358d728a9d4b9cfbde9eaac9a2273d845",
   "note": "Three actual child agents reused across author,consumer,packaging and independent-review roles. All stopped. SDK/Unity execution branches published; no backend edits,main merge,distribution,deployment or package publication. STOPPED AT G2.",
