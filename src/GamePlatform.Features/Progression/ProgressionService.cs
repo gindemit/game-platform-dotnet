@@ -127,8 +127,12 @@ namespace GamePlatform.Features.Progression
                 if (current.Confirmed != null && confirmation.Projection.Revision == current.Confirmed.Revision)
                 {
                     var priorEvidence = current.Confirmations.Where(value => value.ProjectionRevision == confirmation.Projection.Revision).ToArray();
-                    if (!Equivalent(current.Confirmed, confirmation.Projection) || priorEvidence.Length == 0)
+                    if (!Equivalent(current.Confirmed, confirmation.Projection) ||
+                        (priorEvidence.Length == 0 && current.LatestEvidenceRevision != confirmation.Projection.Revision))
                         throw new ProgressionConflictException("A same-revision progression pull must exactly replay its immutable projection and confirmation evidence.");
+                    if (confirmations is ICompactingProgressionConfirmationEvidenceStore compacting &&
+                        await compacting.MatchesAsync(exactOwner, new ProgressionConfirmationEvidence(
+                            confirmation.Projection.Revision, confirmation.ConfirmedOperationIds), cancellationToken).ConfigureAwait(false)) return;
                     if (priorEvidence.Any(value => SameOperationSet(value.OperationIds, confirmation.ConfirmedOperationIds))) return;
                     if (confirmation.ConfirmedOperationIds.Count == 0)
                         throw new ProgressionConflictException("A same-revision acknowledgement must name at least one accepted operation.");
@@ -210,8 +214,10 @@ namespace GamePlatform.Features.Progression
                 freshness, value, durable.Confirmed!.ConfirmedAtMilliseconds, null);
         }
 
-        private async Task<(ProgressionConfirmedProjection? Confirmed, IReadOnlyList<PendingProgressionCompletion> Pending, long PendingRevision, IReadOnlyList<ProgressionConfirmationEvidence> Confirmations)> ReadDurableAsync(ScopedOwnerContext exactOwner, CancellationToken cancellationToken)
+        private async Task<(ProgressionConfirmedProjection? Confirmed, IReadOnlyList<PendingProgressionCompletion> Pending, long PendingRevision, IReadOnlyList<ProgressionConfirmationEvidence> Confirmations, long? LatestEvidenceRevision)> ReadDurableAsync(ScopedOwnerContext exactOwner, CancellationToken cancellationToken)
         {
+            if (confirmations is ICompactingProgressionConfirmationEvidenceStore normalized)
+                await normalized.EnsureNormalizedAsync(exactOwner, cancellationToken).ConfigureAwait(false);
             var confirmed = await state.ReadAsync(exactOwner, Namespace, ConfirmedKey, cancellationToken).ConfigureAwait(false);
             var pending = await state.ReadAsync(exactOwner, Namespace, PendingKey, cancellationToken).ConfigureAwait(false);
             ProgressionConfirmedProjection? decodedConfirmed = null;
@@ -221,20 +227,24 @@ namespace GamePlatform.Features.Progression
                 if (decodedConfirmed == null || decodedConfirmed.Revision != confirmed.Revision || decodedConfirmed.ConfirmedAtMilliseconds != confirmed.ConfirmedAtMilliseconds)
                     throw new ProgressionConflictException("The progression codec returned an invalid confirmed projection.");
             }
-            var evidence = await confirmations.ReadAsync(exactOwner, cancellationToken).ConfigureAwait(false);
-            ValidateEvidence(evidence);
-            if (evidence.Count != 0 && (decodedConfirmed == null || evidence.Max(value => value.ProjectionRevision) > decodedConfirmed.Revision))
-                throw new ProgressionConflictException("Confirmation evidence cannot lead the durable confirmed projection.");
-            if (pending == null || pending.PayloadLength == 0)
+            IReadOnlyList<PendingProgressionCompletion> decodedPending;
+            if (pending == null || pending.PayloadLength == 0) decodedPending = Array.Empty<PendingProgressionCompletion>();
+            else
             {
-                if (evidence.Any(value => value.OperationIds.Count != 0)) throw new ProgressionConflictException("Confirmation evidence references a missing pending completion.");
-                return (decodedConfirmed, Array.Empty<PendingProgressionCompletion>(), pending?.Revision ?? 0, evidence);
+                decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
+                if (decodedPending == null || decodedPending.Any(value => value == null) || decodedPending.Any(value => value.LocalRevision > pending.Revision) ||
+                    decodedPending.GroupBy(value => value.OperationId).Any(group => group.Count() != 1) ||
+                    decodedPending.GroupBy(value => value.BusinessSource, StringComparer.Ordinal).Any(group => group.Count() != 1))
+                    throw new ProgressionConflictException("The progression codec returned invalid pending completions.");
             }
-            var decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
-            if (decodedPending == null || decodedPending.Any(value => value == null) || decodedPending.Any(value => value.LocalRevision > pending.Revision) ||
-                decodedPending.GroupBy(value => value.OperationId).Any(group => group.Count() != 1) ||
-                decodedPending.GroupBy(value => value.BusinessSource, StringComparer.Ordinal).Any(group => group.Count() != 1))
-                throw new ProgressionConflictException("The progression codec returned invalid pending completions.");
+            ProgressionConfirmationEvidenceHead? head = confirmations is ICompactingProgressionConfirmationEvidenceStore compacting
+                ? await compacting.ReadActiveAsync(exactOwner, decodedPending.Select(value => value.OperationId).ToArray(), cancellationToken).ConfigureAwait(false)
+                : null;
+            var evidence = head?.ActiveGroups ?? await confirmations.ReadAsync(exactOwner, cancellationToken).ConfigureAwait(false);
+            ValidateEvidence(evidence);
+            long? latestEvidenceRevision = head?.LatestRevision ?? (evidence.Count == 0 ? (long?)null : evidence.Max(value => value.ProjectionRevision));
+            if (latestEvidenceRevision.HasValue && (decodedConfirmed == null || latestEvidenceRevision.Value > decodedConfirmed.Revision))
+                throw new ProgressionConflictException("Confirmation evidence cannot lead the durable confirmed projection.");
             var raw = decodedPending.ToArray();
             foreach (var operationId in evidence.SelectMany(value => value.OperationIds))
             {
@@ -242,7 +252,7 @@ namespace GamePlatform.Features.Progression
                 if (matches.Length != 1 || matches[0].Status != ProgressionPendingStatus.AcceptedAwaitingPull)
                     throw new ProgressionConflictException("Confirmation evidence does not match one retained accepted-awaiting-pull completion.");
             }
-            return (decodedConfirmed, raw, pending.Revision, evidence);
+            return (decodedConfirmed, raw, pending?.Revision ?? 0, evidence, latestEvidenceRevision);
         }
 
         private Task WritePendingAsync(ScopedOwnerContext exactOwner, IReadOnlyList<PendingProgressionCompletion> pending, long currentRevision, CancellationToken cancellationToken) =>

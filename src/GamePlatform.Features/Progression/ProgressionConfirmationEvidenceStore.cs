@@ -37,4 +37,27 @@ namespace GamePlatform.Features.Progression
         void ValidateAndInsert(ILocalStorageTransaction transaction, ScopedOwnerContext owner, ProgressionConfirmationEvidence evidence,
             IProgressionStateCodec codec);
     }
+
+    /// <summary>Optional bounded adapter for durable, view-scoped operation and group markers.</summary>
+    public interface ICompactingProgressionConfirmationEvidenceStore : IProgressionConfirmationEvidenceStore
+    {
+        Task EnsureNormalizedAsync(ScopedOwnerContext owner, CancellationToken cancellationToken);
+        Task<ProgressionConfirmationEvidenceHead> ReadActiveAsync(ScopedOwnerContext owner,
+            IReadOnlyList<OperationId> pendingOperationIds, CancellationToken cancellationToken);
+        Task<bool> MatchesAsync(ScopedOwnerContext owner, ProgressionConfirmationEvidence evidence,
+            CancellationToken cancellationToken);
+    }
+
+    public sealed class ProgressionConfirmationEvidenceHead
+    {
+        public ProgressionConfirmationEvidenceHead(long? latestRevision,
+            IReadOnlyList<ProgressionConfirmationEvidence> activeGroups)
+        {
+            if (latestRevision < 0) throw new ArgumentOutOfRangeException(nameof(latestRevision));
+            LatestRevision = latestRevision;
+            ActiveGroups = activeGroups ?? throw new ArgumentNullException(nameof(activeGroups));
+        }
+        public long? LatestRevision { get; }
+        public IReadOnlyList<ProgressionConfirmationEvidence> ActiveGroups { get; }
+    }
 }
