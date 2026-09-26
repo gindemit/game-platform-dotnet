@@ -30,6 +30,7 @@ namespace GamePlatform.Sync.Pull
                 var reconciliation = await ReconcileRegressedBoundaryAsync(receipts, cancellationToken).ConfigureAwait(false);
                 if (reconciliation == BoundaryReconciliation.Current) break;
                 if (reconciliation == BoundaryReconciliation.Stale && !restarted) continue;
+                if (reconciliation == BoundaryReconciliation.Stale) throw new StorageException(StorageFailure.StreamRecoveryRequired, "The bootstrap boundary stayed behind a retained receipt.");
                 return reconciliation == BoundaryReconciliation.Demoted ? PrivateSyncResult.StreamRecovering : PrivateSyncResult.RemoteFailure;
             }
             while (true) { var requestedPage = progress.CopyPageToken(); var page = await remote.GetBootstrapPageAsync(progress.CopySession(), requestedPage, 262_144, cancellationToken).ConfigureAwait(false); if (!page.IsSuccess) return PrivateSyncResult.RemoteFailure; await store.StageBootstrapPageAsync(Staged(page.Value!, requestedPage), cancellationToken).ConfigureAwait(false); if (!page.Value!.HasMore) return PrivateSyncResult.BootstrapInstalled; progress = await store.GetBootstrapProgressAsync(cancellationToken).ConfigureAwait(false); if (progress == null) return PrivateSyncResult.RemoteFailure; }
@@ -41,19 +42,26 @@ namespace GamePlatform.Sync.Pull
             await store.ApplyPullPageAsync(Pulled(pulled.Value), cancellationToken).ConfigureAwait(false); return pulled.Value.HasMore ? PrivateSyncResult.PageApplied : PrivateSyncResult.BoundaryComplete;
         }
         /// <remarks>
-        /// A found receipt means the staged boundary predates that command; absence only licenses retrying the original.
+        /// An absent receipt licenses replay only while the server reports the staged boundary as finalized.
         /// </remarks>
         private async Task<BoundaryReconciliation> ReconcileRegressedBoundaryAsync(ICommandReceiptRemote lookup, CancellationToken cancellationToken)
         {
             var terminal = await store.ReadTerminalCommandsAboveBootstrapBoundaryAsync(cancellationToken).ConfigureAwait(false);
             if (terminal.Count == 0) return BoundaryReconciliation.Current;
+            var boundary = terminal[0].Command.Sequence - 1;
             // ponytail: one sequential lookup per lost command, repeated after any failure; persist per-command evidence if large gaps appear.
             foreach (var local in terminal)
             {
                 var c = local.Command;
                 var receipt = await lookup.LookupAsync(new RemoteCommand(c.OperationId, c.StreamId, c.InstallationId, c.Sequence, c.OperationKind, c.SchemaVersion, c.FingerprintVersion, c.ClientCreatedAt, c.CopyBody(), c.CopyFingerprint()), cancellationToken).ConfigureAwait(false);
+                if (!receipt.IsSuccess && receipt.Failure.Kind == RemoteFailureKind.Conflict)
+                    throw new StorageException(StorageFailure.StreamRecoveryRequired, "The receipt lookup conflicts with a local command identity.");
                 if (!receipt.IsSuccess) return BoundaryReconciliation.RemoteFailure;
-                if (!receipt.Value!.Found) continue;
+                if (!receipt.Value!.Found)
+                {
+                    if (receipt.Value.ObservedFinalizedThrough != boundary) return BoundaryReconciliation.Stale;
+                    continue;
+                }
                 if ((receipt.Value.Outcome!.Status == RemoteCommandStatus.Accepted) != (local.Outcome == CommandTerminalOutcome.Accepted))
                     throw new StorageException(StorageFailure.StreamRecoveryRequired, "A retained receipt conflicts with the local terminal result.");
                 return BoundaryReconciliation.Stale;

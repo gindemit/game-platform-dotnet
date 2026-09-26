@@ -21,7 +21,6 @@ namespace GamePlatform.Tests.Sync.Pull
     public sealed class RegressedStreamRecoverySpec
     {
         private static readonly Account First = new Account("00112233-4455-4677-8899-aabbccddeeff", "0199f9a0-1111-7777-8888-999999999999", 0xa1);
-        private static readonly Account Second = new Account("00112233-4455-4677-8899-bbbbccddeeff", "0199f9a0-2222-7777-8888-999999999999", 0xb2);
         private long now = 100;
 
         [Fact]
@@ -41,7 +40,7 @@ namespace GamePlatform.Tests.Sync.Pull
             var demoted = await ReadOutboxAsync(db, First);
             Assert.Equal(new[] { "accepted", "pending", "pending", "in_flight" }, demoted.Select(row => row.State));
             Assert.Equal(before.Select(row => row.Identity), demoted.Select(row => row.Identity));
-            Assert.All(demoted.Skip(1).Take(2), row => Assert.Null(row.Result));
+            Assert.Equal(before.Select(row => row.Result), demoted.Select(row => row.Result));
             Assert.Equal(1, await LongAsync(db, First, "SELECT finalized_through FROM gp_stream_state WHERE singleton=1"));
             Assert.Null(await new SqlitePrivateSyncStore(db, First.Scope, NoopProjector.Instance, _ => { }).GetBootstrapProgressAsync(CancellationToken.None));
             Assert.Equal(new[] { 2L, 3L }, server.LookedUp);
@@ -135,28 +134,126 @@ namespace GamePlatform.Tests.Sync.Pull
             await DisposeAsync(db);
         }
 
-        [Fact]
-        public async Task RecoveryStaysInsideTheRegressedAccount()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReplayWithADifferentOutcomeReplacesTheOriginalResult(bool originallyAccepted)
         {
-            using var firstFiles = new TemporaryDatabase();
-            using var secondFiles = new TemporaryDatabase();
-            var firstServer = new RestoredServer(First);
-            var secondServer = new RestoredServer(Second);
-            var first = await OpenSyncedAsync(firstFiles.Path, First, firstServer, 2);
-            var second = await OpenSyncedAsync(secondFiles.Path, Second, secondServer, 2);
-            var secondBefore = await ReadOutboxAsync(second, Second);
-            firstServer.RestoreBackup(0);
+            using var files = new TemporaryDatabase();
+            var server = new RestoredServer(First) { Rejects = sequence => sequence == 2 && !originallyAccepted };
+            var db = await OpenSyncedAsync(files.Path, First, server, 2);
+            server.RestoreBackup(1);
+            server.Rejects = sequence => sequence == 2 && originallyAccepted;
 
-            Assert.Equal(PrivateSyncResult.StreamRecovering, await Coordinator(first, First, firstServer).PullOnceAsync(CancellationToken.None));
-            Assert.Equal(PrivateSyncResult.BoundaryComplete, await Coordinator(second, Second, secondServer).PullOnceAsync(CancellationToken.None));
+            Assert.Equal(PrivateSyncResult.StreamRecovering, await Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+            var demoted = (await ReadOutboxAsync(db, First))[1];
+            Assert.Equal("pending", demoted.State);
+            Assert.Equal(new[] { originallyAccepted ? (byte)1 : (byte)2 }, demoted.Result);
 
-            Assert.Equal(new[] { "pending", "pending" }, (await ReadOutboxAsync(first, First)).Select(row => row.State));
-            Assert.Equal(secondBefore.Select(row => (row.Identity, row.State)), (await ReadOutboxAsync(second, Second)).Select(row => (row.Identity, row.State)));
-            Assert.Equal(2, await LongAsync(second, Second, "SELECT finalized_through FROM gp_stream_state WHERE singleton=1"));
-            Assert.Empty(secondServer.LookedUp);
-            Assert.All(firstServer.LookedUpOperations, operation => Assert.StartsWith("a1", operation.ToString()));
-            await DisposeAsync(first);
-            await DisposeAsync(second);
+            await DrainAsync(Sender(db, First, server));
+            Assert.Equal(PrivateSyncResult.ResetReconciled, await Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            var replayed = (await ReadOutboxAsync(db, First))[1];
+            Assert.Equal(originallyAccepted ? "terminal_rejected" : "accepted", replayed.State);
+            Assert.Equal(new[] { originallyAccepted ? (byte)2 : (byte)1 }, replayed.Result);
+            Assert.Equal(new[] { 1L, 2L, 2L }, server.Executed);
+            Assert.Equal(originallyAccepted ? 0 : 1, server.GrantsFor(2));
+            Assert.Equal(new[] { (byte)(originallyAccepted ? 1 : 2) }, await BytesAsync(db, First, "SELECT payload FROM gp_confirmed_projection WHERE collection='wallet' AND entity_key='coins'"));
+            await DisposeAsync(db);
+        }
+
+        [Fact]
+        public async Task ReceiptLookupConflictBlocksRecoveryWithoutChangingLocalState()
+        {
+            using var files = new TemporaryDatabase();
+            var server = new RestoredServer(First) { LookupFailure = new RemoteFailure(RemoteFailureKind.Conflict, 409) };
+            var db = await OpenSyncedAsync(files.Path, First, server, 3);
+            server.RestoreBackup(1);
+            server.FailedLookups = 1;
+            var before = await DurableStateAsync(db, First);
+
+            var error = await Assert.ThrowsAsync<StorageException>(() => Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            Assert.Equal(StorageFailure.StreamRecoveryRequired, error.Failure);
+            Assert.Equal(new[] { 2L }, server.LookedUp);
+            Assert.Equal(before, await DurableStateAsync(db, First));
+            await DisposeAsync(db);
+        }
+
+        [Fact]
+        public async Task PersistentStaleBoundaryBlocksRecoveryWithoutChangingLocalState()
+        {
+            using var files = new TemporaryDatabase();
+            var server = new RestoredServer(First);
+            var db = await OpenSyncedAsync(files.Path, First, server, 3);
+            server.RotateEpoch();
+            server.StaleBoundaries.Enqueue(1);
+            server.StaleBoundaries.Enqueue(1);
+            var before = await DurableStateAsync(db, First);
+
+            var error = await Assert.ThrowsAsync<StorageException>(() => Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            Assert.Equal(StorageFailure.StreamRecoveryRequired, error.Failure);
+            Assert.Equal(new[] { 2L, 2L }, server.LookedUp);
+            Assert.Equal(before, await DurableStateAsync(db, First));
+            await DisposeAsync(db);
+        }
+
+        [Fact]
+        public async Task AbsentReceiptBelowTheStagedBoundaryRestartsTheBootstrap()
+        {
+            using var files = new TemporaryDatabase();
+            var server = new RestoredServer(First);
+            var db = await OpenSyncedAsync(files.Path, First, server, 3);
+            server.RestoreBackup(1);
+            server.StaleBoundaries.Enqueue(2);
+
+            Assert.Equal(PrivateSyncResult.StreamRecovering, await Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            Assert.Equal(new[] { 3L, 2L, 3L }, server.LookedUp);
+            Assert.Equal(new[] { "accepted", "pending", "pending" }, (await ReadOutboxAsync(db, First)).Select(row => row.State));
+            Assert.Equal(1, await LongAsync(db, First, "SELECT finalized_through FROM gp_stream_state WHERE singleton=1"));
+            await DisposeAsync(db);
+        }
+
+        [Fact]
+        public async Task PullFirstInstallAfterDemotionKeepsDemotedCommandsPendingUntilReplayed()
+        {
+            using var files = new TemporaryDatabase();
+            var server = new RestoredServer(First);
+            var db = await OpenSyncedAsync(files.Path, First, server, 3);
+            server.RestoreBackup(1);
+            Assert.Equal(PrivateSyncResult.StreamRecovering, await Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            Assert.Equal(PrivateSyncResult.ResetReconciled, await Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            Assert.Equal(new[] { "accepted", "pending", "pending" }, (await ReadOutboxAsync(db, First)).Select(row => row.State));
+            Assert.Equal(1, await LongAsync(db, First, "SELECT finalized_through FROM gp_stream_state WHERE singleton=1"));
+            Assert.Equal(new[] { 1L, 2L, 3L }, server.Executed);
+
+            await DrainAsync(Sender(db, First, server));
+            Assert.Equal(PrivateSyncResult.BoundaryComplete, await Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            Assert.Equal(new[] { 1L, 2L, 3L, 2L, 3L }, server.Executed);
+            Assert.Equal(new[] { 1, 1, 1 }, Enumerable.Range(1, 3).Select(server.GrantsFor));
+            Assert.Equal(new[] { "accepted", "accepted", "accepted" }, (await ReadOutboxAsync(db, First)).Select(row => row.State));
+            await DisposeAsync(db);
+        }
+
+        [Fact]
+        public async Task DemotionLowersOnlyTheFinalizedSequence()
+        {
+            using var files = new TemporaryDatabase();
+            var server = new RestoredServer(First);
+            var db = await OpenSyncedAsync(files.Path, First, server, 3);
+            server.RestoreBackup(1);
+            var before = await CountersAsync(db, First);
+
+            Assert.Equal(PrivateSyncResult.StreamRecovering, await Coordinator(db, First, server).PullOnceAsync(CancellationToken.None));
+
+            Assert.Equal(before, await CountersAsync(db, First));
+            Assert.Equal(1, await LongAsync(db, First, "SELECT finalized_through FROM gp_stream_state WHERE singleton=1"));
+            await DisposeAsync(db);
         }
 
         [Fact]
@@ -240,6 +337,25 @@ namespace GamePlatform.Tests.Sync.Pull
             return (IReadOnlyList<OutboxRow>)rows;
         }, CancellationToken.None);
 
+        private static async Task<string> DurableStateAsync(SqliteDatabase db, Account account)
+        {
+            var rows = await ReadOutboxAsync(db, account);
+            var outbox = rows.Select(row => row.Identity + "|" + row.State + "|" + (row.Result == null ? "-" : Convert.ToBase64String(row.Result)));
+            var finalized = await LongAsync(db, account, "SELECT finalized_through FROM gp_stream_state WHERE singleton=1");
+            return string.Join(";", outbox) + ";" + finalized + ";" + await CountersAsync(db, account);
+        }
+
+        private static Task<string> CountersAsync(SqliteDatabase db, Account account) => db.ExecuteAsync(account.Scope, t =>
+        {
+            var s = (SqliteTransactionSession)t;
+            return string.Join("|",
+                s.ExecuteScalar<long>("SELECT next_sequence FROM gp_stream_state WHERE singleton=1"),
+                s.ExecuteScalar<long>("SELECT local_revision FROM gp_stream_state WHERE singleton=1"),
+                s.ExecuteScalar<long>("SELECT visibility_generation FROM gp_sync_state WHERE singleton=1"),
+                s.ExecuteScalar<long>("SELECT committed_through FROM gp_sync_state WHERE singleton=1"),
+                Convert.ToBase64String(s.ExecuteScalar<byte[]>("SELECT pull_cursor FROM gp_sync_state WHERE singleton=1")));
+        }, CancellationToken.None);
+
         private static Task<long> LongAsync(SqliteDatabase db, Account account, string sql) => db.ExecuteAsync(account.Scope, t => ((SqliteTransactionSession)t).ExecuteScalar<long>(sql), CancellationToken.None);
 
         private static Task<byte[]> BytesAsync(SqliteDatabase db, Account account, string sql) => db.ExecuteAsync(account.Scope, t => ((SqliteTransactionSession)t).ExecuteScalar<byte[]>(sql), CancellationToken.None);
@@ -293,10 +409,10 @@ namespace GamePlatform.Tests.Sync.Pull
             public Func<long, bool> Rejects { get; set; } = _ => false;
             public Queue<long> StaleBoundaries { get; } = new Queue<long>();
             public int FailedLookups { get; set; }
+            public RemoteFailure LookupFailure { get; set; } = new RemoteFailure(RemoteFailureKind.Unavailable, 503);
             public bool Retired { get; set; }
             public List<long> Executed { get; } = new List<long>();
             public List<long> LookedUp { get; } = new List<long>();
-            public List<OperationId> LookedUpOperations { get; } = new List<OperationId>();
 
             public int GrantsFor(int sequence) => grants.TryGetValue(account.Operation(sequence), out var count) ? count : 0;
 
@@ -351,11 +467,10 @@ namespace GamePlatform.Tests.Sync.Pull
             public Task<RemoteResult<RemoteCommandReceipt>> LookupAsync(RemoteCommand command, CancellationToken cancellationToken)
             {
                 LookedUp.Add(command.Sequence);
-                LookedUpOperations.Add(command.OperationId);
                 if (FailedLookups > 0)
                 {
                     FailedLookups--;
-                    return Task.FromResult(RemoteResult<RemoteCommandReceipt>.Failed(new RemoteFailure(RemoteFailureKind.Unavailable, 503)));
+                    return Task.FromResult(RemoteResult<RemoteCommandReceipt>.Failed(LookupFailure));
                 }
                 if (command.Sequence > finalized.Count)
                     return Task.FromResult(RemoteResult<RemoteCommandReceipt>.Success(new RemoteCommandReceipt(false, null, finalized.Count)));

@@ -203,7 +203,7 @@ namespace GamePlatform.Storage.Sqlite.Sync
             if (!TryReadRegressedBoundary(s, out var serverFinal, out var localFinal, out var stream) || localFinal != localFinalizedThrough)
                 throw new StorageException(StorageFailure.IdentityConflict, "The regressed stream boundary changed before demotion.");
             var demoted = s.Execute(
-                "UPDATE gp_outbox SET delivery_state='pending',leased_until=NULL,terminal_result=NULL WHERE client_stream_id=? AND sequence>? AND sequence<=? AND delivery_state IN ('accepted','terminal_rejected')",
+                "UPDATE gp_outbox SET delivery_state='pending',leased_until=NULL WHERE client_stream_id=? AND sequence>? AND sequence<=? AND delivery_state IN ('accepted','terminal_rejected')",
                 stream, serverFinal, localFinal);
             if (demoted != localFinal - serverFinal)
                 throw new StorageException(StorageFailure.StreamRecoveryRequired, "The local terminal command stream has a gap or foreign sequence.");
