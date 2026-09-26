@@ -7,12 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Core;
 using GamePlatform.Storage.Abstractions;
+using GamePlatform.Storage.Abstractions.Outbox;
 using GamePlatform.Storage.Abstractions.Sync;
 using GamePlatform.Storage.Sqlite.Executor;
 
 namespace GamePlatform.Storage.Sqlite.Sync
 {
-    internal enum SyncCheckpoint { PageStaged, BeforeBootstrapInstall, BootstrapInstalled, BeforePullCommit }
+    internal enum SyncCheckpoint { PageStaged, BeforeBootstrapInstall, BootstrapInstalled, BeforePullCommit, BeforeDemotionCommit }
 
     public sealed class SqlitePrivateSyncStore : IPrivateSyncStore
     {
@@ -172,6 +173,57 @@ namespace GamePlatform.Storage.Sqlite.Sync
                     page.HasMore ? (object)page.CommittedThrough : null!);
                 return true;
             }, token);
+        }
+
+        public Task<IReadOnlyList<StoredTerminalCommand>> ReadTerminalCommandsAboveBootstrapBoundaryAsync(CancellationToken token) => database.ExecuteAsync(scope, t =>
+        {
+            var s = (SqliteTransactionSession)t;
+            if (!TryReadRegressedBoundary(s, out var serverFinal, out var localFinal, out var stream))
+                return (IReadOnlyList<StoredTerminalCommand>)Array.Empty<StoredTerminalCommand>();
+            var rows = s.Query<TerminalCommandRow>(
+                "SELECT operation_id AS OperationId,installation_id AS InstallationId,sequence AS Sequence,operation_kind AS OperationKind,schema_version AS SchemaVersion,fingerprint_version AS FingerprintVersion,client_created_at AS ClientCreatedAt,semantic_body AS SemanticBody,fingerprint AS Fingerprint,delivery_state AS DeliveryState FROM gp_outbox WHERE client_stream_id=? AND sequence>? AND sequence<=? AND delivery_state IN ('accepted','terminal_rejected') ORDER BY sequence",
+                stream, serverFinal, localFinal);
+            if (rows.Count != localFinal - serverFinal)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "The local terminal command stream has a gap or foreign sequence.");
+            var commands = new StoredTerminalCommand[rows.Count];
+            for (var i = 0; i < commands.Length; i++)
+            {
+                var row = rows[i];
+                commands[i] = new StoredTerminalCommand(
+                    new LeasedCommand(new OperationId(Guid.Parse(row.OperationId)), new ClientStreamId(Guid.Parse(stream)), Guid.Parse(row.InstallationId), row.Sequence,
+                        row.OperationKind, row.SchemaVersion, row.FingerprintVersion, row.ClientCreatedAt, row.SemanticBody, row.Fingerprint),
+                    row.DeliveryState == "accepted" ? CommandTerminalOutcome.Accepted : CommandTerminalOutcome.Rejected);
+            }
+            return Array.AsReadOnly(commands);
+        }, token);
+
+        public Task DemoteTerminalCommandsAboveBootstrapBoundaryAsync(long localFinalizedThrough, CancellationToken token) => database.ExecuteAsync(scope, t =>
+        {
+            var s = (SqliteTransactionSession)t;
+            if (!TryReadRegressedBoundary(s, out var serverFinal, out var localFinal, out var stream) || localFinal != localFinalizedThrough)
+                throw new StorageException(StorageFailure.IdentityConflict, "The regressed stream boundary changed before demotion.");
+            var demoted = s.Execute(
+                "UPDATE gp_outbox SET delivery_state='pending',leased_until=NULL,terminal_result=NULL WHERE client_stream_id=? AND sequence>? AND sequence<=? AND delivery_state IN ('accepted','terminal_rejected')",
+                stream, serverFinal, localFinal);
+            if (demoted != localFinal - serverFinal)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "The local terminal command stream has a gap or foreign sequence.");
+            s.Execute("UPDATE gp_stream_state SET finalized_through=? WHERE singleton=1", serverFinal);
+            s.Execute("DELETE FROM gp_bootstrap_pages");
+            s.Execute("DELETE FROM gp_bootstrap_entities");
+            s.Execute("DELETE FROM gp_bootstrap_state");
+            checkpoint?.Invoke(SyncCheckpoint.BeforeDemotionCommit);
+            return true;
+        }, token);
+
+        private static bool TryReadRegressedBoundary(SqliteTransactionSession s, out long serverFinal, out long localFinal, out string stream)
+        {
+            serverFinal = localFinal = 0; stream = string.Empty;
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1 AND stream_state='active'") != 1) return false;
+            stream = s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");
+            EnsureStream(s, new ClientStreamId(Guid.Parse(stream)));
+            serverFinal = s.ExecuteScalar<long>("SELECT finalized_through FROM gp_bootstrap_state WHERE singleton=1");
+            localFinal = s.ExecuteScalar<long>("SELECT finalized_through FROM gp_stream_state WHERE singleton=1");
+            return serverFinal < localFinal;
         }
 
         private void Install(SqliteTransactionSession s, byte[] cursor, long serverTime)
@@ -358,6 +410,19 @@ namespace GamePlatform.Storage.Sqlite.Sync
             public string EntityKey { get; set; } = string.Empty;
             public long EntityRevision { get; set; }
             public byte[] Payload { get; set; } = Array.Empty<byte>();
+        }
+        private sealed class TerminalCommandRow
+        {
+            public string OperationId { get; set; } = string.Empty;
+            public string InstallationId { get; set; } = string.Empty;
+            public long Sequence { get; set; }
+            public string OperationKind { get; set; } = string.Empty;
+            public int SchemaVersion { get; set; }
+            public int FingerprintVersion { get; set; }
+            public long ClientCreatedAt { get; set; }
+            public byte[] SemanticBody { get; set; } = Array.Empty<byte>();
+            public byte[] Fingerprint { get; set; } = Array.Empty<byte>();
+            public string DeliveryState { get; set; } = string.Empty;
         }
         private sealed class MissingProjectionProjector : IPrivateSyncProjectionProjector
         {

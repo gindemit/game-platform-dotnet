@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Core;
 using GamePlatform.Storage.Abstractions;
+using GamePlatform.Storage.Abstractions.Outbox;
 
 namespace GamePlatform.Storage.Abstractions.Sync
 {
@@ -64,6 +65,12 @@ namespace GamePlatform.Storage.Abstractions.Sync
     public sealed class StoredPullPage { private readonly byte[] cursor; public StoredPullPage(long committedThrough, IReadOnlyList<StoredPullGroup> groups, byte[] cursor, bool hasMore) : this(committedThrough, groups, cursor, hasMore, 0) { } public StoredPullPage(long committedThrough, IReadOnlyList<StoredPullGroup> groups, byte[] cursor, bool hasMore, long serverTime) { if (serverTime < 0 || serverTime > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(serverTime)); CommittedThrough = committedThrough; Groups = Copy(groups); this.cursor = (byte[])cursor.Clone(); HasMore = hasMore; ServerTime = serverTime; } public long CommittedThrough { get; } public IReadOnlyList<StoredPullGroup> Groups { get; } public bool HasMore { get; } public long ServerTime { get; } public byte[] CopyNextCursor() => (byte[])cursor.Clone(); private static IReadOnlyList<StoredPullGroup> Copy(IReadOnlyList<StoredPullGroup> values) { if (values == null) throw new ArgumentNullException(nameof(values)); var copy = new StoredPullGroup[values.Count]; for (var i = 0; i < copy.Length; i++) copy[i] = values[i] ?? throw new ArgumentException("A group is null.", nameof(values)); return Array.AsReadOnly(copy); } }
     public sealed class BootstrapProgress { private readonly byte[] session, pageToken; public BootstrapProgress(ClientStreamId streamId, long committedThrough, long visibilityGeneration, Guid logEpoch, long expiresAt, byte[] session, byte[] pageToken) { StreamId = streamId; CommittedThrough = committedThrough; VisibilityGeneration = visibilityGeneration; LogEpoch = logEpoch; ExpiresAt = expiresAt; this.session = (byte[])session.Clone(); this.pageToken = (byte[])pageToken.Clone(); } public ClientStreamId StreamId { get; } public long CommittedThrough { get; } public long VisibilityGeneration { get; } public Guid LogEpoch { get; } public long ExpiresAt { get; } public byte[] CopySession() => (byte[])session.Clone(); public byte[] CopyPageToken() => (byte[])pageToken.Clone(); }
     public sealed class PullCheckpoint { private readonly byte[] cursor; public PullCheckpoint(ClientStreamId streamId, byte[] cursor, long committedThrough, long? fixedThrough) { StreamId = streamId; this.cursor = (byte[])cursor.Clone(); CommittedThrough = committedThrough; FixedThrough = fixedThrough; } public ClientStreamId StreamId { get; } public byte[] CopyCursor() => (byte[])cursor.Clone(); public long CommittedThrough { get; } public long? FixedThrough { get; } }
+    public sealed class StoredTerminalCommand
+    {
+        public StoredTerminalCommand(LeasedCommand command, CommandTerminalOutcome outcome) { Command = command ?? throw new ArgumentNullException(nameof(command)); Outcome = outcome; }
+        public LeasedCommand Command { get; }
+        public CommandTerminalOutcome Outcome { get; }
+    }
     public interface IPrivateSyncStore
     {
         Task<BootstrapProgress?> GetBootstrapProgressAsync(CancellationToken cancellationToken);
@@ -71,5 +78,13 @@ namespace GamePlatform.Storage.Abstractions.Sync
         Task StageBootstrapPageAsync(StagedBootstrapPage page, CancellationToken cancellationToken);
         Task<PullCheckpoint> GetPullCheckpointAsync(CancellationToken cancellationToken);
         Task ApplyPullPageAsync(StoredPullPage page, CancellationToken cancellationToken);
+        /// <summary>
+        /// Lists, in sequence order, the local terminal commands above the staged active boundary's finalized sequence.
+        /// </summary>
+        Task<IReadOnlyList<StoredTerminalCommand>> ReadTerminalCommandsAboveBootstrapBoundaryAsync(CancellationToken cancellationToken);
+        /// <summary>
+        /// Returns those commands to pending with their original identity, lowers the local finalized sequence to the boundary and discards the staged bootstrap.
+        /// </summary>
+        Task DemoteTerminalCommandsAboveBootstrapBoundaryAsync(long localFinalizedThrough, CancellationToken cancellationToken);
     }
 }

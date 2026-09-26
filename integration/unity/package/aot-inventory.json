@@ -16,7 +16,7 @@
   "sqlite": {
     "pinvokeNames": ["gilzoide-sqlite-net", "__Internal"],
     "desktopAndAndroidBundleName": "gilzoide-sqlite-net",
-    "preservedTypes": ["SQLite.SQLite3", "GamePlatform.Storage.Sqlite.Executor.SqliteDatabase/ExtensionNamespaceRow", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryColumn", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryIndex", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryIndexColumn", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryStore/DirectoryRow", "GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow"],
+    "preservedTypes": ["SQLite.SQLite3", "GamePlatform.Storage.Sqlite.Executor.SqliteDatabase/ExtensionNamespaceRow", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryColumn", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryIndex", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryIndexColumn", "GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryStore/DirectoryRow", "GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow", "GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/TerminalCommandRow"],
     "reflection": "The production adapter uses raw parameterized SQL; its only reflection path is sqlite-net Query<T> materialization of attribute-free row types (property names equal result columns), each preserved in link.xml."
   },
   "unrun": ["macOS native execution"]

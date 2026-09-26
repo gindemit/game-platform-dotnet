@@ -13,5 +13,6 @@
     <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryIndexColumn" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryStore/DirectoryRow" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/TerminalCommandRow" preserve="all" />
   </assembly>
 </linker>
