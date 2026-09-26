@@ -65,7 +65,7 @@ namespace GamePlatform.Tests.Features.StoreQuest
 
             Assert.Equal(first.OperationId, second.OperationId);
             Assert.Equal(first.Sequence, second.Sequence);
-            Assert.Equal(1, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_outbox"));
+            Assert.Equal(1, await Scalar<long>(reopened, "SELECT COUNT(*) FROM gp_outbox"));
         }
 
         [Fact]
