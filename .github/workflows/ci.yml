@@ -3,7 +3,7 @@ name: ci
 on:
   workflow_dispatch:
   push:
-    branches: [main, impl/platform-coordinated-2026-09-19]
+    branches: [main]
   pull_request:
 
 permissions:
