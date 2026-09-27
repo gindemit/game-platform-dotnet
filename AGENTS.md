@@ -1,7 +1,7 @@
 # SDK agent instructions
 
 ## Small startup context
-For coordinated platform work start at AGENT_ORCHESTRATOR.md, which routes the coordinator to the backend shared Claude/Codex workflow. Workers read only their assigned card/ticket, applicable scoped AGENTS.md and named source/tests; do not launch another coordinator. No recursive docs/reports/archives/ledger/history loading. Use latest `main` for all new feature work; never switch to `Future`, `future/*`, or the former implementation branch; preserve unrelated work and fast-forward only after inspecting remote changes.
+For coordinated platform work start at AGENT_ORCHESTRATOR.md, which routes the coordinator to the backend shared Claude/Codex workflow. Workers read only their assigned card/ticket, applicable scoped AGENTS.md and named source/tests; do not launch another coordinator. No recursive docs/reports/archives/ledger/history loading. Use `main` for all new feature work; do not create or switch to feature, Future, or former implementation branches; preserve unrelated work and fast-forward only after inspecting remote changes.
 
 One coordinator, bounded subagents, ONE implementation writer across all three repositories. The coordinator commits/pushes and updates shared queue/gates; workers return results and it continues automatically. Push task-owned reviewed changes to `main` after checking the remote head. No package publication, deployment, distribution, production data/secrets, reset or force-push without explicit authorization. Preserve exact source/artifact identities: documentation-only descendants do not require new DLLs.
 
