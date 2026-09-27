@@ -10,10 +10,11 @@ broad upstream native metadata is not copied. A `sourceDirty=true` or
 `buildSkipped=true` artifact is development evidence: ordinary `--verify` rejects
 it and it must not be imported.
 
-The MessagePack assembly and eight runtime package DLLs are included only as a
-qualification candidate; the ninth pinned package is a build-only analyzer. The
-candidate does not implement production `IWireCodec`. Missing or unknown managed
-references, packages, native targets, metadata or notices fail packaging.
+The MessagePack assembly and eight runtime package DLLs include the promoted
+bounded production `MessagePackWireCodec`; the ninth pinned package is a
+build-only analyzer. This does not supply a host, credentials, Unity HTTP
+executor or live-backend acceptance. Missing or unknown managed references,
+packages, native targets, metadata or notices fail packaging.
 
 Build from a clean committed checkout with
 `rtk proxy python scripts/package-sdk.py`. The script acquires the exact SQLite

@@ -27,6 +27,35 @@ unavailable. CL-015 now supplies the coordinated reviewed native inputs and
 metadata; their actual consumer import and execution remain INT-009.
 Gates: A03, A05, A09, A13.
 
+## Explicit consumer extension migrations
+
+The fixed platform history now includes the Accounts directory at version 4 and
+the platform-owned `gp_extension_migrations` journal at version 5. Versions
+1--3, their SQL, and their checksums remain unchanged. Hosts must supply the
+complete `SqlitePlatformMigrationRegistry` for both new and existing platform
+databases.
+
+Consumers may opt into schema extensions only by passing an immutable,
+ordinally namespace-sorted collection of `SqliteExtensionDescriptor` values to
+the explicit `SqliteDatabase.OpenAsync` overload. Each descriptor declares its
+minimum platform version and a contiguous, version-one-based migration history.
+The extension marker checksum binds the namespace, minimum platform version,
+version, migration ID and immutable SQL statements. Platform migrations run
+first; every extension migration's effects and marker share one transaction.
+
+The legacy overload supplies no extensions. It fails closed if a v5 database
+retains any extension marker; callers must explicitly supply every retained
+extension. Newer, omitted, gapped, duplicate/unsorted, owner-mismatched or
+checksum/ID-drifted extension histories fail closed. Extension SQL is reviewed
+with a deliberately conservative `gp_` reference guard; it is not represented
+as a general SQL security sandbox. There is no ambient discovery, mutable global
+registry, or consumer reference in the platform adapter.
+
+Windows x64 native tests cover fresh/upgrade/reopen, retained platform data,
+Accounts v4, independent extension upgrade, omission/newer/drift/gap failures,
+fault checkpoints and concurrent opens. Non-Windows native, Unity/IL2CPP/device
+and physical-fault acceptance remain separate unrun gates.
+
 CL-010 adds durable snapshot staging, a final atomic confirmed-view/cursor/Ready
 install, fixed-watermark private pull checkpoints, revision-aware view removal
 and tombstones, and transaction-borrowed overlay rebuild. Reset replacement

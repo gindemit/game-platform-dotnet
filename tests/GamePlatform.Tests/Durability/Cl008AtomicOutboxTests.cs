@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -22,11 +23,11 @@ namespace GamePlatform.Tests.Durability
         private static readonly OwnerScope Owner = new OwnerScope(new BackendNamespace("test-backend"), AppId, UserId);
         private static readonly StorageScope Scope = new StorageScope("test-backend", new PlatformId(AppId.ToString()), new PlatformId(UserId.ToString()));
         private static readonly ClientStreamId Stream = new ClientStreamId(Guid.Parse("0199f9a0-1111-7777-8888-999999999999"));
-        private static readonly IReadOnlyList<SqliteMigration> Migrations = new[]
+        private static readonly Guid Installation = Guid.Parse("0199f9a0-1212-7777-8888-999999999999");
+        private static readonly IReadOnlyList<SqliteMigration> Migrations = SqlitePlatformMigrationRegistry.Migrations.Concat(new[]
         {
-            SqliteOutboxMigration.Create(1),
-            new SqliteMigration(2, "test-projection", new[] { "CREATE TABLE test_projection (name TEXT PRIMARY KEY, value INTEGER NOT NULL)" })
-        };
+            new SqliteMigration(8, "test-projection", new[] { "CREATE TABLE test_projection (name TEXT PRIMARY KEY, value INTEGER NOT NULL)" })
+        }).ToArray();
 
         [Fact]
         public async Task ProjectionSequenceAndImmutableOutboxCommitAndReopenTogether()
@@ -79,6 +80,31 @@ namespace GamePlatform.Tests.Durability
                 Assert.Equal((0, 0, 1L, 0L), counts);
                 Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
             }
+        }
+
+        [Fact]
+        public async Task AdmissionCapturesOneDurableEnvelopeAndDuplicateBusinessRunDoesNotRecaptureIt()
+        {
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var clock = new CountingClock(1_789_555_200_000);
+            var store = NewStore(database, null, clock);
+            var draft = Draft("0199f9a0-3344-7777-8888-999999999999", new byte[] { 4, 8 });
+            var first = await store.CommitAsync("run-envelope", draft, InsertProjection("envelope"), CancellationToken.None);
+            var replay = await store.CommitAsync("run-envelope", draft, InsertProjection("not-applied"), CancellationToken.None);
+            var persisted = await database.ExecuteAsync(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                return (Installation: session.ExecuteScalar<string>("SELECT installation_id FROM gp_outbox WHERE operation_id=?", draft.OperationId.ToString()), CreatedAt: session.ExecuteScalar<long>("SELECT client_created_at FROM gp_outbox WHERE operation_id=?", draft.OperationId.ToString()));
+            }, CancellationToken.None);
+            Assert.Equal(1, clock.Calls);
+            Assert.Equal(Installation, first.InstallationId);
+            Assert.Equal(first.InstallationId, replay.InstallationId);
+            Assert.Equal(1_789_555_200_000, first.ClientCreatedAt);
+            Assert.Equal(first.ClientCreatedAt, replay.ClientCreatedAt);
+            Assert.Equal(Installation.ToString("D"), persisted.Installation);
+            Assert.Equal(first.ClientCreatedAt, persisted.CreatedAt);
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
@@ -226,8 +252,8 @@ namespace GamePlatform.Tests.Durability
             Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
-        private static SqliteAtomicCommandStore NewStore(SqliteDatabase database, Action<AdmissionCheckpoint>? checkpoint = null) =>
-            new SqliteAtomicCommandStore(database, Scope, Owner, new TestFingerprint(), checkpoint);
+        private static SqliteAtomicCommandStore NewStore(SqliteDatabase database, Action<AdmissionCheckpoint>? checkpoint = null, IUnixMillisecondClock? clock = null) =>
+            new SqliteAtomicCommandStore(database, Scope, Owner, new TestFingerprint(), clock ?? new FixedClock(), checkpoint);
 
         private static CommandDraft Draft(string operationId, byte[] body) => new CommandDraft(
             Owner, new OperationId(Guid.Parse(operationId)), Stream, "profile.patch", 1, 1, body);
@@ -245,8 +271,8 @@ namespace GamePlatform.Tests.Durability
         private static Task<bool> SeedReady(SqliteDatabase database, long nextSequence) => database.ExecuteAsync(Scope, transaction =>
         {
             ((SqliteTransactionSession)transaction).Execute(
-                "INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, ready, next_sequence, local_revision, finalized_through) VALUES (1, ?, ?, ?, ?, 1, ?, 0, 0)",
-                Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), nextSequence);
+                "INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) VALUES (1, ?, ?, ?, ?, ?, 1, ?, 0, 0)",
+                Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D"), nextSequence);
             return true;
         }, CancellationToken.None);
 
@@ -275,16 +301,19 @@ namespace GamePlatform.Tests.Durability
         private sealed class TestFingerprint : ICommandFingerprint
         {
             public int GetFingerprintLength(int fingerprintVersion) => fingerprintVersion == 1 ? 32 : 0;
-            public void Compute(OwnerScope owner, OperationId operationId, ClientStreamId streamId, long sequence,
-                string operationKind, int schemaVersion, int fingerprintVersion, ReadOnlySpan<byte> semanticBody, Span<byte> destination)
+            public void Compute(OwnerScope owner, OperationId operationId, ClientStreamId streamId, Guid installationId, long sequence,
+                string operationKind, int schemaVersion, int fingerprintVersion, long clientCreatedAt, ReadOnlySpan<byte> semanticBody, Span<byte> destination)
             {
-                var prefix = Encoding.UTF8.GetBytes(owner.Backend.Value + "|" + owner.AppId + "|" + owner.UserId + "|" + operationId + "|" + streamId + "|" + sequence + "|" + operationKind + "|" + schemaVersion + "|" + fingerprintVersion + "|");
+                var prefix = Encoding.UTF8.GetBytes(owner.Backend.Value + "|" + owner.AppId + "|" + owner.UserId + "|" + operationId + "|" + streamId + "|" + installationId + "|" + sequence + "|" + operationKind + "|" + schemaVersion + "|" + fingerprintVersion + "|" + clientCreatedAt + "|");
                 var bytes = new byte[prefix.Length + semanticBody.Length];
                 prefix.CopyTo(bytes, 0);
                 semanticBody.CopyTo(bytes.AsSpan(prefix.Length));
                 SHA256.HashData(bytes).CopyTo(destination);
             }
         }
+
+        private sealed class FixedClock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1_789_555_200_000; }
+        private sealed class CountingClock : IUnixMillisecondClock { private readonly long value; public CountingClock(long value) { this.value = value; } public int Calls { get; private set; } public long GetUnixMilliseconds() { Calls++; return value; } }
 
         private sealed class InjectedFailureException : Exception { }
 

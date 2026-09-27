@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contractVersion": "0.4.0-g3-schema-checkpoint.1",
+  "contractVersion": "0.5.0-a06-store-quest-schema.1",
   "algorithm": "sha256",
   "files": {
     "platform-policy.json": "3529f3d92ee3e368e91c6d1ca9176022ebe5ae5124b5072cdb76d2fd8474047c",
@@ -100,7 +100,11 @@
     "g3/client-mappings.json": "677c9216ff852d052aefcf98d5b7833d3211e0788c1befb191f0de3383b294bf",
     "g3/fixtures.json": "0a2a76d9ae73bf91233575645e92a94e2d8b605780097c927a2f10295645a542",
     "g3/reward-receipt.schema.json": "30d73417a344e2cf4f38a21133bd3f23e9d16a1e60f009ce2dd327d1a9e000f4",
-    "g3/semantics.json": "249142df40560d81e4fb52c1415c744fcd8b0b9656b7ec9cc2bc4b55d731bf1d"
+    "g3/semantics.json": "249142df40560d81e4fb52c1415c744fcd8b0b9656b7ec9cc2bc4b55d731bf1d",
+    "a06/fingerprint-vectors.json": "405a1874ce2f1758e09eb63e8a763732a8a7f3de099e4fe36d73e7f3060b14ef",
+    "a06/fixtures.json": "de59c830c787656550cbea6816aa5788a230730c885663e9a4f78d7efcb73064",
+    "a06/semantics.json": "15995ec668676748b20690526789bef293b420eb6a31c0a05f3fca1a1ccdcf8a",
+    "a06/store-quest.schema.json": "d2cb42443ec9c1e5a4df6eac7bc0217e5de9630dd45b9918b2d525684ec9030a"
   },
-  "approvalScope": "P3 same-phase G3 schema checkpoint only; runtime interoperability and G3 acceptance remain unverified"
+  "approvalScope": "P3 same-phase A06 store purchase and quest claim schema checkpoint only; runtime interoperability, A06 and G3 acceptance remain unverified"
 }

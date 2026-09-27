@@ -107,6 +107,41 @@ namespace GamePlatform.Tests.Transport
             Assert.Equal(131_072, body.MaxBytes);
         }
 
+        [Fact]
+        public async Task PullMapsFrozenInvalidationDistinctly()
+        {
+            var codec = Codec(new PullPage(new[]
+            {
+                new PullGroup(9, new IProjectionChange[]
+                {
+                    new ProjectionWalletRemoval(new ProjectionWalletKey("test.coin"), 4, "invalidation")
+                })
+            }, TokenText(8), false, 9, 10));
+
+            var result = await Provider(new ScriptedExecutor(_ => Success()), codec).PullAsync(Token(7), 131_072, CancellationToken.None);
+
+            Assert.True(result.IsSuccess);
+            var mutation = Assert.Single(Assert.Single(result.Value!.Groups).Changes);
+            Assert.Equal(ProjectionMutationKind.Invalidation, mutation.Kind);
+            Assert.Empty(mutation.CopyPayload());
+        }
+
+        [Fact]
+        public async Task PullRejectsUnknownFrozenRemovalKind()
+        {
+            var codec = Codec(new PullPage(new[]
+            {
+                new PullGroup(9, new IProjectionChange[]
+                {
+                    new ProjectionWalletRemoval(new ProjectionWalletKey("test.coin"), 4, "future_kind")
+                })
+            }, TokenText(8), false, 9, 10));
+
+            var result = await Provider(new ScriptedExecutor(_ => Success()), codec).PullAsync(Token(7), 131_072, CancellationToken.None);
+
+            Assert.Equal(RemoteFailureKind.Protocol, result.Failure.Kind);
+        }
+
         [Theory]
         [InlineData("history_expired")]
         [InlineData("visibility_changed")]

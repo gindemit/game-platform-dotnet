@@ -1,0 +1,24 @@
+{
+  "status": "local_unpublished_bundle_verified_import_pending",
+  "sourceCommit": "b56bb0e92448e88a69812c1e36a38d5435cc9636",
+  "manifestSha256": "d963dcf20685b9dab7b555ccc10081dabf853bda4a09bfd5179105b0ab9eb90b",
+  "bundlePath": "artifacts/sdk",
+  "bundleFiles": 100,
+  "managedAssemblies": 23,
+  "nativeTargets": 3,
+  "sourceDirty": false,
+  "buildSkipped": false,
+  "published": false,
+  "commands": [
+    { "command": "rtk proxy dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --filter FullyQualifiedName~Cl101AccountsLifecycleTests --no-restore", "result": "Sol specialist exit 0; 32 passed, 0 failed at b56bb0e" },
+    { "command": "rtk proxy dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --filter FullyQualifiedName~Cl007SqliteExecutorTests --no-restore", "result": "Sol specialist exit 0; 8 passed, 0 failed at b56bb0e" },
+    { "command": "rtk proxy python scripts/package-sdk.py", "result": "coordinator exit 0; 23 managed assemblies, 3 native targets, zero build warnings/errors; no publication" },
+    { "command": "rtk proxy python scripts/package-sdk.py --verify", "result": "coordinator exit 0; inventory, hashes, closure, licenses, native targets and AOT metadata verified" }
+  ],
+  "review": "Independent Sol /root/p3_coordinator/review05 accepted bounded directory source repair b56bb0e after rejecting 4860664 and 61c090a; personally ran git diff --check and inspected immutable source/migration/tests, no runtime tests.",
+  "limitations": [
+    "This is a local bundle for exact P3 Unity import, not package publication or external distribution.",
+    "Unity directory path and recovery preflight, account lease/bootstrap, gameplay service, Editor/PlayMode, Android and real journey remain unrun.",
+    "The imported Unity bundle still identifies prior executable SDK e75ebce until this exact bundle is imported and reviewed."
+  ]
+}

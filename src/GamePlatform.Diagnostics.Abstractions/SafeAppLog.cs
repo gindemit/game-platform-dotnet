@@ -119,9 +119,21 @@ namespace GamePlatform.Diagnostics.Abstractions
             // Unknown scalar names are private by default too; a secret need not be a string.
             switch (name)
             {
-                case "count": case "attempt": case "attemptCount": case "durationMs": case "elapsedMs":
-                case "bytes": case "byteCount": case "queueDepth": case "statusCode": case "errorCode":
-                case "retryable": case "ok": case "revision": case "sequence": case "nothing":
+                case "count":
+                case "attempt":
+                case "attemptCount":
+                case "durationMs":
+                case "elapsedMs":
+                case "bytes":
+                case "byteCount":
+                case "queueDepth":
+                case "statusCode":
+                case "errorCode":
+                case "retryable":
+                case "ok":
+                case "revision":
+                case "sequence":
+                case "nothing":
                     return true;
                 default: return false;
             }

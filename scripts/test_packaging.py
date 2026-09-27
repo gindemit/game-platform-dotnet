@@ -175,7 +175,7 @@ class PackageTests(unittest.TestCase):
                     'duplicateUpmAcquisitionAllowed': False, 'nativeLibraries': native,
                     'pinvoke': package.pinvoke_inventory(),
                     'sourceDirty': False, 'build': {'buildSkipped': False},
-                    'capabilities': {'productionMessagePack': 'unavailable'}, 'files': files}
+                    'capabilities': {'productionMessagePack': 'included'}, 'files': files}
         (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
         return manifest
 
@@ -231,13 +231,13 @@ class PackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'duplicate_upm'):
                 self.verify(root, manifest)
 
-    def test_qualification_codec_cannot_be_labeled_production(self):
+    def test_production_codec_cannot_be_omitted_from_current_bundle(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             manifest = self.bundle(root)
-            manifest['capabilities']['productionMessagePack'] = 'included'
+            manifest['capabilities']['productionMessagePack'] = 'unavailable'
             (root / 'dependency-manifest.json').write_text(json.dumps(manifest))
-            with self.assertRaisesRegex(ValueError, 'qualification_codec_mislabeled'):
+            with self.assertRaisesRegex(ValueError, 'production_codec_missing'):
                 self.verify(root, manifest)
 
     def test_pinvoke_inventory_drift_is_rejected(self):

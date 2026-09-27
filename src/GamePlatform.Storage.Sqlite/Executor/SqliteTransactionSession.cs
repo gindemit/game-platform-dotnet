@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using GamePlatform.Storage.Abstractions;
 using SQLite;
@@ -33,6 +34,13 @@ namespace GamePlatform.Storage.Sqlite.Executor
             EnsureActive();
             ValidateSql(sql);
             return connection.ExecuteScalar<T>(sql, parameters ?? Array.Empty<object>());
+        }
+
+        internal IReadOnlyList<T> Query<T>(string sql, params object[] parameters) where T : new()
+        {
+            EnsureActive();
+            ValidateSql(sql);
+            return connection.Query<T>(sql, parameters ?? Array.Empty<object>());
         }
 
         internal void Close() => active = false;

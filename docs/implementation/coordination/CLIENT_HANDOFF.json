@@ -4,14 +4,14 @@
   "track": "client_sdk_and_mrsquare",
   "phase": "P3",
   "observed_epoch": 3,
-  "observed_backend_state_commit": "d876473212fef6bfdce93760440079ff18f8b2d2",
-  "handoff_kind": "progress_checkpoint",
-  "status": "in_progress",
+  "observed_backend_state_commit": "548b32f491ed6f7a4e45e6678102e9bd65d470e5",
+  "handoff_kind": "gate_publication",
+  "status": "g3_passed_p4_not_released",
   "quiescent": true,
-  "next_gate": "G3",
+  "next_gate": "G4",
   "implementation_commits": {
-    "sdk": "7c1f9534df3b245c6d0d30f5b56fc183a1f7758a",
-    "unity": "84c2b1137a8dbde497f22495910c9117d3024c5f"
+    "sdk": "ff7177d2f49a0f39f5fa614bb585d033a87fdce7",
+    "unity": "d8242e6860db17f5b9658350e646af06faabf670"
   },
   "required_repository_keys": [
     "sdk",
@@ -30,12 +30,12 @@
   "previous_completed_task_ids": [
     "CL-001",
     "CL-006",
-    "CL-014"
+    "CL-014",
+    "CL-015",
+    "CL-016"
   ],
   "partial_task_ids": [
     "CL-004",
-    "CL-015",
-    "CL-016",
     "INT-001",
     "INT-002"
   ],
@@ -43,9 +43,9 @@
     "CL-002": "Canonical typed UUID/scope primitives and compatibility-preserving outcomes/state; original 14 Platform tests pass against canonical SDK types.",
     "CL-003": "G1 schema/mirror plus 64 immutable DTO shapes,12 unions,explicit presence and generated schema mapping. No canonical delta.",
     "CL-013": "14-assembly managed bundle with dependency closure,symbols,notices,hashes and identical retained build inventories. Qualification MessagePack excluded pending CL-015.",
-    "CL-015": "Packaging-complete unpublished 23-assembly bundle with exact MessagePack closure,three reviewed SQLite targets,canonical Source Link/debug inputs,notices,AOT/PInvoke inventory and independently reproducible complete artifact. Unity/IL2CPP/device execution unrun.",
+    "CL-015": "Unpublished 23-assembly bundle with exact MessagePack closure, reviewed SQLite targets, source/debug inputs, notices and AOT/PInvoke inventory; exact imported bundle and Android IL2CPP/native behavior qualified on both authorized phones in R10 at the approved P3 scope.",
     "CL-004": "Qualification-only bounded MessagePack,typed mapping,canonical fingerprints and hostile-input checks; actual G2 peer/AOT remains unverified.",
-    "CL-016": "Producer/consumer and raw encode/decode CLI;34 actual CSharp MessagePack fixtures plus24 fingerprints; service/fault modes unavailable.",
+    "CL-016": "Producer/consumer and raw codec modes remain; separate GamePlatform.LivePeerHarness at e66edd1 passed real local C#/TS service, post-commit lost response, owner mismatch, repeat operation/business source, reward seed and SQL inspection. P4 quarantine retry policy remains open.",
     "INT-002": "Real Core/Features import and duplicate removal,exact artifact verifier,selected Unity7/7 EditMode with both scene assets; visual/control PlayMode and tested rollback remain unrun."
   },
   "evidence": [
@@ -153,7 +153,7 @@
     },
     {
       "scope": "Live migration/rewards",
-      "reason": "DEC-LEGACY-TRUST and DEC-CONTENT-VALIDATION unresolved; no historical reward replay or live grants."
+      "reason": "DEC-CONTENT-VALIDATION is accepted for the bounded test tier. Legacy-save policy is resolved as no migration: old gameplay PlayerPrefs/checkpoints are ignored and obsolete staging/import code must be removed; no historical reward replay exists."
     }
   ],
   "unrun_gates": [
@@ -172,8 +172,8 @@
     "After BOTH implementation tracks stop, run backend CODEX_SYNC.md; do not infer quiescence from the old backend P1 handoff.",
     "Use tests/acceptance/README.md to produce/consume exact core corpus in both directions at actual runtime SHAs; exercise compact/extreme/hostile binary probes with raw encode/decode CLI and preserve command logs.",
     "Review and pin proposed minimal live-slice schema deltas before P3; preserve schema approval versus runtime interoperability distinction.",
-    "Keep production codec unavailable until required acceptance; retain partial CL-004/CL-016/INT-001/INT-002 and all native/device/product blockers.",
-    "Release P3 only through committed G2 synchronization evidence. Remaining transport/storage/lifecycle work stays dependency-ready scope, not claimed completed."
+    "Historical P2 action: keep production codec unavailable until required acceptance. Current R10 evidence verifies the production C#/TS peer, native/device and bounded CL-016 modes; retain partial CL-004/INT-001/INT-002 and P4/provider blockers separately.",
+    "P3 review closure requires the committed R10 qualification and central-state reconciliation; historical G2/G3 reports remain unchanged and P4 is not released."
   ],
   "prior_handoff_commit": "3992ad1358d728a9d4b9cfbde9eaac9a2273d845",
   "note": "Three actual child agents reused across author,consumer,packaging and independent-review roles. All stopped. SDK/Unity execution branches published; no backend edits,main merge,distribution,deployment or package publication. STOPPED AT G2.",
@@ -245,11 +245,11 @@
     "unity_dependency_assessment": {
       "INT-003": "blocked by incomplete INT-001",
       "INT-004": "blocked by INT-003 and real executor/device acceptance",
-      "INT-005": "blocked by DEC-LEGACY-TRUST despite qualified CL-007/008 desktop slices",
+      "INT-005": "owner decision resolved: fresh-start game-owned SQLite only; remove obsolete legacy staging/import code; no external policy blocker remains",
       "INT-008": "blocked by CL-102/105/107 and INT-007",
       "INT-009": "CL-015 packaging input available; blocked by INT-006 and authorized Unity Android/device workflow"
     },
-    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "DEC-LEGACY-TRUST", "CL-004 production IWireCodec after required AOT acceptance", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 Unity import/IL2CPP/AOT/device execution", "actual Unity PlayMode/IL2CPP/device journey"],
+    "unresolved": ["EXT-GAME-OUTCOME-POLICY", "DEC-CONTENT-VALIDATION", "CL-004 production IWireCodec after required AOT acceptance", "qualified concrete HTTP executor/host composition", "BE-016 hosted composition", "CL-015 Unity import/IL2CPP/AOT/device execution", "actual Unity PlayMode/IL2CPP/device journey"],
     "cl010_http_increment": {
       "date": "2026-09-20",
       "sdk_baseline": "568d945c5597f085484465ac4372e4d2e2a3b9b3",
@@ -278,5 +278,56 @@
       "remaining": "Unity import/stripping,IL2CPP/APK,Android device and macOS execution unrun; production IWireCodec remains unavailable."
     },
     "next_action": "Import and qualify the CL-015 bundle through the authorized INT-009 Unity IL2CPP/AOT/device workflow before production IWireCodec availability; then continue concrete HTTP executor/host qualification and the real CL-010 fixed-boundary peer transcript. Do not assess G3 or start P4."
+  },
+  "p3_current_checkpoint": {
+    "recorded_at": "2026-09-24",
+    "status": "g3_passed",
+    "central_gate": "G3_passed_pending_central_state_publication",
+    "gate_report": {
+      "repository": "gindemit/game-platform-backend",
+      "path": "docs/implementation/coordination/gates/G3-epoch-3-passed.json"
+    },
+    "observed_backend_head": "1233be346ed28a7603a4c9784c78d0a3d75c400c",
+    "backend_runtime": "e9d3563d601b9ef93efe6fec8e619b244e9a23ea",
+    "sdk_head": "ff7177d2f49a0f39f5fa614bb585d033a87fdce7",
+    "sdk_bundle_manifest_sha256": "38452e4b6148f96bac795c45db6bb9585538046b394860c94b749cb6faf1030d",
+    "unity_consumer_install_sha256": "7961700c1e6822c0a748dcb5509c4ebcd2e359fdb026c69696ec351ceada04db",
+    "unity_sdk_import": "be11d6c95b3c9f75ef29bd4cead818fb430e38dc",
+    "unity_run_source": "d8242e6860db17f5b9658350e646af06faabf670",
+    "unity_evidence_head": "95fdf26a77cf4449582fa4f858f5cb0c8e87ce82",
+    "evidence": [
+      "Unity Reports/PlatformIntegration/INT-010/README.md",
+      "backend docs/implementation/evidence/BE-025.md"
+    ],
+    "verification": {
+      "sdk_dotnet_ff7177d": "527/527",
+      "sdk_validation": "passed (15 projects)",
+      "unity_editmode_full": "296/296",
+      "unity_playmode_graphics": "109 passed, 2 skipped, 0 failed",
+      "unity_journey_runner": "135/135 EditMode, 11/11 PlayMode",
+      "unity_editor_live": "online 1/1, offline 1/1",
+      "runner_harness": "84 OK",
+      "device_journey": "pass"
+    },
+    "device": "Samsung SM-G985F (coordinator-reported), API 33, arm64-v8a, IL2CPP High stripping; disposable local Supabase with per-run CA, not managed HTTPS",
+    "accepted_at_g3_scope": [
+      "INT-010"
+    ],
+    "caveats": [
+      "AutomatedTest composition entered through PlatformReadinessGate production-factory hook; production registration is P4",
+      "Reconnect is an online relaunch (offline scope cannot upgrade in-process)",
+      "N+1 is a hand-assembled resend through the captured production ICommandRemote; outbox post-rejection delivery cited from Cl009OrderedCommandSenderTests.TerminalRejectionFinalizesSequenceAndUnblocksNext",
+      "Campaign rejection label produced in memory, not rendered"
+    ],
+    "blocked": [
+      "Second device",
+      "Account switch with pending work and a late callback",
+      "Managed HTTPS"
+    ],
+    "unrun": [
+      "G4",
+      "P4"
+    ],
+    "next_action": "Coordinator publishes central state.json last. No P4 implementation without GOAL=P3_AND_P4 and a separate phase plan."
   }
 }

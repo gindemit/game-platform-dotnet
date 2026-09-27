@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using GamePlatform.Storage.Sqlite.Outbox;
 using GamePlatform.Storage.Sqlite.Sync;
 using GamePlatform.Storage.Sqlite.Cache;
+using GamePlatform.Storage.Sqlite.Features.Accounts;
 
 namespace GamePlatform.Storage.Sqlite.Migrations
 {
@@ -17,7 +18,11 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             {
                 SqliteOutboxMigration.Create(1),
                 SqlitePrivateSyncMigration.Create(2),
-                SqliteFeatureStateMigration.Create(3)
+                SqliteFeatureStateMigration.Create(3),
+                SqliteAccountsDirectoryMigration.Create(4),
+                SqliteExtensionMigrationJournal.Create(5),
+                SqliteEnvelopeAndZeroRevisionMigration.Create(6),
+                SqliteConfirmedProjectionInvalidationMigration.Create(7)
             });
 
         public static IReadOnlyList<SqliteMigration> Migrations => migrations;

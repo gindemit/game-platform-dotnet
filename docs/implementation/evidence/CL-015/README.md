@@ -139,3 +139,81 @@ the complete hash comparison are archived in `lf-reproduction/`.
 This anchor supersedes the HTTP artifact above. CL-015 remains `in_progress` for
 macOS native execution; new HTTP Unity/device/live acceptance remains unverified.
 No runtime behavior, dependency pin, protocol or Unity import changed.
+
+## G3 current-bundle refresh — 2026-09-20
+
+The G3 SDK-head refresh starts from requested coordinated-branch source
+`686721a6a5f0fcd3525d4b6a0002406abbad061a`. Its packaging-only corrections
+are source commit `b494b6dd0dc9a9cf1692337ba18ce7490838aec6`: the package
+manifest/verifier and the generated bundle README now accurately require and
+describe the already-promoted production `MessagePackWireCodec`, rather than
+incorrectly declaring it unavailable. This does not add a package, a serializer
+fallback, a Unity dependency, or a protocol change.
+
+The unpublished artifact at
+`C:/Work/git/gindemit/game-platform-dotnet-g3bundle-20260920/artifacts/sdk`
+has manifest SHA-256
+`c911e88c0d2ebd083c59ece912b792bdc97882b1866f9b61d89064ae7a3bb4fb`.
+It contains 23 managed assemblies (all 15 current SDK assemblies and the exact
+eight runtime MessagePack closure assemblies; MessagePackAnalyzer remains
+build-only), three pinned SQLite native targets, nine pinned package records,
+38 P/Invoke declarations and 100 files including the manifest. The closure
+inspector accepts every current assembly reference. `GamePlatform.Sync` itself
+does not declare a direct serializer reference; its portable references close
+inside the bundle, while `GamePlatform.Transport.Http` declares the reviewed
+`GamePlatform.Serialization.MessagePack` edge and the complete MessagePack
+runtime closure is present exactly once.
+
+Fresh locked restore/Release rebuild, normal package verification, 29 packaging
+positive/negative tests, 485 SDK tests, architecture/contract validation and
+19 validator tests all passed with zero build warnings/errors. Two independent
+clean clones with deliberately different origin metadata rebuilt and normally
+verified byte-identical complete artifacts (100 files including manifest); the
+external retained reproduction summary is
+`C:/Work/git/gindemit/sdk-bundle-evidence-g3-20260920-r2/reproducibility-summary.json`.
+See `g3-current-bundle-2026-09-20.json` for exact command and inventory facts.
+
+This is packaging evidence only. The refreshed bundle still needs the real
+Unity import/IL2CPP/device/live-host journey before CL-015 or G3 can be marked
+complete; no package was published.
+
+## Final G3 bundle refresh — 2026-09-21
+
+The final G3 artifact is a fresh clean build of coordinated primary source
+`73cf2feb84734d453a138573c4ffbc6ffc9a2e1b`. It includes the CL-107 atomic
+receipt-correlation repair and CL-101's public bounded Supabase anonymous-auth
+CAS adapter plus `AccountsLifecycleService.StopAsync`; these are compiled in
+the inspected `GamePlatform.Features` and `GamePlatform.Transport.Http`
+assemblies, not merely represented in source documentation. Packaging policy
+inputs required no new correction: the promoted production
+`MessagePackWireCodec`, explicit runtime closure and fail-closed native/import
+checks remain in force.
+
+The unpublished artifact is
+`C:/Work/git/gindemit/game-platform-dotnet-g3bundle-final-20260921/artifacts/sdk`.
+Its source-clean, non-skipped manifest SHA-256 is
+`14562ae0b16985d8a5de5c04a3374fd3f06e83289496810ba516afa7b3e6201e`.
+It has 15 SDK projects, 23 managed assemblies (15 SDK plus the exact eight-DLL
+MessagePack runtime closure; MessagePackAnalyzer is build-only), nine pinned
+package records, three pinned SQLite native targets, 38 P/Invoke declarations
+and 100 files including the manifest. The inspector accepted every managed
+reference; `GamePlatform.Transport.Http` closes the reviewed Features,
+Storage.Abstractions and MessagePack dependencies, while `GamePlatform.Sync`
+remains correctly serializer-neutral.
+
+Locked restore/Release package build and normal verification passed with zero
+warnings/errors. Packaging tests pass 29/29, the full Release SDK suite passes
+503/503, architecture/contract validation passes, validator tests pass 19/19
+and the independent execution-manifest suite passes 14/14. Two independently
+cloned clean checkouts with deliberately distinct origin metadata rebuilt and
+normally verified byte-identical complete 100-file artifacts. Retained external
+reproduction evidence is
+`C:/Work/git/gindemit/sdk-bundle-evidence-final-g3-20260921/reproducibility-summary.json`;
+exact facts and commands are in `g3-final-bundle-2026-09-21.json`.
+
+The artifact source commit intentionally precedes its evidence commit, so the
+bundle remains source-clean and independently reproducible; the evidence only
+records that immutable artifact. No package was published. Hosted TLS Supabase
+auth/backend execution, Unity auth/secure-store bridge, Unity import, IL2CPP
+and stripping, APK/device execution, macOS native execution and the actual G3
+journey remain unrun.

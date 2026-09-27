@@ -12,7 +12,7 @@ namespace GamePlatform.Transport.Http
 {
     /// <summary>
     /// Bounded System.Net.Http execution for the frozen MessagePack provisioning,
-    /// bootstrap, pull and receipt routes. The HttpClient lifetime is owned by the
+    /// bootstrap, pull, push and receipt routes. The HttpClient lifetime is owned by the
     /// caller; redirects must remain disabled on its handler.
     /// </summary>
     public sealed class BoundedHttpClientExecutor : IHttpExecutor
@@ -123,14 +123,17 @@ namespace GamePlatform.Transport.Http
                 !Guid.TryParseExact(segments[2], "D", out _)) return false;
             if (isGet)
             {
-                return segments.Length == 4 && segments[3] == "bootstrap" &&
+                return (segments.Length == 4 && segments[3] == "bootstrap" &&
                     query.StartsWith("?clientStreamId=", StringComparison.Ordinal) &&
-                    Guid.TryParseExact(query.Substring("?clientStreamId=".Length), "D", out _);
+                    Guid.TryParseExact(query.Substring("?clientStreamId=".Length), "D", out _)) ||
+                    (query.Length == 0 && segments.Length == 6 && segments[3] == "gameplay" &&
+                    segments[4] == "reward-receipts" && Guid.TryParseExact(segments[5], "D", out _));
             }
             if (query.Length != 0) return false;
             return (segments.Length == 4 && segments[3] == "provision") ||
                 (segments.Length == 5 && segments[3] == "bootstrap" && segments[4] == "pages") ||
                 (segments.Length == 5 && segments[3] == "sync" && segments[4] == "pull") ||
+                (segments.Length == 5 && segments[3] == "sync" && segments[4] == "push") ||
                 (segments.Length == 6 && segments[3] == "sync" && segments[4] == "receipts" && segments[5] == "lookup");
         }
 

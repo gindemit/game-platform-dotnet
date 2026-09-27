@@ -20,7 +20,10 @@ public sealed class OpaqueTokenTests
         return buffer.WrittenSpan.ToArray();
     }
 
-    [Theory][InlineData(12)][InlineData(13)][InlineData(3072)]
+    [Theory]
+    [InlineData(12)]
+    [InlineData(13)]
+    [InlineData(3072)]
     public void PrimitiveAndTypedTokensUseBinary(int length)
     {
         var codec = new QualificationMessagePackCodec();
@@ -44,7 +47,9 @@ public sealed class OpaqueTokenTests
         Assert.Equal(token, typed.Decode<BootstrapPageRequest>(bytes).PageToken);
     }
 
-    [Theory][InlineData(11)][InlineData(3073)]
+    [Theory]
+    [InlineData(11)]
+    [InlineData(3073)]
     public void OutOfRangeTokensFailBothDirections(int length)
     {
         var codec = new QualificationMessagePackCodec();
@@ -53,9 +58,12 @@ public sealed class OpaqueTokenTests
     }
 
     [Theory]
-    [InlineData("AAAAAAAAAAAAAAAA=")][InlineData("AAAAAAAAAAAAAAA+")]
-    [InlineData("AAAAAAAAAAAAAAAAA")][InlineData("AAAAAAAAAAAAAAAAAB")]
-    [InlineData("AAAAAAAAAAAAAAA/")][InlineData("AAAAAAAAAAAAAAAA\n")]
+    [InlineData("AAAAAAAAAAAAAAAA=")]
+    [InlineData("AAAAAAAAAAAAAAA+")]
+    [InlineData("AAAAAAAAAAAAAAAAA")]
+    [InlineData("AAAAAAAAAAAAAAAAAB")]
+    [InlineData("AAAAAAAAAAAAAAA/")]
+    [InlineData("AAAAAAAAAAAAAAAA\n")]
     public void NoncanonicalDiagnosticsFail(string token)
     { Assert.Throws<QualificationCodecException>(() => new QualificationMessagePackCodec().Encode(Schema, V.String(token))); }
 
@@ -66,7 +74,9 @@ public sealed class OpaqueTokenTests
         Assert.Throws<QualificationCodecException>(() => new QualificationMessagePackCodec().Decode(Schema, bytes));
     }
 
-    [Theory][InlineData(1, false)][InlineData(70, true)]
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(70, true)]
     public void BinaryExpansionIsReservedBeforeSchemaEvaluation(int count, bool exceedsBudget)
     {
         var buffer = new ArrayBufferWriter<byte>(); var writer = new MessagePackWriter(buffer);

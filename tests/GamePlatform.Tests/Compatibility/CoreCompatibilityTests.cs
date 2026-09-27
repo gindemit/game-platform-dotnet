@@ -85,8 +85,14 @@ public sealed class CoreCompatibilityTests
     }
 
     [Theory]
-    [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)]
-    [InlineData(5)] [InlineData(6)] [InlineData(7)] [InlineData(8)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
     public void IssuedVersionsArePreservedPerApprovedUuidSchema(int version)
     {
         Guid value = Guid.Parse($"00112233-4455-{version}677-8899-aabbccddeeff");

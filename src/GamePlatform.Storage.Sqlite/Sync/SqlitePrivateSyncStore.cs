@@ -7,55 +7,429 @@ using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Core;
 using GamePlatform.Storage.Abstractions;
+using GamePlatform.Storage.Abstractions.Outbox;
 using GamePlatform.Storage.Abstractions.Sync;
 using GamePlatform.Storage.Sqlite.Executor;
 
 namespace GamePlatform.Storage.Sqlite.Sync
 {
-    internal enum SyncCheckpoint { PageStaged, BeforeBootstrapInstall, BootstrapInstalled, BeforePullCommit }
+    internal enum SyncCheckpoint { PageStaged, BeforeBootstrapInstall, BootstrapInstalled, BeforePullCommit, BeforeDemotionCommit }
 
     public sealed class SqlitePrivateSyncStore : IPrivateSyncStore
     {
-        private static readonly string[] Required={"profile","progression","inventory","wallet","entitlements"};
-        private readonly SqliteDatabase database;private readonly StorageScope scope;private readonly Action<ILocalStorageTransaction> rebuildOverlays;private readonly Action<SyncCheckpoint>? checkpoint;
-        public SqlitePrivateSyncStore(SqliteDatabase database,StorageScope scope,Action<ILocalStorageTransaction> rebuildOverlays):this(database,scope,rebuildOverlays,null){}
-        internal SqlitePrivateSyncStore(SqliteDatabase database,StorageScope scope,Action<ILocalStorageTransaction> rebuildOverlays,Action<SyncCheckpoint>? checkpoint){this.database=database??throw new ArgumentNullException(nameof(database));this.rebuildOverlays=rebuildOverlays??throw new ArgumentNullException(nameof(rebuildOverlays));this.scope=scope;if(!database.Scope.Equals(scope))throw new StorageException(StorageFailure.InvalidOwner,"The sync scope does not match the database.");this.checkpoint=checkpoint;}
-
-        public Task<BootstrapProgress?> GetBootstrapProgressAsync(CancellationToken token)=>database.ExecuteAsync(scope,t=>{var s=(SqliteTransactionSession)t;if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1")==0)return null;return new BootstrapProgress(new ClientStreamId(Guid.Parse(s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1"))),s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1"),s.ExecuteScalar<long>("SELECT visibility_generation FROM gp_bootstrap_state WHERE singleton=1"),Guid.Parse(s.ExecuteScalar<string>("SELECT log_epoch FROM gp_bootstrap_state WHERE singleton=1")),s.ExecuteScalar<long>("SELECT expires_at FROM gp_bootstrap_state WHERE singleton=1"),s.ExecuteScalar<byte[]>("SELECT session_token FROM gp_bootstrap_state WHERE singleton=1"),s.ExecuteScalar<byte[]>("SELECT next_page_token FROM gp_bootstrap_state WHERE singleton=1"));},token);
-
-        public Task BeginBootstrapAsync(BootstrapBoundary start,CancellationToken token)
+        private static readonly string[] Required = { "profile", "progression", "inventory", "wallet", "entitlements" };
+        private readonly SqliteDatabase database;
+        private readonly StorageScope scope;
+        private readonly IPrivateSyncProjectionProjector projector;
+        private readonly Action<ILocalStorageTransaction> rebuildOverlays;
+        private readonly Action<SyncCheckpoint>? checkpoint;
+        [Obsolete("Private sync requires an explicit IPrivateSyncProjectionProjector. This compatibility constructor fails when a group or snapshot is installed.")]
+        public SqlitePrivateSyncStore(SqliteDatabase database, StorageScope scope, Action<ILocalStorageTransaction> rebuildOverlays)
+            : this(database, scope, new MissingProjectionProjector(), rebuildOverlays, null)
         {
-            if(start==null)throw new ArgumentNullException(nameof(start));ValidateManifest(start.RequiredCollections);
-            return database.ExecuteAsync(scope,t=>{var s=(SqliteTransactionSession)t;EnsureStream(s,start.StreamId);ValidateStreamBoundary(start);var manifest=string.Join(",",start.RequiredCollections.OrderBy(v=>v,StringComparer.Ordinal));s.Execute("DELETE FROM gp_bootstrap_pages");s.Execute("DELETE FROM gp_bootstrap_entities");s.Execute("DELETE FROM gp_bootstrap_state");s.Execute("INSERT INTO gp_bootstrap_state VALUES (1,?,?,?,?,?,?,?,?,?,?,?)",start.StreamId.ToString(),start.StreamState,start.FinalizedThrough,start.NextSequence.HasValue?(object)start.NextSequence.Value:null!,start.CopySession(),start.CopyFirstPageToken(),start.CommittedThrough,start.VisibilityGeneration,start.LogEpoch.ToString("D"),start.ExpiresAt,manifest);return true;},token);
+        }
+        public SqlitePrivateSyncStore(
+            SqliteDatabase database,
+            StorageScope scope,
+            IPrivateSyncProjectionProjector projector,
+            Action<ILocalStorageTransaction> rebuildOverlays)
+            : this(database, scope, projector, rebuildOverlays, null)
+        {
+        }
+        internal SqlitePrivateSyncStore(
+            SqliteDatabase database,
+            StorageScope scope,
+            IPrivateSyncProjectionProjector projector,
+            Action<ILocalStorageTransaction> rebuildOverlays,
+            Action<SyncCheckpoint>? checkpoint)
+        {
+            this.database = database ?? throw new ArgumentNullException(nameof(database));
+            this.projector = projector ?? throw new ArgumentNullException(nameof(projector));
+            this.rebuildOverlays = rebuildOverlays ?? throw new ArgumentNullException(nameof(rebuildOverlays));
+            this.scope = scope;
+            if (!database.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The sync scope does not match the database.");
+            this.checkpoint = checkpoint;
         }
 
-        public Task StageBootstrapPageAsync(StagedBootstrapPage page,CancellationToken token)
+        public Task<BootstrapProgress?> GetBootstrapProgressAsync(CancellationToken token) => database.ExecuteAsync(scope, t =>
         {
-            if(page==null)throw new ArgumentNullException(nameof(page));ValidateMutations(page.Entities,true);
-            return database.ExecuteAsync(scope,t=>{var s=(SqliteTransactionSession)t;if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1")!=1)throw new StorageException(StorageFailure.NotReady,"No bootstrap is being staged.");var expectedSession=s.ExecuteScalar<byte[]>("SELECT session_token FROM gp_bootstrap_state WHERE singleton=1");var pageToken=s.ExecuteScalar<byte[]>("SELECT next_page_token FROM gp_bootstrap_state WHERE singleton=1");if(!Equal(expectedSession,page.CopySession())||!Equal(pageToken,page.CopyRequestedPageToken())||page.CommittedThrough!=s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1"))throw new StorageException(StorageFailure.IdentityConflict,"The snapshot page is outside the staged boundary.");
-                foreach(var entity in page.Entities)UpsertStaged(s,entity);var next=page.CopyNextPageToken();var cursor=page.CopyInitialPullCursor();s.Execute("INSERT INTO gp_bootstrap_pages(page_token,next_page_token,final_cursor) VALUES (?,?,?)",pageToken,next,cursor);checkpoint?.Invoke(SyncCheckpoint.PageStaged);
-                if(page.HasMore){s.Execute("UPDATE gp_bootstrap_state SET next_page_token=? WHERE singleton=1",next!);return true;}
-                checkpoint?.Invoke(SyncCheckpoint.BeforeBootstrapInstall);Install(s,cursor!);rebuildOverlays(s);checkpoint?.Invoke(SyncCheckpoint.BootstrapInstalled);return true;},token);
+            var s = (SqliteTransactionSession)t;
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1") == 0) return null;
+            return new BootstrapProgress(
+                new ClientStreamId(Guid.Parse(s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1"))),
+                s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1"),
+                s.ExecuteScalar<long>("SELECT visibility_generation FROM gp_bootstrap_state WHERE singleton=1"),
+                Guid.Parse(s.ExecuteScalar<string>("SELECT log_epoch FROM gp_bootstrap_state WHERE singleton=1")),
+                s.ExecuteScalar<long>("SELECT expires_at FROM gp_bootstrap_state WHERE singleton=1"),
+                s.ExecuteScalar<byte[]>("SELECT session_token FROM gp_bootstrap_state WHERE singleton=1"),
+                s.ExecuteScalar<byte[]>("SELECT next_page_token FROM gp_bootstrap_state WHERE singleton=1"));
+        }, token);
+
+        public Task BeginBootstrapAsync(BootstrapBoundary start, CancellationToken token)
+        {
+            if (start == null) throw new ArgumentNullException(nameof(start)); ValidateManifest(start.RequiredCollections);
+            return database.ExecuteAsync(scope, t =>
+            {
+                var s = (SqliteTransactionSession)t;
+                EnsureStream(s, start.StreamId);
+                ValidateStreamBoundary(start);
+                var manifest = string.Join(",", start.RequiredCollections.OrderBy(v => v, StringComparer.Ordinal));
+                s.Execute("DELETE FROM gp_bootstrap_pages");
+                s.Execute("DELETE FROM gp_bootstrap_entities");
+                s.Execute("DELETE FROM gp_bootstrap_state");
+                s.Execute("INSERT INTO gp_bootstrap_state VALUES (1,?,?,?,?,?,?,?,?,?,?,?)",
+                    start.StreamId.ToString(),
+                    start.StreamState,
+                    start.FinalizedThrough,
+                    start.NextSequence.HasValue ? (object)start.NextSequence.Value : null!,
+                    start.CopySession(),
+                    start.CopyFirstPageToken(),
+                    start.CommittedThrough,
+                    start.VisibilityGeneration,
+                    start.LogEpoch.ToString("D"),
+                    start.ExpiresAt,
+                    manifest);
+                return true;
+            }, token);
         }
 
-        public Task<PullCheckpoint> GetPullCheckpointAsync(CancellationToken token)=>database.ExecuteAsync(scope,t=>{var s=(SqliteTransactionSession)t;if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND ready=1 AND pull_cursor IS NOT NULL")!=1)throw new StorageException(StorageFailure.NotReady,"A complete bootstrap is required before pull.");var fixedCount=s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND fixed_through IS NOT NULL");return new PullCheckpoint(new ClientStreamId(Guid.Parse(s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_sync_state WHERE singleton=1"))),s.ExecuteScalar<byte[]>("SELECT pull_cursor FROM gp_sync_state WHERE singleton=1"),s.ExecuteScalar<long>("SELECT committed_through FROM gp_sync_state WHERE singleton=1"),fixedCount==0?(long?)null:s.ExecuteScalar<long>("SELECT fixed_through FROM gp_sync_state WHERE singleton=1"));},token);
-
-        public Task ApplyPullPageAsync(StoredPullPage page,CancellationToken token)
+        public Task StageBootstrapPageAsync(StagedBootstrapPage page, CancellationToken token)
         {
-            if(page==null)throw new ArgumentNullException(nameof(page));ValidateGroups(page);
-            return database.ExecuteAsync(scope,t=>{var s=(SqliteTransactionSession)t;if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND ready=1")!=1)throw new StorageException(StorageFailure.NotReady,"A complete bootstrap is required before pull.");var current=s.ExecuteScalar<long>("SELECT committed_through FROM gp_sync_state WHERE singleton=1");var hasFixed=s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND fixed_through IS NOT NULL")==1;var fixedThrough=hasFixed?s.ExecuteScalar<long>("SELECT fixed_through FROM gp_sync_state WHERE singleton=1"):page.CommittedThrough;if(fixedThrough!=page.CommittedThrough||page.CommittedThrough<current)throw new StorageException(StorageFailure.IdentityConflict,"The pull page changed its fixed boundary.");foreach(var group in page.Groups){if(group.Revision<=current)throw new StorageException(StorageFailure.IdentityConflict,"A pull group is not after the durable checkpoint.");foreach(var change in group.Changes)Apply(s,change);}rebuildOverlays(s);checkpoint?.Invoke(SyncCheckpoint.BeforePullCommit);var cursor=page.CopyNextCursor();var applied=page.Groups.Count==0?current:page.Groups[page.Groups.Count-1].Revision;if(!page.HasMore)applied=page.CommittedThrough;if(applied<current)throw new StorageException(StorageFailure.IdentityConflict,"The pull checkpoint would regress.");s.Execute("UPDATE gp_sync_state SET pull_cursor=?, committed_through=?, fixed_through=? WHERE singleton=1",cursor,applied,page.HasMore?(object)page.CommittedThrough:null!);return true;},token);
+            if (page == null) throw new ArgumentNullException(nameof(page)); ValidateMutations(page.Entities, true);
+            return database.ExecuteAsync(scope, t =>
+            {
+                var s = (SqliteTransactionSession)t;
+                if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1") != 1)
+                    throw new StorageException(StorageFailure.NotReady, "No bootstrap is being staged.");
+                var expectedSession = s.ExecuteScalar<byte[]>("SELECT session_token FROM gp_bootstrap_state WHERE singleton=1");
+                var pageToken = s.ExecuteScalar<byte[]>("SELECT next_page_token FROM gp_bootstrap_state WHERE singleton=1");
+                if (!Equal(expectedSession, page.CopySession()) ||
+                    !Equal(pageToken, page.CopyRequestedPageToken()) ||
+                    page.CommittedThrough != s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1"))
+                    throw new StorageException(StorageFailure.IdentityConflict, "The snapshot page is outside the staged boundary.");
+                foreach (var entity in page.Entities) UpsertStaged(s, entity);
+                var next = page.CopyNextPageToken();
+                var cursor = page.CopyInitialPullCursor();
+                s.Execute("INSERT INTO gp_bootstrap_pages(page_token,next_page_token,final_cursor) VALUES (?,?,?)", pageToken, next, cursor);
+                checkpoint?.Invoke(SyncCheckpoint.PageStaged);
+                if (page.HasMore)
+                {
+                    s.Execute("UPDATE gp_bootstrap_state SET next_page_token=? WHERE singleton=1", next!);
+                    return true;
+                }
+                checkpoint?.Invoke(SyncCheckpoint.BeforeBootstrapInstall);
+                Install(s, cursor!, page.ServerTime);
+                rebuildOverlays(s);
+                checkpoint?.Invoke(SyncCheckpoint.BootstrapInstalled);
+                return true;
+            }, token);
         }
 
-        private static void Install(SqliteTransactionSession s,byte[] cursor){ReconcileCommandStream(s);s.Execute("DELETE FROM gp_confirmed_projection");s.Execute("INSERT INTO gp_confirmed_projection SELECT collection,entity_key,entity_revision,'visible',payload FROM gp_bootstrap_entities");var stream=s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");var streamState=s.ExecuteScalar<string>("SELECT stream_state FROM gp_bootstrap_state WHERE singleton=1");var through=s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1");var visibility=s.ExecuteScalar<long>("SELECT visibility_generation FROM gp_bootstrap_state WHERE singleton=1");var epoch=s.ExecuteScalar<string>("SELECT log_epoch FROM gp_bootstrap_state WHERE singleton=1");s.Execute("DELETE FROM gp_sync_state");s.Execute("INSERT INTO gp_sync_state VALUES (1,?,1,?,?,NULL,?,?)",stream,cursor,through,visibility,epoch);s.Execute("UPDATE gp_stream_state SET ready=? WHERE singleton=1 AND client_stream_id=?",streamState=="active"?1:0,stream);s.Execute("DELETE FROM gp_bootstrap_pages");s.Execute("DELETE FROM gp_bootstrap_entities");s.Execute("DELETE FROM gp_bootstrap_state");}
-        private static void ReconcileCommandStream(SqliteTransactionSession s){var state=s.ExecuteScalar<string>("SELECT stream_state FROM gp_bootstrap_state WHERE singleton=1");var stream=s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");var serverFinal=s.ExecuteScalar<long>("SELECT finalized_through FROM gp_bootstrap_state WHERE singleton=1");var localFinal=s.ExecuteScalar<long>("SELECT finalized_through FROM gp_stream_state WHERE singleton=1");var localNext=s.ExecuteScalar<long>("SELECT next_sequence FROM gp_stream_state WHERE singleton=1");if(serverFinal!=localFinal)throw new StorageException(StorageFailure.StreamRecoveryRequired,serverFinal>localFinal?"The server stream is ahead of local terminal state.":"The bootstrap stream boundary regressed.");var expectedRows=localNext-1;if(s.ExecuteScalar<long>("SELECT COUNT(*) FROM gp_outbox")!=expectedRows||s.ExecuteScalar<long>("SELECT COUNT(*) FROM gp_outbox WHERE client_stream_id=? AND sequence>0 AND sequence<?",stream,localNext)!=expectedRows)throw new StorageException(StorageFailure.StreamRecoveryRequired,"The local command stream has a gap or foreign sequence.");if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox WHERE sequence<=? AND delivery_state NOT IN ('accepted','terminal_rejected')",serverFinal)!=0)throw new StorageException(StorageFailure.StreamRecoveryRequired,"A server-finalized command lacks a local terminal result.");if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox WHERE sequence>? AND delivery_state IN ('accepted','terminal_rejected')",serverFinal)!=0)throw new StorageException(StorageFailure.StreamRecoveryRequired,"Local terminal state is ahead of the authoritative boundary.");if(state=="active"){if(serverFinal==long.MaxValue)throw new StorageException(StorageFailure.SequenceExhausted,"An exhausted stream cannot accept commands.");var serverNext=s.ExecuteScalar<long>("SELECT authoritative_next_sequence FROM gp_bootstrap_state WHERE singleton=1");if(serverNext!=serverFinal+1||localNext<serverNext)throw new StorageException(StorageFailure.StreamRecoveryRequired,"The active stream sequence boundary is inconsistent.");}else if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox WHERE sequence>?",serverFinal)!=0)throw new StorageException(StorageFailure.StreamRecoveryRequired,"A retired stream still has pending or uncertain commands.");}
-        private static void UpsertStaged(SqliteTransactionSession s,StoredProjectionMutation e){if(e.Kind!=StoredProjectionKind.Upsert)throw new StorageException(StorageFailure.Constraint,"Snapshot entities must be upserts.");var count=s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_entities WHERE collection=? AND entity_key=?",e.Collection,e.EntityKey);if(count==0)s.Execute("INSERT INTO gp_bootstrap_entities VALUES (?,?,?,?)",e.Collection,e.EntityKey,e.Revision,e.CopyPayload());else{var revision=s.ExecuteScalar<long>("SELECT entity_revision FROM gp_bootstrap_entities WHERE collection=? AND entity_key=?",e.Collection,e.EntityKey);var payload=s.ExecuteScalar<byte[]>("SELECT payload FROM gp_bootstrap_entities WHERE collection=? AND entity_key=?",e.Collection,e.EntityKey);if(revision!=e.Revision||!Equal(payload,e.CopyPayload()))throw new StorageException(StorageFailure.IdentityConflict,"A staged entity changed within one snapshot.");}}
-        private static void Apply(SqliteTransactionSession s,StoredProjectionMutation e){var count=s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_confirmed_projection WHERE collection=? AND entity_key=?",e.Collection,e.EntityKey);if(count!=0){var revision=s.ExecuteScalar<long>("SELECT entity_revision FROM gp_confirmed_projection WHERE collection=? AND entity_key=?",e.Collection,e.EntityKey);if(e.Revision<revision)return;if(e.Revision==revision){var state=s.ExecuteScalar<string>("SELECT state FROM gp_confirmed_projection WHERE collection=? AND entity_key=?",e.Collection,e.EntityKey);var expected=State(e.Kind);var payload=e.CopyPayload();var same=state==expected&&(e.Kind!=StoredProjectionKind.Upsert||Equal(s.ExecuteScalar<byte[]>("SELECT payload FROM gp_confirmed_projection WHERE collection=? AND entity_key=?",e.Collection,e.EntityKey),payload));if(!same)throw new StorageException(StorageFailure.IdentityConflict,"An entity revision changed meaning.");return;}s.Execute("UPDATE gp_confirmed_projection SET entity_revision=?,state=?,payload=? WHERE collection=? AND entity_key=?",e.Revision,State(e.Kind),e.Kind==StoredProjectionKind.Upsert?(object)e.CopyPayload():null!,e.Collection,e.EntityKey);}else s.Execute("INSERT INTO gp_confirmed_projection VALUES (?,?,?,?,?)",e.Collection,e.EntityKey,e.Revision,State(e.Kind),e.Kind==StoredProjectionKind.Upsert?(object)e.CopyPayload():null!);}
-        private static string State(StoredProjectionKind kind)=>kind==StoredProjectionKind.Upsert?"visible":kind==StoredProjectionKind.RemoveFromView?"removed":"tombstone";
-        private static void EnsureStream(SqliteTransactionSession s,ClientStreamId stream){if(s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_stream_state WHERE singleton=1 AND client_stream_id=?",stream.ToString())!=1)throw new StorageException(StorageFailure.StreamRecoveryRequired,"The bootstrap stream does not match durable command state.");}
-        private static void ValidateStreamBoundary(BootstrapBoundary value){if(value.StreamState!="active"&&value.StreamState!="retired")throw new StorageException(StorageFailure.Constraint,"The stream state is unsupported.");if(value.StreamState=="retired" ? value.NextSequence!=null : value.FinalizedThrough==long.MaxValue||value.NextSequence==null||value.NextSequence<=0||value.NextSequence!=value.FinalizedThrough+1)throw new StorageException(StorageFailure.Constraint,"The stream sequence boundary is invalid.");}
-        private static void ValidateManifest(IReadOnlyList<string> values){var seen=new HashSet<string>(StringComparer.Ordinal);foreach(var value in values){if(!Required.Contains(value,StringComparer.Ordinal))throw new StorageException(StorageFailure.Constraint,"An unknown required collection was declared.");if(!seen.Add(value))throw new StorageException(StorageFailure.Constraint,"A collection was declared twice.");}foreach(var required in Required)if(!seen.Contains(required))throw new StorageException(StorageFailure.Constraint,"The bootstrap manifest is incomplete.");}
-        private static void ValidateMutations(IReadOnlyList<StoredProjectionMutation> values,bool snapshot){long bytes=0;if(values.Count>1024)throw new StorageException(StorageFailure.Capacity,"A projection page is oversized.");foreach(var value in values){bytes=checked(bytes+value.CopyPayload().Length);if(bytes>262_144)throw new StorageException(StorageFailure.Capacity,"A projection page is oversized.");if(!Required.Contains(value.Collection,StringComparer.Ordinal)||!Enum.IsDefined(typeof(StoredProjectionKind),value.Kind)||(snapshot&&value.Kind!=StoredProjectionKind.Upsert))throw new StorageException(StorageFailure.Constraint,"A required projection kind is unsupported.");}}
-        private static void ValidateGroups(StoredPullPage page){long previous=0;foreach(var group in page.Groups){if(group.Revision<=previous||group.Revision>page.CommittedThrough)throw new StorageException(StorageFailure.Constraint,"Pull groups are not complete and ordered.");ValidateMutations(group.Changes,false);previous=group.Revision;}if(page.HasMore&&(page.Groups.Count==0||previous>=page.CommittedThrough))throw new StorageException(StorageFailure.Constraint,"A continuing page made no valid progress.");}
-        private static bool Equal(byte[] a,byte[] b){if(a==null||b==null||a.Length!=b.Length)return false;var d=0;for(var i=0;i<a.Length;i++)d|=a[i]^b[i];return d==0;}
+        public Task<PullCheckpoint> GetPullCheckpointAsync(CancellationToken token) => database.ExecuteAsync(scope, t =>
+        {
+            var s = (SqliteTransactionSession)t;
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND ready=1 AND pull_cursor IS NOT NULL") != 1)
+                throw new StorageException(StorageFailure.NotReady, "A complete bootstrap is required before pull.");
+            var fixedCount = s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND fixed_through IS NOT NULL");
+            return new PullCheckpoint(
+                new ClientStreamId(Guid.Parse(s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_sync_state WHERE singleton=1"))),
+                s.ExecuteScalar<byte[]>("SELECT pull_cursor FROM gp_sync_state WHERE singleton=1"),
+                s.ExecuteScalar<long>("SELECT committed_through FROM gp_sync_state WHERE singleton=1"),
+                fixedCount == 0 ? (long?)null : s.ExecuteScalar<long>("SELECT fixed_through FROM gp_sync_state WHERE singleton=1"));
+        }, token);
+
+        public Task ApplyPullPageAsync(StoredPullPage page, CancellationToken token)
+        {
+            if (page == null) throw new ArgumentNullException(nameof(page)); ValidateGroups(page);
+            return database.ExecuteAsync(scope, t =>
+            {
+                var s = (SqliteTransactionSession)t;
+                if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND ready=1") != 1)
+                    throw new StorageException(StorageFailure.NotReady, "A complete bootstrap is required before pull.");
+                var current = s.ExecuteScalar<long>("SELECT committed_through FROM gp_sync_state WHERE singleton=1");
+                var hasFixed = s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state WHERE singleton=1 AND fixed_through IS NOT NULL") == 1;
+                var fixedThrough = hasFixed ? s.ExecuteScalar<long>("SELECT fixed_through FROM gp_sync_state WHERE singleton=1") : page.CommittedThrough;
+                if (fixedThrough != page.CommittedThrough || page.CommittedThrough < current)
+                    throw new StorageException(StorageFailure.IdentityConflict, "The pull page changed its fixed boundary.");
+                var observation = new PrivateSyncProjectionObservation(fixedThrough, page.ServerTime);
+                foreach (var group in page.Groups)
+                {
+                    if (group.Revision <= current)
+                        throw new StorageException(StorageFailure.IdentityConflict, "A pull group is not after the durable checkpoint.");
+                    foreach (var change in group.Changes) Apply(s, change);
+                    if (projector is IObservedPrivateSyncProjectionProjector observed) observed.ProjectConfirmedGroup(s, group, observation);
+                    else projector.ProjectConfirmedGroup(s, group);
+                }
+                rebuildOverlays(s);
+                checkpoint?.Invoke(SyncCheckpoint.BeforePullCommit);
+                var cursor = page.CopyNextCursor();
+                var applied = page.Groups.Count == 0 ? current : page.Groups[page.Groups.Count - 1].Revision;
+                if (!page.HasMore) applied = page.CommittedThrough;
+                if (applied < current) throw new StorageException(StorageFailure.IdentityConflict, "The pull checkpoint would regress.");
+                s.Execute(
+                    "UPDATE gp_sync_state SET pull_cursor=?, committed_through=?, fixed_through=? WHERE singleton=1",
+                    cursor,
+                    applied,
+                    page.HasMore ? (object)page.CommittedThrough : null!);
+                return true;
+            }, token);
+        }
+
+        public Task<IReadOnlyList<StoredTerminalCommand>> ReadTerminalCommandsAboveBootstrapBoundaryAsync(CancellationToken token) => database.ExecuteAsync(scope, t =>
+        {
+            var s = (SqliteTransactionSession)t;
+            if (!TryReadRegressedBoundary(s, out var serverFinal, out var localFinal, out var stream))
+                return (IReadOnlyList<StoredTerminalCommand>)Array.Empty<StoredTerminalCommand>();
+            var rows = s.Query<TerminalCommandRow>(
+                "SELECT operation_id AS OperationId,installation_id AS InstallationId,sequence AS Sequence,operation_kind AS OperationKind,schema_version AS SchemaVersion,fingerprint_version AS FingerprintVersion,client_created_at AS ClientCreatedAt,semantic_body AS SemanticBody,fingerprint AS Fingerprint,delivery_state AS DeliveryState FROM gp_outbox WHERE client_stream_id=? AND sequence>? AND sequence<=? AND delivery_state IN ('accepted','terminal_rejected') ORDER BY sequence",
+                stream, serverFinal, localFinal);
+            if (rows.Count != localFinal - serverFinal)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "The local terminal command stream has a gap or foreign sequence.");
+            var commands = new StoredTerminalCommand[rows.Count];
+            for (var i = 0; i < commands.Length; i++)
+            {
+                var row = rows[i];
+                commands[i] = new StoredTerminalCommand(
+                    new LeasedCommand(new OperationId(Guid.Parse(row.OperationId)), new ClientStreamId(Guid.Parse(stream)), Guid.Parse(row.InstallationId), row.Sequence,
+                        row.OperationKind, row.SchemaVersion, row.FingerprintVersion, row.ClientCreatedAt, row.SemanticBody, row.Fingerprint),
+                    row.DeliveryState == "accepted" ? CommandTerminalOutcome.Accepted : CommandTerminalOutcome.Rejected);
+            }
+            return Array.AsReadOnly(commands);
+        }, token);
+
+        public Task DemoteTerminalCommandsAboveBootstrapBoundaryAsync(long localFinalizedThrough, CancellationToken token) => database.ExecuteAsync(scope, t =>
+        {
+            var s = (SqliteTransactionSession)t;
+            if (!TryReadRegressedBoundary(s, out var serverFinal, out var localFinal, out var stream) || localFinal != localFinalizedThrough)
+                throw new StorageException(StorageFailure.IdentityConflict, "The regressed stream boundary changed before demotion.");
+            var demoted = s.Execute(
+                "UPDATE gp_outbox SET delivery_state='pending',leased_until=NULL WHERE client_stream_id=? AND sequence>? AND sequence<=? AND delivery_state IN ('accepted','terminal_rejected')",
+                stream, serverFinal, localFinal);
+            if (demoted != localFinal - serverFinal)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "The local terminal command stream has a gap or foreign sequence.");
+            s.Execute("UPDATE gp_stream_state SET finalized_through=? WHERE singleton=1", serverFinal);
+            s.Execute("DELETE FROM gp_bootstrap_pages");
+            s.Execute("DELETE FROM gp_bootstrap_entities");
+            s.Execute("DELETE FROM gp_bootstrap_state");
+            checkpoint?.Invoke(SyncCheckpoint.BeforeDemotionCommit);
+            return true;
+        }, token);
+
+        private static bool TryReadRegressedBoundary(SqliteTransactionSession s, out long serverFinal, out long localFinal, out string stream)
+        {
+            serverFinal = localFinal = 0; stream = string.Empty;
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1 AND stream_state='active'") != 1) return false;
+            stream = s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");
+            EnsureStream(s, new ClientStreamId(Guid.Parse(stream)));
+            serverFinal = s.ExecuteScalar<long>("SELECT finalized_through FROM gp_bootstrap_state WHERE singleton=1");
+            localFinal = s.ExecuteScalar<long>("SELECT finalized_through FROM gp_stream_state WHERE singleton=1");
+            return serverFinal < localFinal;
+        }
+
+        private void Install(SqliteTransactionSession s, byte[] cursor, long serverTime)
+        {
+            ReconcileCommandStream(s);
+            var snapshot = ReadStagedSnapshot(s);
+            s.Execute("DELETE FROM gp_confirmed_projection");
+            s.Execute("INSERT INTO gp_confirmed_projection SELECT collection,entity_key,entity_revision,'visible',payload FROM gp_bootstrap_entities");
+            var through = s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1");
+            if (projector is IObservedPrivateSyncProjectionProjector observed)
+                observed.ReplaceConfirmedSnapshot(s, snapshot, new PrivateSyncProjectionObservation(through, serverTime));
+            else projector.ReplaceConfirmedSnapshot(s, snapshot);
+            var stream = s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");
+            var streamState = s.ExecuteScalar<string>("SELECT stream_state FROM gp_bootstrap_state WHERE singleton=1");
+            var visibility = s.ExecuteScalar<long>("SELECT visibility_generation FROM gp_bootstrap_state WHERE singleton=1");
+            var epoch = s.ExecuteScalar<string>("SELECT log_epoch FROM gp_bootstrap_state WHERE singleton=1");
+            s.Execute("DELETE FROM gp_sync_state");
+            s.Execute("INSERT INTO gp_sync_state VALUES (1,?,1,?,?,NULL,?,?)", stream, cursor, through, visibility, epoch);
+            s.Execute("UPDATE gp_stream_state SET ready=? WHERE singleton=1 AND client_stream_id=?", streamState == "active" ? 1 : 0, stream);
+            s.Execute("DELETE FROM gp_bootstrap_pages");
+            s.Execute("DELETE FROM gp_bootstrap_entities");
+            s.Execute("DELETE FROM gp_bootstrap_state");
+        }
+        private static IReadOnlyList<StoredProjectionMutation> ReadStagedSnapshot(SqliteTransactionSession s)
+        {
+            var rows = s.Query<StagedProjectionRow>("SELECT collection AS Collection,entity_key AS EntityKey,entity_revision AS EntityRevision,payload AS Payload FROM gp_bootstrap_entities ORDER BY collection,entity_key");
+            var snapshot = new StoredProjectionMutation[rows.Count];
+            for (var i = 0; i < snapshot.Length; i++)
+                snapshot[i] = new StoredProjectionMutation(
+                    rows[i].Collection, rows[i].EntityKey, rows[i].EntityRevision, StoredProjectionKind.Upsert, rows[i].Payload);
+            return Array.AsReadOnly(snapshot);
+        }
+        private static void ReconcileCommandStream(SqliteTransactionSession s)
+        {
+            var state = s.ExecuteScalar<string>("SELECT stream_state FROM gp_bootstrap_state WHERE singleton=1");
+            var stream = s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");
+            var serverFinal = s.ExecuteScalar<long>("SELECT finalized_through FROM gp_bootstrap_state WHERE singleton=1");
+            var localFinal = s.ExecuteScalar<long>("SELECT finalized_through FROM gp_stream_state WHERE singleton=1");
+            var localNext = s.ExecuteScalar<long>("SELECT next_sequence FROM gp_stream_state WHERE singleton=1");
+            if (serverFinal != localFinal)
+                throw new StorageException(
+                    StorageFailure.StreamRecoveryRequired,
+                    serverFinal > localFinal ? "The server stream is ahead of local terminal state." : "The bootstrap stream boundary regressed.");
+            var expectedRows = localNext - 1;
+            if (s.ExecuteScalar<long>("SELECT COUNT(*) FROM gp_outbox") != expectedRows ||
+                s.ExecuteScalar<long>(
+                    "SELECT COUNT(*) FROM gp_outbox WHERE client_stream_id=? AND sequence>0 AND sequence<?",
+                    stream,
+                    localNext) != expectedRows)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "The local command stream has a gap or foreign sequence.");
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox WHERE sequence<=? AND delivery_state NOT IN ('accepted','terminal_rejected')", serverFinal) != 0)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "A server-finalized command lacks a local terminal result.");
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox WHERE sequence>? AND delivery_state IN ('accepted','terminal_rejected')", serverFinal) != 0)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "Local terminal state is ahead of the authoritative boundary.");
+            if (state == "active")
+            {
+                if (serverFinal == long.MaxValue) throw new StorageException(StorageFailure.SequenceExhausted, "An exhausted stream cannot accept commands.");
+                var serverNext = s.ExecuteScalar<long>("SELECT authoritative_next_sequence FROM gp_bootstrap_state WHERE singleton=1");
+                if (serverNext != serverFinal + 1 || localNext < serverNext)
+                    throw new StorageException(StorageFailure.StreamRecoveryRequired, "The active stream sequence boundary is inconsistent.");
+            }
+            else if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox WHERE sequence>?", serverFinal) != 0)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "A retired stream still has pending or uncertain commands.");
+        }
+        private static void UpsertStaged(SqliteTransactionSession s, StoredProjectionMutation e)
+        {
+            if (e.Kind != StoredProjectionKind.Upsert) throw new StorageException(StorageFailure.Constraint, "Snapshot entities must be upserts.");
+            var count = s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_entities WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
+            if (count == 0) s.Execute("INSERT INTO gp_bootstrap_entities VALUES (?,?,?,?)", e.Collection, e.EntityKey, e.Revision, e.CopyPayload());
+            else
+            {
+                var revision = s.ExecuteScalar<long>(
+                    "SELECT entity_revision FROM gp_bootstrap_entities WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
+                var payload = s.ExecuteScalar<byte[]>(
+                    "SELECT payload FROM gp_bootstrap_entities WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
+                if (revision != e.Revision || !Equal(payload, e.CopyPayload()))
+                    throw new StorageException(StorageFailure.IdentityConflict, "A staged entity changed within one snapshot.");
+            }
+        }
+        private static void Apply(SqliteTransactionSession s, StoredProjectionMutation e)
+        {
+            var count = s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_confirmed_projection WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
+            if (count != 0)
+            {
+                var revision = s.ExecuteScalar<long>("SELECT entity_revision FROM gp_confirmed_projection WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
+                if (e.Revision < revision) return;
+                if (e.Revision == revision)
+                {
+                    var state = s.ExecuteScalar<string>(
+                        "SELECT state FROM gp_confirmed_projection WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
+                    var expected = State(e.Kind);
+                    var payload = e.CopyPayload();
+                    var same = state == expected && (e.Kind != StoredProjectionKind.Upsert || Equal(
+                        s.ExecuteScalar<byte[]>("SELECT payload FROM gp_confirmed_projection WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey),
+                        payload));
+                    if (!same) throw new StorageException(StorageFailure.IdentityConflict, "An entity revision changed meaning.");
+                    return;
+                }
+                s.Execute(
+                    "UPDATE gp_confirmed_projection SET entity_revision=?,state=?,payload=? WHERE collection=? AND entity_key=?",
+                    e.Revision,
+                    State(e.Kind),
+                    e.Kind == StoredProjectionKind.Upsert ? (object)e.CopyPayload() : null!,
+                    e.Collection,
+                    e.EntityKey);
+            }
+            else
+                s.Execute(
+                    "INSERT INTO gp_confirmed_projection VALUES (?,?,?,?,?)",
+                    e.Collection,
+                    e.EntityKey,
+                    e.Revision,
+                    State(e.Kind),
+                    e.Kind == StoredProjectionKind.Upsert ? (object)e.CopyPayload() : null!);
+        }
+        private static string State(StoredProjectionKind kind) =>
+            kind == StoredProjectionKind.Upsert ? "visible" :
+            kind == StoredProjectionKind.RemoveFromView ? "removed" :
+            kind == StoredProjectionKind.Tombstone ? "tombstone" :
+            kind == StoredProjectionKind.Invalidation ? "invalidation" :
+            throw new StorageException(StorageFailure.Constraint, "A required projection kind is unsupported.");
+        private static void EnsureStream(SqliteTransactionSession s, ClientStreamId stream)
+        {
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_stream_state WHERE singleton=1 AND client_stream_id=?", stream.ToString()) != 1)
+                throw new StorageException(StorageFailure.StreamRecoveryRequired, "The bootstrap stream does not match durable command state.");
+        }
+        private static void ValidateStreamBoundary(BootstrapBoundary value)
+        {
+            if (value.StreamState != "active" && value.StreamState != "retired")
+                throw new StorageException(StorageFailure.Constraint, "The stream state is unsupported.");
+            if (value.StreamState == "retired" ? value.NextSequence != null : value.FinalizedThrough == long.MaxValue ||
+                value.NextSequence == null || value.NextSequence <= 0 || value.NextSequence != value.FinalizedThrough + 1)
+                throw new StorageException(StorageFailure.Constraint, "The stream sequence boundary is invalid.");
+        }
+        private static void ValidateManifest(IReadOnlyList<string> values)
+        {
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var value in values)
+            {
+                if (!Required.Contains(value, StringComparer.Ordinal))
+                    throw new StorageException(StorageFailure.Constraint, "An unknown required collection was declared.");
+                if (!seen.Add(value)) throw new StorageException(StorageFailure.Constraint, "A collection was declared twice.");
+            }
+            foreach (var required in Required)
+                if (!seen.Contains(required)) throw new StorageException(StorageFailure.Constraint, "The bootstrap manifest is incomplete.");
+        }
+        private static void ValidateMutations(IReadOnlyList<StoredProjectionMutation> values, bool snapshot)
+        {
+            long bytes = 0;
+            if (values.Count > 1024) throw new StorageException(StorageFailure.Capacity, "A projection page is oversized.");
+            foreach (var value in values)
+            {
+                bytes = checked(bytes + value.CopyPayload().Length);
+                if (bytes > 262_144) throw new StorageException(StorageFailure.Capacity, "A projection page is oversized.");
+                if (!Required.Contains(value.Collection, StringComparer.Ordinal) ||
+                    !Enum.IsDefined(typeof(StoredProjectionKind), value.Kind) ||
+                    (snapshot && value.Kind != StoredProjectionKind.Upsert))
+                    throw new StorageException(StorageFailure.Constraint, "A required projection kind is unsupported.");
+            }
+        }
+        private static void ValidateGroups(StoredPullPage page)
+        {
+            long previous = 0;
+            foreach (var group in page.Groups)
+            {
+                if (group.Revision <= previous || group.Revision > page.CommittedThrough)
+                    throw new StorageException(StorageFailure.Constraint, "Pull groups are not complete and ordered.");
+                ValidateMutations(group.Changes, false);
+                previous = group.Revision;
+            }
+            if (page.HasMore && (page.Groups.Count == 0 || previous >= page.CommittedThrough))
+                throw new StorageException(StorageFailure.Constraint, "A continuing page made no valid progress.");
+        }
+        private static bool Equal(byte[] a, byte[] b)
+        {
+            if (a == null || b == null || a.Length != b.Length) return false;
+            var d = 0;
+            for (var i = 0; i < a.Length; i++) d |= a[i] ^ b[i];
+            return d == 0;
+        }
+        private sealed class StagedProjectionRow
+        {
+            public string Collection { get; set; } = string.Empty;
+            public string EntityKey { get; set; } = string.Empty;
+            public long EntityRevision { get; set; }
+            public byte[] Payload { get; set; } = Array.Empty<byte>();
+        }
+        private sealed class TerminalCommandRow
+        {
+            public string OperationId { get; set; } = string.Empty;
+            public string InstallationId { get; set; } = string.Empty;
+            public long Sequence { get; set; }
+            public string OperationKind { get; set; } = string.Empty;
+            public int SchemaVersion { get; set; }
+            public int FingerprintVersion { get; set; }
+            public long ClientCreatedAt { get; set; }
+            public byte[] SemanticBody { get; set; } = Array.Empty<byte>();
+            public byte[] Fingerprint { get; set; } = Array.Empty<byte>();
+            public string DeliveryState { get; set; } = string.Empty;
+        }
+        private sealed class MissingProjectionProjector : IPrivateSyncProjectionProjector
+        {
+            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group) =>
+                throw new InvalidOperationException("Private sync cannot install confirmed groups without a consumer-owned projection projector.");
+            public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot) =>
+                throw new InvalidOperationException("Private sync cannot install a confirmed snapshot without a consumer-owned projection projector.");
+        }
     }
 }

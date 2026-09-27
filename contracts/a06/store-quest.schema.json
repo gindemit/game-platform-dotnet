@@ -1,0 +1,469 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/a06/store-quest.1.schema.json",
+  "$defs": {
+    "purchaseCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offerId",
+        "offerVersion",
+        "purchaseKey"
+      ],
+      "properties": {
+        "offerId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+        },
+        "offerVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "purchaseKey": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuidV7"
+        }
+      }
+    },
+    "claimCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "questId",
+        "occurrenceKey"
+      ],
+      "properties": {
+        "questId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+        },
+        "occurrenceKey": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationId",
+        "installationId",
+        "sequence",
+        "type",
+        "schemaVersion",
+        "clientCreatedAt",
+        "payload"
+      ],
+      "properties": {
+        "operationId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "installationId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "sequence": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/positiveInt64"
+        },
+        "type": {
+          "enum": [
+            "profile.patch",
+            "gameplay.session.completed",
+            "store.offer.purchase",
+            "quest.claim"
+          ]
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "clientCreatedAt": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/timestamp"
+        },
+        "payload": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "profile.patch"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "https://contracts.gindemit.invalid/v1/schemas/profile.schema.json#/$defs/patchCommand"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "gameplay.session.completed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "https://contracts.gindemit.invalid/v1/schemas/gameplay.schema.json#/$defs/completionCommand"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "store.offer.purchase"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "#/$defs/purchaseCommand"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "quest.claim"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "#/$defs/claimCommand"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "clientStreamId",
+        "operations"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/protocolVersion"
+        },
+        "clientStreamId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/operation"
+          }
+        }
+      }
+    },
+    "debit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currencyId",
+        "quantity"
+      ],
+      "properties": {
+        "currencyId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+        },
+        "quantity": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/positiveInt64"
+        }
+      }
+    },
+    "purchaseResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "purchaseId",
+        "originatingOperationId",
+        "offerId",
+        "offerVersion",
+        "purchaseKey",
+        "debit",
+        "lines"
+      ],
+      "properties": {
+        "kind": {
+          "const": "store_offer_purchased"
+        },
+        "purchaseId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuidV7"
+        },
+        "originatingOperationId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "offerId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+        },
+        "offerVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "purchaseKey": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuidV7"
+        },
+        "debit": {
+          "$ref": "#/$defs/debit"
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json#/$defs/currencyLine"
+              },
+              {
+                "$ref": "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json#/$defs/stackLine"
+              }
+            ]
+          }
+        }
+      },
+      "x-orderedLineIndices": true
+    },
+    "claimResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "claimId",
+        "originatingOperationId",
+        "questId",
+        "occurrenceKey",
+        "lines"
+      ],
+      "properties": {
+        "kind": {
+          "const": "quest_claimed"
+        },
+        "claimId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuidV7"
+        },
+        "originatingOperationId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "questId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+        },
+        "occurrenceKey": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json#/$defs/currencyLine"
+              },
+              {
+                "$ref": "https://contracts.gindemit.invalid/live-slice/receipt.1.schema.json#/$defs/stackLine"
+              }
+            ]
+          }
+        }
+      },
+      "x-orderedLineIndices": true
+    },
+    "accepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationId",
+        "sequence",
+        "status",
+        "feedRevision",
+        "result"
+      ],
+      "properties": {
+        "operationId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "sequence": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/positiveInt64"
+        },
+        "status": {
+          "const": "accepted"
+        },
+        "feedRevision": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/positiveInt64"
+        },
+        "result": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/purchaseResult"
+            },
+            {
+              "$ref": "#/$defs/claimResult"
+            }
+          ]
+        }
+      }
+    },
+    "result": {
+      "oneOf": [
+        {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/accepted"
+        },
+        {
+          "$ref": "#/$defs/accepted"
+        },
+        {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/terminalRejected"
+        },
+        {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/waiting"
+        },
+        {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/retryable"
+        },
+        {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/upgradeRequired"
+        }
+      ]
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "clientStreamId",
+        "operationResults",
+        "finalizedThrough",
+        "serverTime"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/protocolVersion"
+        },
+        "clientStreamId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "operationResults": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/result"
+          }
+        },
+        "finalizedThrough": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "serverTime": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/timestamp"
+        }
+      }
+    },
+    "receiptResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "clientStreamId",
+        "found",
+        "result",
+        "serverTime",
+        "operationId",
+        "observedFinalizedThrough"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/protocolVersion"
+        },
+        "clientStreamId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "found": {
+          "type": "boolean"
+        },
+        "result": {
+          "oneOf": [
+            {
+              "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/accepted"
+            },
+            {
+              "$ref": "#/$defs/accepted"
+            },
+            {
+              "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/terminalRejected"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serverTime": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/timestamp"
+        },
+        "operationId": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/uuid"
+        },
+        "observedFinalizedThrough": {
+          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/nonNegativeInt64"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "found": {
+                "const": true
+              }
+            },
+            "required": [
+              "found"
+            ]
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "oneOf": [
+                  {
+                    "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/accepted"
+                  },
+                  {
+                    "$ref": "#/$defs/accepted"
+                  },
+                  {
+                    "$ref": "https://contracts.gindemit.invalid/v1/schemas/push.schema.json#/$defs/terminalRejected"
+                  }
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "result": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

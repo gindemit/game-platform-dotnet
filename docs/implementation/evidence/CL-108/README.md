@@ -1,0 +1,65 @@
+# CL-108 — Progression portable-service evidence
+
+## 2026-09-20 consumer transaction callback increment
+
+`ProgressionService.CompleteAsync` now has an additive synchronous callback for
+the consumer's game-owned checkpoint/progress/client-presentation writes. It is
+invoked inside the same SQLite transaction as pending progression, checked
+sequence allocation and immutable outbox admission. Cancellation/failure rolls
+back all effects; exact replay skips the callback. The contract forbids retaining
+the transaction, nested transactions, UI publication, external side effects and
+authoritative platform-value allocation.
+
+Focused CL-108 passes 12/12 and the integrated SDK passes 473/473. This is the
+portable transaction contract needed by INT-007; real MrSquare wiring and live
+INT-007/INT-010 evidence remain unrun and unpassed. Full evidence and remaining
+G3 blockers are recorded in `../P3-live-composition/README.md`.
+
+Task state: dependency-ready SDK implementation, M3/C-D. This is local Windows
+x64 SQLite evidence only; A03/A05/A07, PEER-CORE, Unity/device integration and
+G3 are not passed.
+
+`ProgressionService` accepts a game-owned generic `GameplayOutcome` with stable
+operation and business-source identity, semantic content version, captured
+owner/view/generation, and the explicit bounded
+`client_trusted_unvalidated` outcome authority. It does not validate puzzle,
+session, replay, score, content, or checkpoint rules; it does not allocate
+progress, wallet value, inventory, entitlement, or reward values.
+
+The service writes its pending completion projection and immutable
+`gameplay.session.completed` outbox command through `IAtomicCommandStore` in one
+transaction. A receipt moves only its matching item to
+accepted-awaiting-pull. Only an explicit pull-derived confirmation may remove
+that already-accepted item and install a monotonic server-owned semantic-state
+projection; unrelated pending work survives. Terminal rejection removes only the
+matching pending completion. The codec is a narrow future adapter boundary for
+the frozen gameplay/projection contracts, not a new backend wire contract.
+
+Focused command:
+
+`dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --filter FullyQualifiedName~Cl108ProgressionServiceTests`
+
+Result: 11/11 tests passed. The native cases cover atomic completion/outbox plus
+reopen, duplicate callback idempotency and immutable identity conflict, lost ACK
+then explicit acceptance/pull confirmation, terminal rejection followed by next
+sequence while retaining another pending item, owner/generation fencing, reset
+projection retention, confirmation-ID integrity (unknown or still-awaiting IDs
+cannot install a projection), and signed-64 boundary preservation. Borrowed
+private-group cases prove projection, immutable confirmation evidence and a
+cursor sentinel roll back/commit/reopen together; only explicitly confirmed
+accepted IDs are suppressed, while unrelated awaiting work remains. Equal/lower
+revision and evidence-replacement attempts fail closed.
+The convenience pull path remains monotonic: older projections are no-ops and
+an exact same-revision projection/evidence replay is idempotent, while changed
+same-revision projection or operation evidence fails closed. The borrowed
+private-group path intentionally remains strict-forward.
+
+The authoritative projection revision accepts exact zero. SQLite tests prove
+absent-to-zero installation, exact zero replay, changed zero-revision rejection,
+zero-to-one advancement, and zero projection/cursor-sentinel rollback then
+commit/reopen. The positive `gp_feature_state` row revision is only a local
+envelope (`semantic + 1`); all feature/codec snapshots retain semantic zero.
+
+These tests do not prove a
+real backend outcome/reward receipt, production codec, live command sender,
+Unity completed-run writer, or any G3 journey.
