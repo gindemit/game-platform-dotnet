@@ -1,16 +1,18 @@
 # SDK handoff — local campaign and Git UPM
 
-2026-09-28. Owner-authorized plan; new packaging/campaign changes not implemented by this document. Single execution authority: [backend campaign packet](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/README.md), goal `CAMPAIGN_LOCAL`. Do not launch an independent SDK coordinator or the historical P3 dispatcher.
+2026-09-29. Single execution authority: [backend campaign packet](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/README.md), goal `CAMPAIGN_LOCAL`. Do not launch an independent SDK coordinator or the historical P3 dispatcher.
 
 ## Current implementation
 
-At SDK main `25d9045bb6d7d30c6296a832fd4fdce4416a7e78`, `scripts/package-sdk.py` builds a deterministic commit-pinned managed/native bundle. It validates dependency closure, source-link identity, licenses, native importer policies and AOT/lifecycle metadata. `integration/unity/package` is support input, not yet a complete Git UPM delivery folder. Unity `Assets/Plugins/GamePlatform/consumer-install.json` records runtime `4b1ba063877d44ab12ad77c8d8470cf64a55b1e6` and manifest SHA-256 `2f9061f3cceaadf7e72b07b34d3723c1130bc5c614d4fa4713a2028ce9ac59ba`, plus preserved importer GUID overrides.
+SDK source commit `208aab70545cdc330166476b5aea500921d07424` generates the deterministic managed/native bundle and complete Git UPM payload at `upm/com.gindemit.game-platform`. Delivery commit `c33ef4543270e072eddcd40bdab2ee2744900180` contains the payload; its content manifest SHA-256 is `b6cc5a373e8c31eb77dd36fd6fb5ecf11840a70ca1978043e5e26f73f32129dd` (143 files). Both commits are on remote `main`. The payload preserves closure, source-link identity, licenses, native importer policy, AOT/lifecycle metadata, GUIDs and Unity-visible `.meta` files. The previous Unity `Assets/Plugins/GamePlatform/consumer-install.json` is still the authoritative project's old copied import until CMP-03 changes the Unity consumer.
+
+Two clean clones produced byte-identical bundles and UPM packages. SDK unit tests passed 659/659; packaging Python tests passed 66/66. A clean disposable Unity consumer pinned to `c33ef45…` passed 47/47 focused EditMode tests with no missing-metadata or compile errors. A pinned macOS SQLite dylib was staged solely in that disposable test project; it is excluded from the committed UPM payload. Independent nonauthor review passed. Android IL2CPP/native, WebGL exclusion and the final combined Unity consumer remain CMP-03 acceptance work.
 
 `src/GamePlatform.Features/Progression/ProgressionService.cs` is real generic pending-completion coordination, not a puzzle validator or campaign selector. Preserve atomic local admission, business-source/operation idempotency, ordered immutable outbox and accepted-versus-pull-confirmed evidence. Current broader feature stubs must not all be marked implemented.
 
-## First: package delivery, not an SDK rewrite
+## Package delivery and next gate
 
-Follow [Git prerequisites](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/DualEdition/GIT-PACKAGE-PREREQUISITES.md), SDK lane CMP-02. Default one complete Git-installable `com.gindemit.game-platform` package in this repository, generated deterministically from the existing canonical .NET source/bundle process. Preserve dependency/native/license/AOT/link/assembly/GUID/platform provenance. UPM will not build .NET DLLs automatically; the pinned package must contain a usable verified payload. Distinguish runtime source commit from package-delivery commit. Avoid duplicate source/DLL compilation and copied maintenance forks.
+CMP-02 is complete; follow [Git prerequisites](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/DualEdition/GIT-PACKAGE-PREREQUISITES.md) for CMP-03. The consumer must pin the full Git package delivery commit, not the separate runtime source commit. Future runtime/payload changes require a newly built and verified delivery commit. Avoid duplicate source/DLL compilation and copied maintenance forks.
 
 The Unity integrator alone changes consumer manifests/locks, removes redundant Assets payload and requalifies clean-cache import and actual Android/WebGL boundaries. SDK workers do not edit those files concurrently. Keep the core portable and game-neutral. No registry/marketplace publishing is authorized; reviewed commits/pushes required for the requested Git package are authorized.
 
