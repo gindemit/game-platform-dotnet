@@ -25,6 +25,9 @@ excludes WebGL, and requires asmdef references. The GUID overrides in
 serialized references recorded by the Unity consumer. It does not duplicate or
 compile the SDK source. The UPM payload is
 generated and committed with its input code; do not edit generated files by hand.
+Every Unity-visible package file and folder receives a stable deterministic
+`.meta` sidecar. `Documentation~` remains Unity-ignored and is excluded from
+that importer metadata set.
 
 Install from Unity's project manifest using a full Git commit and the package
 subpath, for example:

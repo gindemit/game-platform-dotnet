@@ -58,6 +58,8 @@ class UpmPackageTests(unittest.TestCase):
         dependency_file.write_text(json.dumps(source))
         (self.root / 'package.json').write_text(json.dumps({
             'name': UPM.PACKAGE_NAME, 'version': UPM.PACKAGE_VERSION}))
+        (self.root / 'package-content-manifest.json').write_text('{}\n')
+        UPM.write_stable_asset_metadata(self.root)
         self.refresh_manifest()
 
     def tearDown(self):
@@ -158,6 +160,29 @@ class UpmPackageTests(unittest.TestCase):
     def test_bad_content_hash_is_rejected(self):
         (self.root / 'LICENSES/LICENSE-NOTICE.md').write_text('tampered\n')
         self.assert_failure('package_file_hash_mismatch')
+
+    def test_visible_package_assets_and_folders_have_stable_meta(self):
+        UPM.verify_package(self.root)
+        self.assertTrue((self.root / 'Runtime.meta').is_file())
+        self.assertTrue((self.root / 'LICENSES/LICENSE-NOTICE.md.meta').is_file())
+        self.assertIn('TextScriptImporter:',
+                      (self.root / 'package.json.meta').read_text())
+
+    def test_missing_visible_folder_meta_is_rejected(self):
+        (self.root / 'Runtime.meta').unlink()
+        self.refresh_manifest()
+        self.assert_failure('package_folder_meta_missing')
+
+    def test_missing_visible_file_meta_is_rejected(self):
+        (self.root / 'LICENSES/LICENSE-NOTICE.md.meta').unlink()
+        self.refresh_manifest()
+        self.assert_failure('package_asset_meta_missing')
+
+    def test_tampered_visible_file_meta_is_rejected(self):
+        path = self.root / 'LICENSES/LICENSE-NOTICE.md.meta'
+        path.write_text(path.read_text().replace('TextScriptImporter:', 'DefaultImporter:'))
+        self.refresh_manifest()
+        self.assert_failure('package_asset_meta_invalid')
 
 
 if __name__ == '__main__':

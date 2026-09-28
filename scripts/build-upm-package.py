@@ -112,7 +112,9 @@ def verify_package(root: Path) -> dict:
     expected_native_metadata = {item['importMetadata'] for item in native_entries}
     actual_native_metadata = {path.relative_to(root).as_posix().replace('Runtime/Plugins/native/', 'native/')
                               for path in root.glob('Runtime/Plugins/native/**/*')
-                              if path.is_file() and path.name.endswith('.meta')}
+                              if path.is_file() and path.name.endswith('.meta')
+                              and path.with_name(path.name[:-5]).is_file()
+                              and path.with_name(path.name[:-5]).suffix.lower() in ('.so', '.dll', '.dylib')}
     if expected_native_metadata != actual_native_metadata:
         fail('native_import_metadata_inventory_mismatch')
     for item in native_entries:
@@ -134,6 +136,7 @@ def verify_package(root: Path) -> dict:
         except ValueError as error:
             fail(str(error))
 
+    verify_stable_asset_metadata(root)
     actual = inventory(root)
     if actual != expected:
         expected_by_path = {item.get('path'): item for item in expected}
@@ -150,6 +153,74 @@ def put(source: Path, stage: Path, relative: str) -> None:
     target = stage / relative
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
+
+
+def asset_meta_guid(relative: str) -> str:
+    return hashlib.sha256(('game-platform-upm-asset:' + relative).encode()).hexdigest()[:32]
+
+
+def asset_importer(relative: str) -> str:
+    return ('TextScriptImporter' if Path(relative).suffix.lower() in
+            {'.json', '.xml', '.md', '.txt', '.nuspec'} else 'DefaultImporter')
+
+
+def write_stable_asset_metadata(root: Path) -> None:
+    """Write stable Unity sidecars for all visible generic assets and folders."""
+    visible_dirs = [path for path in root.rglob('*') if path.is_dir()
+                    and 'Documentation~' not in path.relative_to(root).parts]
+    for path in sorted(visible_dirs, key=lambda item: (len(item.relative_to(root).parts), item.as_posix())):
+        relative = path.relative_to(root).as_posix()
+        meta = path.with_name(path.name + '.meta')
+        if not meta.exists():
+            guid = asset_meta_guid(relative + '/')
+            meta.write_text(
+                f'fileFormatVersion: 2\nguid: {guid}\nfolderAsset: yes\nDefaultImporter:\n'
+                '  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n',
+                encoding='utf-8', newline='\n')
+    visible_files = [path for path in root.rglob('*') if path.is_file()
+                     and path.suffix != '.meta'
+                     and 'Documentation~' not in path.relative_to(root).parts]
+    for path in sorted(visible_files):
+        relative = path.relative_to(root).as_posix()
+        meta = path.with_name(path.name + '.meta')
+        if not meta.exists():
+            guid = asset_meta_guid(relative)
+            meta.write_text(
+                f'fileFormatVersion: 2\nguid: {guid}\n{asset_importer(relative)}:\n'
+                '  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n',
+                encoding='utf-8', newline='\n')
+
+
+def verify_stable_asset_metadata(root: Path) -> None:
+    visible_dirs = [path for path in root.rglob('*') if path.is_dir()
+                    and 'Documentation~' not in path.relative_to(root).parts]
+    for path in visible_dirs:
+        relative = path.relative_to(root).as_posix()
+        meta = path.with_name(path.name + '.meta')
+        if not meta.is_file():
+            fail('package_folder_meta_missing: ' + relative)
+        text = meta.read_text(encoding='utf-8')
+        guid = re.search(r'^guid: ([0-9a-f]{32})$', text, re.M)
+        if (guid is None or guid.group(1) != asset_meta_guid(relative + '/') or
+                not re.search(r'^folderAsset: yes$', text, re.M)):
+            fail('package_folder_meta_invalid: ' + relative)
+    visible_files = [path for path in root.rglob('*') if path.is_file()
+                     and path.suffix != '.meta'
+                     and 'Documentation~' not in path.relative_to(root).parts]
+    for path in visible_files:
+        relative = path.relative_to(root).as_posix()
+        meta = path.with_name(path.name + '.meta')
+        if not meta.is_file():
+            fail('package_asset_meta_missing: ' + relative)
+        text = meta.read_text(encoding='utf-8')
+        if relative.startswith('Runtime/Plugins/Managed/') and relative.endswith('.dll'):
+            continue
+        if relative.startswith('Runtime/Plugins/native/') and path.suffix.lower() in ('.so', '.dll', '.dylib'):
+            continue
+        guid = re.search(r'^guid: ([0-9a-f]{32})$', text, re.M)
+        if (guid is None or guid.group(1) != asset_meta_guid(relative) or
+                f'{asset_importer(relative)}:' not in text):
+            fail('package_asset_meta_invalid: ' + relative)
 
 
 def export_package(bundle: Path, output: Path) -> None:
@@ -223,6 +294,9 @@ def export_package(bundle: Path, output: Path) -> None:
         put(bundle / 'dependency-manifest.json', stage,
             'Documentation~/sdk/dependency-manifest.json')
 
+        package_manifest_path = stage / 'package-content-manifest.json'
+        package_manifest_path.write_text('{}\n', encoding='utf-8', newline='\n')
+        write_stable_asset_metadata(stage)
         manifest = {
             'schemaVersion': 1, 'name': PACKAGE_NAME, 'version': PACKAGE_VERSION,
             'sourceCommit': source_manifest['sourceCommit'],
@@ -232,7 +306,7 @@ def export_package(bundle: Path, output: Path) -> None:
             'runtimeSource': 'src/ (canonical .NET SDK source)',
             'generatedPayload': True, 'files': inventory(stage),
         }
-        (stage / 'package-content-manifest.json').write_text(
+        package_manifest_path.write_text(
             json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
         verify_package(stage)
         if previous.exists():
