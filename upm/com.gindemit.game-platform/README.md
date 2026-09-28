@@ -1,0 +1,3 @@
+# Game Platform SDK for Unity
+
+This Git UPM package contains the deterministic, verified managed and native payload built from the portable .NET SDK source. Install this package by a full Git commit and package subpath. The package does not contain game rules, scenes, grids, levels, or campaign policy. See `Documentation~/sdk/README.md` and the lifecycle manifest for supported ownership and update behavior. DLL importer metadata preserves the Core and Features.Contracts consumer GUIDs, requires asmdef references, and excludes WebGL. Native plugins are limited to the reviewed Android ARM64 and Windows x86-64 targets; the pinned macOS dylib is withheld for disposable qualification only.

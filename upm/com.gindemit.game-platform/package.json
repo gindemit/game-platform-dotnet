@@ -1,0 +1,11 @@
+{
+  "name": "com.gindemit.game-platform",
+  "version": "0.1.0-draft",
+  "displayName": "Game Platform SDK",
+  "description": "Portable game platform contracts, storage, synchronization and transport runtime.",
+  "unity": "2021.3",
+  "documentationUrl": "https://github.com/gindemit/game-platform-dotnet/tree/main/upm/com.gindemit.game-platform",
+  "author": {
+    "name": "gindemit"
+  }
+}
