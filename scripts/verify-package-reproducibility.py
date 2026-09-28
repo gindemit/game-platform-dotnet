@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build CL-015 in two independent clean clones and compare complete outputs."""
+"""Build the SDK bundle and Git UPM package in two clean clones and compare outputs."""
 from __future__ import annotations
 
 import argparse
@@ -7,6 +7,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -46,7 +47,7 @@ def main():
     evidence.mkdir(parents=True)
     with tempfile.TemporaryDirectory(prefix='cl015-independent-clones-') as temporary:
         temporary = Path(temporary)
-        manifests, inventories = [], []
+        manifests, inventories, package_manifests, package_inventories = [], [], [], []
         for number, label in enumerate(('clone-a', 'clone-b'), start=1):
             clone = temporary / label
             clone_log = evidence / f'{label}-clone.log'
@@ -61,20 +62,33 @@ def main():
                 run(['git', 'remote', 'set-url', 'origin',
                      'https://github.com/gindemit/game-platform-dotnet'], clone, remote_log)
             package_log = evidence / f'{label}-package.log'
-            run(['python', 'scripts/package-sdk.py', '--sqlite-source',
+            run([sys.executable, 'scripts/package-sdk.py', '--sqlite-source',
                  str(args.sqlite_source.resolve())], clone, package_log)
             verify_log = evidence / f'{label}-verify.log'
-            run(['python', 'scripts/package-sdk.py', '--verify'], clone, verify_log)
+            run([sys.executable, 'scripts/package-sdk.py', '--verify'], clone, verify_log)
+            upm_log = evidence / f'{label}-upm.log'
+            run([sys.executable, 'scripts/build-upm-package.py'], clone, upm_log)
+            upm_verify_log = evidence / f'{label}-upm-verify.log'
+            run([sys.executable, 'scripts/build-upm-package.py', '--verify'], clone, upm_verify_log)
             bundle = clone / 'artifacts/sdk'
             manifest = bundle / 'dependency-manifest.json'
             shutil.copy2(manifest, evidence / f'{label}-manifest.json')
             manifests.append(manifest.read_bytes())
             inventories.append(inventory(bundle))
+            upm = clone / 'upm/com.gindemit.game-platform'
+            upm_manifest = upm / 'package-content-manifest.json'
+            shutil.copy2(upm_manifest, evidence / f'{label}-upm-manifest.json')
+            package_manifests.append(upm_manifest.read_bytes())
+            package_inventories.append(inventory(upm))
 
         if manifests[0] != manifests[1]:
             raise RuntimeError('independent_clone_manifests_differ')
         if inventories[0] != inventories[1]:
             raise RuntimeError('independent_clone_complete_artifacts_differ')
+        if package_manifests[0] != package_manifests[1]:
+            raise RuntimeError('independent_clone_upm_manifests_differ')
+        if package_inventories[0] != package_inventories[1]:
+            raise RuntimeError('independent_clone_upm_packages_differ')
         parsed = json.loads(manifests[0])
         summary = {
             'schemaVersion': 1,
@@ -84,6 +98,10 @@ def main():
             'variedOriginMetadata': True,
             'manifestsByteEqual': True,
             'completeArtifactsByteEqual': True,
+            'upmManifestsByteEqual': True,
+            'completeUpmPackagesByteEqual': True,
+            'upmContentManifestSha256': hashlib.sha256(package_manifests[0]).hexdigest(),
+            'upmFileCountIncludingManifest': len(package_inventories[0]),
             'manifestSha256': hashlib.sha256(manifests[0]).hexdigest(),
             'fileCountIncludingManifest': len(inventories[0]),
             'managedMvids': {item['name']: item['moduleVersionId'] for item in parsed['assemblies']},

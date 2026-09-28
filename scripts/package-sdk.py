@@ -147,7 +147,8 @@ def validate_inputs(root, projects):
             raise ValueError('runtime_package_requires_bundle_license_review: ' + project.stem)
     for required in ('LICENSE-NOTICE.md', 'integration/unity/package/LICENSE.MessagePack-CSharp.txt',
                      'integration/unity/package/link.xml', 'integration/unity/package/aot-inventory.json',
-                     'integration/unity/package/lifecycle-manifest.json'):
+                     'integration/unity/package/lifecycle-manifest.json',
+                     'integration/unity/package/managed-guid-overrides.json'):
         if not (root / required).is_file():
             raise ValueError('bundle_input_missing: ' + required)
 
@@ -241,12 +242,56 @@ def copy_package_notices(stage, runtime_assets, packages, package_root):
 
 
 def managed_meta(name):
-    guid = hashlib.sha256(('game-platform-cl015:' + name).encode()).hexdigest()[:32]
+    guid = managed_guid_overrides().get(name, hashlib.sha256(('game-platform-cl015:' + name).encode()).hexdigest()[:32])
     return (f'fileFormatVersion: 2\nguid: {guid}\nPluginImporter:\n  externalObjects: {{}}\n'
-            '  serializedVersion: 2\n  iconMap: {}\n  executionOrder: {}\n  defineConstraints: []\n'
+            '  serializedVersion: 3\n  iconMap: {}\n  executionOrder: {}\n  defineConstraints: []\n'
             '  isPreloaded: 0\n  isOverridable: 0\n  isExplicitlyReferenced: 1\n'
-            '  validateReferences: 1\n  platformData: []\n  userData: CL-015 explicit asmdef reference only\n'
+            '  validateReferences: 1\n  platformData:\n'
+            '    Any:\n      enabled: 1\n      settings:\n        Exclude WebGL: 1\n'
+            '    Editor:\n      enabled: 1\n      settings:\n        CPU: AnyCPU\n'
+            '        DefaultValueInitialized: true\n        OS: AnyOS\n'
+            '    WindowsStoreApps:\n      enabled: 0\n      settings:\n        CPU: AnyCPU\n'
+            '  userData: CL-015 explicit asmdef reference only\n'
             '  assetBundleName: \n  assetBundleVariant: \n')
+
+
+def managed_guid_overrides(root=ROOT):
+    path = root / 'integration/unity/package/managed-guid-overrides.json'
+    document = json.loads(path.read_text(encoding='utf-8'))
+    if document.get('schemaVersion') != 1:
+        raise ValueError('managed_guid_override_schema_invalid')
+    entries = document.get('entries', {})
+    expected_names = {'GamePlatform.Core.dll', 'GamePlatform.Features.Contracts.dll'}
+    if set(entries) != expected_names:
+        raise ValueError('managed_guid_override_inventory_mismatch')
+    result = {}
+    for name, item in entries.items():
+        bundle_guid = item.get('bundleGuid', '')
+        consumer_guid = item.get('consumerGuid', '')
+        generated = hashlib.sha256(('game-platform-cl015:' + name).encode()).hexdigest()[:32]
+        if bundle_guid != generated or not re.fullmatch(r'[0-9a-f]{32}', consumer_guid):
+            raise ValueError('managed_guid_override_invalid: ' + name)
+        result[name] = consumer_guid
+    return result
+
+
+def validate_managed_importer(text, name, expected_guid=None, root=ROOT):
+    guid = expected_guid or managed_guid_overrides(root).get(
+        name, hashlib.sha256(('game-platform-cl015:' + name).encode()).hexdigest()[:32])
+    actual_guid = re.search(r'^guid: ([0-9a-f]{32})$', text, re.M)
+    if actual_guid is None or actual_guid.group(1) != guid:
+        raise ValueError('managed_import_guid_mismatch: ' + name)
+    if not re.search(r'^  isExplicitlyReferenced: 1$', text, re.M):
+        raise ValueError('managed_import_not_explicitly_referenced: ' + name)
+    required = (
+        r'^    Any:\n      enabled: 1\n      settings:\n        Exclude WebGL: 1$',
+        r'^    Editor:\n      enabled: 1\n      settings:\n        CPU: AnyCPU\n'
+        r'        DefaultValueInitialized: true\n        OS: AnyOS$',
+        r'^    WindowsStoreApps:\n      enabled: 0\n      settings:\n        CPU: AnyCPU$',
+    )
+    if any(re.search(pattern, text, re.M) is None for pattern in required):
+        raise ValueError('managed_import_platform_policy_mismatch: ' + name)
+    return True
 
 
 def native_meta(target):
@@ -386,6 +431,11 @@ def verify_bundle(output, qualification=None, expected_packages=None, expected_p
             raise ValueError('bundle_path_escape')
         if path.stat().st_size != entry['bytes'] or digest(path) != entry['sha256']:
             raise ValueError('bundle_hash_mismatch: ' + relative)
+    for dll in sorted((output / 'managed').glob('*.dll')):
+        meta = dll.with_name(dll.name + '.meta')
+        if not meta.is_file():
+            raise ValueError('managed_import_metadata_missing: ' + dll.name)
+        validate_managed_importer(meta.read_text(encoding='utf-8'), dll.name)
     validate_closure(manifest['assemblies'], manifest['managedAssemblyNames'])
     if manifest.get('schemaVersion', 0) >= 3:
         validate_debug_identity(manifest['assemblies'], manifest['projects'], manifest['sourceCommit'])
@@ -470,7 +520,8 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
         shutil.copy2(root / 'integration/unity/package/aot-inventory.json', aot / 'aot-inventory.json')
         for source, target in [('architecture.json', 'architecture.json'), ('features.json', 'features.json'),
                                ('contracts/snapshot.json', 'contract-snapshot.json'), ('scripts/sdk-bundle-README.md', 'README.md'),
-                               ('integration/unity/package/lifecycle-manifest.json', 'lifecycle-manifest.json')]:
+                               ('integration/unity/package/lifecycle-manifest.json', 'lifecycle-manifest.json'),
+                               ('integration/unity/package/managed-guid-overrides.json', 'managed-guid-overrides.json')]:
             shutil.copy2(root / source, stage / target)
         files = [{'path': p.relative_to(stage).as_posix(), 'sha256': digest(p), 'bytes': p.stat().st_size}
                  for p in sorted(stage.rglob('*')) if p.is_file()]

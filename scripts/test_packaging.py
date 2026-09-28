@@ -29,7 +29,7 @@ class PackageTests(unittest.TestCase):
         root = Path('C:/one/checkout')
         source_link = root / 'artifacts/build-inputs/source-link.json'
         arguments = package.deterministic_build_arguments(root, 'b' * 40, source_link)
-        self.assertIn('-p:PathMap=C:\\one\\checkout=/_/', arguments)
+        self.assertIn('-p:PathMap=' + str(root) + '=/_/', arguments)
         self.assertIn('-p:ContinuousIntegrationBuild=true', arguments)
         self.assertIn('-p:DeterministicSourcePaths=true', arguments)
         self.assertIn('-p:EnableSourceControlManagerQueries=false', arguments)
