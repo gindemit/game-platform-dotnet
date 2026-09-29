@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "version": "0.1.0-draft",
-  "sourceCommit": "5686d08fbd31e60f5a972abac96ff3587203a627",
+  "sourceCommit": "32f2ba6c25f540db32eab9d6a9d129d81a5c4aea",
   "sourceDirty": false,
   "managedRuntime": "netstandard2.1",
   "nativeLibrariesIncluded": true,
@@ -89,8 +89,8 @@
         "GamePlatform.Backend.Contracts.Remote.RemoteResult`1",
         "GamePlatform.Backend.Contracts.Remote.SnapshotCollection"
       ],
-      "moduleVersionId": "5394eb1d-5be3-4b5b-bc42-4726f0cc60d4",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "bd28307d-1d3f-4f5f-8359-6b4e431118ca",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Core.dll",
@@ -124,8 +124,8 @@
         "GamePlatform.Core.UuidIdentity",
         "GamePlatform.Core.UuidV7Generator"
       ],
-      "moduleVersionId": "4d1bce18-a64d-41b2-bae1-fcdb6d3b8331",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "79981832-e784-4cdb-87bb-cb57f8439d4b",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Diagnostics.Abstractions.dll",
@@ -148,8 +148,8 @@
         "GamePlatform.Diagnostics.Abstractions.NullStructuredAppLogSink",
         "GamePlatform.Diagnostics.Abstractions.SafeAppLog"
       ],
-      "moduleVersionId": "0ff23e93-bb18-48ae-8073-b230dc27d1f6",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "e0c0643c-7748-4d8a-821c-1ed81ce75268",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Features.Contracts.dll",
@@ -252,8 +252,8 @@
         "GamePlatform.Features.Contracts.Wallet.WalletSpendRejection",
         "GamePlatform.Features.Contracts.Wallet.WalletSpendRequest"
       ],
-      "moduleVersionId": "f8f44298-4e50-45d9-b71e-5dcfe8746134",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "3ec49277-9f88-45e9-ba1c-c9fc40ba4bb3",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Features.Presentation.dll",
@@ -279,8 +279,8 @@
         "GamePlatform.Features.Presentation.Shared.PresenterLifetime",
         "GamePlatform.Features.Presentation.Shared.ResultPresentation"
       ],
-      "moduleVersionId": "50cca673-9e45-468f-8282-ba4cc70af8d0",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "c2454059-121c-4a48-b1db-a404ccd7fd7a",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Features.dll",
@@ -390,8 +390,8 @@
         "GamePlatform.Features.Wallet.WalletService",
         "GamePlatform.Features.WalletFeature"
       ],
-      "moduleVersionId": "157e532a-8e4a-4880-853b-80270da5622b",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "ee8d24a2-da5f-47aa-87d0-b995702bacc1",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Navigation.dll",
@@ -425,8 +425,8 @@
         "GamePlatform.Navigation.ResultRoute",
         "GamePlatform.Navigation.RouteLoadResult"
       ],
-      "moduleVersionId": "774dbbdb-9495-487b-a7bb-55c8afad8406",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "199f2c6e-ba19-4321-84ee-b018844fbb5a",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Serialization.Json.dll",
@@ -446,8 +446,8 @@
       "publicTypes": [
         "GamePlatform.Serialization.Json.UnavailableJsonCodec"
       ],
-      "moduleVersionId": "7bd5591b-58a6-4bd4-9aa5-34cbaf6ff6b0",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "017f5ec7-abac-4e33-a647-f202e9db75fb",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Serialization.MessagePack.dll",
@@ -493,8 +493,8 @@
         "GamePlatform.Serialization.MessagePack.TypedQualificationCodec",
         "GamePlatform.Serialization.MessagePack.UnavailableMessagePackCodec"
       ],
-      "moduleVersionId": "fa09983d-653a-4c5e-8b2a-55fc7c4d4a20",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "b0cddce1-c3ab-4557-9638-ebffed404a74",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Storage.Abstractions.dll",
@@ -546,8 +546,8 @@
         "GamePlatform.Storage.Abstractions.Sync.StoredPullPage",
         "GamePlatform.Storage.Abstractions.Sync.StoredTerminalCommand"
       ],
-      "moduleVersionId": "8fd15b79-6dab-4639-af6d-af5271fccb1d",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "edbb9b8d-0b09-4a8e-b0b2-2363943aab9d",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Storage.Sqlite.dll",
@@ -629,8 +629,8 @@
         "SQLite.TableQuery`1",
         "SQLite.UniqueAttribute"
       ],
-      "moduleVersionId": "bd51bd14-eeee-4e45-8a1a-6d9231365381",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "6c4948ea-ee70-4a54-8be8-e6b910101d83",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Sync.dll",
@@ -672,8 +672,8 @@
         "GamePlatform.Sync.Push.SendCycleResult",
         "GamePlatform.Sync.UnavailableSyncCoordinator"
       ],
-      "moduleVersionId": "111a64c3-1799-4548-ae8e-468da5c7679e",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "a700fb94-ad49-47ae-9821-90d27c7e469c",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Transport.Abstractions.dll",
@@ -694,8 +694,8 @@
         "GamePlatform.Transport.Abstractions.IHttpExecutor",
         "GamePlatform.Transport.Abstractions.IWireCodec"
       ],
-      "moduleVersionId": "d8433521-1160-41e8-9827-0c04da20999b",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "ea903c6d-45d4-400a-b6cc-43c7516a6fe1",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Transport.Http.dll",
@@ -760,8 +760,8 @@
         "GamePlatform.Transport.Http.Supabase.SupabaseAuthConfiguration",
         "GamePlatform.Transport.Http.UnavailableHttpTransport"
       ],
-      "moduleVersionId": "38e37dae-d924-4720-a510-0268b942a4c4",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "b8c35bae-b881-4c6a-9aa1-af7a0cc1397b",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "GamePlatform.Wire.Contracts.dll",
@@ -873,8 +873,8 @@
         "GamePlatform.Wire.Contracts.StoreOfferPurchasedResult",
         "GamePlatform.Wire.Contracts.WireOptional`1"
       ],
-      "moduleVersionId": "92972525-1403-4a59-8bc4-38a8fe6c695d",
-      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/5686d08fbd31e60f5a972abac96ff3587203a627/*\"}}\n"
+      "moduleVersionId": "5d532424-7c7f-455e-9af1-4d3209b3573d",
+      "sourceLink": "{\"documents\":{\"/_/*\":\"https://raw.githubusercontent.com/gindemit/game-platform-dotnet/32f2ba6c25f540db32eab9d6a9d129d81a5c4aea/*\"}}\n"
     },
     {
       "file": "MessagePack.Annotations.dll",
@@ -1731,7 +1731,7 @@
     "pathMap": "/_/",
     "sdkVersion": "9.0.203",
     "repositoryUrl": "https://github.com/gindemit/game-platform-dotnet",
-    "sourceLinkSha256": "d164eb4a70f1598503b3fe553e04f9a9e53ec89c735e5ef024d6ea99618d492e",
+    "sourceLinkSha256": "f6665a650e7bfc6ac81a1c9592d89f80702ed7c50a4b8e098d6a52e5fe0e6b2d",
     "continuousIntegrationBuild": true,
     "deterministicSourcePaths": true,
     "sourceControlManagerQueries": false,
@@ -1900,7 +1900,7 @@
     },
     {
       "path": "managed/GamePlatform.Backend.Contracts.dll",
-      "sha256": "8ce13eff90663af1ba878c0fecf7837e419264678bf28eeb5c92867f674dad27",
+      "sha256": "455913438146ca52972aec8e9609a5b6ae105a010bc13a27e5c55c30381acee1",
       "bytes": 20480
     },
     {
@@ -1910,12 +1910,12 @@
     },
     {
       "path": "managed/GamePlatform.Backend.Contracts.pdb",
-      "sha256": "748f122dc6f01e3f74927b55e191a15182a0546307a4fb9816e939258695820d",
+      "sha256": "fcac012ec5f3d1f3146a0d6919c642046fbfa4338bc0de1580900e42023c4f79",
       "bytes": 12180
     },
     {
       "path": "managed/GamePlatform.Core.dll",
-      "sha256": "9fb71a04441db7388c67c9501e57fb627b369fe84cef7b35d613592d818fc733",
+      "sha256": "71aac016317b47b08665e23d1156a742044808a666c7193edb08381af876f2a2",
       "bytes": 15872
     },
     {
@@ -1925,12 +1925,12 @@
     },
     {
       "path": "managed/GamePlatform.Core.pdb",
-      "sha256": "927a135b30fcc210e1e8dad35374277e2c9c27ff83025ac385c05341f1b4550e",
+      "sha256": "9cf978365c0431e12e061a16e565374e613ab89655163c0d962010045fae0371",
       "bytes": 12476
     },
     {
       "path": "managed/GamePlatform.Diagnostics.Abstractions.dll",
-      "sha256": "226aed2c7c9ad23aac5e5c7552150adec9a74dd2940fa0abb82efa2f830029ce",
+      "sha256": "3bf3763699ca961066017fbcd81daebe91f5324b2c87be15dbf55cd09289cf10",
       "bytes": 10752
     },
     {
@@ -1940,12 +1940,12 @@
     },
     {
       "path": "managed/GamePlatform.Diagnostics.Abstractions.pdb",
-      "sha256": "db43369205ab9f8576d5162366a17fb8216b206c7cdee2ede1035550d41ad616",
+      "sha256": "bf2ff3d50ecbf37e9e6c5ba116cf54380855599885a7b819cd4b75dd0bb6e6f7",
       "bytes": 9540
     },
     {
       "path": "managed/GamePlatform.Features.Contracts.dll",
-      "sha256": "ed1c1c8aa4edf954162a0e8cfbf8466fb7dd04f0177384469a60ceb31ce0e3a7",
+      "sha256": "d335df4ff4af02f5d2e974fed499fe4c306da572ec17251a02f7a419cd75c3e2",
       "bytes": 54272
     },
     {
@@ -1955,12 +1955,12 @@
     },
     {
       "path": "managed/GamePlatform.Features.Contracts.pdb",
-      "sha256": "ee35e6e4da947494ce5cd0af03cfa4644028f802c9df2213d49236a090f1c81b",
+      "sha256": "adb5f98a4a1ed631d11e4d3c48f6bbcff1e32689481fb25f74d6173ec462c53c",
       "bytes": 21052
     },
     {
       "path": "managed/GamePlatform.Features.Presentation.dll",
-      "sha256": "9ed117dcc370616476a4d842dccf92c07c1b4a393366845540581ce589bdadd7",
+      "sha256": "336830f189d89fe2f858081f529c1a6975fd7989ede3f7d17e43212dd7e0fc4b",
       "bytes": 7680
     },
     {
@@ -1970,13 +1970,13 @@
     },
     {
       "path": "managed/GamePlatform.Features.Presentation.pdb",
-      "sha256": "f94271a83be0b612c907b7fb948ba2c8837a7fb3410480951f7a56539ba02f9f",
+      "sha256": "95f93b28956efece9c4dc265f3de278eef8df341b9ffd5547d1beadfd3394f6f",
       "bytes": 9032
     },
     {
       "path": "managed/GamePlatform.Features.dll",
-      "sha256": "ca407ea6023e8e907631cfa802b3dabfab501282a80b26784d21b928c5ee6777",
-      "bytes": 196096
+      "sha256": "93be48ee34b4ffcb4d58578c564b2e5a4bc3e9dc2e0d801e277db395a9941d86",
+      "bytes": 197120
     },
     {
       "path": "managed/GamePlatform.Features.dll.meta",
@@ -1985,12 +1985,12 @@
     },
     {
       "path": "managed/GamePlatform.Features.pdb",
-      "sha256": "a4496cfdb2e15361ea3ad490e57e8443e8a0736a62020850a7dcc766133fbaa7",
-      "bytes": 49168
+      "sha256": "39a57e1fefd8fac0214c35d9af08b99c42ef6ba030e5fa59b3fe35e560f1c0c7",
+      "bytes": 49308
     },
     {
       "path": "managed/GamePlatform.Navigation.dll",
-      "sha256": "1d30aaa37ecb96cc4b55c028d5405884c78d88664b5aaba64c2f39d4917ef4dc",
+      "sha256": "71ea1accba2bcb426e80a7f1e2427400377a5d68bddcebd5c030b531ac98a16b",
       "bytes": 12800
     },
     {
@@ -2000,12 +2000,12 @@
     },
     {
       "path": "managed/GamePlatform.Navigation.pdb",
-      "sha256": "28dc76d6b82339a03e0639de50e35b1699590942de096aa2df538cea0638b955",
+      "sha256": "cedbbb015fe5b62c9417d52796f0e815c644cdfae2cc439c5011344ea8f5ce24",
       "bytes": 10436
     },
     {
       "path": "managed/GamePlatform.Serialization.Json.dll",
-      "sha256": "01e7824c972021423c1e82561f974c2d6ac1035f99759be5321c68b31356c258",
+      "sha256": "571a58cbaf9e9106f5155bcc66127ca2a6ad005113e2154668719e804febb3f8",
       "bytes": 5632
     },
     {
@@ -2015,12 +2015,12 @@
     },
     {
       "path": "managed/GamePlatform.Serialization.Json.pdb",
-      "sha256": "a29495aa3ee2f0c79976e72c90e2c6b3b71fb4f72e5ac08623048178b28792ff",
+      "sha256": "dbd1a423e51557dc6d7514b0120415938fa53fcac7dddb226be7890bb7e46813",
       "bytes": 8372
     },
     {
       "path": "managed/GamePlatform.Serialization.MessagePack.dll",
-      "sha256": "de142b3b990e05e24cf7a6eddf2b28d663ac6443a9c4de9a896f674833c01c0e",
+      "sha256": "9ad9f181f5a64dff22842fca63ef7a58ba6bc12fbe4f6234b769987aa72d75d9",
       "bytes": 179200
     },
     {
@@ -2030,12 +2030,12 @@
     },
     {
       "path": "managed/GamePlatform.Serialization.MessagePack.pdb",
-      "sha256": "05e79c1d483e21ff6f385e3c3caf22f46d2757cc9cf9bfb97f1048ca6fcce951",
+      "sha256": "d02b22ea9709211beafe5ed93d81fa7778c7450e02d8dff5317c80897efe90fc",
       "bytes": 35024
     },
     {
       "path": "managed/GamePlatform.Storage.Abstractions.dll",
-      "sha256": "a24be5f330892e47fd07a20e5c273bdddfb4cd7740e1780e9c035d2447a3ee82",
+      "sha256": "d7a24b03763d6f2e2beac9c1d749fe8d5813a7b13dbe04824b9327473d3e687b",
       "bytes": 27136
     },
     {
@@ -2045,12 +2045,12 @@
     },
     {
       "path": "managed/GamePlatform.Storage.Abstractions.pdb",
-      "sha256": "fbd232974ced2d7553d6aadf32f3293bd95d44bb9f7a6a1ed5e0edb665ccdc47",
+      "sha256": "9aa8b831730c12246868289d7f1be998cd52119be40a255cf7936683632690d0",
       "bytes": 14304
     },
     {
       "path": "managed/GamePlatform.Storage.Sqlite.dll",
-      "sha256": "4dd7452d630cffe10846b8ee822955b9bac57aa96878a96520481e7692822e5a",
+      "sha256": "670281758819dd85247600f042123071e15352e178ec8d42c502db165ce3a7db",
       "bytes": 202752
     },
     {
@@ -2060,12 +2060,12 @@
     },
     {
       "path": "managed/GamePlatform.Storage.Sqlite.pdb",
-      "sha256": "d6d1a291c332da1f7333aef5d74907118193330afabfa17c4e7675780b9e9264",
+      "sha256": "78924eebe2dfcff2260408dc3002f7d466c111f1ce3e824f2708ad9ce81e2e3b",
       "bytes": 50104
     },
     {
       "path": "managed/GamePlatform.Sync.dll",
-      "sha256": "8e9e1e080c0641073473016d75339dec67ab66b6d842b9b16dd37d4e6383e3b6",
+      "sha256": "8c7aaaa2f8aa7fc4592678fcc30c7c5bc046f0b40c259493c476faa39b7bc191",
       "bytes": 25088
     },
     {
@@ -2075,12 +2075,12 @@
     },
     {
       "path": "managed/GamePlatform.Sync.pdb",
-      "sha256": "287331dbd41f5116ad5640d1027417cdbe683c2322b883f489f54f13ceaa3573",
+      "sha256": "21af82352ba1eb5f7be5bd643edaf21806c5c9c2d52f14f1456b486067c7588d",
       "bytes": 12192
     },
     {
       "path": "managed/GamePlatform.Transport.Abstractions.dll",
-      "sha256": "61cf3a872babab1d55ed8d2fa40e04b404d67eb364f591476e034b130a448d33",
+      "sha256": "6fc00e94185ebbc9a0e0f407226050af95a2e40eb92c95c789cd1d8154c04bce",
       "bytes": 8704
     },
     {
@@ -2090,12 +2090,12 @@
     },
     {
       "path": "managed/GamePlatform.Transport.Abstractions.pdb",
-      "sha256": "c5e5eea2126f9460109c03d29291e8eb8dfee7fed54d70db030c08bfd3a867ad",
+      "sha256": "a84063323e59b7d8901602e4851cccfd0b9a28d31647b9ae8381fab5f8069c2e",
       "bytes": 8956
     },
     {
       "path": "managed/GamePlatform.Transport.Http.dll",
-      "sha256": "41206ce48cf07eea29444b6fbb196897b76f89ad7a567dc33d257f113f612dcf",
+      "sha256": "0713d04b1f5b00bc75a6a7b85123dd524db8ee0b346a3eb15377d7e00a83dace",
       "bytes": 105984
     },
     {
@@ -2105,12 +2105,12 @@
     },
     {
       "path": "managed/GamePlatform.Transport.Http.pdb",
-      "sha256": "32a72327ea2b6e217a53f18abcef14dcb66233fb3b4765ba39ac5f26732a5be0",
+      "sha256": "f2ec5df820359fb085b41349f9b91c7333f9a49539cfdc9a95842846c1101e37",
       "bytes": 32252
     },
     {
       "path": "managed/GamePlatform.Wire.Contracts.dll",
-      "sha256": "0b3edb87ed1e8b55c8e448f50f7f621ff1325548dec2fb7a4589fc1d929bed84",
+      "sha256": "75d0e6582b863e4d2982718453249f7aebb968be37bdd765ff25c79f76b7fd80",
       "bytes": 46080
     },
     {
@@ -2120,7 +2120,7 @@
     },
     {
       "path": "managed/GamePlatform.Wire.Contracts.pdb",
-      "sha256": "5135f6a350f8c8c942ea947c40a42cd8213ac9b13f7f2e40c6b4ddcc053b5368",
+      "sha256": "9b9feb37aca616ad0798d335e9bd9ddd0138b6bf5b7934c04635a35e5528eb48",
       "bytes": 22756
     },
     {
