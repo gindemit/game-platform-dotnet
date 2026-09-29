@@ -341,6 +341,32 @@ namespace GamePlatform.Tests.Features.Progression
             Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressionCompletionRequest(Context, request.OperationId, Stream, "run", request.Outcome, 0, ProgressionOutcomeAuthority.ClientTrustedUnvalidated));
         }
 
+        [Fact]
+        public async Task GenericCompletionExtensionIsImmutableAndPartOfPendingIdentity()
+        {
+            var values = new Dictionary<string, string> { ["campaignVersion"] = "generated-campaign-v1" };
+            var extension = new ProgressionCommandExtension("campaign.milestone", 1, values);
+            values["campaignVersion"] = "tampered";
+            Assert.Equal("generated-campaign-v1", extension.Value["campaignVersion"]);
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            var plain = Request("0199f9a0-0000-7000-8000-000000000119", "run-extension", 1);
+            var campaign = new ProgressionCompletionRequest(Context, plain.OperationId, Stream, plain.BusinessSource,
+                plain.Outcome, plain.ContentVersion, plain.OutcomeAuthority, "campaign.local", extension);
+            await service.CompleteAsync(campaign, CancellationToken.None);
+            var retained = (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions.Single();
+            Assert.Equal("campaign.local", retained.ValidationScheme);
+            Assert.Equal("generated-campaign-v1", retained.Extension!.Value["campaignVersion"]);
+            await Assert.ThrowsAsync<ProgressionConflictException>(() => service.CompleteAsync(plain, CancellationToken.None));
+            await service.MarkAcceptedAwaitingPullAsync(new ProgressionAcceptance(Context, campaign.OperationId), CancellationToken.None);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            var afterReopen = (await restored.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions.Single();
+            Assert.Equal(ProgressionPendingStatus.AcceptedAwaitingPull, afterReopen.Status);
+            Assert.Equal("campaign.local", afterReopen.ValidationScheme);
+            Assert.Equal("generated-campaign-v1", afterReopen.Extension!.Value["campaignVersion"]);
+            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
         private static ProgressionService Create(SqliteDatabase database, ScopedOwnerContext context, IProgressionConfirmationEvidenceStore? confirmations = null) => new ProgressionService(context, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new Fingerprint(), new FixedClock()), new Codec(), confirmations ?? new SqliteConfirmationStore(database), () => 100);
         private static string Operation(int index) => "0199f9a0-0000-7000-8000-" + index.ToString("D12");
         private static async Task<OperationId> AcceptAsync(ProgressionService service, string operation, string source)
@@ -369,15 +395,17 @@ namespace GamePlatform.Tests.Features.Progression
 
         private sealed class Codec : IProgressionStateCodec
         {
-            public byte[] EncodeCompletionCommand(PendingProgressionCompletion value) => Text("C", value.Outcome.Content.Value, value.ContentVersion.ToString(), value.Outcome.Score.ToString(), value.OutcomeAuthority.ToString());
-            public byte[] EncodePending(IReadOnlyList<PendingProgressionCompletion> values) => Text("P", string.Join(";", values.Select(value => string.Join(",", value.OperationId.ToString(), value.StreamId.ToString(), B(value.BusinessSource), value.ContentVersion, (int)value.OutcomeAuthority, value.LocalRevision, (int)value.Status, B(value.Outcome.Session.Value), B(value.Outcome.Mode.Value), B(value.Outcome.Content.Value), B(value.Outcome.Difficulty.Value), value.Outcome.Success ? "1" : "0", value.Outcome.Score, value.Outcome.DurationTicks, value.Outcome.TicksPerSecond, B(value.Outcome.ValidationReference)))));
+            public byte[] EncodeCompletionCommand(PendingProgressionCompletion value) => Text("C", value.Outcome.Content.Value, value.ContentVersion.ToString(), value.Outcome.Score.ToString(), value.OutcomeAuthority.ToString(), value.ValidationScheme, EncodeExtension(value.Extension));
+            public byte[] EncodePending(IReadOnlyList<PendingProgressionCompletion> values) => Text("P", string.Join(";", values.Select(value => string.Join(",", value.OperationId.ToString(), value.StreamId.ToString(), B(value.BusinessSource), value.ContentVersion, (int)value.OutcomeAuthority, value.LocalRevision, (int)value.Status, B(value.Outcome.Session.Value), B(value.Outcome.Mode.Value), B(value.Outcome.Content.Value), B(value.Outcome.Difficulty.Value), value.Outcome.Success ? "1" : "0", value.Outcome.Score, value.Outcome.DurationTicks, value.Outcome.TicksPerSecond, B(value.Outcome.ValidationReference), B(value.ValidationScheme), B(EncodeExtension(value.Extension))))));
             public IReadOnlyList<PendingProgressionCompletion> DecodePending(long _, ReadOnlySpan<byte> payload)
             {
                 var items = Parts(payload, 2)[1]; if (string.IsNullOrEmpty(items)) return Array.Empty<PendingProgressionCompletion>();
-                return items.Split(';').Select(item => { var p = item.Split(','); var outcome = new GameplayOutcome(new PlatformId(U(p[7])), new PlatformId(U(p[8])), new PlatformId(U(p[9])), new PlatformId(U(p[10])), p[11] == "1", long.Parse(p[12]), long.Parse(p[13]), int.Parse(p[14]), new Dictionary<string, long>(), U(p[15])); return new PendingProgressionCompletion(new OperationId(Guid.Parse(p[0])), new ClientStreamId(Guid.Parse(p[1])), U(p[2]), outcome, int.Parse(p[3]), (ProgressionOutcomeAuthority)int.Parse(p[4]), long.Parse(p[5]), (ProgressionPendingStatus)int.Parse(p[6])); }).ToArray();
+                return items.Split(';').Select(item => { var p = item.Split(','); var outcome = new GameplayOutcome(new PlatformId(U(p[7])), new PlatformId(U(p[8])), new PlatformId(U(p[9])), new PlatformId(U(p[10])), p[11] == "1", long.Parse(p[12]), long.Parse(p[13]), int.Parse(p[14]), new Dictionary<string, long>(), U(p[15])); return new PendingProgressionCompletion(new OperationId(Guid.Parse(p[0])), new ClientStreamId(Guid.Parse(p[1])), U(p[2]), outcome, int.Parse(p[3]), (ProgressionOutcomeAuthority)int.Parse(p[4]), long.Parse(p[5]), (ProgressionPendingStatus)int.Parse(p[6]), p.Length == 18 ? U(p[16]) : "untrusted-reference", p.Length == 18 ? DecodeExtension(U(p[17])) : null); }).ToArray();
             }
             public byte[] EncodeConfirmed(ProgressionConfirmedProjection value) => Text("S", string.Join(";", value.States.Select(state => B(state.StateKey.Value) + "," + state.Value)));
             public ProgressionConfirmedProjection DecodeConfirmed(long revision, long at, ReadOnlySpan<byte> payload) { var part = Parts(payload, 2)[1]; var states = string.IsNullOrEmpty(part) ? Array.Empty<ProgressionConfirmedState>() : part.Split(';').Select(value => { var p = value.Split(','); return new ProgressionConfirmedState(new SemanticId(U(p[0])), long.Parse(p[1])); }).ToArray(); return new ProgressionConfirmedProjection(revision, at, states); }
+            private static string EncodeExtension(ProgressionCommandExtension? extension) => extension == null ? string.Empty : string.Join("^", B(extension.Schema), extension.Version.ToString(), string.Join(":", extension.Value.OrderBy(value => value.Key, StringComparer.Ordinal).Select(value => B(value.Key) + "." + B(value.Value))));
+            private static ProgressionCommandExtension? DecodeExtension(string value) { if (string.IsNullOrEmpty(value)) return null; var parts = value.Split('^'); var pairs = string.IsNullOrEmpty(parts[2]) ? Array.Empty<string>() : parts[2].Split(':'); return new ProgressionCommandExtension(U(parts[0]), int.Parse(parts[1]), pairs.ToDictionary(pair => U(pair.Split('.')[0]), pair => U(pair.Split('.')[1]), StringComparer.Ordinal)); }
             private static byte[] Text(params string[] values) => Encoding.UTF8.GetBytes(string.Join("|", values.Select(B)));
             private static string[] Parts(ReadOnlySpan<byte> value, int count) { var all = Encoding.UTF8.GetString(value).Split('|').Select(U).ToArray(); if (all.Length != count) throw new InvalidOperationException("Invalid test codec payload."); return all; }
             private static string B(string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value)); private static string U(string value) => Encoding.UTF8.GetString(Convert.FromBase64String(value));

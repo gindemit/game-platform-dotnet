@@ -74,13 +74,15 @@ namespace GamePlatform.Features.Progression
                     throw new ProgressionConflictException("The operation or business source was already retained with different immutable completion semantics.");
                 }
                 var draftPending = new PendingProgressionCompletion(request.OperationId, request.StreamId, request.BusinessSource, request.Outcome,
-                    request.ContentVersion, request.OutcomeAuthority, 1, ProgressionPendingStatus.AwaitingReceipt);
+                    request.ContentVersion, request.OutcomeAuthority, 1, ProgressionPendingStatus.AwaitingReceipt,
+                    request.ValidationScheme, request.Extension);
                 var body = codec.EncodeCompletionCommand(draftPending); ValidatePayload(body, "completion command");
                 var draft = new CommandDraft(exactOwner.Owner, request.OperationId, request.StreamId, "gameplay.session.completed", 1, 1, body);
                 await commands.CommitAsync(request.BusinessSource, draft, (transaction, localRevision) =>
                 {
                     var pending = new PendingProgressionCompletion(request.OperationId, request.StreamId, request.BusinessSource, request.Outcome,
-                        request.ContentVersion, request.OutcomeAuthority, localRevision, ProgressionPendingStatus.AwaitingReceipt);
+                        request.ContentVersion, request.OutcomeAuthority, localRevision, ProgressionPendingStatus.AwaitingReceipt,
+                        request.ValidationScheme, request.Extension);
                     var all = current.Pending.Concat(new[] { pending }).ToArray();
                     var encoded = codec.EncodePending(all); ValidatePayload(encoded, "pending completions");
                     state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, PendingKey, localRevision, Now(), encoded, Array.Empty<byte>()));
@@ -105,7 +107,8 @@ namespace GamePlatform.Features.Progression
                 if (existing.Status == ProgressionPendingStatus.AwaitingReceipt)
                     await WritePendingAsync(exactOwner, current.Pending.Select(value => value.OperationId == acceptance.OperationId
                         ? new PendingProgressionCompletion(value.OperationId, value.StreamId, value.BusinessSource, value.Outcome, value.ContentVersion,
-                            value.OutcomeAuthority, value.LocalRevision, ProgressionPendingStatus.AcceptedAwaitingPull) : value).ToArray(), current.PendingRevision, cancellationToken).ConfigureAwait(false);
+                            value.OutcomeAuthority, value.LocalRevision, ProgressionPendingStatus.AcceptedAwaitingPull,
+                            value.ValidationScheme, value.Extension) : value).ToArray(), current.PendingRevision, cancellationToken).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
             return await ReadSnapshotAsync(exactOwner, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
@@ -269,7 +272,11 @@ namespace GamePlatform.Features.Progression
         private long Now() { var value = nowMilliseconds(); ProgressionValidation.Timestamp(value, nameof(nowMilliseconds)); return value; }
         private static bool Matches(StorageScope candidate, OwnerScope value) => string.Equals(candidate.BackendNamespace, value.Backend.Value, StringComparison.Ordinal) && string.Equals(candidate.AppId.Value, value.AppId.ToString(), StringComparison.Ordinal) && string.Equals(candidate.AccountId.Value, value.UserId.ToString(), StringComparison.Ordinal);
         private static void ValidatePayload(byte[]? value, string label) { if (value == null || value.Length == 0 || value.Length > 262_144) throw new InvalidOperationException("The " + label + " codec payload is invalid."); }
-        private static bool Equivalent(PendingProgressionCompletion existing, ProgressionCompletionRequest request) => existing.StreamId == request.StreamId && string.Equals(existing.BusinessSource, request.BusinessSource, StringComparison.Ordinal) && existing.ContentVersion == request.ContentVersion && existing.OutcomeAuthority == request.OutcomeAuthority && Equivalent(existing.Outcome, request.Outcome);
+        private static bool Equivalent(PendingProgressionCompletion existing, ProgressionCompletionRequest request) => existing.StreamId == request.StreamId && string.Equals(existing.BusinessSource, request.BusinessSource, StringComparison.Ordinal) && existing.ContentVersion == request.ContentVersion && existing.OutcomeAuthority == request.OutcomeAuthority && string.Equals(existing.ValidationScheme, request.ValidationScheme, StringComparison.Ordinal) && Equivalent(existing.Extension, request.Extension) && Equivalent(existing.Outcome, request.Outcome);
+        private static bool Equivalent(ProgressionCommandExtension? left, ProgressionCommandExtension? right) =>
+            ReferenceEquals(left, right) || (left != null && right != null &&
+            string.Equals(left.Schema, right.Schema, StringComparison.Ordinal) && left.Version == right.Version &&
+            left.Value.Count == right.Value.Count && left.Value.All(item => right.Value.TryGetValue(item.Key, out var value) && string.Equals(item.Value, value, StringComparison.Ordinal)));
         private static bool Equivalent(GameplayOutcome left, GameplayOutcome right) => left.Session.Equals(right.Session) && left.Mode.Equals(right.Mode) && left.Content.Equals(right.Content) && left.Difficulty.Equals(right.Difficulty) && left.Success == right.Success && left.Score == right.Score && left.DurationTicks == right.DurationTicks && left.TicksPerSecond == right.TicksPerSecond && string.Equals(left.ValidationReference, right.ValidationReference, StringComparison.Ordinal) && left.Metrics.Count == right.Metrics.Count && left.Metrics.All(value => right.Metrics.TryGetValue(value.Key, out var matched) && matched == value.Value);
         private static bool Equivalent(ProgressionConfirmedProjection left, ProgressionConfirmedProjection right) => left.Revision == right.Revision && left.ConfirmedAtMilliseconds == right.ConfirmedAtMilliseconds && left.States.Count == right.States.Count && left.States.All(value => right.States.Any(other => other.StateKey == value.StateKey && other.Value == value.Value));
         private static bool SameOperationSet(IReadOnlyList<OperationId> left, IReadOnlyList<OperationId> right) => left.Count == right.Count && left.All(value => right.Contains(value));

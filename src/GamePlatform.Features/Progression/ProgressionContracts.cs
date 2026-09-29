@@ -13,11 +13,35 @@ namespace GamePlatform.Features.Progression
     public enum ProgressionOutcomeAuthority { ClientTrustedUnvalidated = 0 }
     public enum ProgressionPendingStatus { AwaitingReceipt = 0, AcceptedAwaitingPull = 1 }
 
+    /// <summary>Immutable game-neutral string extension for a completion command; the server remains authoritative.</summary>
+    public sealed class ProgressionCommandExtension
+    {
+        private readonly ReadOnlyDictionary<string, string> value;
+        public ProgressionCommandExtension(string schema, int version, IReadOnlyDictionary<string, string> value)
+        {
+            ProgressionValidation.Semantic(schema, nameof(schema));
+            if (version < 1) throw new ArgumentOutOfRangeException(nameof(version));
+            if (value == null || value.Count > 128) throw new ArgumentOutOfRangeException(nameof(value));
+            var copied = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var item in value)
+            {
+                ProgressionValidation.Semantic(item.Key, nameof(value));
+                if (item.Value == null || item.Value.Length > 4096) throw new ArgumentOutOfRangeException(nameof(value));
+                copied.Add(item.Key, item.Value);
+            }
+            Schema = schema; Version = version; this.value = new ReadOnlyDictionary<string, string>(copied);
+        }
+        public string Schema { get; }
+        public int Version { get; }
+        public IReadOnlyDictionary<string, string> Value => value;
+    }
+
     /// <summary>Game-owned completion data presented to the portable command boundary. This type allocates no progress or reward.</summary>
     public sealed class ProgressionCompletionRequest
     {
         public ProgressionCompletionRequest(ScopedOwnerContext owner, OperationId operationId, ClientStreamId streamId,
-            string businessSource, GameplayOutcome outcome, int contentVersion, ProgressionOutcomeAuthority outcomeAuthority)
+            string businessSource, GameplayOutcome outcome, int contentVersion, ProgressionOutcomeAuthority outcomeAuthority,
+            string validationScheme = "untrusted-reference", ProgressionCommandExtension? extension = null)
         {
             if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
             if (!operationId.IsValid) throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
@@ -26,8 +50,10 @@ namespace GamePlatform.Features.Progression
             if (outcome == null) throw new ArgumentNullException(nameof(outcome));
             if (contentVersion < 1) throw new ArgumentOutOfRangeException(nameof(contentVersion));
             if (!Enum.IsDefined(typeof(ProgressionOutcomeAuthority), outcomeAuthority)) throw new ArgumentOutOfRangeException(nameof(outcomeAuthority));
+            ProgressionValidation.Semantic(validationScheme, nameof(validationScheme));
             Owner = owner; OperationId = operationId; StreamId = streamId; BusinessSource = businessSource;
             Outcome = outcome; ContentVersion = contentVersion; OutcomeAuthority = outcomeAuthority;
+            ValidationScheme = validationScheme; Extension = extension;
         }
         public ScopedOwnerContext Owner { get; }
         public OperationId OperationId { get; }
@@ -36,6 +62,8 @@ namespace GamePlatform.Features.Progression
         public GameplayOutcome Outcome { get; }
         public int ContentVersion { get; }
         public ProgressionOutcomeAuthority OutcomeAuthority { get; }
+        public string ValidationScheme { get; }
+        public ProgressionCommandExtension? Extension { get; }
     }
 
     /// <summary>Durable local intent. Accepted means only that the command receipt was retained; pull remains authoritative.</summary>
@@ -43,15 +71,18 @@ namespace GamePlatform.Features.Progression
     {
         public PendingProgressionCompletion(OperationId operationId, ClientStreamId streamId, string businessSource,
             GameplayOutcome outcome, int contentVersion, ProgressionOutcomeAuthority outcomeAuthority, long localRevision,
-            ProgressionPendingStatus status)
+            ProgressionPendingStatus status, string validationScheme = "untrusted-reference",
+            ProgressionCommandExtension? extension = null)
         {
             if (!operationId.IsValid || !streamId.IsValid) throw new ArgumentException("Valid command identities are required.");
             ProgressionValidation.BusinessSource(businessSource, nameof(businessSource));
             if (outcome == null) throw new ArgumentNullException(nameof(outcome));
             if (contentVersion < 1 || localRevision < 1) throw new ArgumentOutOfRangeException(contentVersion < 1 ? nameof(contentVersion) : nameof(localRevision));
             if (!Enum.IsDefined(typeof(ProgressionOutcomeAuthority), outcomeAuthority) || !Enum.IsDefined(typeof(ProgressionPendingStatus), status)) throw new ArgumentOutOfRangeException(nameof(status));
+            ProgressionValidation.Semantic(validationScheme, nameof(validationScheme));
             OperationId = operationId; StreamId = streamId; BusinessSource = businessSource; Outcome = outcome;
             ContentVersion = contentVersion; OutcomeAuthority = outcomeAuthority; LocalRevision = localRevision; Status = status;
+            ValidationScheme = validationScheme; Extension = extension;
         }
         public OperationId OperationId { get; }
         public ClientStreamId StreamId { get; }
@@ -61,6 +92,8 @@ namespace GamePlatform.Features.Progression
         public ProgressionOutcomeAuthority OutcomeAuthority { get; }
         public long LocalRevision { get; }
         public ProgressionPendingStatus Status { get; }
+        public string ValidationScheme { get; }
+        public ProgressionCommandExtension? Extension { get; }
     }
 
     /// <summary>One server-owned semantic progression key/value. It is not a game checkpoint and may not be inferred from completion.</summary>
@@ -152,6 +185,8 @@ namespace GamePlatform.Features.Progression
     {
         private static readonly Regex Source = new Regex("^[^\\r\\n\\0]{1,256}$", RegexOptions.CultureInvariant);
         internal static void BusinessSource(string value, string parameter) { if (string.IsNullOrWhiteSpace(value) || !Source.IsMatch(value)) throw new ArgumentOutOfRangeException(parameter); }
+        private static readonly Regex SemanticPattern = new Regex("^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", RegexOptions.CultureInvariant);
+        internal static void Semantic(string value, string parameter) { if (value == null || !SemanticPattern.IsMatch(value)) throw new ArgumentOutOfRangeException(parameter); }
         internal static void Timestamp(long value, string parameter) { if (value < 0 || value > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(parameter); }
     }
 }
