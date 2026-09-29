@@ -244,6 +244,54 @@ namespace GamePlatform.Tests.Features.Progression
         }
 
         [Fact]
+        public async Task TerminalRejectionCanAtomicallyReconcileGameOwnedProjection()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            var rejected = Request("0199f9a0-0000-7000-8000-000000000215", "run-rejected-game", 1);
+            await service.CompleteAsync(rejected, (transaction, revision) =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_feature_state VALUES (?,?,?,?,?,?,?)",
+                    Context.ViewKey.Value, "game-owned", "completed", revision, 100L, new byte[] { 1 }, Array.Empty<byte>());
+            }, CancellationToken.None);
+            await service.RejectAsync(Context, rejected.OperationId, (transaction, pending) =>
+            {
+                Assert.Equal(rejected.OperationId, pending.OperationId);
+                ((SqliteTransactionSession)transaction).Execute("DELETE FROM gp_feature_state WHERE feature_namespace='game-owned' AND entity_key='completed'");
+            }, CancellationToken.None);
+            var count = await database.ExecuteAsync(Scope, transaction =>
+                ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='game-owned'"), CancellationToken.None);
+            Assert.Equal(0, count);
+            Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
+        public async Task FailedGameRejectionRollsBackSdkPendingAndGameOwnedStateAcrossReopen()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            var rejected = Request("0199f9a0-0000-7000-8000-000000000216", "run-rejected-rollback", 1);
+            await service.CompleteAsync(rejected, (transaction, revision) =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_feature_state VALUES (?,?,?,?,?,?,?)",
+                    Context.ViewKey.Value, "game-owned", "completed", revision, 100L, new byte[] { 1 }, Array.Empty<byte>());
+            }, CancellationToken.None);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.RejectAsync(Context, rejected.OperationId,
+                (transaction, _) =>
+                {
+                    ((SqliteTransactionSession)transaction).Execute("DELETE FROM gp_feature_state WHERE feature_namespace='game-owned' AND entity_key='completed'");
+                    throw new InvalidOperationException("Injected game reconciliation failure.");
+                }, CancellationToken.None));
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            Assert.Contains((await restored.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions,
+                value => value.OperationId == rejected.OperationId);
+            var count = await reopened.ExecuteAsync(Scope, transaction =>
+                ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='game-owned'"), CancellationToken.None);
+            Assert.Equal(1, count);
+            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
+        [Fact]
         public async Task AccountOrGenerationSwitchCannotReadOrMutatePendingOutcomeAndResetProjectionRetainsIt()
         {
             using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);

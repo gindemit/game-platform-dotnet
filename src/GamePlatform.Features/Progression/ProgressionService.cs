@@ -158,19 +158,28 @@ namespace GamePlatform.Features.Progression
         }
 
         /// <summary>Receipts may terminally reject only their matching local completion. They never alter confirmed progression or other pending work.</summary>
-        public async Task<FeatureSnapshot<ProgressionSnapshot>> RejectAsync(ScopedOwnerContext requestedOwner, OperationId operationId, CancellationToken cancellationToken)
+        public Task<FeatureSnapshot<ProgressionSnapshot>> RejectAsync(ScopedOwnerContext requestedOwner, OperationId operationId, CancellationToken cancellationToken) =>
+            RejectAsync(requestedOwner, operationId, (_, __) => { }, cancellationToken);
+
+        /// <summary>Reconciles game-owned local state in the same transaction that removes the rejected SDK pending completion.</summary>
+        /// <remarks>The callback must use only the supplied transaction and must not perform external effects or retain the transaction.</remarks>
+        public async Task<FeatureSnapshot<ProgressionSnapshot>> RejectAsync(ScopedOwnerContext requestedOwner, OperationId operationId,
+            Action<ILocalStorageTransaction, PendingProgressionCompletion> applyGameRejection, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
             if (!operationId.IsValid) throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
+            if (applyGameRejection == null) throw new ArgumentNullException(nameof(applyGameRejection));
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
                 if (current.Confirmations.SelectMany(value => value.OperationIds).Contains(operationId))
                     throw new ProgressionConflictException("A pull-confirmed completion cannot be replaced by a rejection.");
+                var rejected = current.Pending.FirstOrDefault(value => value.OperationId == operationId);
+                if (rejected == null) throw new ProgressionConflictException("The rejected receipt does not match a pending completion.");
                 var retained = current.Pending.Where(value => value.OperationId != operationId).ToArray();
-                if (retained.Length == current.Pending.Count) throw new ProgressionConflictException("The rejected receipt does not match a pending completion.");
-                await WritePendingAsync(exactOwner, retained, current.PendingRevision, cancellationToken).ConfigureAwait(false);
+                await WritePendingAsync(exactOwner, retained, current.PendingRevision, cancellationToken,
+                    transaction => applyGameRejection(transaction, rejected)).ConfigureAwait(false);
             }
             finally { mutation.Release(); }
             return await ReadSnapshotAsync(exactOwner, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
@@ -258,13 +267,15 @@ namespace GamePlatform.Features.Progression
             return (decodedConfirmed, raw, pending?.Revision ?? 0, evidence, latestEvidenceRevision);
         }
 
-        private Task WritePendingAsync(ScopedOwnerContext exactOwner, IReadOnlyList<PendingProgressionCompletion> pending, long currentRevision, CancellationToken cancellationToken) =>
+        private Task WritePendingAsync(ScopedOwnerContext exactOwner, IReadOnlyList<PendingProgressionCompletion> pending, long currentRevision,
+            CancellationToken cancellationToken, Action<ILocalStorageTransaction>? applyGameRejection = null) =>
             transactions.ExecuteAsync(scope, transaction =>
             {
                 var revision = Math.Max(1, Math.Max(currentRevision, pending.Count == 0 ? 0 : pending.Max(value => value.LocalRevision)));
                 var payload = pending.Count == 0 ? Array.Empty<byte>() : codec.EncodePending(pending);
                 if (payload.Length != 0) ValidatePayload(payload, "pending completions");
                 state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, PendingKey, revision, Now(), payload, Array.Empty<byte>()));
+                applyGameRejection?.Invoke(transaction);
                 return true;
             }, cancellationToken);
 
