@@ -415,6 +415,52 @@ namespace GamePlatform.Tests.Features.Progression
             restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
+        [Fact]
+        public async Task AcceptedReceiptAssociationAndGameMutationCommitTogetherAndSurviveReopen()
+        {
+            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            var accepted = await AcceptAsync(service, Operation(160), "run-receipt");
+            var unrelated = Request(Operation(161), "run-unrelated", 1);
+            await service.CompleteAsync(unrelated, CancellationToken.None);
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("CREATE TABLE game_receipt_sentinel (operation_id TEXT PRIMARY KEY)");
+                return true;
+            }, CancellationToken.None);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.ConfirmAcceptedReceiptAsync(Context,
+                accepted, 23, (transaction, _) =>
+                {
+                    ((SqliteTransactionSession)transaction).Execute("INSERT INTO game_receipt_sentinel VALUES (?)", accepted.ToString());
+                    throw new InvalidOperationException("injected game failure");
+                }, CancellationToken.None));
+            Assert.Equal(0, await database.ExecuteAsync(Scope, transaction =>
+                ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM game_receipt_sentinel"), CancellationToken.None));
+            Assert.Equal(2, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions.Count);
+            await service.ConfirmAcceptedReceiptAsync(Context, accepted, 23, (transaction, pending) =>
+            {
+                Assert.Equal("run-receipt", pending.BusinessSource);
+                ((SqliteTransactionSession)transaction).Execute("INSERT OR IGNORE INTO game_receipt_sentinel VALUES (?)", accepted.ToString());
+            }, CancellationToken.None);
+            await service.ConfirmAcceptedReceiptAsync(Context, accepted, 23, (transaction, _) =>
+                ((SqliteTransactionSession)transaction).Execute("INSERT OR IGNORE INTO game_receipt_sentinel VALUES (?)", accepted.ToString()),
+                CancellationToken.None);
+            await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ConfirmAcceptedReceiptAsync(Context,
+                accepted, 24, (_, __) => { }, CancellationToken.None));
+            Assert.Equal(new[] { unrelated.OperationId }, (await service.ReadCachedAsync(Context, CancellationToken.None))
+                .Value!.PendingCompletions.Select(value => value.OperationId));
+            Assert.Equal((1, 23L), await database.ExecuteAsync(Scope, transaction =>
+            {
+                var sql = (SqliteTransactionSession)transaction;
+                return (sql.ExecuteScalar<int>("SELECT COUNT(*) FROM game_receipt_sentinel"),
+                    sql.ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='progression-receipt-confirmation'"));
+            }, CancellationToken.None));
+            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            Assert.Equal(new[] { unrelated.OperationId }, (await restored.ReadCachedAsync(Context, CancellationToken.None))
+                .Value!.PendingCompletions.Select(value => value.OperationId));
+            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+        }
+
         private static ProgressionService Create(SqliteDatabase database, ScopedOwnerContext context, IProgressionConfirmationEvidenceStore? confirmations = null) => new ProgressionService(context, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new Fingerprint(), new FixedClock()), new Codec(), confirmations ?? new SqliteConfirmationStore(database), () => 100);
         private static string Operation(int index) => "0199f9a0-0000-7000-8000-" + index.ToString("D12");
         private static async Task<OperationId> AcceptAsync(ProgressionService service, string operation, string source)
