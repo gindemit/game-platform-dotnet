@@ -7,6 +7,12 @@ namespace GamePlatform.Navigation
     {
         internal NavigationRoute(string kind) { Kind = kind; }
         public string Kind { get; }
+
+        internal static string RequireKey(string value, string parameterName)
+        {
+            if (string.IsNullOrWhiteSpace(value) || value.Length > 128) throw new ArgumentOutOfRangeException(parameterName);
+            return value;
+        }
     }
 
     public sealed class HomeRoute : NavigationRoute
@@ -56,6 +62,32 @@ namespace GamePlatform.Navigation
     public sealed class ProfileRoute : NavigationRoute
     {
         public ProfileRoute(CallerReturnContext returnContext) : base("profile") { ReturnContext = returnContext; }
+        public CallerReturnContext ReturnContext { get; }
+    }
+
+    /// <summary>
+    /// Root of a game-configured destination such as a shell tab; the key vocabulary belongs to the game.
+    /// </summary>
+    public sealed class DestinationRoute : NavigationRoute
+    {
+        public DestinationRoute(string destinationKey) : base("destination")
+        {
+            DestinationKey = RequireKey(destinationKey, nameof(destinationKey));
+        }
+        public string DestinationKey { get; }
+    }
+
+    /// <summary>
+    /// Generic detail screen that returns to the caller that opened it.
+    /// </summary>
+    public sealed class DetailRoute : NavigationRoute
+    {
+        public DetailRoute(string detailKey, CallerReturnContext returnContext) : base("detail")
+        {
+            DetailKey = RequireKey(detailKey, nameof(detailKey));
+            ReturnContext = returnContext;
+        }
+        public string DetailKey { get; }
         public CallerReturnContext ReturnContext { get; }
     }
 

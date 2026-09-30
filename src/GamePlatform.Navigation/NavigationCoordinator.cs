@@ -31,6 +31,7 @@ namespace GamePlatform.Navigation
         private readonly int maximumHistory;
         private CancellationTokenSource? activeLoad;
         private long transition;
+        private bool loading;
         private long modalSequence;
         private ModalOwner modalOwner;
         private ModalRoute? modal;
@@ -38,11 +39,13 @@ namespace GamePlatform.Navigation
 
         public NavigationCoordinator(NavigationRoute initialRoute, int maximumHistory = 16)
         {
-            Current = initialRoute ?? throw new ArgumentNullException(nameof(initialRoute));
+            Root = initialRoute ?? throw new ArgumentNullException(nameof(initialRoute));
+            Current = initialRoute;
             if (maximumHistory < 1 || maximumHistory > 64) throw new ArgumentOutOfRangeException(nameof(maximumHistory));
             this.maximumHistory = maximumHistory;
         }
 
+        public NavigationRoute Root { get; }
         public NavigationRoute Current { get; private set; }
         public ModalRoute? Modal { get { lock (gate) return modal; } }
         public int HistoryCount { get { lock (gate) return history.Count; } }
@@ -61,16 +64,23 @@ namespace GamePlatform.Navigation
                 activeLoad = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 linked = activeLoad;
                 version = ++transition;
+                loading = true;
             }
             RouteLoadResult loaded;
             try { loaded = await loader.LoadAsync(route, linked.Token).ConfigureAwait(false); }
             catch (OperationCanceledException)
             {
-                lock (gate) return version == transition && cancellationToken.IsCancellationRequested ? NavigationOutcome.Cancelled : NavigationOutcome.Stale;
+                lock (gate)
+                {
+                    if (version != transition) return NavigationOutcome.Stale;
+                    loading = false;
+                    return cancellationToken.IsCancellationRequested ? NavigationOutcome.Cancelled : NavigationOutcome.Stale;
+                }
             }
             lock (gate)
             {
                 if (disposed || version != transition || linked.IsCancellationRequested) return NavigationOutcome.Stale;
+                loading = false;
                 if (loaded == RouteLoadResult.Unavailable) return NavigationOutcome.Unavailable;
                 if (mode == NavigationMode.Push)
                 {
@@ -136,6 +146,7 @@ namespace GamePlatform.Navigation
             {
                 EnsureActive();
                 if (modal != null) { modal = null; modalOwner = default; return true; }
+                if (loading) { CancelPendingLoad(); return true; }
                 if (history.Count == 0) return false;
                 Current = history[history.Count - 1];
                 history.RemoveAt(history.Count - 1);
@@ -148,14 +159,20 @@ namespace GamePlatform.Navigation
             lock (gate)
             {
                 EnsureActive();
-                activeLoad?.Cancel();
-                transition++;
+                CancelPendingLoad();
                 history.Clear();
                 deferredModals.Clear();
                 modal = null;
                 modalOwner = default;
-                Current = new HomeRoute();
+                Current = Root;
             }
+        }
+
+        private void CancelPendingLoad()
+        {
+            activeLoad?.Cancel();
+            transition++;
+            loading = false;
         }
 
         public void Dispose()
@@ -164,7 +181,7 @@ namespace GamePlatform.Navigation
             {
                 if (disposed) return;
                 disposed = true;
-                activeLoad?.Cancel();
+                CancelPendingLoad();
                 activeLoad?.Dispose();
                 activeLoad = null;
                 history.Clear();
