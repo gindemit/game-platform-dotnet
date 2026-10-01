@@ -27,9 +27,20 @@ jobs:
       - run: dotnet restore GamePlatform.sln --locked-mode
       - run: dotnet format GamePlatform.sln whitespace --verify-no-changes --no-restore --exclude src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs
       - run: dotnet build GamePlatform.sln -c Release --no-restore
-      - run: dotnet test GamePlatform.sln -c Release --no-build --no-restore
+      - run: dotnet test GamePlatform.sln -c Release --no-build --no-restore --logger trx --results-directory artifacts/test-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-diagnostics-attempt-${{ github.run_attempt }}
+          path: |
+            artifacts/test-results/
+            artifacts/diagnostics/
+          if-no-files-found: ignore
       - run: python scripts/package-sdk.py
       - uses: actions/upload-artifact@v4
         with:
           name: game-platform-dotnet-m0
-          path: artifacts/
+          path: |
+            artifacts/
+            !artifacts/test-results/**
+            !artifacts/diagnostics/**

@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -137,6 +140,7 @@ namespace GamePlatform.Tests.Durability
                 process.StartInfo.Environment["GP_CL008_CRASH_PHASE"] = phase;
                 process.StartInfo.Environment["GP_CL008_CRASH_SIGNAL"] = signal;
                 Assert.True(process.Start());
+                var launcherStart = process.StartTime;
                 var deadline = Stopwatch.StartNew();
                 while (!File.Exists(signal) && !process.HasExited && deadline.Elapsed < TimeSpan.FromSeconds(15)) Thread.Sleep(25);
                 if (!process.HasExited) process.Kill(entireProcessTree: true);
@@ -149,9 +153,18 @@ namespace GamePlatform.Tests.Durability
                 var childWait = Stopwatch.StartNew();
                 while (childPid != null && IsChildAlive(childPid.Value, out childPidReused) && childWait.Elapsed < TimeSpan.FromSeconds(10)) Thread.Sleep(25);
                 var childAliveAtReopen = childPid != null && IsChildAlive(childPid.Value, out childPidReused);
-                var diagnostics = $"phase={phase} launcherPid={process.Id} launcherExit={process.ExitCode} childPid={(childPid?.ToString() ?? "unknown")} childExitWaitMs={childWait.ElapsedMilliseconds} childAliveAtReopen={childAliveAtReopen} childPidReused={childPidReused}";
+                var shmWait = Stopwatch.StartNew();
+                var shmReleased = ProbeShmTruncation(files.Path, out var shmFirst);
+                var shmProbe = shmFirst;
+                while (!shmReleased && shmWait.Elapsed < TimeSpan.FromSeconds(5))
+                {
+                    Thread.Sleep(25);
+                    shmReleased = ProbeShmTruncation(files.Path, out shmProbe);
+                }
+                var diagnostics = $"phase={phase} launcherPid={process.Id} launcherExit={process.ExitCode} childPid={(childPid?.ToString() ?? "unknown")} childExitWaitMs={childWait.ElapsedMilliseconds} childAliveAtReopen={childAliveAtReopen} childPidReused={childPidReused} shmReleaseWaitMs={shmWait.ElapsedMilliseconds} shmReleased={shmReleased} shmFirstProbe=[{shmFirst}] shmProbe=[{shmProbe}]";
                 output.WriteLine(diagnostics);
 
+                var sqliteLog = SqliteErrorLog.Start(System.IO.Path.GetDirectoryName(files.Path)!);
                 try
                 {
                     SqliteDatabase recovered;
@@ -161,12 +174,19 @@ namespace GamePlatform.Tests.Durability
                     }
                     catch (Exception exception)
                     {
+                        var evidence = CopyEvidence(files.Path, phase);
+                        var filesAtFailure = DescribeFiles(files.Path);
+                        ProbeShmTruncation(files.Path, out var shmAtFailure);
+                        var rawImmediate = ProbeRawConnection(files.Path);
+                        var retry = await OpenAndInspect(files.Path);
                         var locks = await ProbeLocksOverTime(files.Path);
-                        var census = DescribeProcesses(process.StartTime);
+                        var census = DescribeProcesses(launcherStart);
                         var attributes = DescribeAttributes(files.Path);
                         var copies = await CopyOpenDiagnostics(files.Path);
                         var raw = ProbeRawConnection(files.Path);
-                        throw new Xunit.Sdk.XunitException($"Reopen after abrupt termination failed. {diagnostics} files=[{DescribeFiles(files.Path)}] attributes=[{attributes}] locks=[{locks}] processes=[{census}] {copies} raw=[{raw}] {DescribeException(exception)}", exception);
+                        var message = $"Reopen after abrupt termination failed. {diagnostics} evidence=[{evidence}] files=[{filesAtFailure}] shmAtFailure=[{shmAtFailure}] rawImmediate=[{rawImmediate}] retryOpen=[{retry}] filesAfterRetry=[{DescribeFiles(files.Path)}] attributes=[{attributes}] locks=[{locks}] processes=[{census}] {copies} raw=[{raw}] sqliteLog=[{sqliteLog}: {SqliteErrorLog.Describe()}] {DescribeException(exception)}";
+                        WriteEvidenceText(evidence, message + Environment.NewLine + exception);
+                        throw new Xunit.Sdk.XunitException(message, exception);
                     }
 
                     var counts = await Inspect(recovered);
@@ -175,6 +195,7 @@ namespace GamePlatform.Tests.Durability
                 }
                 finally
                 {
+                    SqliteErrorLog.Stop();
                     if (childAliveAtReopen && IsChildAlive(childPid!.Value, out _)) output.WriteLine($"cleanup childPid={childPid} {KillChild(childPid.Value)}");
                 }
             }
@@ -403,7 +424,75 @@ namespace GamePlatform.Tests.Durability
                     results.Add($"{name}: locked=unknown win32=0x{exception.HResult:X8} {exception.Message}");
                 }
             }
+            ProbeShmTruncation(databasePath, out var shm);
+            results.Add($"shm-truncate: {shm}");
             return string.Join("; ", results);
+        }
+
+        // A FileShare.None open does not see another process's mapping; a shrink reaches the same
+        // user-mapped check (0x800704C8) as SQLite's first-connection -shm truncate. The last byte is restored.
+        private static bool ProbeShmTruncation(string databasePath, out string result)
+        {
+            var shrunk = false;
+            try
+            {
+                using var stream = new FileStream(databasePath + "-shm", FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                var length = stream.Length;
+                if (length == 0)
+                {
+                    result = "empty";
+                    return true;
+                }
+                stream.Position = length - 1;
+                var last = stream.ReadByte();
+                stream.SetLength(length - 1);
+                shrunk = true;
+                stream.SetLength(length);
+                stream.Position = length - 1;
+                stream.WriteByte((byte)last);
+                result = "released";
+                return true;
+            }
+            catch (FileNotFoundException)
+            {
+                result = "missing";
+                return true;
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            {
+                result = $"{(shrunk ? "restoreFailed" : "held")} win32=0x{exception.HResult:X8} {exception.GetType().Name}";
+                return false;
+            }
+        }
+
+        private static string CopyEvidence(string databasePath, string phase)
+        {
+            var root = Environment.GetEnvironmentVariable("GP_CL008_DIAG_DIR");
+            if (string.IsNullOrEmpty(root)) root = System.IO.Path.Combine(FindRepositoryRoot(), "artifacts", "diagnostics", "cl008");
+            var directory = System.IO.Path.Combine(root, phase + "-" + DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmssfff'Z'", CultureInfo.InvariantCulture));
+            try
+            {
+                Directory.CreateDirectory(directory);
+                foreach (var source in Directory.GetFiles(System.IO.Path.GetDirectoryName(databasePath)!))
+                    File.Copy(source, System.IO.Path.Combine(directory, System.IO.Path.GetFileName(source)));
+                return directory;
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            {
+                return $"failed {directory} {exception.GetType().Name}: {exception.Message}";
+            }
+        }
+
+        private static void WriteEvidenceText(string evidence, string text)
+        {
+            if (!Directory.Exists(evidence)) return;
+            try
+            {
+                File.WriteAllText(System.IO.Path.Combine(evidence, "diagnostics.txt"), text);
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            {
+            }
         }
 
         private static string DescribeProcesses(DateTime launcherStart)
@@ -464,12 +553,9 @@ namespace GamePlatform.Tests.Durability
                 File.Copy(databasePath, copyPath);
                 if (File.Exists(databasePath + "-wal")) File.Copy(databasePath + "-wal", copyPath + "-wal");
                 if (includeShm && File.Exists(databasePath + "-shm")) File.Copy(databasePath + "-shm", copyPath + "-shm");
-                var copy = await SqliteDatabase.OpenAsync(copyPath, Scope, Migrations, CancellationToken.None);
-                var counts = await Inspect(copy);
-                await copy.DisposeAsync(TimeSpan.FromSeconds(5));
-                return $"ok counts={counts}";
+                return await OpenAndInspect(copyPath);
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
             {
                 return $"failed {DescribeException(exception)}";
             }
@@ -482,6 +568,21 @@ namespace GamePlatform.Tests.Durability
                 catch (IOException)
                 {
                 }
+            }
+        }
+
+        private static async Task<string> OpenAndInspect(string databasePath)
+        {
+            try
+            {
+                var database = await SqliteDatabase.OpenAsync(databasePath, Scope, Migrations, CancellationToken.None);
+                var counts = await Inspect(database);
+                await database.DisposeAsync(TimeSpan.FromSeconds(5));
+                return $"ok counts={counts}";
+            }
+            catch (Exception exception)
+            {
+                return $"failed {DescribeException(exception)}";
             }
         }
 
@@ -539,16 +640,57 @@ namespace GamePlatform.Tests.Durability
             return string.Join(" <- ", parts);
         }
 
-        private static string FindTestProject()
+        private static string FindTestProject() => System.IO.Path.Combine(FindRepositoryRoot(), "tests", "GamePlatform.Tests", "GamePlatform.Tests.csproj");
+
+        private static string FindRepositoryRoot()
         {
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
             while (directory != null)
             {
-                var candidate = System.IO.Path.Combine(directory.FullName, "tests", "GamePlatform.Tests", "GamePlatform.Tests.csproj");
-                if (File.Exists(candidate)) return candidate;
+                if (File.Exists(System.IO.Path.Combine(directory.FullName, "tests", "GamePlatform.Tests", "GamePlatform.Tests.csproj"))) return directory.FullName;
                 directory = directory.Parent;
             }
             throw new InvalidOperationException("The test project could not be located for the crash probe.");
+        }
+
+        // sqlite3_config is variadic; only the Windows x64 ABI passes the variadic pointers like fixed ones.
+        private static class SqliteErrorLog
+        {
+            private const int ConfigLog = 16;
+            private static readonly LogCallback Callback = Record;
+            private static readonly ConcurrentQueue<string> Entries = new ConcurrentQueue<string>();
+            private static string marker = string.Empty;
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void LogCallback(IntPtr argument, int code, IntPtr message);
+
+            [DllImport(SQLite.SQLite3.LibraryPath, EntryPoint = "sqlite3_config", CallingConvention = CallingConvention.Cdecl)]
+            private static extern int Configure(int option, IntPtr callback, IntPtr argument);
+
+            private static bool Supported => OperatingSystem.IsWindows() && RuntimeInformation.ProcessArchitecture == Architecture.X64;
+
+            public static string Start(string databaseDirectory)
+            {
+                if (!Supported) return "unsupported";
+                Entries.Clear();
+                marker = databaseDirectory;
+                var result = Configure(ConfigLog, Marshal.GetFunctionPointerForDelegate(Callback), IntPtr.Zero);
+                return result == 0 ? "on" : $"configResult={result}";
+            }
+
+            public static void Stop()
+            {
+                if (Supported) Configure(ConfigLog, IntPtr.Zero, IntPtr.Zero);
+            }
+
+            public static string Describe() => string.Join(" | ", Entries);
+
+            private static void Record(IntPtr argument, int code, IntPtr message)
+            {
+                var text = Marshal.PtrToStringUTF8(message) ?? string.Empty;
+                var primary = code & 0xFF;
+                if (Entries.Count < 32 && (primary == 10 || primary == 14 || text.Contains(marker, StringComparison.OrdinalIgnoreCase))) Entries.Enqueue($"0x{code:X} {text}");
+            }
         }
 
         private sealed class TestFingerprint : ICommandFingerprint
