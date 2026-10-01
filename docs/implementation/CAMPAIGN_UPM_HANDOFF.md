@@ -4,23 +4,24 @@
 
 ## Current source versus delivery
 
-| Layer | Audited pin | Actual state |
+| Layer | Pin | Actual state |
 |---|---|---|
-| SDK main before review docs | `6a4916dec233ae583eb12379260adf8644e927c2` | Reverts ON-20 `2c431522241f375c6d8fbe6a12b70c3581bb974f`; CI 36797573578 passed |
+| SDK main | `55e14fe` (2026-10-01) | ON-20 restored as `4e9f925` with RV-03 lock-scoped loading cleanup; Cl008 crash-harness diagnostics `8e6c3e8`, `cbd36b6`, `55e14fe` (test-only) |
+| SDK CI on those pushes | runs 36824490074, 36825045338, 36825524754 | failure, failure, success; every failure was `Cl008AtomicOutboxTests.AbruptProcessTerminationRollsBackPreCommitAndPreservesPostCommit` postcommit reopen, 674/675 then 675/675 |
 | Accepted-receipt runtime repair | `5c7a02a` | Retained source; not an open missing implementation |
-| Unity-consumed Git UPM | `4eb678e43e9c37ff61fdd94bb8cfb1319301bca0` | Unchanged; does not contain ON-20 |
-| Unity inspected | `7eaa73c` | Completion-lock/admission fixes and isolated shell/metadata source; no shell activation |
-| Backend inspected | `1bb0896` | Local retained same-principal fixture demonstrated; CI 36797581778 passed |
+| Unity-consumed Git UPM | `4eb678e43e9c37ff61fdd94bb8cfb1319301bca0` | Unchanged; does not contain ON-20. Regeneration held: no .NET 9 SDK on the owner Mac for the two-clean-copy reproduction |
+| Unity main | `f918a7e` | RV-04 shell characterization, RV-05 metadata boundaries, RV-06 test-auth fail-closed; campaign qualification continues on the `4eb678e` pin |
+| Backend main | `328ea62` | Retained fixture `gp-be003-campaign20260930` resumed with full digest match on 2026-10-01 |
 
-Fetch later main descendants and verify their actual CI. Documentation-only commits need no package repin. This remote review inspected source/CI logs but did not rerun .NET, native SQLite, Unity or devices.
+Documentation-only commits need no package repin. The ON-20 source is delivered and CI-green on main but is not package-delivered; subsequent package regeneration still requires fresh nonauthor review of the generated payload, the two-clean-copy hash/native/metadata check and a serial Unity repin by the integrator.
 
-## Immediate SDK work: RV-02 and RV-03
+## RV-02 durability: what the Windows diagnostics established
 
-Do not blindly reapply ON-20. [Failed Windows run 36796370596, attempt 3](https://github.com/gindemit/game-platform-dotnet/actions/runs/36796370596/job/110163025583) built successfully and ended with 668 passed / 1 failed / 669 total. `Cl008AtomicOutboxTests.AbruptProcessTerminationRollsBackPreCommitAndPreservesPostCommit` failed with SQLite disk-I/O error during reopen at line 139, not in a navigation assertion.
+The restored harness records the DB-owning child process id in the signal file, waits bounded for its exit, probes file locks and surviving processes, and enriches the reopen failure. Two failing Windows runs reported `phase=postcommit childExitWaitMs=0 childAliveAtReopen=False childPidReused=False`, all three SQLite files `locked=false` at 0, 250 and 2000 ms, and an empty `testhost/dotnet/vstest.console/datacollector` census; `PRAGMA journal_mode = WAL` is the first statement that touches the retained WAL and shm and it returns `IOError`. The third run passed with identical code. The launcher/testhost race hypothesis is therefore refuted, no lingering lock was observed, and navigation code is not on the failing path. The extended SQLite error code and the copy-open comparison added in `55e14fe` have not yet fired on a failing run. Bounded repeated A/B dispatches were not run from the agent session (classifier denied bulk `workflow_dispatch` and a comparison ref push); run them as the owner if more samples are wanted. Do not skip the test, soften the atomicity assertions, add happy-path sleeps or retry I/O errors in production code.
 
-The crash harness kills a dotnet-test launcher tree and waits for that launcher before reopening the database. [Process.Kill documentation](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.process.kill?view=net-9.0) warns that this need not establish descendant exit. An actual DB-owning testhost retirement race is plausible, not proven. Run bounded clean-parent/reverted-main/candidate A/B checks with actual child PID/phase/termination diagnostics. Preserve hard crash, precommit rollback, postcommit survival and original atomicity assertions. No skipped test, graceful-disposal substitute, unexplained sleep or broad production I/O retry to obtain green. Revert-green is containment, not a causal explanation.
+## RV-03 navigation: restored
 
-In the reverted navigation patch, a non-OperationCanceledException loader failure leaves `loading=true`. A cancellation-ignoring loader returning after caller cancellation also reaches the early Stale path without clearing current loading state. Reproduce and repair both with version-aware terminal cleanup; stale work must not clear a newer transition. Preserve configured Root, game-neutral DestinationRoute/DetailRoute, modal-first single-action Back, bounded logical history/caller return, rapid replacement, cancellation, dispose and retirement. C# findings were source-derived here; require RED/GREEN tests before re-delivery.
+`NavigationCoordinator` keeps `Root`, returns to it from `ReturnHome`, treats Back during a delayed load as the one action that cancels it, and clears `loading` inside the same lock that decides Stale/Unavailable/Applied, in the cancellation catch and in a catch-all rethrow, only when the finishing operation is still the current transition. `ShellDestinationNavigationTests` (19 cases with Cl012) cover loader exception, cancellation-ignoring late success, older operation not clearing a newer load, Back from inside a load, Back after Applied, modal-first Back, bounded history, DetailRoute caller return and 129-character key rejection; two of them failed before the fix. Local runs used the net8 target override from a `/tmp` working directory because only .NET 8 is installed; the Windows CI build and full suite are the authoritative runs.
 
 ## Campaign evidence already achieved and still needed
 
