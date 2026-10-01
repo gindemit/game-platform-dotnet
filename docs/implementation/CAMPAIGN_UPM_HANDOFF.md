@@ -1,5 +1,11 @@
 # SDK handoff — campaign recovery and package delivery
 
+## 2026-10-02 current continuation
+
+Backend `6a36d9e`, SDK `cf34456`, and Unity `06ae309` match fetched remote `main` heads. The qualified Unity runtime source is still `1a069e5`, consuming canonical SDK UPM `e7c03c5`. Unity `4741e39` delivers a read-only Packs preview in the opt-in shell; its reviewed final candidate passed focused EditMode 24/24, full EditMode 587/587 and graphical PlayMode 193 passed/0 failed/10 configured skips, with one opt-in Android APK built. [Exact preview evidence](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/evidence/packs-preview-2026-10-02.json) records hashes and log/XML paths. No SDK runtime payload changed, so no UPM regeneration or SDK test rerun was needed. Explicit same-entry recovery remains implemented and reviewed. The 15 Windows A/B/C runs are complete; cleanup contention is recorded separately from the unproven immediate-relaunch product issue. Configured Android recovery/offline/fault/pending/current-schema and physical shell acceptance remain open. Ordinary shell activation, broad P4 and distribution remain held. See the backend [current continuation](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/NEXT-SESSION-2026-10-01.md).
+
+---
+
 ## 2026-10-01 Unity consumption update
 
 Unity main `1a069e5` pins and import-verifies canonical UPM `e7c03c5`; its reviewed default-off Player shell changes no SDK runtime payload, so no package regeneration was needed. The exact Unity source plus this package passed 585/585 full EditMode and 193 passed, 0 failed, 10 skipped full graphical PlayMode. Six Android/WebLite builds succeeded. Backend [test results](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/evidence/test-results-exact-1a069e5-2026-10-01.json) and [artifact manifest](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/evidence/artifact-manifest-exact-1a069e5-2026-10-01.json) pin the evidence. Configured physical Android/live-service and shell acceptance remain open; ordinary shell activation remains held.
