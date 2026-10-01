@@ -13,7 +13,7 @@ namespace GamePlatform.Transport.Http.Supabase
     {
         public SupabaseAuthConfiguration(Uri authBaseUri, string principalIssuer,
             BackendNamespace backendNamespace, string publishableApiKey,
-            string sessionStorageKey, int maximumResponseBytes = 65_536)
+            string sessionStorageKey, int maximumResponseBytes = 65_536, TimeSpan? recoveryTimeout = null)
         {
             if (authBaseUri == null) throw new ArgumentNullException(nameof(authBaseUri));
             if (!authBaseUri.IsAbsoluteUri || !string.Equals(authBaseUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
@@ -24,6 +24,8 @@ namespace GamePlatform.Transport.Http.Supabase
             ValidateText(publishableApiKey, 4_096, nameof(publishableApiKey));
             ValidateStorageKey(sessionStorageKey);
             if (maximumResponseBytes < 1_024 || maximumResponseBytes > 65_536) throw new ArgumentOutOfRangeException(nameof(maximumResponseBytes));
+            var recoveryBound = recoveryTimeout ?? TimeSpan.FromSeconds(30);
+            if (recoveryBound < TimeSpan.FromMilliseconds(1) || recoveryBound > TimeSpan.FromMinutes(5)) throw new ArgumentOutOfRangeException(nameof(recoveryTimeout));
 
             AuthBaseUri = new Uri(authBaseUri.AbsoluteUri.TrimEnd('/') + "/", UriKind.Absolute);
             if (!AuthBaseUri.AbsolutePath.EndsWith("/auth/v1/", StringComparison.Ordinal))
@@ -33,6 +35,7 @@ namespace GamePlatform.Transport.Http.Supabase
             PublishableApiKey = publishableApiKey;
             SessionStorageKey = sessionStorageKey;
             MaximumResponseBytes = maximumResponseBytes;
+            RecoveryTimeout = recoveryBound;
         }
 
         public Uri AuthBaseUri { get; }
@@ -41,6 +44,7 @@ namespace GamePlatform.Transport.Http.Supabase
         public string PublishableApiKey { get; }
         public string SessionStorageKey { get; }
         public int MaximumResponseBytes { get; }
+        public TimeSpan RecoveryTimeout { get; }
 
         public Uri Resolve(string relativePath)
         {

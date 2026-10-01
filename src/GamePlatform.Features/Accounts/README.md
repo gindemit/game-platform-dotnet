@@ -22,3 +22,11 @@ the lifecycle-owned bounded stop/drain timeout; even an already-cancelled
 caller cannot leave an admitted writer active. Repeated/concurrent calls share
 one terminal outcome, and later starts remain unavailable. Failed retirement is
 quarantined as recovery-required.
+
+`AccountsLifecycleService.RecoverAsync` is the explicit same-account recovery
+entry for a host that composed an `IAccountsAuthRecovery` port. It runs only from
+`RecoveryRequired` or `Unavailable`, never while a failed scope retirement is
+quarantined, and reaches Ready only through the normal provision and complete
+bootstrap path. Startup stays fail-closed: `StartAsync` never retries a retained
+recovery credential. The Supabase adapter refreshes the retained secret under
+one bounded single-flight attempt and never signs up a new principal.

@@ -33,6 +33,11 @@ namespace GamePlatform.Features.Accounts
 
     public interface IAccountsAuthLifecycle { Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken cancellationToken); }
 
+    /// <summary>
+    /// Explicit same-account credential recovery requested by the host.
+    /// </summary>
+    public interface IAccountsAuthRecovery { Task<AccountAuthLifecycleResult> RecoverAsync(CancellationToken cancellationToken); }
+
     /// <summary>Consumer-owned construction boundary for authenticated provisioning remotes.</summary>
     public interface IProvisioningRemoteFactory
     {
@@ -67,13 +72,14 @@ namespace GamePlatform.Features.Accounts
     /// <summary>Portable account lifecycle. It persists reservation before provisioning and never derives a principal from a session key.</summary>
     public sealed class AccountsLifecycleService
     {
-        private readonly IAccountsAuthLifecycle auth; private readonly IProvisioningRemoteFactory provisioningFactory; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
+        private readonly IAccountsAuthLifecycle auth; private readonly IAccountsAuthRecovery? recovery; private readonly IProvisioningRemoteFactory provisioningFactory; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
         private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1); private readonly object gate = new object();
         private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private IAccountScopeLease? failedRetirement; private bool scopeRecoveryRequired;
         private bool stopped; private TaskCompletionSource<AccountsLifecycleSnapshot>? stoppedCompletion;
 
-        public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemoteFactory provisioningFactory, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null)
+        public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemoteFactory provisioningFactory, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null, IAccountsAuthRecovery? recovery = null)
         {
+            this.recovery = recovery;
             this.auth = auth ?? throw new ArgumentNullException(nameof(auth)); this.provisioningFactory = provisioningFactory ?? throw new ArgumentNullException(nameof(provisioningFactory)); this.directory = directory ?? throw new ArgumentNullException(nameof(directory)); this.scopes = scopes ?? throw new ArgumentNullException(nameof(scopes)); this.ids = ids ?? throw new ArgumentNullException(nameof(ids));
             this.lateLeaseDrainTimeout = lateLeaseDrainTimeout ?? TimeSpan.FromSeconds(5);
             if (this.lateLeaseDrainTimeout < TimeSpan.FromMilliseconds(1) || this.lateLeaseDrainTimeout > TimeSpan.FromSeconds(30)) throw new ArgumentOutOfRangeException(nameof(lateLeaseDrainTimeout));
@@ -144,14 +150,36 @@ namespace GamePlatform.Features.Accounts
             if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
             lock (gate) if (stopped) return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
             var request = Begin(AccountsReadiness.Authenticating);
+            return await AuthenticateAndActivateAsync(request, appId, auth.AuthenticateAsync, true, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Explicitly recovers a recovery-required or unavailable lifecycle through the same provision and bootstrap path.
+        /// </summary>
+        public async Task<AccountsLifecycleSnapshot> RecoverAsync(AppId appId, CancellationToken cancellationToken)
+        {
+            if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
+            if (recovery == null) throw new InvalidOperationException("No account auth recovery is configured.");
+            long request;
+            lock (gate)
+            {
+                if (stopped) return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
+                if (scopeRecoveryRequired || (readiness != AccountsReadiness.RecoveryRequired && readiness != AccountsReadiness.Unavailable)) return new AccountsLifecycleSnapshot(readiness, current, generation);
+                request = Begin(AccountsReadiness.Authenticating);
+            }
+            return await AuthenticateAndActivateAsync(request, appId, recovery.RecoverAsync, false, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<AccountsLifecycleSnapshot> AuthenticateAndActivateAsync(long request, AppId appId, Func<CancellationToken, Task<AccountAuthLifecycleResult>> authenticate, bool reopenOffline, CancellationToken cancellationToken)
+        {
             AccountAuthLifecycleResult result;
-            try { result = await auth.AuthenticateAsync(cancellationToken).ConfigureAwait(false); }
+            try { result = await authenticate(cancellationToken).ConfigureAwait(false); }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return Finish(request, AccountsReadiness.Cancelled, null); }
             if (!Current(request)) return Late(request);
             if (cancellationToken.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, null);
             if (result.Kind == AccountAuthLifecycleKind.Cancelled) return Finish(request, AccountsReadiness.Cancelled, null);
             if (result.Kind == AccountAuthLifecycleKind.RecoveryRequired) return Finish(request, AccountsReadiness.RecoveryRequired, null);
-            if (result.Kind == AccountAuthLifecycleKind.UnavailableOffline) return await ReopenOfflineAsync(request, appId, result.Principal, cancellationToken).ConfigureAwait(false);
+            if (result.Kind == AccountAuthLifecycleKind.UnavailableOffline) return reopenOffline ? await ReopenOfflineAsync(request, appId, result.Principal, cancellationToken).ConfigureAwait(false) : Finish(request, AccountsReadiness.UnavailableOffline, null);
             return await ProvisionAndBootstrapAsync(request, appId, result.Principal!, result.Session!, cancellationToken).ConfigureAwait(false);
         }
 

@@ -38,10 +38,283 @@ namespace GamePlatform.Tests.Transport
         [InlineData(SupabaseAnonymousSessionState.RecoveryRequired)]
         [InlineData(SupabaseAnonymousSessionState.RefreshPending)]
         public async Task RecoveryRequiredIsTerminalWithoutAnExplicitRecoveryPath_RetainedSecretIsNeverRetried(SupabaseAnonymousSessionState state) { var s = new Store(); await s.Force(state, Subject.ToString("D"), Encoding.UTF8.GetBytes("refresh1")); var version = s.Current.Public!.Version; var x = new Scripted(Response("a2", "refresh2")); var p = P(x, s); for (var i = 0; i < 2; i++) { var r = await p.AuthenticateAsync(CancellationToken.None); Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, r.Kind); AssertPrincipal(r); Assert.Null(r.Session); Assert.Empty(x.Requests); Assert.Equal(state, s.Current.Public!.State); Assert.Equal(version, s.Current.Public.Version); Assert.Equal("refresh1", RetainedSecret(s)); } }
-        static SupabaseAnonymousAuthLifecycle P(IHttpExecutor e, Store s) => new SupabaseAnonymousAuthLifecycle(C(), e, s, new Clock()); static SupabaseAuthConfiguration C(int n = 65536) => new SupabaseAuthConfiguration(new Uri("https://auth.example.test/auth/v1/"), "https://auth.example.test/auth/v1", new BackendNamespace("test"), "public-test", "platform.supabase.session", n); static IReadOnlyDictionary<string, string> H() => new Dictionary<string, string> { { "apikey", "public-test" }, { "Accept", "application/json" }, { "Content-Type", "application/json" } }; static HttpResponseData Response(string a = "access", string r = "refresh", long expires = 2000) => new HttpResponseData(200, new Dictionary<string, string> { { "Content-Type", "application/json" } }, Encoding.UTF8.GetBytes("{\"access_token\":\"" + a + "\",\"refresh_token\":\"" + r + "\",\"expires_at\":" + expires + ",\"user\":{\"id\":\"" + Subject.ToString("D") + "\"}}")); static async Task<Store> Known() { var s = new Store(); var p = P(new Scripted(Response("a", "refresh1")), s); Assert.True(await p.AuthorizeFreshAsync(CancellationToken.None)); await p.AuthenticateAsync(CancellationToken.None); return s; }
+        [Theory]
+        [InlineData(SupabaseAnonymousSessionState.RecoveryRequired)]
+        [InlineData(SupabaseAnonymousSessionState.RefreshPending)]
+        [InlineData(SupabaseAnonymousSessionState.Known)]
+        public async Task RecoverAsyncRotatesRetainedSecretAndPublishesSamePrincipal(SupabaseAnonymousSessionState state)
+        {
+            var store = await Forced(state, Subject.ToString("D"), "refresh1");
+            var executor = new Scripted(Response("a2", "refresh2"));
+            var provider = P(executor, store);
+
+            var result = await provider.RecoverAsync(CancellationToken.None);
+
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, result.Kind);
+            AssertPrincipal(result);
+            Assert.Equal("a2", (await result.Session!.GetAsync(CancellationToken.None)).Value);
+            AssertOnlyRefreshRequests(executor, "refresh1");
+            Assert.Equal(SupabaseAnonymousSessionState.Known, store.Current.Public!.State);
+            Assert.Equal(Subject.ToString("D"), store.Current.Public.Subject);
+            Assert.Equal("refresh2", RetainedSecret(store));
+            var next = new Scripted(Response("a3", "refresh3"));
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, (await P(next, store).AuthenticateAsync(CancellationToken.None)).Kind);
+            AssertOnlyRefreshRequests(next, "refresh2");
+        }
+
+        [Fact]
+        public async Task RecoverAsyncAfterServerErrorRefreshRestoresKnownSessionWhileStartupStaysFailClosed()
+        {
+            var store = await Known();
+            var failed = new Scripted(new HttpResponseData(500, Json(), Encoding.UTF8.GetBytes("{}")));
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(failed, store).AuthenticateAsync(CancellationToken.None)).Kind);
+            var startup = new Scripted(Response("a2", "refresh2"));
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(startup, store).AuthenticateAsync(CancellationToken.None)).Kind);
+            Assert.Empty(startup.Requests);
+
+            var recovered = await P(startup, store).RecoverAsync(CancellationToken.None);
+
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, recovered.Kind);
+            AssertPrincipal(recovered);
+            AssertOnlyRefreshRequests(startup, "refresh1");
+            Assert.Equal(SupabaseAnonymousSessionState.Known, store.Current.Public!.State);
+            Assert.Equal("refresh2", RetainedSecret(store));
+        }
+
+        [Fact]
+        public async Task ConcurrentRecoverAsyncCallsShareOneRefreshRequest()
+        {
+            var store = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            var gate = new TaskCompletionSource<HttpResponseData>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var executor = new Scripted(gate.Task, Response("unused", "unused"));
+            var provider = P(executor, store);
+
+            var first = provider.RecoverAsync(CancellationToken.None);
+            await executor.FirstSend.Task;
+            var second = provider.RecoverAsync(CancellationToken.None);
+            gate.SetResult(Response("a2", "refresh2"));
+
+            Assert.Same(await first, await second);
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, (await first).Kind);
+            AssertOnlyRefreshRequests(executor, "refresh1");
+            Assert.Equal("refresh2", RetainedSecret(store));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(400)]
+        [InlineData(401)]
+        [InlineData(500)]
+        public async Task RecoverAsyncUncertainOrRejectedRefreshKeepsRecoveryMarkerAndSecret(int status)
+        {
+            var store = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            var executor = status == 0
+                ? new Scripted(new HttpExecutionException(HttpDeliveryCertainty.Uncertain, "test"))
+                : new Scripted(new HttpResponseData(status, Json(), Encoding.UTF8.GetBytes("{\"error\":\"invalid_grant\"}")));
+            var provider = P(executor, store);
+
+            var result = await provider.RecoverAsync(CancellationToken.None);
+
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, result.Kind);
+            AssertPrincipal(result);
+            Assert.Null(result.Session);
+            AssertOnlyRefreshRequests(executor, "refresh1");
+            Assert.Equal(SupabaseAnonymousSessionState.RecoveryRequired, store.Current.Public!.State);
+            Assert.Equal(Subject.ToString("D"), store.Current.Public.Subject);
+            Assert.Equal("refresh1", RetainedSecret(store));
+            var restart = new Scripted(Response("a2", "refresh2"));
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(restart, store).AuthenticateAsync(CancellationToken.None)).Kind);
+            Assert.Empty(restart.Requests);
+        }
+
+        [Fact]
+        public async Task RecoverAsyncRejectsSubjectMismatchWithoutReplacingPrincipal()
+        {
+            var store = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            var other = "{\"access_token\":\"a\",\"refresh_token\":\"r\",\"expires_at\":2000,\"user\":{\"id\":\"019a1234-2222-7777-8888-999999999999\"}}";
+            var executor = new Scripted(new HttpResponseData(200, Json(), Encoding.UTF8.GetBytes(other)));
+
+            var result = await P(executor, store).RecoverAsync(CancellationToken.None);
+
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, result.Kind);
+            AssertPrincipal(result);
+            AssertOnlyRefreshRequests(executor, "refresh1");
+            Assert.Equal(SupabaseAnonymousSessionState.RecoveryRequired, store.Current.Public!.State);
+            Assert.Equal(Subject.ToString("D"), store.Current.Public.Subject);
+            Assert.Equal("refresh1", RetainedSecret(store));
+        }
+
+        [Theory]
+        [InlineData(SupabaseAnonymousSessionState.RecoveryRequired, true, "none")]
+        [InlineData(SupabaseAnonymousSessionState.RecoveryRequired, true, "corrupt")]
+        [InlineData(SupabaseAnonymousSessionState.RecoveryRequired, false, "valid")]
+        [InlineData(SupabaseAnonymousSessionState.RefreshPending, true, "none")]
+        [InlineData(SupabaseAnonymousSessionState.RefreshPending, true, "corrupt")]
+        [InlineData(SupabaseAnonymousSessionState.Known, true, "corrupt")]
+        [InlineData(SupabaseAnonymousSessionState.FreshAuthorized, false, "none")]
+        [InlineData(SupabaseAnonymousSessionState.SignupPending, false, "none")]
+        public async Task RecoverAsyncWithoutRecoverableCredentialSendsNothingAndKeepsMarker(SupabaseAnonymousSessionState state, bool hasSubject, string secret)
+        {
+            var bytes = secret == "none" ? null : secret == "corrupt" ? new byte[] { 0xff, 0xfe } : Encoding.UTF8.GetBytes("refresh1");
+            var store = new Store();
+            await store.Force(state, hasSubject ? Subject.ToString("D") : null, bytes);
+            var version = store.Current.Public!.Version;
+            var executor = new Scripted(Response("a2", "refresh2"));
+
+            var result = await P(executor, store).RecoverAsync(CancellationToken.None);
+
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, result.Kind);
+            Assert.Null(result.Session);
+            Assert.Empty(executor.Requests);
+            Assert.Equal(state, store.Current.Public!.State);
+            Assert.Equal(version, store.Current.Public.Version);
+            Assert.Equal(bytes, store.Current.CopySecret());
+        }
+
+        [Fact]
+        public async Task RecoverAsyncWithAbsentInvalidOrUnavailableStoreSendsNothing()
+        {
+            var executor = new Scripted(Response("a2", "refresh2"));
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(executor, new Store()).RecoverAsync(CancellationToken.None)).Kind);
+            var overflow = new Store { Current = new SupabaseAnonymousSessionSnapshot(new SupabaseAnonymousSessionPublicRecord(long.MaxValue, SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D")), Encoding.UTF8.GetBytes("refresh1")) };
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(executor, overflow).RecoverAsync(CancellationToken.None)).Kind);
+            var unavailable = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            unavailable.Available = false;
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(executor, unavailable).RecoverAsync(CancellationToken.None)).Kind);
+            unavailable.Available = true;
+            unavailable.NullRead = true;
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(executor, unavailable).RecoverAsync(CancellationToken.None)).Kind);
+            Assert.Empty(executor.Requests);
+            Assert.Equal("refresh1", RetainedSecret(unavailable));
+        }
+
+        [Theory]
+        [InlineData(SupabaseAnonymousSessionState.RecoveryRequired)]
+        [InlineData(SupabaseAnonymousSessionState.RefreshPending)]
+        public async Task RecoverAsyncNotSentRestoresPriorMarkerAndIsOffline(SupabaseAnonymousSessionState state)
+        {
+            var store = await Forced(state, Subject.ToString("D"), "refresh1");
+            var version = store.Current.Public!.Version;
+            var executor = new Scripted(new HttpExecutionException(HttpDeliveryCertainty.NotSent, "offline"));
+
+            var result = await P(executor, store).RecoverAsync(CancellationToken.None);
+
+            Assert.Equal(AccountAuthLifecycleKind.UnavailableOffline, result.Kind);
+            AssertPrincipal(result);
+            AssertOnlyRefreshRequests(executor, "refresh1");
+            Assert.Equal(state, store.Current.Public!.State);
+            Assert.Equal(version + 2, store.Current.Public.Version);
+            Assert.Equal("refresh1", RetainedSecret(store));
+            var restart = new Scripted(Response("a2", "refresh2"));
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(restart, store).AuthenticateAsync(CancellationToken.None)).Kind);
+            Assert.Empty(restart.Requests);
+        }
+
+        [Fact]
+        public async Task RecoverAsyncCancellationBeforeCredentialPersistenceRetainsRecoverableMarker()
+        {
+            var store = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            using (var beforePending = new CancellationTokenSource())
+            {
+                store.Cancellation = beforePending;
+                store.CancelOnCall = store.Calls + 1;
+                var none = new Scripted(Response("a2", "refresh2"));
+                Assert.Equal(AccountAuthLifecycleKind.Cancelled, (await P(none, store).RecoverAsync(beforePending.Token)).Kind);
+                Assert.Empty(none.Requests);
+                Assert.Equal(SupabaseAnonymousSessionState.RecoveryRequired, store.Current.Public!.State);
+            }
+            using var duringRequest = new CancellationTokenSource();
+            var hung = new Scripted(new TaskCompletionSource<HttpResponseData>(TaskCreationOptions.RunContinuationsAsynchronously).Task);
+            var pending = P(hung, store).RecoverAsync(duringRequest.Token);
+            await hung.FirstSend.Task;
+            duringRequest.Cancel();
+
+            Assert.Equal(AccountAuthLifecycleKind.Cancelled, (await pending).Kind);
+            Assert.Equal(SupabaseAnonymousSessionState.RefreshPending, store.Current.Public!.State);
+            Assert.Equal(Subject.ToString("D"), store.Current.Public.Subject);
+            Assert.Equal("refresh1", RetainedSecret(store));
+            var retry = new Scripted(Response("a2", "refresh2"));
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, (await P(retry, store).RecoverAsync(CancellationToken.None)).Kind);
+            AssertOnlyRefreshRequests(retry, "refresh1");
+            Assert.Equal("refresh2", RetainedSecret(store));
+        }
+
+        [Fact]
+        public async Task RecoverAsyncCancellationAfterCredentialPersistenceKeepsRotatedSecret()
+        {
+            var store = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            using var cancelled = new CancellationTokenSource();
+            store.Cancellation = cancelled;
+            store.CancelAfterApplyOnCall = store.Calls + 2;
+
+            var result = await P(new Scripted(Response("a2", "refresh2")), store).RecoverAsync(cancelled.Token);
+
+            Assert.True(cancelled.IsCancellationRequested);
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, result.Kind);
+            Assert.Equal(SupabaseAnonymousSessionState.Known, store.Current.Public!.State);
+            Assert.Equal("refresh2", RetainedSecret(store));
+            var next = new Scripted(Response("a3", "refresh3"));
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, (await P(next, store).AuthenticateAsync(CancellationToken.None)).Kind);
+            AssertOnlyRefreshRequests(next, "refresh2");
+        }
+
+        [Fact]
+        public async Task RecoverAsyncStoreConflictPublishesNoSession()
+        {
+            var store = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            var version = store.Current.Public!.Version;
+            store.RejectOnCall = store.Calls + 1;
+            var claimLost = new Scripted(Response("a2", "refresh2"));
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(claimLost, store).RecoverAsync(CancellationToken.None)).Kind);
+            Assert.Empty(claimLost.Requests);
+            Assert.Equal(version, store.Current.Public!.Version);
+
+            store.RejectKnown = true;
+            var publishLost = new Scripted(Response("a2", "refresh2"));
+            var result = await P(publishLost, store).RecoverAsync(CancellationToken.None);
+
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, result.Kind);
+            Assert.Null(result.Session);
+            AssertOnlyRefreshRequests(publishLost, "refresh1");
+            Assert.NotEqual(SupabaseAnonymousSessionState.Known, store.Current.Public!.State);
+            Assert.Equal("refresh1", RetainedSecret(store));
+        }
+
+        [Fact]
+        public async Task RecoverAsyncTimeoutBoundsAHungRefreshAndKeepsRecoverableMarker()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => C(recoveryTimeout: TimeSpan.Zero));
+            Assert.Throws<ArgumentOutOfRangeException>(() => C(recoveryTimeout: TimeSpan.FromMinutes(6)));
+            var store = await Forced(SupabaseAnonymousSessionState.RecoveryRequired, Subject.ToString("D"), "refresh1");
+            var hung = new Scripted(new TaskCompletionSource<HttpResponseData>(TaskCreationOptions.RunContinuationsAsynchronously).Task);
+            var provider = new SupabaseAnonymousAuthLifecycle(C(recoveryTimeout: TimeSpan.FromMilliseconds(50)), hung, store, new Clock());
+
+            var result = await provider.RecoverAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(10));
+
+            Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, result.Kind);
+            Assert.Null(result.Session);
+            Assert.Single(hung.Requests);
+            Assert.Equal(SupabaseAnonymousSessionState.RefreshPending, store.Current.Public!.State);
+            Assert.Equal("refresh1", RetainedSecret(store));
+        }
+
+        static Dictionary<string, string> Json() => new Dictionary<string, string> { { "Content-Type", "application/json" } };
+        static async Task<Store> Forced(SupabaseAnonymousSessionState state, string? subject, string refresh)
+        {
+            var store = new Store();
+            await store.Force(state, subject, Encoding.UTF8.GetBytes(refresh));
+            return store;
+        }
+        static void AssertOnlyRefreshRequests(Scripted executor, string refresh)
+        {
+            Assert.Single(executor.Requests);
+            Assert.EndsWith("/auth/v1/token?grant_type=refresh_token", executor.Requests[0].Uri, StringComparison.Ordinal);
+            Assert.Equal("{\"refresh_token\":\"" + refresh + "\"}", Encoding.UTF8.GetString(executor.Requests[0].CopyBody()));
+        }
+        static SupabaseAnonymousAuthLifecycle P(IHttpExecutor e, Store s) => new SupabaseAnonymousAuthLifecycle(C(), e, s, new Clock()); static SupabaseAuthConfiguration C(int n = 65536, TimeSpan? recoveryTimeout = null) => new SupabaseAuthConfiguration(new Uri("https://auth.example.test/auth/v1/"), "https://auth.example.test/auth/v1", new BackendNamespace("test"), "public-test", "platform.supabase.session", n, recoveryTimeout); static IReadOnlyDictionary<string, string> H() => new Dictionary<string, string> { { "apikey", "public-test" }, { "Accept", "application/json" }, { "Content-Type", "application/json" } }; static HttpResponseData Response(string a = "access", string r = "refresh", long expires = 2000) => new HttpResponseData(200, new Dictionary<string, string> { { "Content-Type", "application/json" } }, Encoding.UTF8.GetBytes("{\"access_token\":\"" + a + "\",\"refresh_token\":\"" + r + "\",\"expires_at\":" + expires + ",\"user\":{\"id\":\"" + Subject.ToString("D") + "\"}}")); static async Task<Store> Known() { var s = new Store(); var p = P(new Scripted(Response("a", "refresh1")), s); Assert.True(await p.AuthorizeFreshAsync(CancellationToken.None)); await p.AuthenticateAsync(CancellationToken.None); return s; }
         sealed class Clock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1000000; }
-        sealed class Store : ISupabaseAnonymousSessionStore { public bool Available = true, NullRead, RejectKnown, ReturnMaxOnSuccess; public int RejectOnCall, ThrowOnCall, CancelOnCall, Calls; public CancellationTokenSource? Cancellation; public readonly List<SupabaseAnonymousSessionSnapshot> Writes = new List<SupabaseAnonymousSessionSnapshot>(); public SupabaseAnonymousSessionSnapshot Current = SupabaseAnonymousSessionSnapshot.Absent(); public bool IsAvailable => Available; public Task<SupabaseAnonymousSessionSnapshot> ReadAsync(string k, CancellationToken t) => Task.FromResult(NullRead ? null! : Clone(Current)); public Task<SupabaseAnonymousSessionCompareExchangeResult> CompareExchangeAsync(string k, SupabaseAnonymousSessionSnapshot expected, SupabaseAnonymousSessionTransition next, byte[]? secret, CancellationToken t) { var call = Interlocked.Increment(ref Calls); if (call == CancelOnCall) { Cancellation!.Cancel(); return Task.FromCanceled<SupabaseAnonymousSessionCompareExchangeResult>(t); } if (call == ThrowOnCall) throw new InvalidOperationException("store failure"); var match = expected.Exists == Current.Exists && (!expected.Exists || (expected.Public!.Version == Current.Public!.Version && expected.Public.State == Current.Public.State)); if ((RejectKnown && next.State == SupabaseAnonymousSessionState.Known) || call == RejectOnCall) match = false; if (!match) return Task.FromResult(new SupabaseAnonymousSessionCompareExchangeResult(false, Clone(Current))); Current = new SupabaseAnonymousSessionSnapshot(new SupabaseAnonymousSessionPublicRecord(Current.Exists ? Current.Public!.Version + 1 : 1, next.State, next.Subject), secret); Writes.Add(Clone(Current)); var result = ReturnMaxOnSuccess ? new SupabaseAnonymousSessionSnapshot(new SupabaseAnonymousSessionPublicRecord(long.MaxValue, next.State, next.Subject), secret) : Clone(Current); return Task.FromResult(new SupabaseAnonymousSessionCompareExchangeResult(true, result)); } public async Task Force(SupabaseAnonymousSessionState state, string? subject, byte[]? secret) { var e = await ReadAsync("x", CancellationToken.None); await CompareExchangeAsync("x", e, new SupabaseAnonymousSessionTransition(state, subject), secret, CancellationToken.None); } static SupabaseAnonymousSessionSnapshot Clone(SupabaseAnonymousSessionSnapshot v) => new SupabaseAnonymousSessionSnapshot(v.Public == null ? null : new SupabaseAnonymousSessionPublicRecord(v.Public.Version, v.Public.State, v.Public.Subject), v.CopySecret()); }
-        sealed class Scripted : IHttpExecutor { readonly Queue<object> q = new Queue<object>(); public List<HttpRequestData> Requests = new List<HttpRequestData>(); public TaskCompletionSource<bool> FirstSend = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); public Scripted(params object[] x) { foreach (var a in x) q.Enqueue(a); } public async Task<HttpResponseData> SendAsync(HttpRequestData r, CancellationToken t) { Requests.Add(r); FirstSend.TrySetResult(true); if (q.Count == 0) throw new HttpExecutionException(HttpDeliveryCertainty.Uncertain, "test"); var x = q.Dequeue(); if (x is Exception e) throw e; if (x is Task<HttpResponseData> task) return await task.ConfigureAwait(false); return (HttpResponseData)x; } }
+        sealed class Store : ISupabaseAnonymousSessionStore { public bool Available = true, NullRead, RejectKnown, ReturnMaxOnSuccess; public int RejectOnCall, ThrowOnCall, CancelOnCall, CancelAfterApplyOnCall, Calls; public CancellationTokenSource? Cancellation; public readonly List<SupabaseAnonymousSessionSnapshot> Writes = new List<SupabaseAnonymousSessionSnapshot>(); public SupabaseAnonymousSessionSnapshot Current = SupabaseAnonymousSessionSnapshot.Absent(); public bool IsAvailable => Available; public Task<SupabaseAnonymousSessionSnapshot> ReadAsync(string k, CancellationToken t) => Task.FromResult(NullRead ? null! : Clone(Current)); public Task<SupabaseAnonymousSessionCompareExchangeResult> CompareExchangeAsync(string k, SupabaseAnonymousSessionSnapshot expected, SupabaseAnonymousSessionTransition next, byte[]? secret, CancellationToken t) { var call = Interlocked.Increment(ref Calls); if (call == CancelOnCall) { Cancellation!.Cancel(); return Task.FromCanceled<SupabaseAnonymousSessionCompareExchangeResult>(t); } if (call == ThrowOnCall) throw new InvalidOperationException("store failure"); var match = expected.Exists == Current.Exists && (!expected.Exists || (expected.Public!.Version == Current.Public!.Version && expected.Public.State == Current.Public.State)); if ((RejectKnown && next.State == SupabaseAnonymousSessionState.Known) || call == RejectOnCall) match = false; if (!match) return Task.FromResult(new SupabaseAnonymousSessionCompareExchangeResult(false, Clone(Current))); Current = new SupabaseAnonymousSessionSnapshot(new SupabaseAnonymousSessionPublicRecord(Current.Exists ? Current.Public!.Version + 1 : 1, next.State, next.Subject), secret); Writes.Add(Clone(Current)); if (call == CancelAfterApplyOnCall) Cancellation!.Cancel(); var result = ReturnMaxOnSuccess ? new SupabaseAnonymousSessionSnapshot(new SupabaseAnonymousSessionPublicRecord(long.MaxValue, next.State, next.Subject), secret) : Clone(Current); return Task.FromResult(new SupabaseAnonymousSessionCompareExchangeResult(true, result)); } public async Task Force(SupabaseAnonymousSessionState state, string? subject, byte[]? secret) { var e = await ReadAsync("x", CancellationToken.None); await CompareExchangeAsync("x", e, new SupabaseAnonymousSessionTransition(state, subject), secret, CancellationToken.None); } static SupabaseAnonymousSessionSnapshot Clone(SupabaseAnonymousSessionSnapshot v) => new SupabaseAnonymousSessionSnapshot(v.Public == null ? null : new SupabaseAnonymousSessionPublicRecord(v.Public.Version, v.Public.State, v.Public.Subject), v.CopySecret()); }
+        sealed class Scripted : IHttpExecutor { readonly Queue<object> q = new Queue<object>(); public List<HttpRequestData> Requests = new List<HttpRequestData>(); public TaskCompletionSource<bool> FirstSend = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously); public Scripted(params object[] x) { foreach (var a in x) q.Enqueue(a); } public async Task<HttpResponseData> SendAsync(HttpRequestData r, CancellationToken t) { Requests.Add(r); FirstSend.TrySetResult(true); if (q.Count == 0) throw new HttpExecutionException(HttpDeliveryCertainty.Uncertain, "test"); var x = q.Dequeue(); if (x is Exception e) throw e; if (x is Task<HttpResponseData> task) return await task.WaitAsync(t).ConfigureAwait(false); return (HttpResponseData)x; } }
         sealed class Handler : HttpMessageHandler { readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> f; public Handler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> f) { this.f = f; } protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken t) => f(r, t); }
     }
 }

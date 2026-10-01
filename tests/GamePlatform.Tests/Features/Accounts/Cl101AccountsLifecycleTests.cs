@@ -234,6 +234,97 @@ namespace GamePlatform.Tests.Features.Accounts
             gate.SetResult(true); Assert.Equal(AccountsReadiness.LateResultRejected, (await starting).Readiness);
         }
 
+        [Theory]
+        [InlineData(AccountBootstrapResult.Complete, AccountsReadiness.Ready)]
+        [InlineData(AccountBootstrapResult.Incomplete, AccountsReadiness.Bootstrapping)]
+        public async Task RecoverAsyncReachesReadyOnlyThroughProvisionAndCompleteBootstrap(AccountBootstrapResult bootstrap, AccountsReadiness expected)
+        {
+            var remote = new Remote(); var directory = new Directory(); var leases = new Leases { Bootstrap = bootstrap };
+            var recovery = new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session()));
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, leases, recovery);
+            var started = await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, started.Readiness); Assert.Equal(0, remote.Calls); Assert.Equal(0, recovery.Calls);
+
+            var recovered = await service.RecoverAsync(App, CancellationToken.None);
+
+            Assert.Equal(expected, recovered.Readiness); Assert.Equal(started.Generation + 1, recovered.Generation);
+            Assert.Equal(1, recovery.Calls); Assert.Equal(1, remote.Calls); Assert.Equal(1, leases.Opened);
+            Assert.True((await directory.FindAsync(A, App, CancellationToken.None))!.HasIssuedAccount);
+            Assert.Equal(expected, service.Snapshot.Readiness);
+        }
+
+        [Theory]
+        [InlineData(AccountAuthLifecycleKind.RecoveryRequired, AccountsReadiness.RecoveryRequired)]
+        [InlineData(AccountAuthLifecycleKind.Cancelled, AccountsReadiness.Cancelled)]
+        [InlineData(AccountAuthLifecycleKind.UnavailableOffline, AccountsReadiness.UnavailableOffline)]
+        public async Task UnsuccessfulRecoverAsyncNeverProvisions(AccountAuthLifecycleKind kind, AccountsReadiness expected)
+        {
+            var outcome = kind == AccountAuthLifecycleKind.RecoveryRequired ? AccountAuthLifecycleResult.RecoveryRequired(A) : kind == AccountAuthLifecycleKind.Cancelled ? AccountAuthLifecycleResult.Cancelled() : AccountAuthLifecycleResult.UnavailableOffline(null);
+            var remote = new Remote(); var leases = new Leases(); var recovery = new Recovery(outcome);
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, new Directory(), leases, recovery);
+            await service.StartAsync(App, CancellationToken.None);
+
+            var recovered = await service.RecoverAsync(App, CancellationToken.None);
+
+            Assert.Equal(expected, recovered.Readiness); Assert.Equal(2, recovered.Generation); Assert.Equal(1, recovery.Calls);
+            Assert.Equal(0, remote.Calls); Assert.Equal(0, leases.Opened);
+        }
+
+        [Fact]
+        public async Task RecoverAsyncIsIgnoredWhenReadyAndRequiresAConfiguredPort()
+        {
+            var leases = new Leases(); var recovery = new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session()));
+            var service = Service(new Auth(A), new Remote(), new Directory(), leases, recovery);
+            var ready = await service.StartAsync(App, CancellationToken.None);
+
+            var ignored = await service.RecoverAsync(App, CancellationToken.None);
+
+            Assert.Equal(AccountsReadiness.Ready, ignored.Readiness); Assert.Equal(ready.Generation, ignored.Generation);
+            Assert.Equal(0, recovery.Calls); Assert.Equal(1, leases.Opened);
+            var unconfigured = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), new Remote(), new Directory(), new Leases());
+            await unconfigured.StartAsync(App, CancellationToken.None);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => unconfigured.RecoverAsync(App, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task LateRecoveryResultIsRejectedAfterStopOrNewerStart()
+        {
+            var delayed = new TaskCompletionSource<AccountAuthLifecycleResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var remote = new Remote(); var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, new Directory(), new Leases(), new Recovery(delayed.Task));
+            await service.StartAsync(App, CancellationToken.None);
+            var recovering = service.RecoverAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Unavailable, (await service.StopAsync(CancellationToken.None)).Readiness);
+            delayed.SetResult(AccountAuthLifecycleResult.Authenticated(A, new Session()));
+            Assert.Equal(AccountsReadiness.LateResultRejected, (await recovering).Readiness); Assert.Equal(0, remote.Calls);
+            Assert.Equal(AccountsReadiness.Unavailable, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+
+            var superseded = new TaskCompletionSource<AccountAuthLifecycleResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var auth = new SequenceAuth(Task.FromResult(AccountAuthLifecycleResult.RecoveryRequired(A)), Task.FromResult(AccountAuthLifecycleResult.Authenticated(B, new Session())));
+            var switching = Service(auth, new Remote(), new Directory(), new Leases(), new Recovery(superseded.Task));
+            await switching.StartAsync(App, CancellationToken.None);
+            var stale = switching.RecoverAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Ready, (await switching.StartAsync(App, CancellationToken.None)).Readiness);
+            superseded.SetResult(AccountAuthLifecycleResult.Authenticated(A, new Session()));
+            Assert.Equal(AccountsReadiness.LateResultRejected, (await stale).Readiness); Assert.Equal(B.Subject, switching.Snapshot.Entry!.Principal.Subject);
+        }
+
+        [Fact]
+        public async Task RecoverAsyncDoesNotHideFailedScopeRetirement()
+        {
+            var leases = new Leases(); var recovery = new Recovery(AccountAuthLifecycleResult.Authenticated(B, new Session()));
+            var auth = new SequenceAuth(Task.FromResult(AccountAuthLifecycleResult.Authenticated(A, new Session())), Task.FromResult(AccountAuthLifecycleResult.Authenticated(B, new Session())));
+            var service = Service(auth, new Remote(), new Directory(), leases, recovery);
+            Assert.Equal(AccountsReadiness.Ready, (await service.StartAsync(App, CancellationToken.None)).Readiness);
+            leases.DrainFailures = 1;
+            var quarantined = await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, quarantined.Readiness);
+
+            var recovered = await service.RecoverAsync(App, CancellationToken.None);
+
+            Assert.Equal(AccountsReadiness.RecoveryRequired, recovered.Readiness); Assert.Equal(quarantined.Generation, recovered.Generation);
+            Assert.Equal(0, recovery.Calls); Assert.Equal(1, leases.Opened); Assert.Equal(0, leases.Retired);
+        }
+
         [Fact]
         public async Task SqliteDirectoryReopensReservationBeforeIssuedAccountBinding()
         {
@@ -455,6 +546,8 @@ namespace GamePlatform.Tests.Features.Accounts
 
         private static AccountsLifecycleService Service(IAccountsAuthLifecycle auth, Remote remote, Directory directory, Leases leases) => Service(auth, new ProvisioningFactory(_ => remote), directory, leases);
         private static AccountsLifecycleService Service(IAccountsAuthLifecycle auth, ProvisioningFactory factory, Directory directory, Leases leases) => new AccountsLifecycleService(auth, factory, directory, leases, new UuidV7Generator(new Clock(), new Random()));
+        private static AccountsLifecycleService Service(IAccountsAuthLifecycle auth, Remote remote, Directory directory, Leases leases, Recovery recovery) => new AccountsLifecycleService(auth, new ProvisioningFactory(_ => remote), directory, leases, new UuidV7Generator(new Clock(), new Random()), null, recovery);
+        private sealed class Recovery : IAccountsAuthRecovery { private readonly Task<AccountAuthLifecycleResult> result; public int Calls; public Recovery(AccountAuthLifecycleResult result) : this(Task.FromResult(result)) { } public Recovery(Task<AccountAuthLifecycleResult> result) { this.result = result; } public Task<AccountAuthLifecycleResult> RecoverAsync(CancellationToken token) { Interlocked.Increment(ref Calls); return result; } }
         private sealed class Auth : IAccountsAuthLifecycle { private readonly AccountAuthLifecycleResult result; public Auth(AccountPrincipalDescriptor principal) : this(AccountAuthLifecycleResult.Authenticated(principal, new Session())) { } public Auth(AccountAuthLifecycleResult result) { this.result = result; } public Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken token) => Task.FromResult(result); }
         private sealed class PendingAuth : IAccountsAuthLifecycle { private readonly Task<AccountAuthLifecycleResult> result; public PendingAuth(Task<AccountAuthLifecycleResult> result) { this.result = result; } public Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken token) => result; }
         private sealed class SequenceAuth : IAccountsAuthLifecycle { private readonly Queue<Task<AccountAuthLifecycleResult>> values; public SequenceAuth(params Task<AccountAuthLifecycleResult>[] values) { this.values = new Queue<Task<AccountAuthLifecycleResult>>(values); } public Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken token) => values.Dequeue(); }
