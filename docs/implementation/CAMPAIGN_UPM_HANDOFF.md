@@ -1,59 +1,35 @@
 # SDK handoff — current campaign follow-ups
 
-2026-10-01. Current coordination lives in the backend [entry](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/README.md), [checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md), [follow-up review](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/FOLLOWUP-REVIEW-2026-10-01.md), [board](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/overnight-queue.json) and [next-session plan](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/NEXT-SESSION-2026-10-01.md). GOAL=CAMPAIGN_LOCAL; PLAYER_SHELL_FOUNDATION only when selected by the owner. Root and scoped AGENTS continue to apply.
+2026-10-01, after the owner-approved recovery session. Current coordination lives in the backend [entry](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/README.md), [checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md) and [board](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/overnight-queue.json). GOAL=CAMPAIGN_LOCAL; PLAYER_SHELL_FOUNDATION only when selected by the owner. Root and scoped AGENTS continue to apply.
 
 ## Verified baseline and delivery distinction
 
 | Layer | Reviewed baseline | State |
 |---|---|---|
-| SDK | `04d959c11f23789e889e15f4c98c96758662ac94` | ON-20 restored in `4e9f925`, RV-03 transition-aware loading cleanup under the outcome lock; crash diagnostics and terminal-auth characterizations retained |
-| SDK CI | Run 36827226808 | Prior review inspected 680 passing C# tests, zero failed/skipped, 66 Python tests and successful build/package steps; intermittent durability remains unresolved |
-| Unity SDK Git UPM | `4eb678e43e9c37ff61fdd94bb8cfb1319301bca0` | Unchanged and lacks restored ON-20; source delivery is not consumer-package delivery |
-| Unity | `0dad792092a67783c589d0b0085e4f01949504e0` | RV-04/05/06 and store repair integrated; additional source-read characterization remains; no check-runs at this baseline |
-| Backend | `8e5b24d161db55aaf6300bc3209bca8a1b3ef83e` | validate/postgres passed; fixture was last reported running, not checked live in this documentation session |
+| SDK source | `ac46721780347210ec8b1786553cf68116d1b7b0` | ON-20/RV-03 restored (`4e9f925`); Cl008 first-failure evidence, `-shm` release handshake and failure-artifact upload (`93f3302`, `a43cded`); explicit same-account recovery (`f4538d3`, `ac46721`) |
+| SDK CI | Runs 36862779541, 36863237650, 36863824293 | success on `a43cded`, `ac46721` and `0346a5e`; local full suite 720/720 with the qualification macOS SQLite library |
+| Git UPM payload | `0346a5eebfd5312e8e4ae6966df3e28cd7f3b3a5` | Regenerated from `ac46721` with .NET SDK 9.0.205 (pin 9.0.203, latestPatch); two independent clean clones byte-equal: bundle manifest sha256 `0f6098921e5ef784916ddecfc8f32b927be0cf995d13760632f8f2f514c79eb2`, package-content-manifest sha256 `596800e7a453a3a33af96fd5b475f27292505a880df0882250505da5aabeef83`; only managed DLLs/PDBs/manifests changed; macOS native withheld; nonauthor payload review approved |
+| Unity consumer | `2b7fe5a` repin, `7535634` recovery wiring | `verify_sdk_import.py` pass; focused EditMode 222/222, full 539/539 at the repin and 554/554 with the Unity recovery wiring |
+| Backend | `9fc8dd9` | retained-fixture admission test; CI success |
 
-These are evidence pins, not reset targets. Fetch newer main and preserve unrelated work. Documentation-only descendants need their own CI observation but no regenerated DLLs. ON-20's reported 19 navigation tests include the earlier two RED cases. Restore is complete; package delivery is still open.
+These are evidence pins, not reset targets. Documentation-only descendants need no regenerated DLLs.
 
-## Auth follow-up: FU-AUTH-DESIGN and FU-AUTH-RECOVERY
+## Explicit same-account recovery (owner approved 2026-10-01)
 
-The existing lifecycle returns RecoveryRequired without HTTP from RecoveryRequired/RefreshPending, even with a retained refresh secret. HTTP 500 or uncertain refresh delivery can produce that state. The exact event on the retained phones is not established. The five added characterizations describe existing behavior rather than a chosen new policy.
+`IAccountsAuthRecovery` (Features.Accounts) is implemented by `SupabaseAnonymousAuthLifecycle.RecoverAsync`: single-flight, bounded by `SupabaseAuthConfiguration.RecoveryTimeout` (default 30 s), same stored subject only. RecoveryRequired, orphaned RefreshPending and Known markers with a decodable retained secret refresh; FreshAuthorized, SignupPending, missing/corrupt secret or subject return RecoveryRequired without HTTP. Uncertain/4xx/5xx/subject mismatch keep the marker and secret; NotSent restores the prior marker and returns UnavailableOffline. The Known write of the rotated secret ignores the timeout and caller token once a valid response arrived, so a replaced refresh token is never retained. `AccountsLifecycleService.RecoverAsync(AppId, …)` is admitted only from RecoveryRequired/Unavailable (not stopped, not with a failed scope retirement), bumps the generation and reaches Ready only through real provision and complete bootstrap; UnavailableOffline never reopens offline. `AuthenticateAsync`/`StartAsync` are unchanged.
 
-A separate explicit owner decision is required before changing authentication semantics. Until that decision is received, design, characterization and independent safe work can proceed. A stored launcher template is not a decision record.
+Retained-device result: the diagnostic test-auth Player at Unity `7535634` recovered both retained phones with one refresh each, provision and bootstrap on their pre-existing client streams, zero new streams or platform users.
 
-Recommended implementation after approval: keep normal startup fail-closed, and let an explicit recovery action attempt one finite-time single-flight refresh for the same known principal. Preserve issuer/backend context, exact subject, account generation and CAS fencing. Persist rotated credentials before authenticated publication; real provisioning/bootstrap/pull still establishes Ready. Cover recoverable RecoveryRequired and interrupted RefreshPending while retaining unknown-signup, corrupt/missing-secret and conflict restrictions.
-
-Retain all account/installation/stream identities, SQLite, outbox, attempts, checkpoints and immutable commands. New-account provisioning or data deletion is not an acceptable recovery fallback. Rejected credentials, wrong identity and uncertain persistence remain visible failure states.
-
-Tests cover success; server/uncertain failure followed by recovery; rejected/missing/corrupt credentials; subject mismatch; duplicate/concurrent intents; CAS/account retirement; interruption before/after credential persistence; process restart. Exercise both AuthenticateAsync and in-session GetAsync/RefreshAsync, including version handling after temporary failures. Preserve NotSent/offline and no-implicit-signup assertions. Confirm the pinned provider's behavior using its official documentation and isolated test credentials. Fresh-install tests do not qualify retained-account recovery.
+Follow-ups: refuse recovery structurally when the directory has no entry for the principal (`FindAsync` null) instead of relying on the provider returning the stored subject; joined callers currently inherit the owner's cancellation; after UnavailableOffline/Cancelled the host must restart before another recovery.
 
 ## Durability follow-up: FU-DURABILITY / RV-02
 
-The instrumented Windows failure 36825045338 recorded child exit, no observed file holder and a postcommit SQLite IOError. This does not support the original live-child explanation for that failure, but the native/OS/filesystem/harness cause remains unproven. Later green runs do not close it; results across changing revisions are not a controlled failure rate.
+The harness now copies the synthetic database files before any diagnostic open, waits (≤5 s, 25 ms polls, recorded as `shmReleaseWaitMs`) until the killed child's `-shm` can be shrunk, records an immediate raw/retry open, installs a Windows-x64-only SQLite log hook once per process, and CI uploads `artifacts/test-results` and `artifacts/diagnostics` with `if: always()`. Hard-kill precommit/postcommit assertions are unchanged. On macOS every run shows the `-shm` held for ~26 ms after the child PID is gone; Windows remains unproven. The predeclared comparison is in [CL008_WINDOWS_AB_PLAN.md](CL008_WINDOWS_AB_PLAN.md); refs `ab/cl008-a` (`1860b88`), `ab/cl008-b` (`3105a40`) and `ab/cl008-c` (`a43cded`) exist, and the 15 dispatches need the owner (the agent's dispatch was denied).
 
-The harness already has child PID/exit wait, lock probes, process census, extended-error and copy-open diagnostics. Use them rather than repeat their implementation. Predeclare a small exact-ref comparison with equivalent diagnostic overlays and pinned toolchain/native/runner provenance. Preserve the hard-kill precommit rollback and postcommit durability assertions.
+## Build environment and package
 
-Retain sanitized synthetic database/WAL/SHM evidence before diagnostic opens change recovery state. Upload failure diagnostics even when the test step fails, separately from successful package artifacts. The previously inspected failing job skipped normal artifact upload. Real device data and credentials must not enter artifacts. Record all attempts, not selected passes. Permission-restricted operations remain restricted until authorized through the normal mechanism.
-
-## Build environment and package follow-up: FU-TOOLCHAIN / FU-UPM
-
-Inspect current global.json and packaging scripts. The reviewed CI used .NET 9.0.203, whereas the owner Mac reportedly lacked the required SDK. Resolve the exact SDK through an official isolated installation or existing authorized CI environment; keep framework and dependency pins unchanged merely to accommodate the host.
-
-After the selected runtime repairs and required SDK validation, generate canonical Git UPM through existing scripts. Prove the required two-clean-copy reproduction and obtain fresh nonauthor review of managed/native hashes, importers, GUIDs, licenses, AOT/link/lifecycle metadata and source provenance. An earlier successful CI artifact is not proof of the two-copy requirement. Packaging rehearsal can happen earlier; final delivery must include the selected approved repairs.
-
-One integrator serially updates Unity manifest/lock and verifies the resolved import. Canonical runtime source stays in src; generated UPM remains delivery, not a fork. Documentation-only edits require no package churn. The previously staged macOS SQLite library is qualification-only, not evidence of ordinary Editor support.
+The exact SDK comes from the user-level official install in `~/.dotnet` (`DOTNET_ROOT`), not a framework downgrade. Canonical runtime source stays in `src`; `upm/` is generated delivery. The main checkout carried an unrelated dirty csproj line, so packaging ran in a clean worktree at `ac46721` and the output was proven equal to the two clean clones before commit.
 
 ## Preserved campaign semantics and acceptance
 
-Accepted-receipt repair 5c7a02a, Unity completion-lock 836fee6 and the R03/R04/R05 source repairs are retained. CMP-R06 remains accepted at its recorded local scope: real retained-host cycle and independent same-account admission. The newly inapplicable fresh-zero fixture assertion is a separate FU-RETAINED-FIXTURE task, not grounds to reset the retained account.
-
-ProgressionService.ConfirmAcceptedReceiptAsync associates real accepted evidence with public PendingCompletions without fabricating rewards. Preserve owner/app/backend/view generation fencing, immutable operation/business-source identity, evidence revisions and unrelated pending work. Campaign-set revision is not automatically private-feed revision. Receipt lookup/push acknowledgement never advances pull checkpoints or manufactures feed events/value. Already-affected new-format state must recover using retained identities/evidence even where the game pending list was cleared earlier.
-
-Affected regressions retain first clear, distinct already-satisfied without a new event, response loss with unchanged identity, reopen before evidence, already-cleared game list, fault/rollback between SDK/game writes, duplicate/reordered/foreign evidence, rejection and unrelated work. Inspect SDK/game pending state and accepted evidence together; a retained accepted receipt is permitted.
-
-Final six-role freeze follows the selected repairs, reviewed Unity repin and fresh full Unity validation. Existing f918a7e integrity and earlier phone runs are not final-source acceptance. Retained recovery, visible browser input, complete Android traversal, loss/crash boundaries and coinstallation remain at their original parent scope. Default-off shell preparation is distinct from ordinary activation; campaign and configured-shell acceptance gate activation.
-
-## Ownership and history
-
-Use main, one coordinator/git integrator and existing exact lease rules. Preserve unrelated work, issued identities and pending data. Keep the SDK game-neutral, constructor-injected and free of a duplicate navigation framework. Root permissions, publication restrictions and historical P3/G3/broad-P4 boundaries remain unchanged.
-
-Run affected source/package/full-checkout documentation checks and report actual pushed-head CI, including no-run. Reconcile the shared board/checkpoint and Unity handoff. The [preceding handoff](https://github.com/gindemit/game-platform-dotnet/blob/04d959c11f23789e889e15f4c98c96758662ac94/docs/implementation/CAMPAIGN_UPM_HANDOFF.md) preserves dated pins/results. This update is documentation only: no runtime repair, package change, physical rerun or gate closure is claimed.
+Accepted-receipt repair `5c7a02a`, Unity completion-lock `836fee6`, R03/R04/R05 and CMP-R06 remain as recorded. Push acknowledgement never advances pull checkpoints; immutable operation/business-source identity, generation fencing and zero fabricated rewards are unchanged by this session. Browser, 40/40 Android, loss/crash and coinstallation acceptance remain open at the backend checkpoint's scope. The [preceding handoff](https://github.com/gindemit/game-platform-dotnet/blob/3105a40/docs/implementation/CAMPAIGN_UPM_HANDOFF.md) preserves dated pins.
