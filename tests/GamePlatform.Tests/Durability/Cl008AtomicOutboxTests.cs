@@ -156,15 +156,14 @@ namespace GamePlatform.Tests.Durability
                 var shmWait = Stopwatch.StartNew();
                 var shmReleased = ProbeShmTruncation(files.Path, out var shmFirst);
                 var shmProbe = shmFirst;
-                while (!shmReleased && shmWait.Elapsed < TimeSpan.FromSeconds(5))
+                while (!shmReleased && !shmProbe.StartsWith("restoreFailed", StringComparison.Ordinal) && shmWait.Elapsed < TimeSpan.FromSeconds(5))
                 {
                     Thread.Sleep(25);
                     shmReleased = ProbeShmTruncation(files.Path, out shmProbe);
                 }
-                var diagnostics = $"phase={phase} launcherPid={process.Id} launcherExit={process.ExitCode} childPid={(childPid?.ToString() ?? "unknown")} childExitWaitMs={childWait.ElapsedMilliseconds} childAliveAtReopen={childAliveAtReopen} childPidReused={childPidReused} shmReleaseWaitMs={shmWait.ElapsedMilliseconds} shmReleased={shmReleased} shmFirstProbe=[{shmFirst}] shmProbe=[{shmProbe}]";
-                output.WriteLine(diagnostics);
-
                 var sqliteLog = SqliteErrorLog.Start(System.IO.Path.GetDirectoryName(files.Path)!);
+                var diagnostics = $"phase={phase} launcherPid={process.Id} launcherExit={process.ExitCode} childPid={(childPid?.ToString() ?? "unknown")} childExitWaitMs={childWait.ElapsedMilliseconds} childAliveAtReopen={childAliveAtReopen} childPidReused={childPidReused} shmReleaseWaitMs={shmWait.ElapsedMilliseconds} shmReleased={shmReleased} shmFirstProbe=[{shmFirst}] shmProbe=[{shmProbe}] sqliteLog={sqliteLog}";
+                output.WriteLine(diagnostics);
                 try
                 {
                     SqliteDatabase recovered;
@@ -174,7 +173,8 @@ namespace GamePlatform.Tests.Durability
                     }
                     catch (Exception exception)
                     {
-                        var evidence = CopyEvidence(files.Path, phase);
+                        var evidenceDirectory = EvidenceDirectory(phase);
+                        var evidence = CopyEvidence(files.Path, evidenceDirectory);
                         var filesAtFailure = DescribeFiles(files.Path);
                         ProbeShmTruncation(files.Path, out var shmAtFailure);
                         var rawImmediate = ProbeRawConnection(files.Path);
@@ -184,8 +184,8 @@ namespace GamePlatform.Tests.Durability
                         var attributes = DescribeAttributes(files.Path);
                         var copies = await CopyOpenDiagnostics(files.Path);
                         var raw = ProbeRawConnection(files.Path);
-                        var message = $"Reopen after abrupt termination failed. {diagnostics} evidence=[{evidence}] files=[{filesAtFailure}] shmAtFailure=[{shmAtFailure}] rawImmediate=[{rawImmediate}] retryOpen=[{retry}] filesAfterRetry=[{DescribeFiles(files.Path)}] attributes=[{attributes}] locks=[{locks}] processes=[{census}] {copies} raw=[{raw}] sqliteLog=[{sqliteLog}: {SqliteErrorLog.Describe()}] {DescribeException(exception)}";
-                        WriteEvidenceText(evidence, message + Environment.NewLine + exception);
+                        var message = $"Reopen after abrupt termination failed. {diagnostics} evidence=[{evidence}] files=[{filesAtFailure}] shmAtFailure=[{shmAtFailure}] rawImmediate=[{rawImmediate}] retryOpen=[{retry}] filesAfterRetry=[{DescribeFiles(files.Path)}] attributes=[{attributes}] locks=[{locks}] processes=[{census}] {copies} raw=[{raw}] sqliteLines=[{SqliteErrorLog.Describe()}] {DescribeException(exception)}";
+                        WriteEvidenceText(evidenceDirectory, message + Environment.NewLine + exception);
                         throw new Xunit.Sdk.XunitException(message, exception);
                     }
 
@@ -465,30 +465,44 @@ namespace GamePlatform.Tests.Durability
             }
         }
 
-        private static string CopyEvidence(string databasePath, string phase)
+        private static string EvidenceDirectory(string phase)
         {
             var root = Environment.GetEnvironmentVariable("GP_CL008_DIAG_DIR");
             if (string.IsNullOrEmpty(root)) root = System.IO.Path.Combine(FindRepositoryRoot(), "artifacts", "diagnostics", "cl008");
-            var directory = System.IO.Path.Combine(root, phase + "-" + DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmssfff'Z'", CultureInfo.InvariantCulture));
+            return System.IO.Path.Combine(root, phase + "-" + DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmssfff'Z'", CultureInfo.InvariantCulture));
+        }
+
+        private static string CopyEvidence(string databasePath, string directory)
+        {
             try
             {
                 Directory.CreateDirectory(directory);
-                foreach (var source in Directory.GetFiles(System.IO.Path.GetDirectoryName(databasePath)!))
-                    File.Copy(source, System.IO.Path.Combine(directory, System.IO.Path.GetFileName(source)));
-                return directory;
             }
             catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
             {
                 return $"failed {directory} {exception.GetType().Name}: {exception.Message}";
             }
+            var failures = new List<string>();
+            foreach (var source in Directory.GetFiles(System.IO.Path.GetDirectoryName(databasePath)!))
+            {
+                try
+                {
+                    File.Copy(source, System.IO.Path.Combine(directory, System.IO.Path.GetFileName(source)));
+                }
+                catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+                {
+                    failures.Add($"{System.IO.Path.GetFileName(source)}: {exception.GetType().Name} 0x{exception.HResult:X8}");
+                }
+            }
+            return failures.Count == 0 ? directory : $"{directory} partial [{string.Join("; ", failures)}]";
         }
 
-        private static void WriteEvidenceText(string evidence, string text)
+        private static void WriteEvidenceText(string directory, string text)
         {
-            if (!Directory.Exists(evidence)) return;
             try
             {
-                File.WriteAllText(System.IO.Path.Combine(evidence, "diagnostics.txt"), text);
+                Directory.CreateDirectory(directory);
+                File.WriteAllText(System.IO.Path.Combine(directory, "diagnostics.txt"), text);
             }
             catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
             {
@@ -654,12 +668,14 @@ namespace GamePlatform.Tests.Durability
         }
 
         // sqlite3_config is variadic; only the Windows x64 ABI passes the variadic pointers like fixed ones.
+        // The hook is installed once and never removed: clearing xLog races sqlite3_log in parallel tests.
         private static class SqliteErrorLog
         {
             private const int ConfigLog = 16;
             private static readonly LogCallback Callback = Record;
             private static readonly ConcurrentQueue<string> Entries = new ConcurrentQueue<string>();
-            private static string marker = string.Empty;
+            private static readonly Lazy<string> Installation = new Lazy<string>(Install);
+            private static volatile string? marker;
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             private delegate void LogCallback(IntPtr argument, int code, IntPtr message);
@@ -667,29 +683,30 @@ namespace GamePlatform.Tests.Durability
             [DllImport(SQLite.SQLite3.LibraryPath, EntryPoint = "sqlite3_config", CallingConvention = CallingConvention.Cdecl)]
             private static extern int Configure(int option, IntPtr callback, IntPtr argument);
 
-            private static bool Supported => OperatingSystem.IsWindows() && RuntimeInformation.ProcessArchitecture == Architecture.X64;
-
             public static string Start(string databaseDirectory)
             {
-                if (!Supported) return "unsupported";
                 Entries.Clear();
                 marker = databaseDirectory;
-                var result = Configure(ConfigLog, Marshal.GetFunctionPointerForDelegate(Callback), IntPtr.Zero);
-                return result == 0 ? "on" : $"configResult={result}";
+                return Installation.Value;
             }
 
-            public static void Stop()
-            {
-                if (Supported) Configure(ConfigLog, IntPtr.Zero, IntPtr.Zero);
-            }
+            public static void Stop() => marker = null;
 
             public static string Describe() => string.Join(" | ", Entries);
 
+            private static string Install()
+            {
+                if (!OperatingSystem.IsWindows() || RuntimeInformation.ProcessArchitecture != Architecture.X64) return "unsupported";
+                var result = Configure(ConfigLog, Marshal.GetFunctionPointerForDelegate(Callback), IntPtr.Zero);
+                return result == 0 ? "installed" : $"configResult={result}";
+            }
+
             private static void Record(IntPtr argument, int code, IntPtr message)
             {
+                var current = marker;
+                if (current == null || Entries.Count >= 32) return;
                 var text = Marshal.PtrToStringUTF8(message) ?? string.Empty;
-                var primary = code & 0xFF;
-                if (Entries.Count < 32 && (primary == 10 || primary == 14 || text.Contains(marker, StringComparison.OrdinalIgnoreCase))) Entries.Enqueue($"0x{code:X} {text}");
+                if (text.Contains(current, StringComparison.OrdinalIgnoreCase)) Entries.Enqueue($"0x{code:X} {text}");
             }
         }
 
