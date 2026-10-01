@@ -163,7 +163,10 @@ namespace GamePlatform.Tests.Durability
                     {
                         var locks = await ProbeLocksOverTime(files.Path);
                         var census = DescribeProcesses(process.StartTime);
-                        throw new Xunit.Sdk.XunitException($"Reopen after abrupt termination failed. {diagnostics} files=[{DescribeFiles(files.Path)}] locks=[{locks}] processes=[{census}] {DescribeException(exception)}", exception);
+                        var attributes = DescribeAttributes(files.Path);
+                        var copies = await CopyOpenDiagnostics(files.Path);
+                        var raw = ProbeRawConnection(files.Path);
+                        throw new Xunit.Sdk.XunitException($"Reopen after abrupt termination failed. {diagnostics} files=[{DescribeFiles(files.Path)}] attributes=[{attributes}] locks=[{locks}] processes=[{census}] {copies} raw=[{raw}] {DescribeException(exception)}", exception);
                     }
 
                     var counts = await Inspect(recovered);
@@ -424,6 +427,98 @@ namespace GamePlatform.Tests.Durability
                 }
             }
             return string.Join(", ", entries);
+        }
+
+        private static string DescribeAttributes(string databasePath)
+        {
+            var results = new List<string>();
+            foreach (var path in new[] { databasePath, databasePath + "-wal", databasePath + "-shm" })
+            {
+                var name = System.IO.Path.GetFileName(path);
+                try
+                {
+                    results.Add($"{name}: {File.GetAttributes(path)} readOnly={new FileInfo(path).IsReadOnly}");
+                }
+                catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+                {
+                    results.Add($"{name}: {exception.GetType().Name}");
+                }
+            }
+            return string.Join("; ", results);
+        }
+
+        private async Task<string> CopyOpenDiagnostics(string databasePath)
+        {
+            var withShm = await CopyOpen(databasePath, includeShm: true);
+            var withoutShm = await CopyOpen(databasePath, includeShm: false);
+            return $"copyOpen={withShm} copyOpenNoShm={withoutShm}";
+        }
+
+        private async Task<string> CopyOpen(string databasePath, bool includeShm)
+        {
+            var directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl008", "diag-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Directory.CreateDirectory(directory);
+                var copyPath = System.IO.Path.Combine(directory, "platform.sqlite3");
+                File.Copy(databasePath, copyPath);
+                if (File.Exists(databasePath + "-wal")) File.Copy(databasePath + "-wal", copyPath + "-wal");
+                if (includeShm && File.Exists(databasePath + "-shm")) File.Copy(databasePath + "-shm", copyPath + "-shm");
+                var copy = await SqliteDatabase.OpenAsync(copyPath, Scope, Migrations, CancellationToken.None);
+                var counts = await Inspect(copy);
+                await copy.DisposeAsync(TimeSpan.FromSeconds(5));
+                return $"ok counts={counts}";
+            }
+            catch (Exception exception)
+            {
+                return $"failed {DescribeException(exception)}";
+            }
+            finally
+            {
+                try
+                {
+                    if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
+        private static string ProbeRawConnection(string databasePath)
+        {
+            SQLite.SQLiteConnection? connection = null;
+            try
+            {
+                connection = new SQLite.SQLiteConnection(databasePath, SQLite.SQLiteOpenFlags.ReadWrite | SQLite.SQLiteOpenFlags.FullMutex);
+            }
+            catch (Exception exception)
+            {
+                return "open failed " + DescribeRawFailure(exception, null);
+            }
+            using (connection)
+            {
+                return "journal_mode=" + RawQuery(connection, "PRAGMA journal_mode") + " integrity_check=" + RawQuery(connection, "PRAGMA integrity_check");
+            }
+        }
+
+        private static string RawQuery(SQLite.SQLiteConnection connection, string sql)
+        {
+            try
+            {
+                return connection.ExecuteScalar<string>(sql);
+            }
+            catch (Exception exception)
+            {
+                return "failed " + DescribeRawFailure(exception, connection);
+            }
+        }
+
+        private static string DescribeRawFailure(Exception exception, SQLite.SQLiteConnection? connection)
+        {
+            var result = exception is SQLite.SQLiteException sqlite ? sqlite.Result.ToString() : "n/a";
+            var extended = connection == null ? "unavailable" : "0x" + ((int)SQLite.SQLite3.ExtendedErrCode(connection.Handle)).ToString("X");
+            return $"{exception.GetType().Name} Result={result} Extended={extended}: {exception.Message}";
         }
 
         private static string DescribeFiles(string databasePath)
