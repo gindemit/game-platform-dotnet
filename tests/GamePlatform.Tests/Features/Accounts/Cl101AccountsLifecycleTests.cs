@@ -271,6 +271,47 @@ namespace GamePlatform.Tests.Features.Accounts
         }
 
         [Fact]
+        public async Task OfflineRecoveryResultNeverReopensAnIssuedAccountScope()
+        {
+            var directory = new Directory();
+            var reserved = await directory.ReserveAsync(A, App, Guid.Parse("0199f9a0-3333-7777-8888-999999999999"), new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), CancellationToken.None);
+            await directory.BindIssuedAccountAsync(reserved, new PlatformUserId(Guid.Parse("0199f9a0-2222-7777-8888-999999999999")), "active", CancellationToken.None);
+            var leases = new Leases(); var recovery = new Recovery(AccountAuthLifecycleResult.UnavailableOffline(A));
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), new Remote(), directory, leases, recovery);
+            await service.StartAsync(App, CancellationToken.None);
+
+            Assert.Equal(AccountsReadiness.UnavailableOffline, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, recovery.Calls); Assert.Equal(0, leases.Opened);
+
+            var activeLeases = new Leases();
+            var withActive = Service(new SequenceAuth(Task.FromResult(AccountAuthLifecycleResult.Authenticated(A, new Session())), Task.FromResult(AccountAuthLifecycleResult.RecoveryRequired(A))), new Remote(), new Directory(), activeLeases, new Recovery(AccountAuthLifecycleResult.UnavailableOffline(A)));
+            Assert.Equal(AccountsReadiness.Ready, (await withActive.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await withActive.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(AccountsReadiness.UnavailableOffline, (await withActive.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, activeLeases.Opened); Assert.Equal(0, activeLeases.Stopped); Assert.Equal(0, activeLeases.Retired);
+            Assert.Equal(AccountsReadiness.Unavailable, (await withActive.StopAsync(CancellationToken.None)).Readiness);
+            Assert.Equal(1, activeLeases.Retired);
+        }
+
+        [Fact]
+        public async Task RecoverAsyncIsAdmittedFromUnavailableButNotAfterStop()
+        {
+            var remote = new Remote { FailFirst = true }; var recovery = new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session()));
+            var service = Service(new Auth(A), remote, new Directory(), new Leases(), recovery);
+            Assert.Equal(AccountsReadiness.Unavailable, (await service.StartAsync(App, CancellationToken.None)).Readiness);
+
+            Assert.Equal(AccountsReadiness.Ready, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, recovery.Calls); Assert.Equal(2, remote.Calls);
+
+            var stoppedRecovery = new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session()));
+            var stopped = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), new Remote(), new Directory(), new Leases(), stoppedRecovery);
+            await stopped.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Unavailable, (await stopped.StopAsync(CancellationToken.None)).Readiness);
+            Assert.Equal(AccountsReadiness.Unavailable, (await stopped.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(0, stoppedRecovery.Calls);
+        }
+
+        [Fact]
         public async Task RecoverAsyncIsIgnoredWhenReadyAndRequiresAConfiguredPort()
         {
             var leases = new Leases(); var recovery = new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session()));
