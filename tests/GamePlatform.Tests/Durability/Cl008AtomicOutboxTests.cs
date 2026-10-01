@@ -161,7 +161,9 @@ namespace GamePlatform.Tests.Durability
                     }
                     catch (Exception exception)
                     {
-                        throw new Xunit.Sdk.XunitException($"Reopen after abrupt termination failed. {diagnostics} files=[{DescribeFiles(files.Path)}] {DescribeException(exception)}", exception);
+                        var locks = await ProbeLocksOverTime(files.Path);
+                        var census = DescribeProcesses(process.StartTime);
+                        throw new Xunit.Sdk.XunitException($"Reopen after abrupt termination failed. {diagnostics} files=[{DescribeFiles(files.Path)}] locks=[{locks}] processes=[{census}] {DescribeException(exception)}", exception);
                     }
 
                     var counts = await Inspect(recovered);
@@ -361,6 +363,67 @@ namespace GamePlatform.Tests.Durability
             {
                 return $"killFailed={exception.GetType().Name}";
             }
+        }
+
+        private static async Task<string> ProbeLocksOverTime(string databasePath)
+        {
+            var parts = new List<string> { "t0 " + ProbeLocks(databasePath) };
+            await Task.Delay(250);
+            parts.Add("t250 " + ProbeLocks(databasePath));
+            await Task.Delay(1750);
+            parts.Add("t2000 " + ProbeLocks(databasePath));
+            return string.Join(" | ", parts);
+        }
+
+        private static string ProbeLocks(string databasePath)
+        {
+            var results = new List<string>();
+            foreach (var path in new[] { databasePath, databasePath + "-wal", databasePath + "-shm" })
+            {
+                var name = System.IO.Path.GetFileName(path);
+                if (!File.Exists(path))
+                {
+                    results.Add($"{name}: missing");
+                    continue;
+                }
+                try
+                {
+                    using var stream = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                    results.Add($"{name}: locked=false");
+                }
+                catch (IOException exception)
+                {
+                    results.Add($"{name}: locked=true win32=0x{exception.HResult:X8} {exception.Message}");
+                }
+                catch (UnauthorizedAccessException exception)
+                {
+                    results.Add($"{name}: locked=unknown win32=0x{exception.HResult:X8} {exception.Message}");
+                }
+            }
+            return string.Join("; ", results);
+        }
+
+        private static string DescribeProcesses(DateTime launcherStart)
+        {
+            var entries = new List<string>();
+            foreach (var name in new[] { "testhost", "dotnet", "vstest.console", "datacollector" })
+            {
+                foreach (var candidate in Process.GetProcessesByName(name))
+                {
+                    using (candidate)
+                    {
+                        try
+                        {
+                            if (candidate.StartTime >= launcherStart) entries.Add($"{candidate.ProcessName}:{candidate.Id}@{candidate.StartTime:HH:mm:ss.fff}");
+                        }
+                        catch (Exception exception) when (exception is InvalidOperationException || exception is System.ComponentModel.Win32Exception)
+                        {
+                            entries.Add($"{name}:{candidate.Id}@unavailable");
+                        }
+                    }
+                }
+            }
+            return string.Join(", ", entries);
         }
 
         private static string DescribeFiles(string databasePath)
