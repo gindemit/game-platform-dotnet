@@ -76,6 +76,7 @@ namespace GamePlatform.Features.Accounts
         private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1); private readonly object gate = new object();
         private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private IAccountScopeLease? failedRetirement; private bool scopeRecoveryRequired;
         private bool stopped; private TaskCompletionSource<AccountsLifecycleSnapshot>? stoppedCompletion;
+        private AccountPrincipalDescriptor? recoveryPrincipal; private AppId recoveryApp;
 
         public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemoteFactory provisioningFactory, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null, IAccountsAuthRecovery? recovery = null)
         {
@@ -150,7 +151,8 @@ namespace GamePlatform.Features.Accounts
             if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
             lock (gate) if (stopped) return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
             var request = Begin(AccountsReadiness.Authenticating);
-            return await AuthenticateAndActivateAsync(request, appId, auth.AuthenticateAsync, true, cancellationToken).ConfigureAwait(false);
+            lock (gate) if (generation == request) { recoveryPrincipal = null; recoveryApp = default; }
+            return await AuthenticateAndActivateAsync(request, appId, auth.AuthenticateAsync, true, false, null, null, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -161,16 +163,22 @@ namespace GamePlatform.Features.Accounts
             if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
             if (recovery == null) throw new InvalidOperationException("No account auth recovery is configured.");
             long request;
+            AccountDirectoryEntry? retainedEntry;
+            AccountPrincipalDescriptor? retainedPrincipal;
             lock (gate)
             {
                 if (stopped) return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
                 if (scopeRecoveryRequired || (readiness != AccountsReadiness.RecoveryRequired && readiness != AccountsReadiness.Unavailable)) return new AccountsLifecycleSnapshot(readiness, current, generation);
+                if ((recoveryApp.IsValid && recoveryApp != appId) || current != null && current.AppId != appId)
+                    return new AccountsLifecycleSnapshot(AccountsReadiness.RecoveryRequired, current, generation);
+                retainedEntry = current;
+                retainedPrincipal = recoveryPrincipal;
                 request = Begin(AccountsReadiness.Authenticating);
             }
-            return await AuthenticateAndActivateAsync(request, appId, recovery.RecoverAsync, false, cancellationToken).ConfigureAwait(false);
+            return await AuthenticateAndActivateAsync(request, appId, recovery.RecoverAsync, false, true, retainedEntry, retainedPrincipal, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<AccountsLifecycleSnapshot> AuthenticateAndActivateAsync(long request, AppId appId, Func<CancellationToken, Task<AccountAuthLifecycleResult>> authenticate, bool reopenOffline, CancellationToken cancellationToken)
+        private async Task<AccountsLifecycleSnapshot> AuthenticateAndActivateAsync(long request, AppId appId, Func<CancellationToken, Task<AccountAuthLifecycleResult>> authenticate, bool reopenOffline, bool explicitRecovery, AccountDirectoryEntry? retainedEntry, AccountPrincipalDescriptor? retainedPrincipal, CancellationToken cancellationToken)
         {
             AccountAuthLifecycleResult result;
             try { result = await authenticate(cancellationToken).ConfigureAwait(false); }
@@ -178,9 +186,16 @@ namespace GamePlatform.Features.Accounts
             if (!Current(request)) return Late(request);
             if (cancellationToken.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, null);
             if (result.Kind == AccountAuthLifecycleKind.Cancelled) return Finish(request, AccountsReadiness.Cancelled, null);
-            if (result.Kind == AccountAuthLifecycleKind.RecoveryRequired) return Finish(request, AccountsReadiness.RecoveryRequired, null);
+            if (result.Kind == AccountAuthLifecycleKind.RecoveryRequired)
+            {
+                if (!explicitRecovery) lock (gate) if (generation == request) { recoveryPrincipal = result.Principal; recoveryApp = appId; }
+                return Finish(request, AccountsReadiness.RecoveryRequired, null);
+            }
             if (result.Kind == AccountAuthLifecycleKind.UnavailableOffline) return reopenOffline ? await ReopenOfflineAsync(request, appId, result.Principal, cancellationToken).ConfigureAwait(false) : Finish(request, AccountsReadiness.UnavailableOffline, null);
-            return await ProvisionAndBootstrapAsync(request, appId, result.Principal!, result.Session!, cancellationToken).ConfigureAwait(false);
+            if (explicitRecovery && (retainedPrincipal != null && !retainedPrincipal.Equals(result.Principal) ||
+                retainedEntry != null && (retainedEntry.AppId != appId || !retainedEntry.Principal.Equals(result.Principal))))
+                return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
+            return await ProvisionAndBootstrapAsync(request, appId, result.Principal!, result.Session!, explicitRecovery, retainedEntry, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<AccountsLifecycleSnapshot> ReopenOfflineAsync(long request, AppId appId, AccountPrincipalDescriptor? principal, CancellationToken token)
@@ -211,14 +226,24 @@ namespace GamePlatform.Features.Accounts
             finally { activation.Release(); }
         }
 
-        private async Task<AccountsLifecycleSnapshot> ProvisionAndBootstrapAsync(long request, AppId appId, AccountPrincipalDescriptor principal, IAuthSession session, CancellationToken token)
+        private async Task<AccountsLifecycleSnapshot> ProvisionAndBootstrapAsync(long request, AppId appId, AccountPrincipalDescriptor principal, IAuthSession session, bool explicitRecovery, AccountDirectoryEntry? retainedEntry, CancellationToken token)
         {
             AccountDirectoryEntry? entry = null;
             try
             {
-                entry = await directory.FindAsync(principal, appId, token).ConfigureAwait(false);
+                try { entry = await directory.FindAsync(principal, appId, token).ConfigureAwait(false); }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+                catch when (explicitRecovery)
+                {
+                    if (!Current(request)) return Late(request);
+                    return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
+                }
                 if (!Current(request)) return Late(request);
                 if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                if (explicitRecovery && (entry == null || !entry.Principal.Equals(principal) || entry.AppId != appId ||
+                    retainedEntry != null && (entry.InstallationId != retainedEntry.InstallationId || entry.StreamId != retainedEntry.StreamId ||
+                        retainedEntry.HasIssuedAccount && entry.AccountId != retainedEntry.AccountId)))
+                    return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
                 if (entry == null)
                 {
                     var installation = ids.NewId(); var stream = new ClientStreamId(ids.NewId());
@@ -246,8 +271,18 @@ namespace GamePlatform.Features.Accounts
                 var value = provisioned.Value!;
                 if (value.AppId != appId || value.StreamId != entry.StreamId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
                 if (entry.HasIssuedAccount && entry.AccountId != value.AccountId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-                entry = await directory.BindIssuedAccountAsync(entry, value.AccountId, value.MembershipStatus, token).ConfigureAwait(false);
+                var reservation = entry;
+                try { entry = await directory.BindIssuedAccountAsync(reservation, value.AccountId, value.MembershipStatus, token).ConfigureAwait(false); }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+                catch when (explicitRecovery)
+                {
+                    if (!Current(request)) return Late(request);
+                    return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry ?? reservation);
+                }
                 if (!Current(request)) return Late(request);
+                if (explicitRecovery && (entry == null || !entry.Principal.Equals(principal) || entry.AppId != appId ||
+                    entry.InstallationId != reservation.InstallationId || entry.StreamId != reservation.StreamId || entry.AccountId != value.AccountId))
+                    return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
                 return await ActivateAuthenticatedAsync(request, entry, session, token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested)

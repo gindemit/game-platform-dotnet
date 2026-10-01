@@ -240,6 +240,7 @@ namespace GamePlatform.Tests.Features.Accounts
         public async Task RecoverAsyncReachesReadyOnlyThroughProvisionAndCompleteBootstrap(AccountBootstrapResult bootstrap, AccountsReadiness expected)
         {
             var remote = new Remote(); var directory = new Directory(); var leases = new Leases { Bootstrap = bootstrap };
+            var retained = await directory.ReserveAsync(A, App, Guid.Parse("0199f9a0-3333-7777-8888-999999999999"), new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), CancellationToken.None);
             var recovery = new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session()));
             var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, leases, recovery);
             var started = await service.StartAsync(App, CancellationToken.None);
@@ -249,8 +250,130 @@ namespace GamePlatform.Tests.Features.Accounts
 
             Assert.Equal(expected, recovered.Readiness); Assert.Equal(started.Generation + 1, recovered.Generation);
             Assert.Equal(1, recovery.Calls); Assert.Equal(1, remote.Calls); Assert.Equal(1, leases.Opened);
+            Assert.Equal(1, directory.ReserveCalls);
+            Assert.Equal(retained.InstallationId, recovered.Entry!.InstallationId);
+            Assert.Equal(retained.StreamId, recovered.Entry.StreamId);
             Assert.True((await directory.FindAsync(A, App, CancellationToken.None))!.HasIssuedAccount);
             Assert.Equal(expected, service.Snapshot.Readiness);
+        }
+
+        [Fact]
+        public async Task MissingRecoveryEntryDoesNotReserveOrProvisionAndCanRetryExplicitly()
+        {
+            var directory = new Directory(); var remote = new Remote(); var leases = new Leases();
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, leases,
+                new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session())));
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(0, directory.ReserveCalls); Assert.Equal(0, remote.Calls); Assert.Equal(0, leases.Opened);
+            Assert.Null(await directory.FindAsync(A, App, CancellationToken.None));
+            await directory.ReserveAsync(A, App, Guid.Parse("0199f9a0-3333-7777-8888-999999999999"), new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Ready, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, directory.ReserveCalls); Assert.Equal(1, remote.Calls); Assert.Equal(1, leases.Opened);
+        }
+
+        [Fact]
+        public async Task IncompatibleRecoveryDirectoryResponseDoesNotProvision()
+        {
+            var directory = new Directory(); var remote = new Remote(); var leases = new Leases();
+            directory.FindOverride = (principal, app) => new AccountDirectoryEntry(B, app,
+                Guid.Parse("0199f9a0-3333-7777-8888-999999999999"),
+                new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), null, null);
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, leases,
+                new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session())));
+            await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(0, directory.ReserveCalls); Assert.Equal(0, remote.Calls); Assert.Equal(0, leases.Opened);
+        }
+
+        [Fact]
+        public async Task RecoveryRejectsDifferentAuthenticatedSubjectBeforeDirectoryAccess()
+        {
+            var directory = new Directory(); var remote = new Remote();
+            await directory.ReserveAsync(B, App, Guid.Parse("0199f9a0-3333-7777-8888-999999999999"), new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), CancellationToken.None);
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, new Leases(),
+                new Recovery(AccountAuthLifecycleResult.Authenticated(B, new Session())));
+            await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, directory.ReserveCalls); Assert.Equal(0, remote.Calls);
+        }
+
+        [Fact]
+        public async Task RecoveryCannotSwitchToAnotherAppWithItsOwnMatchingDirectoryEntry()
+        {
+            var otherApp = new AppId(Guid.Parse("0199f9a1-1111-7777-8888-999999999999"));
+            var directory = new Directory(); var remote = new Remote(); var leases = new Leases();
+            await directory.ReserveAsync(B, otherApp, Guid.Parse("0199f9a0-3333-7777-8888-999999999999"),
+                new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), CancellationToken.None);
+            var recovery = new Recovery(AccountAuthLifecycleResult.Authenticated(B, new Session()));
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, leases,
+                recovery);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.StartAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(otherApp, CancellationToken.None)).Readiness);
+            Assert.Equal(0, recovery.Calls); Assert.Equal(0, remote.Calls); Assert.Equal(0, leases.Opened);
+        }
+
+        [Fact]
+        public async Task ThrowingDirectoryBindLeavesExplicitRecoveryRetryable()
+        {
+            var directory = new Directory(); var remote = new Remote(); var leases = new Leases();
+            await directory.ReserveAsync(A, App, Guid.Parse("0199f9a0-3333-7777-8888-999999999999"),
+                new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), CancellationToken.None);
+            int binds = 0;
+            directory.BindOverride = (entry, account, membership) =>
+            {
+                if (++binds == 1) throw new IOException("Simulated directory CAS failure");
+                return new AccountDirectoryEntry(entry.Principal, entry.AppId, entry.InstallationId,
+                    entry.StreamId, account, membership);
+            };
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, leases,
+                new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session())));
+            await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, service.Snapshot.Readiness);
+            Assert.Equal(0, leases.Opened);
+            Assert.Equal(AccountsReadiness.Ready, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(2, remote.Calls); Assert.Equal(1, leases.Opened);
+        }
+
+        [Fact]
+        public async Task RecoveryDirectoryReadFailureReturnsRecoveryRequiredWithoutProvision()
+        {
+            var directory = new Directory(); var remote = new Remote();
+            directory.FindOverride = (_, _) => throw new InvalidOperationException("read failed");
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, new Leases(),
+                new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session())));
+            await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(0, directory.ReserveCalls); Assert.Equal(0, remote.Calls);
+        }
+
+        [Fact]
+        public async Task RecoveryRejectsReplacedReservationAfterUnavailableStart()
+        {
+            var directory = new Directory(); var remote = new Remote { FailFirst = true }; var leases = new Leases();
+            var service = Service(new Auth(A), remote, directory, leases,
+                new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session())));
+            var initial = await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.Unavailable, initial.Readiness);
+            directory.FindOverride = (principal, app) => new AccountDirectoryEntry(principal, app,
+                Guid.Parse("0199f9a0-5555-7777-8888-999999999999"), initial.Entry!.StreamId, null, null);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, directory.ReserveCalls); Assert.Equal(1, remote.Calls); Assert.Equal(0, leases.Opened);
+        }
+
+        [Fact]
+        public async Task RecoveryRejectsIncompatibleBindResponseBeforeOpeningScope()
+        {
+            var directory = new Directory(); var remote = new Remote(); var leases = new Leases();
+            await directory.ReserveAsync(A, App, Guid.Parse("0199f9a0-3333-7777-8888-999999999999"), new ClientStreamId(Guid.Parse("0199f9a0-4444-7777-8888-999999999999")), CancellationToken.None);
+            directory.BindOverride = (entry, account, membership) => new AccountDirectoryEntry(entry.Principal, entry.AppId,
+                Guid.Parse("0199f9a0-5555-7777-8888-999999999999"), entry.StreamId, account, membership);
+            var service = Service(new Auth(AccountAuthLifecycleResult.RecoveryRequired(A)), remote, directory, leases,
+                new Recovery(AccountAuthLifecycleResult.Authenticated(A, new Session())));
+            await service.StartAsync(App, CancellationToken.None);
+            Assert.Equal(AccountsReadiness.RecoveryRequired, (await service.RecoverAsync(App, CancellationToken.None)).Readiness);
+            Assert.Equal(1, directory.ReserveCalls); Assert.Equal(1, remote.Calls); Assert.Equal(0, leases.Opened);
         }
 
         [Theory]
@@ -596,7 +719,7 @@ namespace GamePlatform.Tests.Features.Accounts
         private sealed class Session : IAuthSession { public string SessionKey => "test-session"; public Task<AccessTokenSnapshot> GetAsync(CancellationToken token) => Task.FromResult(new AccessTokenSnapshot("opaque", 0)); public Task<AccessTokenSnapshot> RefreshAsync(long generation, CancellationToken token) => GetAsync(token); }
         private sealed class ProvisioningFactory : IProvisioningRemoteFactory { private readonly Func<IAuthSession, IProvisioningRemote> create; public ProvisioningFactory(Func<IAuthSession, IProvisioningRemote> create) { this.create = create; } public int Calls; public IAuthSession? LastSession; public IProvisioningRemote Create(IAuthSession authenticatedSession) { Calls++; LastSession = authenticatedSession; return create(authenticatedSession); } }
         private sealed class Remote : IProvisioningRemote { public int Calls; public bool FailFirst; public Task<RemoteResult<ProvisioningSnapshot>> ProvisionAsync(AppId app, Guid installation, ClientStreamId stream, CancellationToken token) { Calls++; if (FailFirst && Calls == 1) return Task.FromResult(RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.OutcomeUncertain))); return Task.FromResult(RemoteResult<ProvisioningSnapshot>.Success(new ProvisioningSnapshot(new PlatformUserId(Guid.Parse("0199f9a0-2222-7777-8888-999999999999")), app, "active", stream, 1, 1))); } }
-        private sealed class Directory : IAccountDirectoryStore { private readonly Dictionary<string, AccountDirectoryEntry> values = new Dictionary<string, AccountDirectoryEntry>(); private static string Key(AccountPrincipalDescriptor p, AppId a) => p.BackendNamespace + ":" + a + ":" + p.Issuer + ":" + p.Subject; public Task<bool> HasAnyEntryAsync(CancellationToken t) => Task.FromResult(values.Count != 0); public Task<AccountDirectoryEntry?> FindAsync(AccountPrincipalDescriptor p, AppId a, CancellationToken t) => Task.FromResult(values.TryGetValue(Key(p, a), out var value) ? value : null); public Task<AccountDirectoryEntry> ReserveAsync(AccountPrincipalDescriptor p, AppId a, Guid i, ClientStreamId s, CancellationToken t) { var key = Key(p, a); if (!values.TryGetValue(key, out var value)) values[key] = value = new AccountDirectoryEntry(p, a, i, s, null, null); return Task.FromResult(value); } public Task<AccountDirectoryEntry> BindIssuedAccountAsync(AccountDirectoryEntry r, PlatformUserId id, string membership, CancellationToken t) { var value = new AccountDirectoryEntry(r.Principal, r.AppId, r.InstallationId, r.StreamId, id, membership); values[Key(r.Principal, r.AppId)] = value; return Task.FromResult(value); } }
+        private sealed class Directory : IAccountDirectoryStore { private readonly Dictionary<string, AccountDirectoryEntry> values = new Dictionary<string, AccountDirectoryEntry>(); public int ReserveCalls; public Func<AccountPrincipalDescriptor, AppId, AccountDirectoryEntry?>? FindOverride; public Func<AccountDirectoryEntry, PlatformUserId, string, AccountDirectoryEntry>? BindOverride; private static string Key(AccountPrincipalDescriptor p, AppId a) => p.BackendNamespace + ":" + a + ":" + p.Issuer + ":" + p.Subject; public Task<bool> HasAnyEntryAsync(CancellationToken t) => Task.FromResult(values.Count != 0); public Task<AccountDirectoryEntry?> FindAsync(AccountPrincipalDescriptor p, AppId a, CancellationToken t) => Task.FromResult(FindOverride != null ? FindOverride(p, a) : values.TryGetValue(Key(p, a), out var value) ? value : null); public Task<AccountDirectoryEntry> ReserveAsync(AccountPrincipalDescriptor p, AppId a, Guid i, ClientStreamId s, CancellationToken t) { ReserveCalls++; var key = Key(p, a); if (!values.TryGetValue(key, out var value)) values[key] = value = new AccountDirectoryEntry(p, a, i, s, null, null); return Task.FromResult(value); } public Task<AccountDirectoryEntry> BindIssuedAccountAsync(AccountDirectoryEntry r, PlatformUserId id, string membership, CancellationToken t) { var value = BindOverride != null ? BindOverride(r, id, membership) : new AccountDirectoryEntry(r.Principal, r.AppId, r.InstallationId, r.StreamId, id, membership); values[Key(r.Principal, r.AppId)] = value; return Task.FromResult(value); } }
         private sealed class Leases : IAccountScopeLeaseFactory { private readonly List<string> events = new List<string>(); public bool Ready = true; public AccountBootstrapResult Bootstrap = AccountBootstrapResult.Complete; public int DrainFailures; public int Opened; public int Retired; public int Stopped; public IAuthSession? LastAuthenticatedSession; public TaskCompletionSource<bool>? FirstOpenGate; public TaskCompletionSource<bool>? FirstLeaseOpened; public TaskCompletionSource<bool>? FirstDrainGate; public TaskCompletionSource<bool>? FirstDrainStarted; public async Task<IAccountScopeLease> OpenAuthenticatedAsync(AccountDirectoryEntry e, IAuthSession s, long g, CancellationToken t) { LastAuthenticatedSession = s; var lease = new Lease(e, g, Ready, Bootstrap, this); if (lease.Ordinal == 1 && FirstOpenGate != null) { FirstLeaseOpened!.SetResult(true); await FirstOpenGate.Task.ConfigureAwait(false); } return lease; } public Task<IAccountScopeLease> ReopenOfflineAsync(AccountDirectoryEntry e, long g, CancellationToken t) => Task.FromResult<IAccountScopeLease>(new Lease(e, g, Ready, Bootstrap, this)); public int EventIndex(string value) { lock (events) return events.IndexOf(value); } public void OpenedEvent(int ordinal) { lock (events) events.Add("open-" + ordinal); } public void RetiredEvent(int ordinal) { lock (events) events.Add("retire-" + ordinal); } }
         private sealed class Lease : IAccountScopeLease { private readonly bool ready; private readonly AccountBootstrapResult bootstrap; private readonly Leases owner; public Lease(AccountDirectoryEntry e, long g, bool ready, AccountBootstrapResult bootstrap, Leases owner) { Entry = e; Generation = g; this.ready = ready; this.bootstrap = bootstrap; this.owner = owner; Ordinal = Interlocked.Increment(ref owner.Opened); owner.OpenedEvent(Ordinal); } public int Ordinal { get; } public AccountDirectoryEntry Entry { get; } public long Generation { get; } public Task<bool> IsBootstrapReadyAsync(CancellationToken t) => Task.FromResult(ready); public Task<AccountBootstrapResult> BootstrapAsync(CancellationToken t) => Task.FromResult(bootstrap); public Task StopAdmissionsAsync(CancellationToken t) { Interlocked.Increment(ref owner.Stopped); return Task.CompletedTask; } public async Task DrainAndRetireAsync(CancellationToken t) { if (Ordinal == 1 && owner.FirstDrainGate != null) { owner.FirstDrainStarted!.SetResult(true); await owner.FirstDrainGate.Task.ConfigureAwait(false); } if (Interlocked.CompareExchange(ref owner.DrainFailures, 0, 0) > 0) { Interlocked.Decrement(ref owner.DrainFailures); throw new InvalidOperationException("drain failure"); } Interlocked.Increment(ref owner.Retired); owner.RetiredEvent(Ordinal); } }
         private sealed class Clock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1; }
