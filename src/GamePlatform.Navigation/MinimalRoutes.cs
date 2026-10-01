@@ -7,6 +7,12 @@ namespace GamePlatform.Navigation
     {
         internal NavigationRoute(string kind) { Kind = kind; }
         public string Kind { get; }
+
+        internal static string RequireKey(string value, string parameterName)
+        {
+            if (string.IsNullOrWhiteSpace(value) || value.Length > 128) throw new ArgumentOutOfRangeException(parameterName);
+            return value;
+        }
     }
 
     public sealed class HomeRoute : NavigationRoute
@@ -59,12 +65,31 @@ namespace GamePlatform.Navigation
         public CallerReturnContext ReturnContext { get; }
     }
 
+    public sealed class DestinationRoute : NavigationRoute
+    {
+        public DestinationRoute(string destinationKey) : base("destination")
+        {
+            DestinationKey = RequireKey(destinationKey, nameof(destinationKey));
+        }
+        public string DestinationKey { get; }
+    }
+
+    public sealed class DetailRoute : NavigationRoute
+    {
+        public DetailRoute(string detailKey, CallerReturnContext returnContext) : base("detail")
+        {
+            DetailKey = RequireKey(detailKey, nameof(detailKey));
+            ReturnContext = returnContext;
+        }
+        public string DetailKey { get; }
+        public CallerReturnContext ReturnContext { get; }
+    }
+
     public sealed class ModalRoute : NavigationRoute
     {
         public ModalRoute(string modalKey) : base("modal")
         {
-            if (string.IsNullOrWhiteSpace(modalKey) || modalKey.Length > 128) throw new ArgumentOutOfRangeException(nameof(modalKey));
-            ModalKey = modalKey;
+            ModalKey = RequireKey(modalKey, nameof(modalKey));
         }
         public string ModalKey { get; }
     }
