@@ -1,5 +1,11 @@
 # SDK handoff — campaign recovery and package delivery
 
+## 2026-10-01 Unity consumption update
+
+Unity main `1a069e5` pins and import-verifies canonical UPM `e7c03c5`; its reviewed default-off Player shell changes no SDK runtime payload, so no package regeneration was needed. The exact Unity source plus this package passed 585/585 full EditMode and 193 passed, 0 failed, 10 skipped full graphical PlayMode. Six Android/WebLite builds succeeded. Backend [test results](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/evidence/test-results-exact-1a069e5-2026-10-01.json) and [artifact manifest](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/evidence/artifact-manifest-exact-1a069e5-2026-10-01.json) pin the evidence. Configured physical Android/live-service and shell acceptance remain open; ordinary shell activation remains held.
+
+---
+
 2026-10-01. GOAL=CAMPAIGN_LOCAL; NEXT=PLAYER_SHELL_FOUNDATION. The owner approved explicit same-account recovery and pre-release schema changes without backward compatibility. Current cross-repository authority is the backend [next session](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/NEXT-SESSION-2026-10-01.md), [storage/schema contract](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/STORAGE-SCHEMA-2026-10-01.md), [checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md), and [board](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/overnight-queue.json). Historical baseline and prior evidence remain at [f653469](https://github.com/gindemit/game-platform-dotnet/blob/f6534690b6f7b7e70e1a4763748a0d54badbcb39/docs/implementation/CAMPAIGN_UPM_HANDOFF.md).
 
 ## Implemented SDK source
