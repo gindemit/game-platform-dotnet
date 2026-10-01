@@ -13,11 +13,14 @@ using GamePlatform.Storage.Abstractions.Outbox;
 using GamePlatform.Storage.Sqlite.Executor;
 using GamePlatform.Storage.Sqlite.Migrations;
 using GamePlatform.Storage.Sqlite.Outbox;
+using Xunit.Abstractions;
 
 namespace GamePlatform.Tests.Durability
 {
     public sealed class Cl008AtomicOutboxTests
     {
+        private readonly ITestOutputHelper output;
+
         private static readonly AppId AppId = new AppId(Guid.Parse("01890f3e-7a6b-7c8d-9e0f-102030405060"));
         private static readonly PlatformUserId UserId = new PlatformUserId(Guid.Parse("00112233-4455-4677-8899-aabbccddeeff"));
         private static readonly OwnerScope Owner = new OwnerScope(new BackendNamespace("test-backend"), AppId, UserId);
@@ -28,6 +31,11 @@ namespace GamePlatform.Tests.Durability
         {
             new SqliteMigration(8, "test-projection", new[] { "CREATE TABLE test_projection (name TEXT PRIMARY KEY, value INTEGER NOT NULL)" })
         }).ToArray();
+
+        public Cl008AtomicOutboxTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
 
         [Fact]
         public async Task ProjectionSequenceAndImmutableOutboxCommitAndReopenTogether()
@@ -136,10 +144,34 @@ namespace GamePlatform.Tests.Durability
                 Assert.True(File.Exists(signal), "Crash probe did not reach the requested write boundary.");
                 Assert.NotEqual(0, process.ExitCode);
 
-                var recovered = await SqliteDatabase.OpenAsync(files.Path, Scope, Migrations, CancellationToken.None);
-                var counts = await Inspect(recovered);
-                Assert.Equal(phase == "precommit" ? (0, 0, 1L, 0L) : (1, 1, 2L, 1L), counts);
-                Assert.True(await recovered.DisposeAsync(TimeSpan.FromSeconds(5)));
+                var childPid = ReadChildPid(signal);
+                var childPidReused = false;
+                var childWait = Stopwatch.StartNew();
+                while (childPid != null && IsChildAlive(childPid.Value, out childPidReused) && childWait.Elapsed < TimeSpan.FromSeconds(10)) Thread.Sleep(25);
+                var childAliveAtReopen = childPid != null && IsChildAlive(childPid.Value, out childPidReused);
+                var diagnostics = $"phase={phase} launcherPid={process.Id} launcherExit={process.ExitCode} childPid={(childPid?.ToString() ?? "unknown")} childExitWaitMs={childWait.ElapsedMilliseconds} childAliveAtReopen={childAliveAtReopen} childPidReused={childPidReused}";
+                output.WriteLine(diagnostics);
+
+                try
+                {
+                    SqliteDatabase recovered;
+                    try
+                    {
+                        recovered = await SqliteDatabase.OpenAsync(files.Path, Scope, Migrations, CancellationToken.None);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new Xunit.Sdk.XunitException($"Reopen after abrupt termination failed. {diagnostics} files=[{DescribeFiles(files.Path)}] {DescribeException(exception)}", exception);
+                    }
+
+                    var counts = await Inspect(recovered);
+                    Assert.Equal(phase == "precommit" ? (0, 0, 1L, 0L) : (1, 1, 2L, 1L), counts);
+                    Assert.True(await recovered.DisposeAsync(TimeSpan.FromSeconds(5)));
+                }
+                finally
+                {
+                    if (childAliveAtReopen && IsChildAlive(childPid!.Value, out _)) output.WriteLine($"cleanup childPid={childPid} {KillChild(childPid.Value)}");
+                }
             }
         }
 
@@ -155,13 +187,13 @@ namespace GamePlatform.Tests.Durability
                 ? new Action<AdmissionCheckpoint>(observed =>
                 {
                     if (observed != AdmissionCheckpoint.OutboxInserted) return;
-                    File.WriteAllText(signal, "precommit");
+                    File.WriteAllText(signal, $"precommit:{Environment.ProcessId}");
                     Thread.Sleep(Timeout.Infinite);
                 })
                 : null;
             var store = NewStore(database, checkpoint);
             await store.CommitAsync("run-crash", Draft("0199f9a0-aaaa-7777-8888-999999999999", new byte[] { 11 }), InsertProjection("crash"), CancellationToken.None);
-            File.WriteAllText(signal, "postcommit");
+            File.WriteAllText(signal, $"postcommit:{Environment.ProcessId}");
             Thread.Sleep(Timeout.Infinite);
         }
 
@@ -285,6 +317,69 @@ namespace GamePlatform.Tests.Durability
                 session.ExecuteScalar<long>("SELECT next_sequence FROM gp_stream_state WHERE singleton = 1"),
                 session.ExecuteScalar<long>("SELECT local_revision FROM gp_stream_state WHERE singleton = 1"));
         }, CancellationToken.None);
+
+        private static int? ReadChildPid(string signal)
+        {
+            try
+            {
+                var parts = File.ReadAllText(signal).Split(':');
+                return parts.Length == 2 && int.TryParse(parts[1], out var pid) ? pid : null;
+            }
+            catch (IOException)
+            {
+                return null;
+            }
+        }
+
+        private static bool IsChildAlive(int pid, out bool pidReused)
+        {
+            pidReused = false;
+            try
+            {
+                using var child = Process.GetProcessById(pid);
+                if (child.HasExited) return false;
+                var name = child.ProcessName;
+                if (name.Equals("testhost", StringComparison.OrdinalIgnoreCase) || name.Equals("dotnet", StringComparison.OrdinalIgnoreCase)) return true;
+                pidReused = true;
+                return false;
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is System.ComponentModel.Win32Exception)
+            {
+                return false;
+            }
+        }
+
+        private static string KillChild(int pid)
+        {
+            try
+            {
+                using var child = Process.GetProcessById(pid);
+                child.Kill(entireProcessTree: true);
+                return $"killExited={child.WaitForExit(10_000)}";
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException || exception is System.ComponentModel.Win32Exception)
+            {
+                return $"killFailed={exception.GetType().Name}";
+            }
+        }
+
+        private static string DescribeFiles(string databasePath)
+        {
+            var directory = System.IO.Path.GetDirectoryName(databasePath)!;
+            return string.Join(", ", Directory.GetFiles(directory).Select(file => $"{System.IO.Path.GetFileName(file)}={new FileInfo(file).Length}"));
+        }
+
+        private static string DescribeException(Exception exception)
+        {
+            var parts = new List<string>();
+            for (var current = exception; current != null; current = current.InnerException)
+            {
+                var result = current.GetType().GetProperty("Result")?.GetValue(current);
+                var failure = (current as StorageException)?.Failure;
+                parts.Add($"{current.GetType().FullName}: {current.Message}" + (failure != null ? $" failure={failure}" : "") + (result != null ? $" sqliteResult={result}" : ""));
+            }
+            return string.Join(" <- ", parts);
+        }
 
         private static string FindTestProject()
         {
