@@ -1,5 +1,9 @@
 # SDK current status
 
+## 2026-10-04 hosted-dev continuation
+
+SDK main `5d3819d` contains the latest generated Git UPM, produced from source `6915723`; Unity still consumes `cae1a21`. Backend deployment evidence records hosted function source `f317ced`, not a newer SDK runtime. The retained project has migrations 001–018 recorded, but a JWT reaching bootstrap request validation is not a successful provision/bootstrap journey. A separate [retained-dev preflight](../integration/HostedDevSmoke/README.md) now checks the exact project/issuer, locally supplied namespace and run-owned app fixture identity, and a redacted JWT claim set. It makes no hosted request and does not establish hosted SDK acceptance. Exact fixture, cleanup and independently reviewed execution remain prerequisites.
+
 2026-09-28: **P3 complete at the owner-approved local nonproduction scope; broad P4 not released.** Backend [R10 closure](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/p3-review/R10-closure.md) and [qualification](https://github.com/gindemit/game-platform-backend/blob/main/docs/reviews/2026-09-27-p3-review-qualification.md) hold the current acceptance matrix and limits. Historical bounded G3 is unchanged.
 
 ## Current source, package and Unity consumption

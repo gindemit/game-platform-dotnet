@@ -1,6 +1,6 @@
 # Game Platform .NET SDK
 
-**P3 complete at the owner-approved local nonproduction scope; broader P4 and production/public release remain held.** The current canonical Git UPM is `cae1a21`, generated from reviewed source `9fddbe6`. Unity's current main pins this package; the bounded import and Editor test evidence is in the [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md).
+**P3 complete at the owner-approved local nonproduction scope; broader P4 and production/public release remain held.** The latest generated Git UPM is `5d3819d`, from SDK source `6915723`. Unity still consumes `cae1a21`; no new-pin Editor qualification is recorded. The [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md) separates these identities.
 
 This game-neutral C# SDK provides portable account-scope, durable local state, ordered command/outbox, synchronization and bounded progression/receipt machinery, with replaceable HTTP, SQLite and MessagePack adapters. Runtime libraries target `netstandard2.1` with C# 9. Keep core/contracts portable and game rules, Unity scenes and MrSquare types outside the SDK. Some broad feature façades remain unavailable; scoped implemented services do not imply every planned feature is complete.
 
@@ -8,7 +8,7 @@ The [current status](docs/IMPLEMENTATION_STATUS.md) separates SDK source, canoni
 
 ## Current coordinated work
 
-Start at [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md) and the backend [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md). The [SDK handoff](docs/implementation/CAMPAIGN_UPM_HANDOFF.md) records package generation and Unity consumption. The current bounded maintenance work follows the [selected packet](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/CODEX-MAINTAINABILITY-2026-10-03.md).
+Start at [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md) and the backend [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md). The [SDK handoff](docs/implementation/CAMPAIGN_UPM_HANDOFF.md) records package generation and Unity consumption. The current bounded hosted-dev continuation follows the [selected packet](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/CODEX-OVERNIGHT-HOSTED-DEV-2026-10-04.md); the [retained-dev preflight](integration/HostedDevSmoke/README.md) has no hosted-write command.
 
 The existing [implementation plan](docs/implementation/README.md), [runbook](docs/implementation/RUNBOOK.md) and [execution manifest](docs/implementation/execution-manifest.json) retain original task/evidence authority. Do not restart their initial codec/import milestones or mark full original tasks complete from a narrower campaign result.
 
