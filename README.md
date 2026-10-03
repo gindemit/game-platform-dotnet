@@ -1,6 +1,6 @@
 # Game Platform .NET SDK
 
-**P3 complete at the owner-approved local nonproduction scope; broader P4 and production/public release remain held.** Unity consumes the canonical Git UPM package at `e7c03c5`; current source edits require a new package before Unity can consume them.
+**P3 complete at the owner-approved local nonproduction scope; broader P4 and production/public release remain held.** The current canonical Git UPM is `cae1a21`, generated from reviewed source `9fddbe6`. Unity's current main pins this package; the bounded import and Editor test evidence is in the [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md).
 
 This game-neutral C# SDK provides portable account-scope, durable local state, ordered command/outbox, synchronization and bounded progression/receipt machinery, with replaceable HTTP, SQLite and MessagePack adapters. Runtime libraries target `netstandard2.1` with C# 9. Keep core/contracts portable and game rules, Unity scenes and MrSquare types outside the SDK. Some broad feature façades remain unavailable; scoped implemented services do not imply every planned feature is complete.
 
