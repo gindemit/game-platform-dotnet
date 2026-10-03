@@ -16,6 +16,47 @@ namespace GamePlatform.Features.Progression
     /// <summary>Portable pending-completion coordinator. It is deliberately not a game validator, checkpoint serializer, or value allocator.</summary>
     public sealed class ProgressionService : IDisposable
     {
+        private readonly struct DurableProgressionState
+        {
+            public ProgressionConfirmedProjection? Confirmed
+            {
+                get;
+            }
+            public IReadOnlyList<PendingProgressionCompletion> Pending
+            {
+                get;
+            }
+            public long PendingRevision
+            {
+                get;
+            }
+            public IReadOnlyList<ProgressionConfirmationEvidence> Confirmations
+            {
+                get;
+            }
+            public long? LatestEvidenceRevision
+            {
+                get;
+            }
+            public IReadOnlyCollection<OperationId> ReceiptConfirmed
+            {
+                get;
+            }
+
+            public DurableProgressionState(ProgressionConfirmedProjection? confirmed,
+                IReadOnlyList<PendingProgressionCompletion> pending, long pendingRevision,
+                IReadOnlyList<ProgressionConfirmationEvidence> confirmations, long? latestEvidenceRevision,
+                IReadOnlyCollection<OperationId> receiptConfirmed)
+            {
+                Confirmed = confirmed;
+                Pending = pending;
+                PendingRevision = pendingRevision;
+                Confirmations = confirmations;
+                LatestEvidenceRevision = latestEvidenceRevision;
+                ReceiptConfirmed = receiptConfirmed;
+            }
+        }
+
         private const string Namespace = "progression";
         private const string ConfirmedKey = "confirmed";
         private const string PendingKey = "pending";
@@ -310,7 +351,7 @@ namespace GamePlatform.Features.Progression
                 freshness, value, durable.Confirmed!.ConfirmedAtMilliseconds, null);
         }
 
-        private async Task<(ProgressionConfirmedProjection? Confirmed, IReadOnlyList<PendingProgressionCompletion> Pending, long PendingRevision, IReadOnlyList<ProgressionConfirmationEvidence> Confirmations, long? LatestEvidenceRevision, IReadOnlyCollection<OperationId> ReceiptConfirmed)> ReadDurableAsync(ScopedOwnerContext exactOwner, CancellationToken cancellationToken)
+        private async Task<DurableProgressionState> ReadDurableAsync(ScopedOwnerContext exactOwner, CancellationToken cancellationToken)
         {
             if (confirmations is ICompactingProgressionConfirmationEvidenceStore normalized)
                 await normalized.EnsureNormalizedAsync(exactOwner, cancellationToken).ConfigureAwait(false);
@@ -329,9 +370,7 @@ namespace GamePlatform.Features.Progression
             else
             {
                 decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
-                if (decodedPending == null || decodedPending.Any(value => value == null) || decodedPending.Any(value => value.LocalRevision > pending.Revision) ||
-                    decodedPending.GroupBy(value => value.OperationId).Any(group => group.Count() != 1) ||
-                    decodedPending.GroupBy(value => value.BusinessSource, StringComparer.Ordinal).Any(group => group.Count() != 1))
+                if (decodedPending == null || HasInvalidPendingCompletion(decodedPending, pending.Revision))
                     throw new ProgressionConflictException("The progression codec returned invalid pending completions.");
             }
             ProgressionConfirmationEvidenceHead? head = confirmations is ICompactingProgressionConfirmationEvidenceStore compacting
@@ -360,7 +399,8 @@ namespace GamePlatform.Features.Progression
                     throw new ProgressionConflictException("Receipt confirmation does not match one retained accepted completion.");
                 receiptConfirmed.Add(item.OperationId);
             }
-            return (decodedConfirmed, raw, pending?.Revision ?? 0, evidence, latestEvidenceRevision, receiptConfirmed);
+            return new DurableProgressionState(decodedConfirmed, raw, pending?.Revision ?? 0, evidence,
+                latestEvidenceRevision, receiptConfirmed);
         }
 
         private Task WritePendingAsync(ScopedOwnerContext exactOwner, IReadOnlyList<PendingProgressionCompletion> pending, long currentRevision,
@@ -397,13 +437,48 @@ namespace GamePlatform.Features.Progression
             if (value == null || value.Length == 0 || value.Length > 262_144)
                 throw new InvalidOperationException("The " + label + " codec payload is invalid.");
         }
-        private static bool Equivalent(PendingProgressionCompletion existing, ProgressionCompletionRequest request) => existing.StreamId == request.StreamId && string.Equals(existing.BusinessSource, request.BusinessSource, StringComparison.Ordinal) && existing.ContentVersion == request.ContentVersion && existing.OutcomeAuthority == request.OutcomeAuthority && string.Equals(existing.ValidationScheme, request.ValidationScheme, StringComparison.Ordinal) && Equivalent(existing.Extension, request.Extension) && Equivalent(existing.Outcome, request.Outcome);
+        private static bool Equivalent(PendingProgressionCompletion existing, ProgressionCompletionRequest request) =>
+            existing.StreamId == request.StreamId &&
+            string.Equals(existing.BusinessSource, request.BusinessSource, StringComparison.Ordinal) &&
+            existing.ContentVersion == request.ContentVersion &&
+            existing.OutcomeAuthority == request.OutcomeAuthority &&
+            string.Equals(existing.ValidationScheme, request.ValidationScheme, StringComparison.Ordinal) &&
+            Equivalent(existing.Extension, request.Extension) &&
+            Equivalent(existing.Outcome, request.Outcome);
+
         private static bool Equivalent(ProgressionCommandExtension? left, ProgressionCommandExtension? right) =>
             ReferenceEquals(left, right) || (left != null && right != null &&
-            string.Equals(left.Schema, right.Schema, StringComparison.Ordinal) && left.Version == right.Version &&
-            left.Value.Count == right.Value.Count && left.Value.All(item => right.Value.TryGetValue(item.Key, out var value) && string.Equals(item.Value, value, StringComparison.Ordinal)));
-        private static bool Equivalent(GameplayOutcome left, GameplayOutcome right) => left.Session.Equals(right.Session) && left.Mode.Equals(right.Mode) && left.Content.Equals(right.Content) && left.Difficulty.Equals(right.Difficulty) && left.Success == right.Success && left.Score == right.Score && left.DurationTicks == right.DurationTicks && left.TicksPerSecond == right.TicksPerSecond && string.Equals(left.ValidationReference, right.ValidationReference, StringComparison.Ordinal) && left.Metrics.Count == right.Metrics.Count && left.Metrics.All(value => right.Metrics.TryGetValue(value.Key, out var matched) && matched == value.Value);
-        private static bool Equivalent(ProgressionConfirmedProjection left, ProgressionConfirmedProjection right) => left.Revision == right.Revision && left.ConfirmedAtMilliseconds == right.ConfirmedAtMilliseconds && left.States.Count == right.States.Count && left.States.All(value => right.States.Any(other => other.StateKey == value.StateKey && other.Value == value.Value));
+                string.Equals(left.Schema, right.Schema, StringComparison.Ordinal) &&
+                left.Version == right.Version &&
+                left.Value.Count == right.Value.Count &&
+                left.Value.All(item => right.Value.TryGetValue(item.Key, out var value) &&
+                    string.Equals(item.Value, value, StringComparison.Ordinal)));
+
+        private static bool Equivalent(GameplayOutcome left, GameplayOutcome right) =>
+            left.Session.Equals(right.Session) &&
+            left.Mode.Equals(right.Mode) &&
+            left.Content.Equals(right.Content) &&
+            left.Difficulty.Equals(right.Difficulty) &&
+            left.Success == right.Success &&
+            left.Score == right.Score &&
+            left.DurationTicks == right.DurationTicks &&
+            left.TicksPerSecond == right.TicksPerSecond &&
+            string.Equals(left.ValidationReference, right.ValidationReference, StringComparison.Ordinal) &&
+            left.Metrics.Count == right.Metrics.Count &&
+            left.Metrics.All(value => right.Metrics.TryGetValue(value.Key, out var matched) && matched == value.Value);
+
+        private static bool Equivalent(ProgressionConfirmedProjection left, ProgressionConfirmedProjection right) =>
+            left.Revision == right.Revision &&
+            left.ConfirmedAtMilliseconds == right.ConfirmedAtMilliseconds &&
+            left.States.Count == right.States.Count &&
+            left.States.All(value => right.States.Any(other =>
+                other.StateKey == value.StateKey && other.Value == value.Value));
+
+        private static bool HasInvalidPendingCompletion(IReadOnlyList<PendingProgressionCompletion> pending, long revision) =>
+            pending.Any(value => value == null) ||
+            pending.Any(value => value.LocalRevision > revision) ||
+            pending.GroupBy(value => value.OperationId).Any(group => group.Count() != 1) ||
+            pending.GroupBy(value => value.BusinessSource, StringComparer.Ordinal).Any(group => group.Count() != 1);
         private static bool SameOperationSet(IReadOnlyList<OperationId> left, IReadOnlyList<OperationId> right) => left.Count == right.Count && left.All(value => right.Contains(value));
         private static IReadOnlyList<PendingProgressionCompletion> SuppressConfirmed(IReadOnlyList<PendingProgressionCompletion> pending, IReadOnlyList<ProgressionConfirmationEvidence> evidence, IReadOnlyCollection<OperationId> receipts)
         {
