@@ -1,10 +1,34 @@
 # Game Platform .NET SDK
 
-**P3 complete at the owner-approved local nonproduction scope; broader P4 and production/public release remain held.** The latest generated Git UPM is `5d3819d`, from SDK source `6915723`. Unity still consumes `cae1a21`; no new-pin Editor qualification is recorded. The [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md) separates these identities.
+Game Platform is a game-neutral C# client SDK for account-scoped state, durable offline commands and ordered synchronization with a backend. It is designed for Unity and other `netstandard2.1` hosts while keeping game rules, scenes, grids, levels and presentation outside the portable runtime.
 
-This game-neutral C# SDK provides portable account-scope, durable local state, ordered command/outbox, synchronization and bounded progression/receipt machinery, with replaceable HTTP, SQLite and MessagePack adapters. Runtime libraries target `netstandard2.1` with C# 9. Keep core/contracts portable and game rules, Unity scenes and MrSquare types outside the SDK. Some broad feature façades remain unavailable; scoped implemented services do not imply every planned feature is complete.
+The SDK provides:
 
-The [current status](docs/IMPLEMENTATION_STATUS.md) separates SDK source, canonical package and Unity consumption. The backend [codebase reading guide](https://github.com/gindemit/game-platform-backend/blob/main/docs/engineering/CODEBASE-READING-GUIDE.md) follows a campaign completion across all three repositories.
+- explicit account provisioning, bootstrap and recovery boundaries;
+- transactional SQLite projections, sequence allocation and immutable outbox storage;
+- ordered push/pull synchronization with retry, receipt and reset handling;
+- bounded MessagePack and HTTP adapters with replaceable host transport;
+- portable progression, wallet, inventory, entitlement and reward-confirmation building blocks;
+- deterministic Git UPM packaging with reviewed managed/native dependencies.
+
+Runtime libraries target `netstandard2.1` with C# 9 and use constructor injection rather than a global service locator. Domain, wire and SQL types remain separate, and unsupported feature breadth fails closed.
+
+## Project status
+
+**P3 is complete at the approved local nonproduction scope; broader P4, production deployment and general package publication/distribution remain held.** This repository is public for source visibility and review, but it does not currently publish a stable NuGet or registry package.
+
+The latest generated Git UPM is `5d3819d`, from SDK source `6915723`. Unity still consumes the independently qualified package `cae1a21`; no new-pin Editor qualification is recorded. The [current status](docs/IMPLEMENTATION_STATUS.md) and backend [campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md) separate SDK source, generated package and actual consumer evidence.
+
+Some feature services are implemented only at a bounded portable scope, while Quests, Achievements, Store, Purchases, Leaderboards, Teams, RemoteConfig and Inbox remain explicit stubs. See the [feature catalog](docs/FEATURES.md), [architecture](docs/ARCHITECTURE.md) and backend [codebase reading guide](https://github.com/gindemit/game-platform-backend/blob/main/docs/engineering/CODEBASE-READING-GUIDE.md).
+
+## Repository layout
+
+- `src/` — portable runtime assemblies and adapters.
+- `tests/` — unit, integration and peer-harness coverage.
+- `contracts/` — hash-pinned mirror of reviewed backend protocol artifacts.
+- `integration/` — host and Unity integration policy/probes.
+- `upm/com.gindemit.game-platform/` — generated Git UPM payload; do not edit it by hand.
+- `docs/` — architecture, current status, decisions and retained implementation evidence.
 
 ## Current coordinated work
 
@@ -12,7 +36,7 @@ Start at [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md) and the backend [current
 
 The [implementation reference](docs/implementation/README.md) and [execution manifest](docs/implementation/execution-manifest.json) retain original task/evidence authority. Do not restart their initial codec/import milestones or mark full original tasks complete from a narrower campaign result.
 
-## Prerequisites and commands
+## Development
 
 .NET SDK 9.0.203 is pinned by global.json; Python 3.10+ is required. Inspect repository pins before updating tooling.
 
@@ -29,3 +53,7 @@ python3 -m unittest discover -s docs/implementation -p 'test_*.py'
 ```
 
 Read [AGENTS.md](AGENTS.md), [documentation index](docs/README.md) and scoped instructions only for the changed boundary. Preserve exact source/artifact identity, account isolation, new SQLite/outbox and accepted wire contracts. Repository pushes for the requested Git package do not authorize registry publishing, deployment, distribution or production data changes.
+
+## License
+
+Copyright © 2026 gindemit. The source is publicly visible, but no open-source license or permission to copy, distribute, sublicense or publish is granted unless stated in a separate written agreement. See [LICENSE-NOTICE.md](LICENSE-NOTICE.md) and the bundled third-party notices.
