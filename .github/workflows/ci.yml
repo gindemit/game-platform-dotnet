@@ -44,3 +44,50 @@ jobs:
             artifacts/
             !artifacts/test-results/**
             !artifacts/diagnostics/**
+
+  release-upm:
+    needs: validate-build-test-package
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout validated source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Build and verify package payload
+        env:
+          RELEASE_TAG: 0.1.0-dev.${{ github.run_number }}
+        run: |
+          python scripts/package-sdk.py
+          python scripts/build-upm-package.py --package-version "${RELEASE_TAG}"
+          python scripts/build-upm-package.py --verify --package-version "${RELEASE_TAG}"
+      - name: Commit package and create release tag
+        env:
+          RELEASE_TAG: 0.1.0-dev.${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          if existing_commit="$(git rev-parse --verify --quiet "refs/tags/${RELEASE_TAG}^{}")"; then
+            test "$(git rev-parse "${existing_commit}^")" = "${GITHUB_SHA}"
+            git diff --exit-code "${existing_commit}" -- upm/com.gindemit.game-platform
+            echo "${RELEASE_TAG} already contains this source commit and package payload."
+            exit 0
+          fi
+          git add -- upm/com.gindemit.game-platform
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: generate ${RELEASE_TAG}"
+          git tag -a "${RELEASE_TAG}" -m "Game Platform SDK ${RELEASE_TAG}"
+          git push origin "refs/tags/${RELEASE_TAG}"

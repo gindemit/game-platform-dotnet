@@ -82,6 +82,22 @@ class UpmPackageTests(unittest.TestCase):
     def test_valid_complete_minimal_package_verifies(self):
         self.assertEqual(UPM.verify_package(self.root)['sourceCommit'], 'a' * 40)
 
+    def test_release_version_must_match_package_and_content_manifest(self):
+        version = '0.1.0-dev.123'
+        package_path = self.root / 'package.json'
+        package = json.loads(package_path.read_text())
+        package['version'] = version
+        package_path.write_text(json.dumps(package))
+        manifest_path = self.root / 'package-content-manifest.json'
+        manifest = json.loads(manifest_path.read_text())
+        manifest['version'] = version
+        manifest['files'] = UPM.inventory(self.root)
+        manifest_path.write_text(json.dumps(manifest))
+
+        self.assertEqual(UPM.verify_package(self.root, version)['version'], version)
+        with self.assertRaisesRegex(ValueError, 'package_identity_mismatch'):
+            UPM.verify_package(self.root)
+
     def test_malformed_package_json_is_rejected(self):
         (self.root / 'package.json').write_text('{')
         self.assert_failure('malformed_package_json')

@@ -11,6 +11,16 @@ The SDK provides:
 - portable progression, wallet, inventory, entitlement and reward-confirmation building blocks;
 - deterministic Git UPM packaging with reviewed managed/native dependencies.
 
+Successful pushes to `main` generate and verify the package under
+`upm/com.gindemit.game-platform`, create a package commit descended from the
+validated source commit, and tag it as `0.1.0-dev.<workflow-run-number>`.
+The generated commit is reachable through the tag without adding build-only
+commits to `main`. Unity can install a generated version with:
+
+```text
+https://github.com/gindemit/game-platform-dotnet.git?path=/upm/com.gindemit.game-platform#0.1.0-dev.<workflow-run-number>
+```
+
 Runtime libraries target `netstandard2.1` with C# 9 and use constructor injection rather than a global service locator. Domain, wire and SQL types remain separate, and unsupported feature breadth fails closed.
 
 ## Project status

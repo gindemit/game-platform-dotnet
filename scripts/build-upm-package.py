@@ -43,20 +43,22 @@ def load_sdk_packager():
     return module
 
 
-def verify_package(root: Path) -> dict:
+def verify_package(root: Path, expected_version: str = PACKAGE_VERSION) -> dict:
     if not root.is_dir() or root.is_symlink():
         fail('package_directory_missing_or_unsafe')
     try:
         package = json.loads((root / 'package.json').read_text(encoding='utf-8'))
     except (OSError, json.JSONDecodeError):
         fail('malformed_package_json')
-    if package.get('name') != PACKAGE_NAME or package.get('version') != PACKAGE_VERSION:
+    if package.get('name') != PACKAGE_NAME or package.get('version') != expected_version:
         fail('package_identity_mismatch')
     try:
         manifest = json.loads((root / 'package-content-manifest.json').read_text(encoding='utf-8'))
     except (OSError, json.JSONDecodeError):
         fail('malformed_content_manifest')
     expected = manifest.get('files')
+    if manifest.get('name') != PACKAGE_NAME or manifest.get('version') != expected_version:
+        fail('content_manifest_identity_mismatch')
     if not isinstance(expected, list) or len({item.get('path') for item in expected if isinstance(item, dict)}) != len(expected):
         fail('malformed_content_inventory')
 
@@ -223,7 +225,7 @@ def verify_stable_asset_metadata(root: Path) -> None:
             fail('package_asset_meta_invalid: ' + relative)
 
 
-def export_package(bundle: Path, output: Path) -> None:
+def export_package(bundle: Path, output: Path, package_version: str = PACKAGE_VERSION) -> None:
     module = load_sdk_packager()
     source_manifest = module.verify_bundle(bundle)
     if source_manifest['version'] != PACKAGE_VERSION:
@@ -242,7 +244,7 @@ def export_package(bundle: Path, output: Path) -> None:
         (stage / 'Documentation~').mkdir()
         (stage / 'LICENSES').mkdir()
         package_json = {
-            'name': PACKAGE_NAME, 'version': PACKAGE_VERSION,
+            'name': PACKAGE_NAME, 'version': package_version,
             'displayName': 'Game Platform SDK',
             'description': 'Portable game platform contracts, storage, synchronization and transport runtime.',
             'unity': '2021.3',
@@ -253,8 +255,9 @@ def export_package(bundle: Path, output: Path) -> None:
         (stage / 'README.md').write_text(
             '# Game Platform SDK for Unity\n\n'
             'This Git UPM package contains the deterministic, verified managed and native payload '
-            'built from the portable .NET SDK source. Install this package by a full Git commit '
-            'and package subpath. The package does not contain game rules, scenes, grids, levels, '
+            'built from the portable .NET SDK source. Install this package by a generated release '
+            'tag (or a full Git commit) and package subpath. The package does not contain game '
+            'rules, scenes, grids, levels, '
             'or campaign policy. See `Documentation~/sdk/README.md` and the lifecycle manifest '
             'for supported ownership and update behavior. DLL importer metadata preserves the '
             'Core and Features.Contracts consumer GUIDs, requires asmdef references, and excludes '
@@ -298,7 +301,7 @@ def export_package(bundle: Path, output: Path) -> None:
         package_manifest_path.write_text('{}\n', encoding='utf-8', newline='\n')
         write_stable_asset_metadata(stage)
         manifest = {
-            'schemaVersion': 1, 'name': PACKAGE_NAME, 'version': PACKAGE_VERSION,
+            'schemaVersion': 1, 'name': PACKAGE_NAME, 'version': package_version,
             'sourceCommit': source_manifest['sourceCommit'],
             'sourceBundleManifestSha256': sha256(bundle / 'dependency-manifest.json'),
             'preservedManagedGuids': module.managed_guid_overrides(),
@@ -308,7 +311,7 @@ def export_package(bundle: Path, output: Path) -> None:
         }
         package_manifest_path.write_text(
             json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
-        verify_package(stage)
+        verify_package(stage, package_version)
         if previous.exists():
             shutil.rmtree(previous)
         if output.exists():
@@ -331,12 +334,13 @@ def main() -> None:
     parser.add_argument('--bundle', type=Path, default=ROOT / 'artifacts/sdk')
     parser.add_argument('--verify', action='store_true')
     parser.add_argument('--output', type=Path, default=OUTPUT)
+    parser.add_argument('--package-version', default=PACKAGE_VERSION)
     args = parser.parse_args()
     if args.verify:
-        verify_package(args.output.resolve())
+        verify_package(args.output.resolve(), args.package_version)
         print('UPM package identity, complete inventory, hashes and native payload verified.')
     else:
-        export_package(args.bundle.resolve(), args.output)
+        export_package(args.bundle.resolve(), args.output, args.package_version)
         print(f'Generated complete Git UPM package at {args.output}; nothing published.')
 
 
