@@ -2,7 +2,7 @@
 
 Planning baseline: `f446101574e11c9885583ea184af583303b74ba1` (SDK), `a3dc3f00aea334cdf538cc34d49c2e8a92b8cbd9` (consumer), `66e40558045cbe5c314119022a55ced46ad9d04e` (backend). All cards are **planned**, not implemented by this document.
 
-Read this file with [the manifest](execution-manifest.json), [audit](AUDIT.md), and [execution runbook](RUNBOOK.md). Each card inherits the delivery contract below; its individual paragraph supplies the task-specific additions. Minimal reading means root and applicable nested AGENTS.md, the named source sections, the card, and frozen interface files—not all three repositories. `DN`, `SQ`, `PEER`, `UE`, `UP`, and `UA` expand to exact commands and environment prerequisites in RUNBOOK.md. New test/harness names below are proposed, never claims that they already exist.
+This is the retained original task ledger, not current execution routing. Read it with [the manifest](execution-manifest.json), [audit](AUDIT.md), and the [historical execution runbook](../archive/2026-09-21/docs/implementation/RUNBOOK.md.snapshot) only when an original acceptance definition is needed. Each card inherits the delivery contract below; its individual paragraph supplies the task-specific additions. `DN`, `SQ`, `PEER`, `UE`, `UP`, and `UA` retain their definitions in that dated runbook. New test/harness names below were proposals, not claims that they existed when this plan was written.
 
 ## Common card delivery contract
 

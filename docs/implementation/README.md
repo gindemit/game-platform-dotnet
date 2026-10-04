@@ -1,6 +1,6 @@
 # Implementation reference
 
-P3 is active; the SDK is implemented in bounded components and imported in Unity. The old M0/no-import baseline is historical. Use [the current entry](../../CODEX_SINGLE_AGENT.md) and [SDK status](../IMPLEMENTATION_STATUS.md), not the archived runbook.
+P3 is complete at its approved local nonproduction scope; broad P4 remains held. The SDK is implemented in bounded components and imported in Unity. The old M0/no-import baseline is historical. Use [the shared entry](../../AGENT_ORCHESTRATOR.md) and [SDK status](../IMPLEMENTATION_STATUS.md); the backend campaign packet owns current execution routing.
 
 `execution-manifest.json` remains the original task/dependency/feature ledger. Read only the selected task and relevant feature row. `FOUNDATION_TASKS.md`, `FEATURE_TASKS.md`, `interfaces/` and `CONTRACT_HANDOFF.json` retain actual requirements and acceptance IDs; do not read all of them on every task. The bounded backend queue is not a replacement feature ledger.
 

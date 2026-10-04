@@ -24,7 +24,8 @@ excludes WebGL, and requires asmdef references. The GUID overrides in
 `managed-guid-overrides.json` preserve the Core and Features.Contracts
 serialized references recorded by the Unity consumer. It does not duplicate or
 compile the SDK source. The UPM payload is
-generated and committed with its input code; do not edit generated files by hand.
+generated from an exact clean source revision and committed as a distinct package
+delivery commit; do not edit generated files by hand.
 Every Unity-visible package file and folder receives a stable deterministic
 `.meta` sidecar. `Documentation~` remains Unity-ignored and is excluded from
 that importer metadata set.

@@ -9,7 +9,7 @@
 
 ## Executable decomposition and early consumer gates
 
-Use [implementation/README.md](implementation/README.md), the [task/ownership DAG](implementation/execution-manifest.json), and [RUNBOOK.md](implementation/RUNBOOK.md). M0–M5 above retain their meanings; task cards map back to these milestones and the existing MrSquare A–E phases.
+Use [implementation/README.md](implementation/README.md) and the [task/ownership DAG](implementation/execution-manifest.json). M0–M5 above retain their meanings; task cards map back to these milestones and the existing MrSquare A–E phases. Current execution routing lives in [AGENT_ORCHESTRATOR.md](../AGENT_ORCHESTRATOR.md) and the selected backend campaign packet.
 
 Do not postpone all packaging/adoption until M5. CL-013/INT-002 prove an early canonical managed SDK import; CL-015/INT-009 qualify the real native/AOT bundle. INT-006/007/008 wire actual account/bootstrap, durable level completion and truthful UI. **INT-010 is the early M3–minimal-M4 live-backend/device gate:** provision fully online, play one real level offline, commit progress/outbox atomically, restart, reconnect with the same command identity, receive one authoritative reward and display confirmed state after ordered pull. This does not wait for every social/store/objective feature.
 

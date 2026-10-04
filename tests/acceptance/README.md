@@ -1,9 +1,11 @@
-# Core codec peer harness (CL-016, P2)
+# Core codec peer harness (historical CL-016/P2 utility)
 
 This .NET 9 executable exercises the qualification codec against the G1-approved
-`0.2.0-core-schema.1` mirror. It is not a live service, Unity runtime or production
-codec registration. The portable JSON and MessagePack unavailable adapters remain
-explicitly unavailable. No network calls, credentials or provider fakes are used.
+`0.2.0-core-schema.1` mirror. It is not a live service or Unity runtime and does
+not by itself prove production codec registration. The explicit unavailable
+adapters remain for callers that select an unsupported capability; the qualified
+production MessagePack adapter is covered separately. No network calls,
+credentials or provider fakes are used.
 
 From the SDK root:
 
@@ -37,9 +39,11 @@ verify the actual producer command and immutable code, not trust a label alone.
 Backend tooling may translate its output envelope to this shape without changing
 the independently produced MessagePack bytes. Record that command and revision.
 
-G2 still needs both actual producer/consumer directions, independently generated
-hostile binary cases and compact integer variants, plus live-slice schema review.
-For those individual probes, `encode` accepts diagnostic JSON and writes raw
+At the time this utility was introduced, G2 still needed both actual
+producer/consumer directions, independently generated hostile binary cases and
+compact integer variants, plus live-slice schema review. Those later results are
+retained in dated evidence and summarized in `docs/IMPLEMENTATION_STATUS.md`.
+For individual reproduction probes, `encode` accepts diagnostic JSON and writes raw
 MessagePack; `decode` accepts raw bytes and writes diagnostic JSON:
 
 ```powershell
@@ -52,6 +56,8 @@ test. The independent gate runner must assert the intended rejection and record
 the exact producer, consumer, fixture revision and command. These modes report
 only a conversion result and never an interoperability verdict.
 
-This command alone never approves G2. Later CL-016 service/fault modes remain
-unimplemented and unknown modes fail with exit 1. No health response substitutes
-for a real service journey. Logs print counts and stable failure types only.
+This command alone never approves G2. The separate
+[`GamePlatform.LivePeerHarness`](GamePlatform.LivePeerHarness/README.md) exercises
+the bounded production HTTP/MessagePack/SQLite journey against a disposable local
+service. Unknown codec-harness modes fail with exit 1; no health response
+substitutes for a real service journey. Logs print counts and stable failure types only.

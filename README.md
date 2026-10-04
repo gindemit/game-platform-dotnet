@@ -10,7 +10,7 @@ The [current status](docs/IMPLEMENTATION_STATUS.md) separates SDK source, canoni
 
 Start at [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md) and the backend [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md). The [SDK handoff](docs/implementation/CAMPAIGN_UPM_HANDOFF.md) records package generation and Unity consumption. The current bounded hosted-dev continuation follows the [selected packet](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/CODEX-OVERNIGHT-HOSTED-DEV-2026-10-04.md); the [retained-dev preflight](integration/HostedDevSmoke/README.md) has no hosted-write command.
 
-The existing [implementation plan](docs/implementation/README.md), [runbook](docs/implementation/RUNBOOK.md) and [execution manifest](docs/implementation/execution-manifest.json) retain original task/evidence authority. Do not restart their initial codec/import milestones or mark full original tasks complete from a narrower campaign result.
+The [implementation reference](docs/implementation/README.md) and [execution manifest](docs/implementation/execution-manifest.json) retain original task/evidence authority. Do not restart their initial codec/import milestones or mark full original tasks complete from a narrower campaign result.
 
 ## Prerequisites and commands
 

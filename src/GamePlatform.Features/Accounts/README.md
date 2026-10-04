@@ -8,8 +8,8 @@ issued account mapping, and exposes explicit readiness/recovery outcomes. It nev
 persists a session key or token and never declares Ready itself: the leased scope
 must report an actual complete private-sync bootstrap.
 
-The legacy `AccountsFeature` remains the M0 unavailable facade until coordinator
-status/composition work is complete. The nonproduction Supabase HTTP adapter is
+The legacy `AccountsFeature` remains the unavailable compatibility facade; hosts
+compose the scoped lifecycle explicitly. The nonproduction Supabase HTTP adapter is
 outer transport composition: it implements this module's consumer-owned
 `IAccountsAuthLifecycle` port without moving Unity or credentials into Accounts.
 Its secure-store bridge, account scope lease factory, shared migration

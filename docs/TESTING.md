@@ -1,14 +1,19 @@
 # Testing and acceptance
 
-P2 reproduction: `rtk proxy python docs/implementation/evidence/verify_p2.py`
-records desktop tests, generated mappings, locked build, schema/fingerprint
-qualification, CLI failure cases and source-linked compatibility. The real
-Unity import has separate evidence at consumer `7375251` under
-`Reports/PlatformIntegration/INT-002`. Neither proves G2 peer exchange or device
-acceptance. See [P2 limits and exact counts](implementation/evidence/P2/README.md).
+The current repository gate is:
 
-`scripts/validate.py` checks required topology, JSON, project targets/references, feature catalog/readmes and contract hashes. `scripts/test_validation.py` tests the validator. xUnit tests cover M0 typed fail-closed behavior and basic legacy-compatibility value semantics. `scripts/package-sdk.py` builds local NuGet/DLL artifacts and a dependency manifest without publishing.
+```sh
+python3 scripts/validate.py
+python3 -m unittest discover -s scripts -p 'test_*.py'
+dotnet restore GamePlatform.sln --locked-mode
+dotnet format GamePlatform.sln whitespace --verify-no-changes --no-restore --exclude src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs
+dotnet build GamePlatform.sln -c Release --no-restore
+dotnet test GamePlatform.sln -c Release --no-build --no-restore
+python3 scripts/package-sdk.py
+python3 docs/implementation/validate_manifest.py --ready
+python3 -m unittest discover -s docs/implementation -p 'test_*.py'
+```
 
-A01–A13 remain pending except M0 scaffold evidence. Portable build does not prove native SQLite, Unity import, IL2CPP/AOT, PostgreSQL transactions or any host runtime. Never report skipped/unrun environments as passing.
+`scripts/validate.py` checks topology, JSON, targets/references, feature catalog/readmes and contract hashes. The xUnit suites cover portable contracts, codecs, HTTP, SQLite, synchronization and bounded feature services. Packaging is deterministic and unpublished; it does not deploy or publish anything.
 
-P1 reproduction: `rtk proxy python docs/implementation/evidence/verify_p1.py` runs architecture/manifest checks and their tests, locked restore, Release build, nonzero full and diagnostics xUnit selections, dependency listing and local non-publishing packaging. It archives raw outputs and TRX counts under `docs/implementation/evidence/P1/`. The separate Windows native probe is `rtk proxy pwsh -NoProfile -File integration/unity/sqlite-qualification/run-desktop-probe.ps1`; it uses pinned upstream source/native hashes and refuses existing database files. Neither command proves Unity/game adoption or cross-language codecs.
+Exact Unity import, IL2CPP, device, browser, PostgreSQL peer and hosted-service results are separate evidence. The current qualified and open boundaries are summarized in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the campaign checkpoint. Never infer a runtime pass from source/.NET success or report skipped/unrun environments as passing. Older P1/P2 reproduction scripts and their outputs remain dated evidence under `docs/implementation/evidence/`.
