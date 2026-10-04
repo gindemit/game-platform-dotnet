@@ -1,0 +1,601 @@
+{
+  "schemaVersion": 1,
+  "id": "dotnet",
+  "repository": "gindemit/game-platform-dotnet",
+  "documentRoots": [
+    "README.md",
+    "AGENTS.md",
+    "docs",
+    "src",
+    "contracts",
+    "integration",
+    "scripts/README.md"
+  ],
+  "sections": [
+    {
+      "id": "dotnet-architecture",
+      "path": "docs/ARCHITECTURE.md",
+      "heading": "# Architecture",
+      "title": "Architecture",
+      "summary": "Architecture",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "architecture"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-testing",
+      "path": "docs/TESTING.md",
+      "heading": "# Testing and acceptance",
+      "title": "Testing and acceptance",
+      "summary": "Testing and acceptance",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "testing"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-status",
+      "path": "docs/IMPLEMENTATION_STATUS.md",
+      "heading": "# SDK current status",
+      "title": "SDK current status",
+      "summary": "SDK current status",
+      "kind": "status",
+      "authority": "current_evidence",
+      "topics": [
+        "status"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-delivery",
+      "path": "docs/implementation/CAMPAIGN_UPM_HANDOFF.md",
+      "heading": "# SDK handoff — campaign recovery and package delivery",
+      "title": "SDK handoff — campaign recovery and package delivery",
+      "summary": "SDK handoff — campaign recovery and package delivery",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "delivery"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-accounts",
+      "path": "src/GamePlatform.Features/Accounts/README.md",
+      "heading": "# Accounts",
+      "title": "Accounts",
+      "summary": "Accounts",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "accounts"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-profiles",
+      "path": "src/GamePlatform.Features/Profiles/README.md",
+      "heading": "# Profiles",
+      "title": "Profiles",
+      "summary": "Profiles",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "profiles"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-catalog",
+      "path": "src/GamePlatform.Features/Catalog/README.md",
+      "heading": "# Catalog",
+      "title": "Catalog",
+      "summary": "Catalog",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "catalog"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-inventory",
+      "path": "src/GamePlatform.Features/Inventory/README.md",
+      "heading": "# Inventory",
+      "title": "Inventory",
+      "summary": "Inventory",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "inventory"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-wallet",
+      "path": "src/GamePlatform.Features/Wallet/README.md",
+      "heading": "# Wallet",
+      "title": "Wallet",
+      "summary": "Wallet",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "wallet"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-entitlements",
+      "path": "src/GamePlatform.Features/Entitlements/README.md",
+      "heading": "# Entitlements",
+      "title": "Entitlements",
+      "summary": "Entitlements",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "entitlements"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-reward-fulfillment",
+      "path": "src/GamePlatform.Features/RewardFulfillment/README.md",
+      "heading": "# RewardFulfillment",
+      "title": "RewardFulfillment",
+      "summary": "RewardFulfillment",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "reward-fulfillment"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-progression",
+      "path": "src/GamePlatform.Features/Progression/README.md",
+      "heading": "# Progression",
+      "title": "Progression",
+      "summary": "Progression",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "progression"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-quests",
+      "path": "src/GamePlatform.Features/Quests/README.md",
+      "heading": "# Quests",
+      "title": "Quests",
+      "summary": "Quests",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "quests"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-achievements",
+      "path": "src/GamePlatform.Features/Achievements/README.md",
+      "heading": "# Achievements",
+      "title": "Achievements",
+      "summary": "Achievements",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "achievements"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-store",
+      "path": "src/GamePlatform.Features/Store/README.md",
+      "heading": "# Store",
+      "title": "Store",
+      "summary": "Store",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "store"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-purchases",
+      "path": "src/GamePlatform.Features/Purchases/README.md",
+      "heading": "# Purchases",
+      "title": "Purchases",
+      "summary": "Purchases",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "purchases"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-leaderboards",
+      "path": "src/GamePlatform.Features/Leaderboards/README.md",
+      "heading": "# Leaderboards",
+      "title": "Leaderboards",
+      "summary": "Leaderboards",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "leaderboards"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-teams",
+      "path": "src/GamePlatform.Features/Teams/README.md",
+      "heading": "# Teams",
+      "title": "Teams",
+      "summary": "Teams",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "teams"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-remote-config",
+      "path": "src/GamePlatform.Features/RemoteConfig/README.md",
+      "heading": "# RemoteConfig",
+      "title": "RemoteConfig",
+      "summary": "RemoteConfig",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "remote-config"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-feature-inbox",
+      "path": "src/GamePlatform.Features/Inbox/README.md",
+      "heading": "# Inbox",
+      "title": "Inbox",
+      "summary": "Inbox",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "inbox"
+      ],
+      "tasks": []
+    }
+  ],
+  "features": [
+    {
+      "id": "accounts",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Accounts"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Accounts/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "profiles",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Profiles"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Profiles/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "catalog",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Catalog"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Catalog/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "inventory",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Inventory"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Inventory/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "wallet",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Wallet"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Wallet/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "entitlements",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Entitlements"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Entitlements/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "reward-fulfillment",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/RewardFulfillment"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/RewardFulfillment/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "progression",
+      "status": "unverified (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Progression"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Progression/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "quests",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Quests"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Quests/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "achievements",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Achievements"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Achievements/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "store",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Store"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Store/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "purchases",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Purchases"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Purchases/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "leaderboards",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Leaderboards"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Leaderboards/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "teams",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Teams"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Teams/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "remote-config",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/RemoteConfig"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/RemoteConfig/README.md",
+        "docs/FEATURES.md"
+      ]
+    },
+    {
+      "id": "inbox",
+      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "sourcePaths": [
+        "src/GamePlatform.Features/Inbox"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests"
+      ],
+      "requirements": [
+        "src/GamePlatform.Features/Inbox/README.md",
+        "docs/FEATURES.md"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "structure",
+      "argv": [
+        "python3",
+        "scripts/validate.py"
+      ],
+      "environment": "python",
+      "purpose": "Architecture and feature evidence"
+    },
+    {
+      "id": "validator-tests",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "environment": "python; disposable checkout",
+      "purpose": "Validation and packaging regressions"
+    },
+    {
+      "id": "sdk",
+      "argv": [
+        "dotnet",
+        "test",
+        "GamePlatform.sln",
+        "-c",
+        "Release"
+      ],
+      "environment": "dotnet; disposable checkout",
+      "purpose": "Affected SDK runtime tests"
+    },
+    {
+      "id": "package",
+      "argv": [
+        "python3",
+        "scripts/package-sdk.py"
+      ],
+      "environment": "dotnet; disposable checkout",
+      "purpose": "Generate deterministic unpublished package"
+    },
+    {
+      "id": "upm",
+      "argv": [
+        "python3",
+        "scripts/build-upm-package.py",
+        "--verify"
+      ],
+      "environment": "dotnet; disposable checkout",
+      "purpose": "Verify generated Git UPM payload"
+    }
+  ],
+  "packages": [
+    {
+      "id": "com.gindemit.game-platform",
+      "role": "producer",
+      "inputs": [
+        {
+          "path": "upm/com.gindemit.game-platform/package-content-manifest.json",
+          "keys": [
+            "sourceCommit"
+          ]
+        },
+        {
+          "path": "upm/com.gindemit.game-platform/package-content-manifest.json",
+          "keys": [
+            "version"
+          ]
+        },
+        {
+          "path": "upm/com.gindemit.game-platform/package-content-manifest.json",
+          "keys": [
+            "sourceBundleManifestSha256"
+          ]
+        }
+      ]
+    }
+  ]
+}

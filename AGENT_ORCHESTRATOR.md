@@ -1,7 +1,12 @@
-# SDK entry — shared Claude Code / Codex workflow
+# SDK entry for coordinated work
 
-The canonical workflow is [backend AGENT_ORCHESTRATOR.md](https://github.com/gindemit/game-platform-backend/blob/main/AGENT_ORCHESTRATOR.md). Launch the coordinator from the local backend checkout with access to the latest `main` checkouts of all three repositories; native role configuration is backend-local. Select the Claude Code or Codex profile in backend AGENT_RUNTIME.md. Do not launch separate coordinators per repository.
+Shared work starts in [game-platform-workspace](https://github.com/gindemit/game-platform-workspace),
+normally the sibling checkout. Read its AGENTS.md and the owner's selected work
+order, then request `python3 scripts/agent-guide.py feature ID` or `context TASK`.
+One coordinator owns the cross-repository queue; do not launch a second here.
 
-Current disposition: P3 is complete at the approved local scope after R09/R10; broad P4 remains held. The active owner-authorized goal is `CAMPAIGN_LOCAL`; start from backend `docs/work/campaign-2026-09-28/README.md`, its selected work order and current checkpoint. Keep new work on `main`; do not switch to Future or former implementation branches.
-
-Workers read only the supplied card/ticket, applicable scoped AGENTS.md and named files. The campaign packet governs its bounded disjoint-work leases; the coordinator remains the sole git integrator and updates shared queue/gates. Preserve original acceptance, unrelated work and source/artifact pins. No legacy import, fake Ready, unapproved deployment, publication or distribution. Missing runtime/review remains a blocker.
+This repository owns portable SDK source, contracts, tests and package production.
+[AGENTS.md](AGENTS.md), [current status](docs/IMPLEMENTATION_STATUS.md) and
+[the provider](agent/provider.json) describe its local interface. Builds and local
+validation do not require the coordination checkout. Historical P3/G3 and broad-P4
+gates remain unchanged; Unity consumer acceptance remains a separate result.

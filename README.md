@@ -27,9 +27,9 @@ Runtime libraries target `netstandard2.1` with C# 9 and use constructor injectio
 
 **P3 is complete at the approved local nonproduction scope; broader P4, production deployment and general package publication/distribution remain held.** This repository is public for source visibility and review, but it does not currently publish a stable NuGet or registry package.
 
-The latest generated Git UPM is `5d3819d`, from SDK source `6915723`. Unity still consumes the independently qualified package `cae1a21`; no new-pin Editor qualification is recorded. The [current status](docs/IMPLEMENTATION_STATUS.md) and backend [campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md) separate SDK source, generated package and actual consumer evidence.
+The latest generated Git UPM is `5d3819d`, from SDK source `6915723`. Unity still consumes the independently qualified package `cae1a21`; no new-pin Editor qualification is recorded. The [current status](docs/IMPLEMENTATION_STATUS.md) and backend [campaign checkpoint](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/checkpoint.md) separate SDK source, generated package and actual consumer evidence.
 
-Some feature services are implemented only at a bounded portable scope, while Quests, Achievements, Store, Purchases, Leaderboards, Teams, RemoteConfig and Inbox remain explicit stubs. See the [feature catalog](docs/FEATURES.md), [architecture](docs/ARCHITECTURE.md) and backend [codebase reading guide](https://github.com/gindemit/game-platform-backend/blob/main/docs/engineering/CODEBASE-READING-GUIDE.md).
+Some feature services are implemented only at a bounded portable scope, while Quests, Achievements, Store, Purchases, Leaderboards, Teams, RemoteConfig and Inbox remain explicit stubs. See the [feature catalog](docs/FEATURES.md), [architecture](docs/ARCHITECTURE.md) and backend [codebase reading guide](https://github.com/gindemit/game-platform-workspace/blob/main/docs/engineering/CODEBASE-READING-GUIDE.md).
 
 ## Repository layout
 
@@ -42,9 +42,9 @@ Some feature services are implemented only at a bounded portable scope, while Qu
 
 ## Current coordinated work
 
-Start at [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md) and the backend [current campaign checkpoint](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/checkpoint.md). The [SDK handoff](docs/implementation/CAMPAIGN_UPM_HANDOFF.md) records package generation and Unity consumption. The current bounded hosted-dev continuation follows the [selected packet](https://github.com/gindemit/game-platform-backend/blob/main/docs/work/campaign-2026-09-28/CODEX-OVERNIGHT-HOSTED-DEV-2026-10-04.md); the [retained-dev preflight](integration/HostedDevSmoke/README.md) has no hosted-write command.
+Start at [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md) and the workspace [current campaign checkpoint](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/checkpoint.md). The [SDK handoff](docs/implementation/CAMPAIGN_UPM_HANDOFF.md) records package generation and Unity consumption. The current bounded hosted-dev continuation follows the [selected packet](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/CODEX-OVERNIGHT-HOSTED-DEV-2026-10-04.md); the [retained-dev preflight](integration/HostedDevSmoke/README.md) has no hosted-write command.
 
-The [implementation reference](docs/implementation/README.md) and [execution manifest](docs/implementation/execution-manifest.json) retain original task/evidence authority. Do not restart their initial codec/import milestones or mark full original tasks complete from a narrower campaign result.
+The [implementation reference](docs/implementation/README.md) and [SDK-local manifest](docs/implementation/execution-manifest.json) retain local evidence. The [full original task/evidence ledger](https://github.com/gindemit/game-platform-workspace/blob/main/plans/sdk-integration/execution-manifest.json) lives in the workspace. Do not restart its initial codec/import milestones or mark full original tasks complete from a narrower campaign result.
 
 ## Development
 
@@ -58,8 +58,6 @@ dotnet format GamePlatform.sln whitespace --verify-no-changes --no-restore --exc
 dotnet build GamePlatform.sln -c Release --no-restore
 dotnet test GamePlatform.sln -c Release --no-build --no-restore
 python3 scripts/package-sdk.py
-python3 docs/implementation/validate_manifest.py --ready
-python3 -m unittest discover -s docs/implementation -p 'test_*.py'
 ```
 
 Read [AGENTS.md](AGENTS.md), [documentation index](docs/README.md) and scoped instructions only for the changed boundary. Preserve exact source/artifact identity, account isolation, new SQLite/outbox and accepted wire contracts. Repository pushes for the requested Git package do not authorize registry publishing, deployment, distribution or production data changes.

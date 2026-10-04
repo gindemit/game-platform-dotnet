@@ -1,13 +1,19 @@
 # SDK agent instructions
 
-## Small startup context
-AGENT_ORCHESTRATOR.md routes to the backend shared workflow. **For owner-approved GOAL=CAMPAIGN_LOCAL, read backend docs/work/campaign-2026-09-28/README.md and this repository's docs/implementation/CAMPAIGN_UPM_HANDOFF.md.** Git UPM prerequisites and necessary generic campaign changes are approved for bounded local implementation, not broad P4 release. Do not dispatch closed P3 work or ask the owner to repeat accepted requirements.
+## Local entry
 
-Workers read only their ticket, scoped AGENTS and named source/tests. No recursive docs/reports/archives/history loading or nested coordinator. Use main in the three application repositories; do not switch to Future or former implementation branches. Fetch/inspect and fast-forward only safely; preserve unrelated work.
+Cross-repository goals, queues, CL/INT sequencing and work orders are owned by
+[game-platform-workspace](https://github.com/gindemit/game-platform-workspace).
+Follow [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md). This repository owns portable
+SDK requirements, source, tests, packages and [agent/provider.json](agent/provider.json).
+Read only the selected ticket, scoped AGENTS and relevant source/tests.
 
-One coordinator and one git integrator. CAMPAIGN_LOCAL permits concurrent implementation only on explicit disjoint file/contract/resource leases, default 2–3 useful children and at most 5, overriding the older one-global-writer/two-child cap only for this goal. Otherwise retain conservative scheduling. Package producers do not edit Unity consumer manifests/imports; that integration is serial. Workers return bounded patches/evidence; coordinator commits/pushes, checks remote reachability and continues automatically. Do not perform concurrent git index operations or shared Unity/device/database work.
-
-No registry publication, deployment, distribution, production data/secrets, reset, force-push or discarding unrelated work. Reviewed Git commits/pushes needed for the owner's package request are authorized. Preserve exact runtime-source/package/artifact identities; documentation-only descendants do not require new DLLs.
+Use main and preserve unrelated work. Do not reset, stash/discard or commit another
+session's files. Build/package from owned disposable exact-source copies. Serialize
+git indexes and package production; consumer Unity manifest/import changes need a
+separate integration lease. Keep canonical runtime source in src, with generated
+Git UPM delivery and exact source/payload identities. No automatic publishing,
+deployment, production changes or broader product activation.
 
 ## Architecture and correctness
 Keep Unity and game rules/grids/levels/presentation out of the portable SDK. No MrSquare.Logic dependency. Separate domain, wire and SQL row types. Ports belong to consumers; constructor injection and narrow factories, no global resolver/singletons or unapproved DI/reactive framework. Read decisions/dependencies/architecture/contracts only for changed boundaries. Keep src as the single runtime source; Git UPM is delivery, not a Unity-only fork.

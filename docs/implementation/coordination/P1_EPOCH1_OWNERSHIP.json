@@ -1,16 +1,5 @@
 {
-  "run_id": "platform-2026-09-19",
-  "phase": "P1",
-  "epoch": 1,
-  "backend_state_commit": "c6aa77054ec63c0ae46fe2113d3add994bf382fb",
-  "task": "CL-003",
-  "owner": "Codex /root acting as ClientContractOwner and PlatformCoordinator",
-  "branch": "impl/cl-003-epoch1-remediation",
-  "worktree": "../game-platform-dotnet-cl003-epoch1",
-  "locks": ["sdk-contracts", "sdk-shared"],
-  "state": "released",
-  "scope": "G1-R1 through G1-R5 client mappings, schema acceptance expectations, evidence and handoff only",
-  "consumer": "Read-only bc53723a8eec3521dd7bd8e05eaa726fca29795d; no Unity changes required by this remediation",
-  "independent_reviewer": null,
-  "excluded": ["backend writes", "contract mirror repin", "DTO implementation", "P2 codecs", "default branch writes"]
+  "schemaVersion": 1,
+  "movedTo": "https://github.com/gindemit/game-platform-workspace/blob/main/plans/sdk-integration/coordination/P1_EPOCH1_OWNERSHIP.json",
+  "authority": "redirect_only"
 }

@@ -1,5 +1,7 @@
 # Planning delivery validation — 2026-09-18
 
+Historical record: commands, paths and hashes below describe the original delivery. Current SDK checks are in [TESTING.md](../TESTING.md); shared planning validation now lives in the [workspace](https://github.com/gindemit/game-platform-workspace/blob/main/README.md).
+
 ## Scope actually checked
 
 The connected GitHub tools were used to inspect the three private repositories, their baseline refs/branches/PRs, required architecture/contract documents and relevant source/tests/build/packaging/CI. The audit records exact commits and distinguishes full small-file reads from relevant sections/searches of larger documents. No user local worktree was available. A container clone failed with `Could not resolve host: github.com`; there was no local repository checkout or runtime build.
