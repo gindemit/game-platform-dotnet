@@ -33,6 +33,11 @@ class ManifestTests(unittest.TestCase):
             d['tasks'][0]['status']='complete'
             d['tasks'][0]['evidence']=[]
         self.assertTrue(any('complete without evidence' in e for e in self.changed(change)))
+    def test_implemented_requires_evidence(self):
+        def change(d):
+            d['tasks'][0]['status']='implemented'
+            d['tasks'][0]['evidence']=[]
+        self.assertTrue(any('implemented without evidence' in e for e in self.changed(change)))
     def test_false_integration(self):
         def change(d): d['feature_ledger'][0]['mrsquare_integration_status']='integrated'
         self.assertTrue(self.changed(change))

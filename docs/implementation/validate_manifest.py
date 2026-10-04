@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 
 FEATURES = {'Accounts','Profiles','Catalog','Inventory','Wallet','Entitlements','RewardFulfillment','Progression','Quests','Achievements','Store','Purchases','Leaderboards','Teams','RemoteConfig','Inbox'}
 REQUIRED = {'id','title','owner_repo','role','milestone','dependencies','status','blocked_reason','owned_paths','locks','acceptance_ids','test_environment','peer_dependencies','baseline_commit','card','evidence_paths','evidence','wave'}
-TASK_STATES = {'planned','in_progress','blocked','complete'}
+TASK_STATES = {'planned','in_progress','blocked','implemented','complete'}
 SDK_STATES = {'stubbed','planned','implemented','unverified','blocked'}
 UNITY_STATES = {'not_installed','planned','wired','integrated','unverified','blocked'}
 
@@ -47,7 +47,7 @@ def validate(data: dict) -> list[str]:
         for field in ('dependencies','owned_paths','locks','acceptance_ids','test_environment','peer_dependencies','evidence_paths','evidence'):
             if not isinstance(t[field],list): errors.append(f'{ident}: {field} must be a list')
         if t['status']=='blocked' and not t['blocked_reason']: errors.append(f'{ident}: blocked without reason')
-        if t['status']=='complete' and not t['evidence']: errors.append(f'{ident}: complete without evidence')
+        if t['status'] in {'implemented','complete'} and not t['evidence']: errors.append(f"{ident}: {t['status']} without evidence")
         if not t['owned_paths'] or not t['evidence_paths'] or not t['acceptance_ids'] or not t['test_environment']: errors.append(f'{ident}: empty ownership/evidence/acceptance/environment')
         for p in t['owned_paths']+t['evidence_paths']:
             if not safe_path(p): errors.append(f'{ident}: unsafe path {p!r}')
