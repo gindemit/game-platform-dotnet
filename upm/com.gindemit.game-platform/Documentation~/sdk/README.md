@@ -37,4 +37,6 @@ acquire MessagePack-CSharp or unity-sqlite-net again through UPM.
 Follow `lifecycle-manifest.json` for install, upgrade, uninstall and the exact
 CL-013 rollback anchor. Never rewrite identities, cursors, immutable commands,
 migration journals or saves. Unity import/compilation, stripping, IL2CPP/APK
-inspection and physical-device execution belong to INT-009 and remain unrun.
+inspection and physical-device execution are exact-consumer acceptance gates,
+not properties of bundle generation. Consult `docs/IMPLEMENTATION_STATUS.md`
+for the qualified package pin and remaining current gates.
