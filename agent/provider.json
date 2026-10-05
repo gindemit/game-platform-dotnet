@@ -54,9 +54,9 @@
     {
       "id": "dotnet-delivery",
       "path": "docs/implementation/CAMPAIGN_UPM_HANDOFF.md",
-      "heading": "# SDK handoff — campaign recovery and package delivery",
-      "title": "SDK handoff — campaign recovery and package delivery",
-      "summary": "SDK handoff — campaign recovery and package delivery",
+      "heading": "# SDK handoff \u2014 campaign recovery and package delivery",
+      "title": "SDK handoff \u2014 campaign recovery and package delivery",
+      "summary": "SDK handoff \u2014 campaign recovery and package delivery",
       "kind": "requirement",
       "authority": "binding",
       "topics": [
@@ -271,6 +271,24 @@
         "inbox"
       ],
       "tasks": []
+    },
+    {
+      "id": "dotnet-agent-rules",
+      "path": "AGENTS.md",
+      "heading": "# SDK agent instructions",
+      "title": "dotnet scoped agent requirements",
+      "summary": "Owning repository constraints and acceptance boundaries.",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "architecture"
+      ],
+      "tasks": [],
+      "applicability": {
+        "layers": [
+          "dotnet"
+        ]
+      }
     }
   ],
   "features": [
@@ -287,6 +305,12 @@
       "requirements": [
         "src/GamePlatform.Features/Accounts/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-accounts"
       ]
     },
     {
@@ -302,6 +326,12 @@
       "requirements": [
         "src/GamePlatform.Features/Profiles/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-profiles"
       ]
     },
     {
@@ -317,6 +347,12 @@
       "requirements": [
         "src/GamePlatform.Features/Catalog/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-catalog"
       ]
     },
     {
@@ -332,6 +368,12 @@
       "requirements": [
         "src/GamePlatform.Features/Inventory/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-inventory"
       ]
     },
     {
@@ -347,6 +389,12 @@
       "requirements": [
         "src/GamePlatform.Features/Wallet/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-wallet"
       ]
     },
     {
@@ -362,6 +410,12 @@
       "requirements": [
         "src/GamePlatform.Features/Entitlements/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-entitlements"
       ]
     },
     {
@@ -377,6 +431,12 @@
       "requirements": [
         "src/GamePlatform.Features/RewardFulfillment/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-reward-fulfillment"
       ]
     },
     {
@@ -392,6 +452,12 @@
       "requirements": [
         "src/GamePlatform.Features/Progression/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-progression"
       ]
     },
     {
@@ -407,6 +473,12 @@
       "requirements": [
         "src/GamePlatform.Features/Quests/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-quests"
       ]
     },
     {
@@ -422,6 +494,12 @@
       "requirements": [
         "src/GamePlatform.Features/Achievements/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-achievements"
       ]
     },
     {
@@ -437,6 +515,12 @@
       "requirements": [
         "src/GamePlatform.Features/Store/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-store"
       ]
     },
     {
@@ -452,6 +536,12 @@
       "requirements": [
         "src/GamePlatform.Features/Purchases/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-purchases"
       ]
     },
     {
@@ -467,6 +557,12 @@
       "requirements": [
         "src/GamePlatform.Features/Leaderboards/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-leaderboards"
       ]
     },
     {
@@ -482,6 +578,12 @@
       "requirements": [
         "src/GamePlatform.Features/Teams/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-teams"
       ]
     },
     {
@@ -497,6 +599,12 @@
       "requirements": [
         "src/GamePlatform.Features/RemoteConfig/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-remote-config"
       ]
     },
     {
@@ -512,6 +620,12 @@
       "requirements": [
         "src/GamePlatform.Features/Inbox/README.md",
         "docs/FEATURES.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-inbox"
       ]
     }
   ],
