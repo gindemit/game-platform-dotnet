@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Platform .NET SDK — Architecture & Implementation Guide</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #64748b;
+      --paper: #f7f4ee;
+      --panel: rgba(255,255,255,.82);
+      --line: #d9d3c7;
+      --navy: #17324d;
+      --blue: #2563eb;
+      --teal: #0f766e;
+      --green: #3f7d58;
+      --amber: #b7791f;
+      --red: #b4534b;
+      --violet: #6d5da8;
+      --shadow: 0 18px 55px rgba(23, 50, 77, .10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% -10%, rgba(37,99,235,.13), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(15,118,110,.11), transparent 26rem),
+        var(--paper);
+      font: 15px/1.58 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code { font: .88em ui-monospace, SFMono-Regular, Menlo, monospace; background: #eef1f4; padding: .14em .35em; border-radius: 5px; }
+    .shell { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky; top: 0; height: 100vh; overflow: auto;
+      padding: 30px 22px; border-right: 1px solid var(--line);
+      background: rgba(247,244,238,.89); backdrop-filter: blur(12px);
+    }
+    .brand { font-weight: 800; letter-spacing: -.02em; color: var(--navy); line-height: 1.18; font-size: 18px; }
+    .brand small { display:block; margin-top: 7px; color: var(--muted); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: 10px; }
+    nav { margin-top: 26px; }
+    nav a { display:block; color:#475569; text-decoration:none; padding:7px 10px; border-left:2px solid transparent; border-radius:0 7px 7px 0; }
+    nav a:hover { color:var(--navy); border-left-color:var(--blue); background:rgba(37,99,235,.06); }
+    .aside-note { margin-top: 26px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+    main { width: min(1180px, 100%); min-width: 0; padding: 44px clamp(26px, 5vw, 70px) 90px; }
+    section { scroll-margin-top: 28px; margin-top: 70px; }
+    .hero { margin-top: 0; padding: clamp(30px, 5vw, 60px); color:white; border-radius:24px; overflow:hidden; position:relative; background:linear-gradient(125deg,#142b42,#1d4b61 64%,#176c68); box-shadow:var(--shadow); }
+    .hero:after { content:""; position:absolute; width:340px; height:340px; border:1px solid rgba(255,255,255,.14); border-radius:50%; right:-120px; top:-150px; box-shadow:0 0 0 46px rgba(255,255,255,.035),0 0 0 92px rgba(255,255,255,.025); }
+    .eyebrow { text-transform:uppercase; letter-spacing:.14em; font-size:11px; font-weight:800; color:#b7e4df; }
+    h1 { font-size:clamp(34px,5vw,66px); line-height:1.01; max-width:820px; margin:14px 0 18px; letter-spacing:-.045em; }
+    .hero p { max-width:790px; font-size:17px; color:#dbeafe; }
+    .stamp { display:flex; flex-wrap:wrap; gap:9px; margin-top:26px; }
+    .stamp span { border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); padding:7px 11px; border-radius:999px; font-size:12px; }
+    h2 { color:var(--navy); font-size:30px; letter-spacing:-.025em; margin:0 0 10px; }
+    h3 { color:var(--navy); margin:0 0 8px; font-size:18px; }
+    .lead { color:var(--muted); max-width:850px; font-size:16px; margin-top:0; }
+    .grid { display:grid; gap:16px; }
+    .grid-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .grid-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .grid-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:20px; box-shadow:0 8px 28px rgba(23,50,77,.045); }
+    .card p:last-child { margin-bottom:0; }
+    .metric { font-size:34px; line-height:1; font-weight:850; color:var(--navy); letter-spacing:-.04em; }
+    .metric-label { color:var(--muted); margin-top:8px; font-size:12px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+    .callout { border-left:4px solid var(--blue); background:#edf5ff; padding:15px 18px; border-radius:0 10px 10px 0; margin:22px 0; }
+    .callout.warn { border-color:var(--amber); background:#fff8e8; }
+    .callout strong { color:var(--navy); }
+    .status { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-size:11px; text-transform:uppercase; letter-spacing:.055em; font-weight:800; padding:5px 8px; border-radius:999px; }
+    .status:before { content:""; width:7px; height:7px; border-radius:50%; background:currentColor; }
+    .done { color:var(--green); background:#e9f4ec; }
+    .bounded { color:var(--teal); background:#e5f5f3; }
+    .partial { color:var(--amber); background:#fff4d8; }
+    .stub { color:var(--red); background:#fbeceb; }
+    .external { color:var(--violet); background:#f0edfa; }
+    .arch { margin-top:24px; display:grid; gap:12px; }
+    .layer { display:grid; grid-template-columns:180px 1fr; gap:18px; align-items:stretch; }
+    .layer-name { color:white; display:flex; align-items:center; justify-content:center; text-align:center; border-radius:12px; padding:14px; font-weight:800; }
+    .layer:nth-child(1) .layer-name { background:#6d5da8; }
+    .layer:nth-child(2) .layer-name { background:#1f5f74; }
+    .layer:nth-child(3) .layer-name { background:#2e6b55; }
+    .layer:nth-child(4) .layer-name { background:#3b5975; }
+    .layer:nth-child(5) .layer-name { background:#8a6330; }
+    .modules { display:flex; align-items:center; flex-wrap:wrap; gap:8px; border:1px solid var(--line); background:rgba(255,255,255,.75); border-radius:12px; padding:13px; }
+    .module { border:1px solid #d7dde4; background:white; padding:7px 9px; border-radius:7px; font:12px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .arrow-note { text-align:center; color:var(--muted); font-size:12px; margin:8px 0; }
+    .flow { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; align-items:stretch; margin-top:24px; }
+    .step { position:relative; min-height:145px; border:1px solid var(--line); border-radius:12px; background:white; padding:15px 12px; }
+    .step:not(:last-child):after { content:"›"; position:absolute; right:-10px; top:54px; z-index:2; color:var(--blue); background:var(--paper); width:20px; text-align:center; font-size:27px; font-weight:800; }
+    .num { width:24px; height:24px; display:grid; place-items:center; border-radius:50%; background:var(--navy); color:white; font-size:11px; font-weight:800; margin-bottom:10px; }
+    .step b { display:block; color:var(--navy); line-height:1.25; font-size:13px; }
+    .step small { display:block; color:var(--muted); margin-top:7px; line-height:1.45; }
+    table { width:100%; border-collapse:separate; border-spacing:0; background:rgba(255,255,255,.8); border:1px solid var(--line); border-radius:13px; overflow:hidden; }
+    th,td { text-align:left; vertical-align:top; padding:12px 13px; border-bottom:1px solid #e6e2db; }
+    th { color:#536273; background:#f1f0ec; font-size:11px; text-transform:uppercase; letter-spacing:.065em; }
+    tr:last-child td { border-bottom:0; }
+    td { font-size:13px; }
+    .filterbar { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0 13px; }
+    button { cursor:pointer; border:1px solid var(--line); border-radius:999px; background:white; color:#475569; padding:7px 12px; font-weight:700; }
+    button.active { color:white; background:var(--navy); border-color:var(--navy); }
+    .timeline { border-left:2px solid #cbd5e1; margin-left:12px; padding-left:26px; display:grid; gap:17px; }
+    .phase { position:relative; }
+    .phase:before { content:""; position:absolute; width:12px; height:12px; border-radius:50%; left:-33px; top:6px; background:var(--blue); border:3px solid var(--paper); box-shadow:0 0 0 1px var(--blue); }
+    .phase p { margin:4px 0 0; color:var(--muted); }
+    .decision { display:grid; grid-template-columns:42px 1fr; gap:13px; }
+    .decision .icon { width:36px; height:36px; display:grid; place-items:center; border-radius:9px; color:white; background:var(--navy); font-weight:900; }
+    details { border:1px solid var(--line); border-radius:11px; background:rgba(255,255,255,.7); padding:12px 15px; margin-top:9px; }
+    summary { cursor:pointer; color:var(--navy); font-weight:750; }
+    .sources { columns:2; padding-left:20px; }
+    .sources li { break-inside:avoid; margin-bottom:8px; }
+    .footer { margin-top:70px; border-top:1px solid var(--line); padding-top:20px; color:var(--muted); font-size:12px; }
+    @media (max-width: 980px) {
+      .shell { grid-template-columns:minmax(0,1fr); }
+      aside { position:relative; height:auto; border-right:0; border-bottom:1px solid var(--line); }
+      nav { display:flex; flex-wrap:wrap; gap:3px 10px; }
+      nav a { border-left:0; border-bottom:2px solid transparent; padding:5px; }
+      .grid-4,.grid-3 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .flow { grid-template-columns:repeat(2,1fr); }
+      .step:not(:last-child):after { display:none; }
+    }
+    @media (max-width: 650px) {
+      main { padding:24px 16px 60px; }
+      .grid-4,.grid-3,.grid-2 { grid-template-columns:1fr; }
+      .layer { grid-template-columns:1fr; gap:6px; }
+      .flow { grid-template-columns:1fr; }
+      .sources { columns:1; }
+      table { display:block; overflow-x:auto; }
+    }
+    @media print { aside { display:none; } .shell { display:block; } main { width:100%; padding:0; } .hero { box-shadow:none; } section { break-inside:avoid; } }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">Game Platform .NET SDK<small>Architecture & implementation guide</small></div>
+    <nav>
+      <a href="#summary">Executive summary</a>
+      <a href="#boundaries">Repository boundaries</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#runtime">Runtime journey</a>
+      <a href="#features">Feature status</a>
+      <a href="#foundation">Foundation status</a>
+      <a href="#ownership">Responsibilities</a>
+      <a href="#next">Next implementation</a>
+      <a href="#decisions">Architecture decisions</a>
+      <a href="#reading">Reading path</a>
+    </nav>
+    <div class="aside-note">
+      Evidence snapshot: 4 Oct 2026<br>
+      Repository head: <code>4637979</code><br>
+      Branch: <code>main</code><br><br>
+      Scope: this .NET/UPM repository. Backend internals are intentionally excluded.
+    </div>
+  </aside>
+
+  <main>
+    <section class="hero" id="top">
+      <div class="eyebrow">Portable client runtime · not the backend service</div>
+      <h1>A visual map of what exists, what is proven, and what comes next.</h1>
+      <p>This repository is a game-neutral C# client SDK for account-scoped state, durable offline commands, ordered synchronization and Unity delivery. It is not a second backend implementation and it deliberately excludes game rules, Unity scenes and server policy.</p>
+      <div class="stamp">
+        <span>15 netstandard2.1 runtime assemblies</span>
+        <span>16 feature areas</span>
+        <span>8 bounded feature services</span>
+        <span>8 explicit feature stubs</span>
+        <span>441 test methods in source tree</span>
+      </div>
+    </section>
+
+    <section id="summary">
+      <h2>Executive summary</h2>
+      <p class="lead">The portable foundation is substantial and coherent. The main remaining work is not to redesign it: it is to finish production mappings/composition for existing bounded services, close specific durability gaps, qualify the newest package in the consumer, and only then add feature breadth from backend-owned frozen contracts.</p>
+      <div class="grid grid-4">
+        <div class="card"><div class="metric">8</div><div class="metric-label">Bounded feature services</div><p>Accounts, Profiles, Catalog, Inventory, Wallet, Entitlements, RewardFulfillment and Progression.</p></div>
+        <div class="card"><div class="metric">8</div><div class="metric-label">Still stubbed</div><p>Quests, Achievements, Store, Purchases, Leaderboards, Teams, RemoteConfig and Inbox.</p></div>
+        <div class="card"><div class="metric">12</div><div class="metric-label">Complete / implemented tasks</div><p>In the retained 52-row original SDK + integration ledger; 18 remain in progress and 22 planned.</p></div>
+        <div class="card"><div class="metric">659/659</div><div class="metric-label">Retained P3 SDK gate</div><p>The R10 qualification result. Later campaign evidence includes 728/728 at the same-account recovery source.</p></div>
+      </div>
+      <div class="callout warn"><strong>Current delivery boundary:</strong> SDK <code>main</code> contains generated UPM commit <code>5d3819d</code> from source <code>6915723</code>. The release tag <code>0.1.0-dev.119</code> resolves to package commit <code>1e8a651</code>, and Unity <code>main@3186388</code> selects that tag in its manifest and lock. The earlier <code>cae1a21</code> pin had focused Unity import evidence; no matching Editor or runtime qualification of the new tag is recorded. A current source pin is not a tested consumer build.</div>
+      <div class="grid grid-3">
+        <div class="card"><span class="status done">Strong foundation</span><h3 style="margin-top:12px">Durability and protocol</h3><p>UUIDv7 identities, signed-64 rules, reviewed DTOs, bounded MessagePack, real SQLite, atomic projection/sequence/outbox, ordered push/pull and reset handling.</p></div>
+        <div class="card"><span class="status bounded">Bounded implementation</span><h3 style="margin-top:12px">Feature policy</h3><p>Eight real scoped services exist, but their full feature acceptance remains <em>unverified</em>; parameterless compatibility facades still fail closed.</p></div>
+        <div class="card"><span class="status partial">Open integration</span><h3 style="margin-top:12px">Production composition</h3><p>Unity-owned secure storage, executors, account scope factory, projection mapping, current-package import and broader device/live evidence remain separate work.</p></div>
+      </div>
+    </section>
+
+    <section id="boundaries">
+      <h2>Three repositories, three authorities</h2>
+      <p class="lead">This is the cleanest way to avoid overlap with the separate backend review.</p>
+      <div class="grid grid-3">
+        <div class="card">
+          <span class="status external">Backend repository</span>
+          <h3 style="margin-top:12px">Protocol and server authority</h3>
+          <p>Owns canonical schemas, endpoint semantics, authorization, PostgreSQL mutations, business-source uniqueness, reward/value authority and hosted deployment.</p>
+          <p><strong>Referenced here only as:</strong> reviewed contract snapshots, semantic ports and external acceptance gates.</p>
+        </div>
+        <div class="card" style="border-color:#8fc7c1; box-shadow:0 0 0 2px rgba(15,118,110,.08)">
+          <span class="status bounded">This repository</span>
+          <h3 style="margin-top:12px">Portable client SDK</h3>
+          <p>Owns C# domain/port contracts, feature policy, local durability, sync policy, MessagePack/HTTP/SQLite adapters, tests and deterministic Git UPM production.</p>
+          <p><strong>Does not own:</strong> backend SQL/functions or Unity game UI/rules.</p>
+        </div>
+        <div class="card">
+          <span class="status external">Unity consumer repository</span>
+          <h3 style="margin-top:12px">Host and game integration</h3>
+          <p>Owns composition root, Unity executors, secure secrets, filesystem paths, game checkpoint writes, projection mapping, UI/presentation and device acceptance.</p>
+          <p><strong>Consumes:</strong> one exact reviewed Git UPM commit.</p>
+        </div>
+      </div>
+      <div class="callout"><strong>Rule of thumb:</strong> the backend decides what is authoritative; this SDK decides how a portable client safely stores, sends and observes it; the Unity game decides how it is composed and presented.</div>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture: ports, policy and adapters</h2>
+      <p class="lead">Dependency direction is controlled by <a href="../architecture.json">architecture.json</a>. Constructor injection is mandatory; there is no global resolver, ambient account or mutable registry.</p>
+      <div class="arch" aria-label="SDK architectural layers">
+        <div class="layer"><div class="layer-name">Consumer boundary<br>(outside SDK)</div><div class="modules"><span class="module">Unity composition</span><span class="module">game rules/checkpoints</span><span class="module">views & scenes</span><span class="module">secure secret bridge</span><span class="module">Unity HTTP/path hooks</span></div></div>
+        <div class="arrow-note">constructs and injects ↓ · portable runtime never reaches upward</div>
+        <div class="layer"><div class="layer-name">Portable policy</div><div class="modules"><span class="module">GamePlatform.Features</span><span class="module">GamePlatform.Sync</span><span class="module">GamePlatform.Navigation</span><span class="module">Features.Presentation</span></div></div>
+        <div class="layer"><div class="layer-name">Inward ports</div><div class="modules"><span class="module">Features.Contracts</span><span class="module">Backend.Contracts</span><span class="module">Storage.Abstractions</span><span class="module">Transport.Abstractions</span></div></div>
+        <div class="layer"><div class="layer-name">Neutral shapes</div><div class="modules"><span class="module">GamePlatform.Core</span><span class="module">Wire.Contracts</span><span class="module">Diagnostics.Abstractions</span></div></div>
+        <div class="layer"><div class="layer-name">Replaceable adapters</div><div class="modules"><span class="module">Transport.Http</span><span class="module">Storage.Sqlite</span><span class="module">Serialization.MessagePack</span><span class="module">Serialization.Json (unavailable)</span></div></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:24px">
+        <div class="card"><h3>Types stay separated</h3><p><strong>Domain/read models</strong> live in feature contracts. <strong>Wire DTOs</strong> live in Wire.Contracts. <strong>Remote semantics</strong> live in Backend.Contracts. <strong>Storage values/transactions</strong> live in Storage.Abstractions. SQLite rows remain adapter-internal.</p></div>
+        <div class="card"><h3>Lifetime stays explicit</h3><p>Infrastructure may outlive an application. Account scopes may not. Owner scope is backend + app + account; view generation fences late results. Borrowed transactions cannot be retained or committed by feature code.</p></div>
+        <div class="card"><h3>Failure is honest</h3><p>Unsupported paths throw or return explicit unavailability. No fake authentication, Ready state, grant, acknowledgement, transaction, local value authority or JSON decode fallback is allowed.</p></div>
+        <div class="card"><h3>Packaging is delivery, not a fork</h3><p><code>src/</code> is the runtime source of truth. <code>upm/</code> is generated deterministically with 15 SDK DLLs, the exact MessagePack closure, selected SQLite native libraries, metadata and notices.</p></div>
+      </div>
+    </section>
+
+    <section id="runtime">
+      <h2>The first-account and offline-command journey</h2>
+      <p class="lead">This sequence explains the architecture better than a class list. Every transition has a precise authority boundary.</p>
+      <div class="flow">
+        <div class="step"><div class="num">1</div><b>Authenticate</b><small>Host-supplied lifecycle obtains a principal-specific session. Tokens remain memory-only; secrets use a host secure-store seam.</small></div>
+        <div class="step"><div class="num">2</div><b>Provision online</b><small>The SDK reserves installation + stream IDs durably, then validates the backend-issued account mapping.</small></div>
+        <div class="step"><div class="num">3</div><b>Bootstrap atomically</b><small>Pages stage invisibly. Only a complete final snapshot installs projections, cursor and Ready at one boundary.</small></div>
+        <div class="step"><div class="num">4</div><b>Commit local intent</b><small>Game checkpoint callback + provisional projection + sequence + immutable command bytes enter one SQLite transaction.</small></div>
+        <div class="step"><div class="num">5</div><b>Push in order</b><small>Only the next contiguous command is leased. Retries preserve operation, stream, sequence, source and fingerprint.</small></div>
+        <div class="step"><div class="num">6</div><b>Observe receipt</b><small>Acceptance becomes “accepted awaiting pull.” A receipt never edits confirmed wallet/inventory/entitlement value.</small></div>
+        <div class="step"><div class="num">7</div><b>Pull and confirm</b><small>A committed feed group installs all component projections and cursor atomically; matching evidence can then confirm presentation.</small></div>
+      </div>
+      <details><summary>Reset and restored-server behavior</summary><p>A visibility-generation change or expired retention causes snapshot replacement while preserving the immutable outbox. If a server boundary regresses below local terminal state, the coordinator reconciles every receipt above that boundary. Only genuinely absent receipts at the exact observed watermark return to pending with the same identity; conflicts or persistent stale boundaries block with <code>StreamRecoveryRequired</code>. Push acknowledgements never move pull cursors.</p></details>
+      <details><summary>Why “receipt” and “confirmed value” are different</summary><p>A successful push or retained receipt proves a command outcome, not that a client projection has observed the authoritative value mutation. Wallet, inventory, entitlements and reward presentation wait for the ordered pull/snapshot path. This prevents double-application and fabricated revisions.</p></details>
+    </section>
+
+    <section id="features">
+      <h2>Feature implementation map</h2>
+      <p class="lead">“Bounded service exists” is intentionally weaker than full feature acceptance. Use the filters to focus the table.</p>
+      <div class="filterbar" role="group" aria-label="Feature status filter">
+        <button class="active" data-filter="all">All 16</button>
+        <button data-filter="bounded">Bounded services</button>
+        <button data-filter="stub">Stubbed</button>
+      </div>
+      <table id="feature-table">
+        <thead><tr><th>Feature</th><th>Portable status</th><th>Implemented responsibility</th><th>Remaining SDK / acceptance work</th></tr></thead>
+        <tbody>
+          <tr data-kind="bounded"><td><strong>Accounts</strong><br><code>CL-101</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Provision/bootstrap lifecycle, durable principal directory, explicit same-account recovery, scope retirement; bounded nonproduction Supabase auth adapter.</td><td>Unity secure CAS bridge, account-scope factory/two-executor composition, hosted complete journey and full acceptance.</td></tr>
+          <tr data-kind="bounded"><td><strong>Profiles</strong><br><code>CL-102</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Scoped durable reads, revision edits, atomic pending edit + outbox, receipt/pull reconciliation and conflict visibility.</td><td>Production private-sync mapping, production codec/route and Unity integration.</td></tr>
+          <tr data-kind="bounded"><td><strong>Catalog</strong><br><code>CL-103</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Versioned provider-neutral snapshots, definitions vs app bindings, permissions, validated stale/offline reads.</td><td>Freeze backend payload, then add wire/HTTP/storage adapter and consumer composition.</td></tr>
+          <tr data-kind="bounded"><td><strong>Inventory</strong><br><code>CL-104</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Confirmed stacks/instances, catalog validation, durable use/consume intents, borrowed projection transaction seam.</td><td>Frozen projection lacks full catalog/snapshot data; production mapping and live evidence remain.</td></tr>
+          <tr data-kind="bounded"><td><strong>Wallet</strong><br><code>CL-105</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Confirmed signed-64 balances, catalog-gated spend intent, fresh remote authorization, G3 semantic read projection.</td><td>Production mapping/Unity composition; never add a local credit/grant engine.</td></tr>
+          <tr data-kind="bounded"><td><strong>Entitlements</strong><br><code>CL-106</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Confirmed rights, expiry/revocation, catalog visibility and offline expiry uncertainty.</td><td>Projection origin/state/catalog fields, production codec/feed adapter and live/Unity evidence.</td></tr>
+          <tr data-kind="bounded"><td><strong>Reward fulfillment</strong><br><code>CL-107</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Durable receipt ↔ feed/snapshot correlation, immutable evidence, one-time presentation lease; never mutates value.</td><td>Add confirmed-entry prune API (C5), settle no-reward completion semantics (C6), stage receipts inside refetch snapshot path (C10).</td></tr>
+          <tr data-kind="bounded"><td><strong>Progression</strong><br><code>CL-108</code></td><td><span class="status bounded">bounded / unverified</span></td><td>Generic completion, atomic game callback + projection + outbox, receipt/pull state, bounded unvalidated casual-tier label.</td><td>Decide/persist retryable failure across restart (R09 C7), finish production mapping and broader acceptance.</td></tr>
+          <tr data-kind="stub"><td><strong>Quests</strong><br><code>CL-109</code></td><td><span class="status stub">stubbed</span></td><td>Only explicit unavailable facade plus reviewed store/quest wire command slice.</td><td>Wait for objective kinds, occurrence/claim/finalization schemas; then build shared objective engine and quest service.</td></tr>
+          <tr data-kind="stub"><td><strong>Achievements</strong><br><code>CL-110</code></td><td><span class="status stub">stubbed</span></td><td>Fail-closed facade.</td><td>Build after shared objective engine and backend objective contract freeze.</td></tr>
+          <tr data-kind="stub"><td><strong>Store</strong><br><code>CL-111</code></td><td><span class="status stub">stubbed</span></td><td>Fail-closed facade; bounded store command/codec capability exists but feature service does not.</td><td>Freeze offer/price/eligibility/debit/fulfillment semantics; implement service without trusting local price UI.</td></tr>
+          <tr data-kind="stub"><td><strong>Purchases</strong><br><code>CL-112</code></td><td><span class="status stub">stubbed</span></td><td>Fail-closed facade.</td><td>Depends on Store plus provider receipt verification and an explicitly authorized IAP sandbox.</td></tr>
+          <tr data-kind="stub"><td><strong>Leaderboards</strong><br><code>CL-113</code></td><td><span class="status stub">stubbed</span></td><td>Fail-closed facade.</td><td>Freeze score/season/snapshot/query authorization; implement caller-scoped profile flow.</td></tr>
+          <tr data-kind="stub"><td><strong>Teams</strong><br><code>CL-114</code></td><td><span class="status stub">stubbed</span></td><td>Fail-closed facade.</td><td>Freeze membership/role/capacity/contribution schemas and concurrency policy.</td></tr>
+          <tr data-kind="stub"><td><strong>Remote config</strong><br><code>CL-115</code></td><td><span class="status stub">stubbed</span></td><td>Fail-closed facade.</td><td>Freeze assignment/visibility-scoped config contract, cache/freshness behavior and adoption path.</td></tr>
+          <tr data-kind="stub"><td><strong>Inbox</strong><br><code>CL-116</code></td><td><span class="status stub">stubbed</span></td><td>Fail-closed facade.</td><td>Freeze read/claim commands and attachment receipt semantics; implement durable adoption.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="foundation">
+      <h2>Foundation: already implemented vs still open</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <span class="status done">implemented</span><h3 style="margin-top:12px">Core and safety</h3>
+          <ul><li>Typed backend/app/account/operation/stream identities</li><li>UUIDv7 generation and RFC-order UUID bytes</li><li>Checked signed-64 sequences/revisions/economic values</li><li>Safe bounded diagnostic boundary and redaction</li><li>Manual DI, owner/view-generation fencing</li></ul>
+        </div>
+        <div class="card">
+          <span class="status done">implemented</span><h3 style="margin-top:12px">Protocol and transport</h3>
+          <ul><li>Hash-pinned backend contract mirror and generated DTOs</li><li>Bounded production MessagePack codec, no reflection/fallback</li><li>HTTPS-only executor and provisioning/bootstrap/pull/push/receipt providers</li><li>Auth-refresh single flight and delivery-uncertainty semantics</li><li>Live local C# ↔ TypeScript peer harness</li></ul>
+        </div>
+        <div class="card">
+          <span class="status done">implemented</span><h3 style="margin-top:12px">Storage and sync</h3>
+          <ul><li>Real sqlite-net adapter, WAL and immutable migrations</li><li>Atomic projection + sequence + outbox admission</li><li>Contiguous sender leasing and terminal finalization</li><li>Atomic paged bootstrap, fixed-watermark pull and reset replacement</li><li>Receipt-based restore recovery without identity rotation</li></ul>
+        </div>
+        <div class="card">
+          <span class="status done">implemented</span><h3 style="margin-top:12px">Delivery and integration tooling</h3>
+          <ul><li>Deterministic Git UPM generation and manifest verification</li><li>Exact MessagePack managed closure and selected native SQLite plugins</li><li>Unity importer/linker metadata and license notices</li><li>Android ARM64 IL2CPP/high-stripping proof at retained scope</li><li>Guarded hosted-dev preflight (deliberately no execute command)</li></ul>
+        </div>
+        <div class="card">
+          <span class="status partial">in progress</span><h3 style="margin-top:12px">Known foundation gaps</h3>
+          <ul><li>Remaining semantic HTTP providers and live hosted proof</li><li>Push batching/backoff/blocked-auth and broader real faults</li><li>Disk-full/corruption, macOS native execution and Windows immediate-relaunch uncertainty</li><li>Feature-specific codecs/mappings and public/shared composition</li><li>The newly selected Unity release tag still needs exact import and runtime qualification</li></ul>
+        </div>
+        <div class="card">
+          <span class="status stub">deliberately unavailable</span><h3 style="margin-top:12px">Not accidentally “missing”</h3>
+          <ul><li>Diagnostic JSON codec</li><li>Global aggregate feature/sync facade success paths</li><li>Game-specific validation, grants, grids, levels and UI</li><li>Automatic legacy PlayerPrefs/checkpoint migration</li><li>Registry publication, production deployment and general distribution</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="ownership">
+      <h2>Responsibility and company/vendor map</h2>
+      <p class="lead">The repository defines technical ownership, not a legal inter-company RACI. The table below avoids inventing corporate accountability that the code does not state.</p>
+      <table>
+        <thead><tr><th>Party / boundary</th><th>Responsibility evidenced here</th><th>Explicitly not its responsibility</th></tr></thead>
+        <tbody>
+          <tr><td><strong>gindemit · .NET SDK repository</strong></td><td>Portable source, contracts/ports, client policy, adapters, tests, package construction and exact artifact provenance.</td><td>Hosted backend behavior, game scenes/rules, consumer manifest activation, public distribution without separate approval.</td></tr>
+          <tr><td><strong>gindemit · backend repository</strong></td><td>Canonical protocol/schema authority and server-side semantics. This repo mirrors reviewed artifacts byte-for-byte.</td><td>Portable client implementation and Unity presentation.</td></tr>
+          <tr><td><strong>Unity game / MrSquare consumer</strong></td><td>Composition, secure storage, platform HTTP/path boundaries, game-owned SQLite extension/checkpoint, projection-to-game mapping, UI and device validation.</td><td>Forking SDK runtime source, redefining canonical wire contracts or manufacturing authoritative value.</td></tr>
+          <tr><td><strong>Supabase</strong></td><td>Selected nonproduction auth/host boundary consumed through narrow HTTP interfaces; the SDK includes a bounded anonymous-auth adapter.</td><td>SDK domain model, game rules or automatic authority. Hosted evidence is still a separate gate.</td></tr>
+          <tr><td><strong>Unity Technologies runtime/toolchain</strong></td><td>Unity host, IL2CPP/AOT, package resolution and platform import behavior.</td><td>SDK contract ownership. Editor success alone does not prove physical-device or hosted success.</td></tr>
+          <tr><td><strong>MessagePack-CSharp</strong></td><td>Pinned serializer primitive/runtime dependency (<code>3.1.8</code>) used through a strict schema-directed adapter.</td><td>Reflection-based object policy, authentication or semantic correctness.</td></tr>
+          <tr><td><strong>sqlite-net / SQLite upstream</strong></td><td>Pinned managed binding and selected native libraries used by the concrete storage adapter.</td><td>Application transaction rules, account isolation, migration ownership or outbox semantics.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="next">
+      <h2>Recommended next implementation order</h2>
+      <p class="lead">This ordering keeps work in this repository bounded and does not duplicate the backend agent’s work.</p>
+      <div class="timeline">
+        <div class="phase"><span class="status partial">Now · SDK hardening</span><h3>1. Close the named gaps in existing services</h3><p>Prioritize RewardFulfillment C5/C6/C10 and Progression R09 C7 because they are explicit, localizable correctness gaps in already-used code. Add focused real-SQLite restart/reset tests for each.</p></div>
+        <div class="phase"><span class="status partial">Now · adapter completion</span><h3>2. Finish current frozen-contract mappings</h3><p>Complete production private-sync mapping/codecs for Profiles, Inventory, Wallet, Entitlements, Progression and reward correlation where the canonical contract already contains enough information. If it does not, stop at the port and request a backend contract delta—do not invent fields locally.</p></div>
+        <div class="phase"><span class="status partial">Now · sync/transport</span><h3>3. Close CL-005/009/010 behavior gaps</h3><p>Add the remaining approved providers, push backoff/batching and blocked-auth behavior, then expand live disposable peer faults. Preserve exact operation identity and never infer rollback from timeout/cancellation.</p></div>
+        <div class="phase"><span class="status external">Consumer gate</span><h3>4. Qualify the selected UPM tag</h3><p>Unity now selects <code>0.1.0-dev.119</code> in source. Verify exact package resolution and payload, then run the focused import/Editor and affected IL2CPP/device checks before transferring any older acceptance result to the new pin.</p></div>
+        <div class="phase"><span class="status external">After backend freezes</span><h3>5. Add breadth by contract family</h3><p>Recommended sequence: shared Objectives → Quests → Achievements; then Store → Purchases; then RemoteConfig/Inbox; finally Teams/Leaderboards. Each family starts with a reviewed backend schema/semantic package and negative fixtures.</p></div>
+        <div class="phase"><span class="status external">M5 / release</span><h3>6. Prove reuse and release compatibility</h3><p>Integrate an independent tiny second game, remove temporary bridges only after reuse proof, run the full cross-app/device matrix, and produce a compatibility release record. Stable publication/distribution remains a separate owner decision.</p></div>
+      </div>
+      <div class="callout warn"><strong>Do not implement next:</strong> a second protocol inside the SDK, backend business logic, local reward/value authority, global service locator, automatic account merge, legacy-save import, JSON fallback, or broad feature shells backed by fakes.</div>
+    </section>
+
+    <section id="decisions">
+      <h2>Architecture decisions: settled and still needed</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="decision"><div class="icon">✓</div><div><h3>Settled foundations</h3><p>Game-neutral portable SDK; manual constructor injection; domain/wire/SQL separation; MessagePack; sqlite-net; UUIDv7 for new distributed IDs; signed-64 values; online first-account provisioning; atomic projection/sequence/outbox; receipts separate from confirmed pull; no legacy gameplay migration.</p></div></div>
+        </div>
+        <div class="card">
+          <div class="decision"><div class="icon">A</div><div><h3>Decisions needed before feature breadth</h3><p>Backend-owned schema/semantics must be frozen for objectives, commerce, social, config and inbox. The key product decisions are occurrence/eligibility identity, purchase verification authority, season/team authorization and inbox attachment claim semantics.</p></div></div>
+        </div>
+        <div class="card">
+          <div class="decision"><div class="icon">B</div><div><h3>Decisions needed in this SDK</h3><p>Define C6 no-reward completion confirmation, R09 retryable-failure durability, prune/retention policy for confirmed presentation records, and exact adapter behavior when frozen projection rows cannot satisfy feature contracts.</p></div></div>
+        </div>
+        <div class="card">
+          <div class="decision"><div class="icon">C</div><div><h3>Decisions needed at consumer/release boundary</h3><p>Choose the production Unity composition, supported native platform matrix (macOS remains unexecuted; WebGL SDK integration is excluded today), current-package qualification gate, stable versioning and whether/where a package may be published.</p></div></div>
+        </div>
+      </div>
+      <div class="callout"><strong>Assessment:</strong> no wholesale architecture rewrite is indicated. The present hexagonal/ports-and-adapters shape fits the work. New ADRs are warranted only where an open item changes authority, durable schema, public contracts, platform support or release policy.</div>
+    </section>
+
+    <section id="reading">
+      <h2>Fast code-reading path</h2>
+      <p class="lead">Follow one command from neutral identity to wire, local durability, transport and confirmed projection.</p>
+      <ol>
+        <li><a href="../src/GamePlatform.Core/README.md">Core identity and ownership</a> — learn <code>OwnerScope</code>, typed IDs and numeric rules.</li>
+        <li><a href="../src/GamePlatform.Storage.Abstractions/README.md">Storage ports</a> — understand caller-owned transactions, outbox admission and sync values.</li>
+        <li><a href="../src/GamePlatform.Storage.Sqlite/README.md">SQLite adapter</a> — see how those ports become durable and atomic.</li>
+        <li><a href="../src/GamePlatform.Features/Progression/README.md">Progression service</a> — trace the representative offline completion use case.</li>
+        <li><a href="../src/GamePlatform.Sync/README.md">Sync policy</a> — follow ordered send, bootstrap, pull and reset.</li>
+        <li><a href="../src/GamePlatform.Transport.Http/README.md">HTTP composition</a> and <a href="../src/GamePlatform.Serialization.MessagePack/README.md">MessagePack</a> — see adapter bounds and failure rules.</li>
+        <li><a href="../src/GamePlatform.Features/RewardFulfillment/README.md">Reward correlation</a> — see why receipt, projection and presentation are three different facts.</li>
+      </ol>
+      <h3 style="margin-top:28px">Primary evidence used</h3>
+      <ul class="sources">
+        <li><a href="ARCHITECTURE.md">Architecture</a></li>
+        <li><a href="IMPLEMENTATION_STATUS.md">Current implementation status</a></li>
+        <li><a href="FEATURES.md">Feature catalog</a></li>
+        <li><a href="DATA_AND_SYNC.md">Data and synchronization contract</a></li>
+        <li><a href="DECISIONS.md">Accepted decisions</a></li>
+        <li><a href="ROADMAP.md">Roadmap</a></li>
+        <li><a href="../features.json">Machine-readable feature catalog</a></li>
+        <li><a href="../architecture.json">Allowed reference graph</a></li>
+        <li><a href="implementation/execution-manifest.json">Original task/feature ledger</a></li>
+        <li><a href="implementation/CAMPAIGN_UPM_HANDOFF.md">UPM and Unity handoff</a></li>
+        <li><a href="../contracts/README.md">Reviewed protocol mirror</a></li>
+        <li><a href="../integration/unity/README.md">Unity delivery boundary</a></li>
+      </ul>
+    </section>
+
+    <div class="footer">Generated as a review aid from repository evidence at <code>main@4637979</code> on 2026-10-04. It is explanatory, not a replacement for the machine-readable ledgers or exact runtime evidence. Backend internals are outside this guide.</div>
+  </main>
+</div>
+<script>
+  const buttons = document.querySelectorAll('[data-filter]');
+  const rows = document.querySelectorAll('#feature-table tbody tr');
+  buttons.forEach(button => button.addEventListener('click', () => {
+    buttons.forEach(candidate => candidate.classList.toggle('active', candidate === button));
+    const wanted = button.dataset.filter;
+    rows.forEach(row => row.hidden = wanted !== 'all' && row.dataset.kind !== wanted);
+  }));
+</script>
+</body>
+</html>
