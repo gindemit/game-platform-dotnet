@@ -4,12 +4,14 @@
 
 Teams now has typed online queries/mutations, authenticated production HTTP
 composition, durable stale caches and explicit uncertain-command retry, plus
-additive private-feed invalidations. Local Release regression passed 749/749;
-three subsequent membership/denial/cache-epoch cases and backend-produced
-golden-fixture exchange also pass in the 26-test focused Teams suite.
+additive private-feed invalidations. Reviewed Release regression passed 759/759;
+the 31-test focused Teams suite includes membership/denial/cache-epoch cases,
+backend-produced golden fixtures and private-cache erasure after command denial.
 See [Teams evidence](../src/GamePlatform.Features/Teams/EVIDENCE-2026-10-11.md).
-Generated package, Unity consumer, AOT and Android runtime acceptance remain
-pending at this checkpoint. Existing CL-114/INT-014 and P3/G3/P4 gates retain their
+The generated SDK and UPM package reproduce byte-for-byte in two independent
+clean clones of source `751c80fd5e04cb44947cdbcc103eb8381274d5ed`.
+Unity consumer, AOT and Android runtime acceptance remain pending at this checkpoint.
+Existing CL-114/INT-014 and P3/G3/P4 gates retain their
 original scope; these results do not certify a deployed social backend.
 
 ## 2026-10-05 consumer identity reconciliation
