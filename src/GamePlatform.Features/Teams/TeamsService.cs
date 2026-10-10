@@ -155,7 +155,11 @@ namespace GamePlatform.Features.Teams
                 try { result = await remote.ExecuteAsync(command, linked.Token).ConfigureAwait(false); }
                 catch (TeamsOperationException error)
                 {
-                    if (IsTerminal(error.Failure.Kind)) await ClearPendingAsync(error.Failure.Kind, linked.Token).ConfigureAwait(false);
+                    // Disabled app/account ownership is checked before retained receipts. A prior
+                    // uncertain attempt may have committed, so keep its identity until access returns.
+                    if (error.Failure.Kind == RemoteFailureKind.Authorization && error.ResultCode == "teams.owner_unavailable")
+                        await InvalidateAsync(linked.Token).ConfigureAwait(false);
+                    else if (IsTerminal(error.Failure.Kind)) await ClearPendingAsync(error.Failure.Kind, linked.Token).ConfigureAwait(false);
                     throw;
                 }
                 EnsureOwner(requestedOwner);
@@ -240,7 +244,8 @@ namespace GamePlatform.Features.Teams
             state.Upsert(transaction, new DurableFeatureMutation(owner, Namespace, Epoch, checked((previous?.Revision ?? 0) + 1), 0, Array.Empty<byte>(), Array.Empty<byte>()));
         }
         private static string? CacheKey(TeamsQuery query) => query.Cursor == null && string.IsNullOrEmpty(query.Search) && query.PageSize == 30 ? query.View : null;
-        private static bool IsTerminal(RemoteFailureKind kind) => kind == RemoteFailureKind.Validation || kind == RemoteFailureKind.Authorization || kind == RemoteFailureKind.Conflict;
+        private static bool IsTerminal(RemoteFailureKind kind) => kind == RemoteFailureKind.Validation || kind == RemoteFailureKind.Authorization ||
+            kind == RemoteFailureKind.Conflict || kind == RemoteFailureKind.RateLimited;
         private long Now() { long value = nowMilliseconds(); PlatformNumbers.UnixMilliseconds(value); return value; }
         private FeatureSnapshot<TeamsResponse> Missing() => new FeatureSnapshot<TeamsResponse>(owner, 0, SnapshotFreshness.Missing, null);
         private FeatureSnapshot<TeamsResponse> Snapshot(TeamsResponse value, SnapshotFreshness freshness) => new FeatureSnapshot<TeamsResponse>(owner, value.Revision,

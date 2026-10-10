@@ -196,6 +196,43 @@ namespace GamePlatform.Tests.Features.Teams
             Assert.Equal(SnapshotFreshness.Missing, (await offline.ReadCachedAsync(Owner(2), new TeamsQuery("messages", Team), CancellationToken.None)).Freshness);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RejectedHelpCooldownDoesNotBlockSubsequentChat(bool throws)
+        {
+            await using var db = await Database.Open();
+            var remote = new Remote { CommandResult = RemoteResult<TeamsResponse>.Failed(new RemoteFailure(RemoteFailureKind.RateLimited, 429)) };
+            if (throws) remote.CommandError = new TeamsOperationException(new RemoteFailure(RemoteFailureKind.RateLimited, 429), "teams.help_cooldown");
+            using var service = db.Service(remote, new TeamsStateCodec(), Owner());
+            var help = new TeamsCommand(new OperationId(Operation), "request_help", Team);
+            await Assert.ThrowsAsync<TeamsOperationException>(() => service.ExecuteAsync(Owner(), help, CancellationToken.None));
+            Assert.Null(await service.ReadPendingAsync(Owner(), CancellationToken.None));
+            remote.CommandError = null;
+            remote.CommandResult = RemoteResult<TeamsResponse>.Success(Response(Player));
+            await service.ExecuteAsync(Owner(), Command(Player), CancellationToken.None);
+            Assert.Equal(2, remote.Commands);
+            Assert.Null(await service.ReadPendingAsync(Owner(), CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task TemporarilyDisabledOwnerErasesCacheButRetainsUncertainIdentity()
+        {
+            await using var db = await Database.Open();
+            var remote = new Remote { CommandResult = RemoteResult<TeamsResponse>.Failed(new RemoteFailure(RemoteFailureKind.OutcomeUncertain)) };
+            using (var service = db.Service(remote, new TeamsStateCodec(), Owner()))
+            {
+                await service.QueryAsync(Owner(), new TeamsQuery("messages", Team), CancellationToken.None);
+                await Assert.ThrowsAsync<TeamsOperationException>(() => service.ExecuteAsync(Owner(), Command(), CancellationToken.None));
+                remote.CommandError = new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Authorization, 403), "teams.owner_unavailable");
+                await Assert.ThrowsAsync<TeamsOperationException>(() => service.ExecuteAsync(Owner(), Command(), CancellationToken.None));
+            }
+            await db.Reopen();
+            using var offline = db.Service(null, new TeamsStateCodec(), Owner(2));
+            Assert.Equal(Operation, (await offline.ReadPendingAsync(Owner(2), CancellationToken.None))!.OperationId.Value);
+            Assert.Equal(SnapshotFreshness.Missing, (await offline.ReadCachedAsync(Owner(2), new TeamsQuery("messages", Team), CancellationToken.None)).Freshness);
+        }
+
         internal sealed class Remote : ITeamsRemote
         {
             public int Queries, Commands;
