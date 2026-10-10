@@ -567,13 +567,18 @@
     },
     {
       "id": "teams",
-      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "status": "implemented and locally tested; package, Unity and runtime acceptance pending",
       "statusPath": "docs/IMPLEMENTATION_STATUS.md",
       "sourcePaths": [
-        "src/GamePlatform.Features/Teams"
+        "src/GamePlatform.Features/Teams",
+        "src/GamePlatform.Wire.Contracts/Teams",
+        "src/GamePlatform.Transport.Http/TeamsHttpProvider.cs",
+        "src/GamePlatform.Serialization.MessagePack/TeamsMessagePackCodec.cs"
       ],
       "testPaths": [
-        "tests/GamePlatform.Tests"
+        "tests/GamePlatform.Tests/Features/Teams",
+        "tests/GamePlatform.Tests/Transport/TeamsHttpProviderTests.cs",
+        "tests/GamePlatform.Tests/Serialization/TeamsCodecTests.cs"
       ],
       "requirements": [
         "src/GamePlatform.Features/Teams/README.md",

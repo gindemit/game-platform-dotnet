@@ -85,6 +85,7 @@ namespace GamePlatform.Sync.Pull
                 case "profile": return new ProjectionProfileRemovalValue(new ProjectionProfileKey(), value.Revision, kind);
                 case "progression": return new ProjectionProgressionRemoval(new ProjectionProgressionKey(value.EntityKey), value.Revision, kind);
                 case "wallet": return new ProjectionWalletRemoval(new ProjectionWalletKey(value.EntityKey), value.Revision, kind);
+                case "teams" when kind == "invalidation": return new GamePlatform.Wire.Contracts.Teams.TeamsProjectionInvalidation(Guid.Parse(value.EntityKey), value.Revision);
                 default: throw new InvalidOperationException("The G3 collection is unsupported.");
             }
         }
@@ -99,6 +100,7 @@ namespace GamePlatform.Sync.Pull
                 case ProjectionProfileRemovalValue item: Match(raw, item.EntityType, item.EntityKey.Profile, item.Revision); break;
                 case ProjectionProgressionRemoval item: Match(raw, item.EntityType, item.EntityKey.StateKey, item.Revision); break;
                 case ProjectionWalletRemoval item: Match(raw, item.EntityType, item.EntityKey.CurrencyId, item.Revision); break;
+                case GamePlatform.Wire.Contracts.Teams.TeamsProjectionInvalidation item: Match(raw, item.EntityType, item.TeamId.ToString("D"), item.Revision); break;
                 default: throw new InvalidOperationException("The G3 projection change is unsupported.");
             }
         }

@@ -269,6 +269,7 @@ namespace GamePlatform.Transport.Http
                 ProjectionInventoryRemoval item => Removal(item.EntityType, item.EntityKey.ItemId, item.Revision, item.Kind),
                 ProjectionWalletRemoval item => Removal(item.EntityType, item.EntityKey.CurrencyId, item.Revision, item.Kind),
                 ProjectionEntitlementRemoval item => Removal(item.EntityType, item.EntityKey.EntitlementId, item.Revision, item.Kind),
+                GamePlatform.Wire.Contracts.Teams.TeamsProjectionInvalidation item => Removal(item.EntityType, item.TeamId.ToString("D"), item.Revision, item.Kind),
                 _ => throw new InvalidOperationException("Unknown projection change type.")
             };
         }

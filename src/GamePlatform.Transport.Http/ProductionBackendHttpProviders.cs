@@ -74,7 +74,8 @@ namespace GamePlatform.Transport.Http
             if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
             if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
             if (installationId == Guid.Empty) throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
-            PrivateSync = new PrivateSyncHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh);
+            PrivateSync = new PrivateSyncHttpProvider(appId, accountId, configuration, executor, new TeamsSupportingWireCodec(), auth, refresh);
+            Teams = new TeamsHttpProvider(appId, accountId, configuration, executor, auth, refresh);
             CommandPush = new CommandPushHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh, storeQuest);
             CommandReceipts = new CommandReceiptHttpProvider(appId, accountId, installationId, configuration, executor, codec, auth, refresh,
                 BackendWireRepresentation.MessagePack, storeQuest);
@@ -82,6 +83,7 @@ namespace GamePlatform.Transport.Http
         }
 
         public IPrivateSyncRemote PrivateSync { get; }
+        public TeamsHttpProvider Teams { get; }
         public ICommandRemote CommandPush { get; }
         public ICommandReceiptRemote CommandReceipts { get; }
         public G3RewardReceiptHttpProvider RewardReceipts { get; }

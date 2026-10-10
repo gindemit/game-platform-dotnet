@@ -1,5 +1,17 @@
 # SDK current status
 
+## 2026-10-11 Teams source implementation
+
+Teams now has typed online queries/mutations, authenticated production HTTP
+composition, durable stale caches and explicit uncertain-command retry, plus
+additive private-feed invalidations. Local Release regression passed 749/749;
+three subsequent membership/denial/cache-epoch cases and backend-produced
+golden-fixture exchange also pass in the 26-test focused Teams suite.
+See [Teams evidence](../src/GamePlatform.Features/Teams/EVIDENCE-2026-10-11.md).
+Generated package, Unity consumer, AOT and Android runtime acceptance remain
+pending at this checkpoint. Existing CL-114/INT-014 and P3/G3/P4 gates retain their
+original scope; these results do not certify a deployed social backend.
+
 ## 2026-10-05 consumer identity reconciliation
 
 At Unity `54fb156c1600b825c010cce067976bb30337d03d`, the [package lock](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Packages/packages-lock.json) requests `0.1.0-dev.119` and resolves Git UPM `1e8a6510a8db5421c9f012c1b0940e92e505600b`. The [localization evidence](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Docs/Implementation/WebPlayer/2026-10-05-localization.md) records 142 import-verified package files and bounded localization/build/browser results. These are recorded results, not a new SDK-backed Android, hosted-service or portal qualification. In particular, WebLite is not evidence of the mobile SDK runtime path.

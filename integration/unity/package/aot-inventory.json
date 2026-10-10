@@ -11,7 +11,8 @@
       "GamePlatform.Serialization.MessagePack.QualificationMessagePackCodec",
       "GamePlatform.Serialization.MessagePack.TypedQualificationCodec"
     ],
-    "formatterGap": "No MessagePack-CSharp serializer formatter is used by the bounded reader/writer path. The explicit generated mapping and bounded low-level reader/writer passed the approved G2 corpus on Android ARM64 IL2CPP with high stripping."
+    "formatterGap": "No MessagePack-CSharp serializer formatter is used by the bounded reader/writer path. The explicit generated mapping and bounded low-level reader/writer passed the approved G2 corpus on Android ARM64 IL2CPP with high stripping.",
+    "teams": "TeamsMessagePackCodec is statically referenced by the authenticated provider and durable state codec and uses the preserved bounded reader/writer. Teams-specific IL2CPP runtime qualification is pending; historical G2 evidence does not qualify the additive Teams payload."
   },
   "sqlite": {
     "pinvokeNames": ["gilzoide-sqlite-net", "__Internal"],
