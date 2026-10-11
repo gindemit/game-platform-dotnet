@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "name": "com.gindemit.game-platform",
-  "version": "0.1.0-draft",
-  "sourceCommit": "e8f94b8a4c7d679d47761d9bb8acf41b12e4d311",
-  "sourceBundleManifestSha256": "2d49e98be0676cb2d7bd711fae742b610d9ecf557c390aa4abddeacaaa0b11ed",
+  "version": "0.1.0-dev.141",
+  "sourceCommit": "dc75b3018c13701de6e37e807fa40bb19d5502aa",
+  "sourceBundleManifestSha256": "b4b184158e0b60af6d1c4a02e0e3ef9d3b8374004e6e79c2b50326e3e7272a59",
   "preservedManagedGuids": {
     "GamePlatform.Core.dll": "68b7ad586b1f56d6a838a26b7ff2333f",
     "GamePlatform.Features.Contracts.dll": "827c6f3773525912a40a393e14fa0406"
@@ -16,13 +16,18 @@
   "files": [
     {
       "path": "Documentation~/aot-inventory.json",
-      "bytes": 2147,
-      "sha256": "e7d258feceaa357c052d03941bd97447b4530422833ff9e41d6870bf4c040f4a"
+      "bytes": 2399,
+      "sha256": "243fbe52546a28c6377d83de66ea146daf463f663c1e1e437afdc77fab0327d7"
     },
     {
       "path": "Documentation~/lifecycle-manifest.json",
       "bytes": 2644,
       "sha256": "da89771f8d1805ea0f78d994e8d4db18aa372e79347fd19b0877fe9404ee8e6e"
+    },
+    {
+      "path": "Documentation~/sdk/README.md",
+      "bytes": 2519,
+      "sha256": "1096769ec913140d15331611afda0d9c34d82599b213e0b7539485c677a19272"
     },
     {
       "path": "Documentation~/sdk/architecture.json",
@@ -36,8 +41,8 @@
     },
     {
       "path": "Documentation~/sdk/dependency-manifest.json",
-      "bytes": 95024,
-      "sha256": "2d49e98be0676cb2d7bd711fae742b610d9ecf557c390aa4abddeacaaa0b11ed"
+      "bytes": 99498,
+      "sha256": "b4b184158e0b60af6d1c4a02e0e3ef9d3b8374004e6e79c2b50326e3e7272a59"
     },
     {
       "path": "Documentation~/sdk/features.json",
@@ -50,84 +55,79 @@
       "sha256": "3de152d5faaf79749d3c568a4d53ee334a2a0c260b16d14c0655ff488d07b177"
     },
     {
-      "path": "Documentation~/sdk/README.md",
-      "bytes": 2519,
-      "sha256": "1096769ec913140d15331611afda0d9c34d82599b213e0b7539485c677a19272"
-    },
-    {
       "path": "Documentation~/symbols/GamePlatform.Backend.Contracts.pdb",
-      "bytes": 12180,
-      "sha256": "ed2cfda4801f8b4a4fa6b85809381173d245ce7edcee1885e55ac1eb5196abb5"
+      "bytes": 13248,
+      "sha256": "08aac17f18a9a542dc653bfb0dd490229b759442a237f6fe98805f5702c8c8a5"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Core.pdb",
       "bytes": 12476,
-      "sha256": "3e812ea9a887549eed90b73bb6fc852272c6c24e064fd2021fdb9884987c4499"
+      "sha256": "caf7923db324175bbc7e6bd50f89df06c5f4a8d2ba8738cae88854a8f7292e10"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Diagnostics.Abstractions.pdb",
       "bytes": 9540,
-      "sha256": "79530b0d1bc090f29de4bdbdd765dfd2c1d49dd20dbf3072063efdbb4531994b"
+      "sha256": "3b8f1586f32be2d3dd6920c2163728bf9325a1622f64764a09b5a9b3a1f7f634"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Features.Contracts.pdb",
       "bytes": 21052,
-      "sha256": "540e0604fb65af90c26c4b28ebe010861c3d2115379b4acfb56c8bfa2ded765a"
-    },
-    {
-      "path": "Documentation~/symbols/GamePlatform.Features.pdb",
-      "bytes": 57968,
-      "sha256": "8419fcc210ab1278a30ee693ad73fe6c16a78e31e96cd40abca4dd82291679c5"
+      "sha256": "632c550336dd0d3fb156518e448914169481b414da76f8f7d69f317ee5bbdd23"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Features.Presentation.pdb",
       "bytes": 9032,
-      "sha256": "a7b0130e80201f3ed453351e0cf59083ebf2d819d2b01849ba967e2d443de1da"
+      "sha256": "79a176938c056219f77612a5cbe7e4ac4ac425e4dbae574c8ce71ba77ae9eff4"
+    },
+    {
+      "path": "Documentation~/symbols/GamePlatform.Features.pdb",
+      "bytes": 72828,
+      "sha256": "60ab3bcef6e8edd1bfab962797ed55eec5cd8af045a373e222e44d9809cf938d"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Navigation.pdb",
       "bytes": 10772,
-      "sha256": "79477232a22cfa4a0206d5cf7c7a8865b40d2ca969868f769a9f6ad135b620ad"
+      "sha256": "41960f45fb07b9e38fe3b1bdc462a1edb96b70100f4251677cb5f8b8b5e6621f"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Serialization.Json.pdb",
       "bytes": 8372,
-      "sha256": "569ba37b6a2bb631799a8691759b07ab97dde1aca61051c31d204f98bc6b8ea7"
+      "sha256": "654d29c17df1261eb66c156085d6c18aadfd390cb0aeeb7c93d1b93e22ba5622"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Serialization.MessagePack.pdb",
-      "bytes": 36816,
-      "sha256": "1111c13aa43e724ebd9021534fe0bdd6e70a70fde0dbd13210e223fbdadecdec"
+      "bytes": 39320,
+      "sha256": "e656386814ad77397c61260e203c9dfb7dafe6223f3c2ca439be9d463c315d9b"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Storage.Abstractions.pdb",
-      "bytes": 14304,
-      "sha256": "921766c178862716c580112fe97e416f9d8f9a52e55c7fae31f4b7fbe75557bf"
+      "bytes": 15284,
+      "sha256": "c617a844ddce821549b6f2f451c8dbc4c603337e2be22f0bc9334e12885c6e5b"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Storage.Sqlite.pdb",
-      "bytes": 50104,
-      "sha256": "c613dfe22b65d5f90618b20a8556e4c3c7942d65dc4143a13a9f603ec07ad570"
+      "bytes": 55680,
+      "sha256": "c402666b338955ac9d8321727c885c84b89087d838be09f42408437304050f0e"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Sync.pdb",
-      "bytes": 12204,
-      "sha256": "3a593daf908d6a550bf2a7e4dc42a80f89fa840cafccba62e8833b37a8758e76"
+      "bytes": 14092,
+      "sha256": "3ec7aaa66e1bb55f3e4f45848f4e24ca800dde02b0c9f380ee225a0723fa4ee7"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Transport.Abstractions.pdb",
       "bytes": 8956,
-      "sha256": "57ccce15361d0b0b81e158529e5784f016b77a67a6e032cf16fbe694219e6de4"
+      "sha256": "6b9ed037b6addf9f736719afdf25dadf8bf452140ef553945e9316ac9e958f96"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Transport.Http.pdb",
-      "bytes": 35468,
-      "sha256": "1826d790d664a76eeec0940450c4991210f7ec161867e260de455ded733636f1"
+      "bytes": 41980,
+      "sha256": "f13dc02dda92b322b5cdeff0fdb04560a198c3b3aac63e4a25e1b7f47290014c"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Wire.Contracts.pdb",
-      "bytes": 27652,
-      "sha256": "26d4df4739ba0e929781157bdf1c4f9727d3a3767ace336f38aa8c15ac996f84"
+      "bytes": 35752,
+      "sha256": "6ee0c69463cc8ef7166228a9dadd0133b235610694331a77dd3820d48d876201"
     },
     {
       "path": "LICENSES/LICENSE-NOTICE.md",
@@ -150,16 +150,6 @@
       "sha256": "d72ba71bb5ed240f52f576aff35841b856f2f28d8d82cb3efc3812791f264434"
     },
     {
-      "path": "LICENSES/LICENSE.sqlite-net.txt",
-      "bytes": 1082,
-      "sha256": "f4f848e81a747b85a1f5c7b761bf12b85098dd6a6a46acebd54958e2fe2dd62d"
-    },
-    {
-      "path": "LICENSES/LICENSE.sqlite-net.txt.meta",
-      "bytes": 158,
-      "sha256": "5543b0c0e379e446f09dd8a0f420fedd7d327889236626c6df83a8c8297e926c"
-    },
-    {
       "path": "LICENSES/LICENSE.SQLite3MultipleCiphers.txt",
       "bytes": 1074,
       "sha256": "ef17378697b38c803a91cd82430dac4be3d6e610c3569ddb3aa547d8d084f983"
@@ -168,6 +158,16 @@
       "path": "LICENSES/LICENSE.SQLite3MultipleCiphers.txt.meta",
       "bytes": 158,
       "sha256": "04a37ab76c88ff22ced41df108a01654a5264461e95df96cb880767823b68342"
+    },
+    {
+      "path": "LICENSES/LICENSE.sqlite-net.txt",
+      "bytes": 1082,
+      "sha256": "f4f848e81a747b85a1f5c7b761bf12b85098dd6a6a46acebd54958e2fe2dd62d"
+    },
+    {
+      "path": "LICENSES/LICENSE.sqlite-net.txt.meta",
+      "bytes": 158,
+      "sha256": "5543b0c0e379e446f09dd8a0f420fedd7d327889236626c6df83a8c8297e926c"
     },
     {
       "path": "LICENSES/LICENSE.unity-sqlite-net.txt",
@@ -210,16 +210,6 @@
       "sha256": "4eb5dbb034cd7b6816223f39b3baf0aa46aabd3d1c20ca15cf00fb90e7e4c8df"
     },
     {
-      "path": "LICENSES/nuget-metadata/Microsoft.NET.StringTools.17.11.4.nuspec",
-      "bytes": 1742,
-      "sha256": "88a95fdb64a776c1e3a9d758bf5a5e243c2e2027c5c97137000459a96d602d69"
-    },
-    {
-      "path": "LICENSES/nuget-metadata/Microsoft.NET.StringTools.17.11.4.nuspec.meta",
-      "bytes": 158,
-      "sha256": "a64bd1b4fe3ab73c26937c8485a2bbfce12254614430a37864b08aa2e2e2b390"
-    },
-    {
       "path": "LICENSES/nuget-metadata/Microsoft.NET.StringTools.17.11.4.THIRDPARTYNOTICES.txt",
       "bytes": 2029,
       "sha256": "01bb7cfadd7ebc022a5ff5dad8c9df0574ee0330f6f58ee497a27c0792dcb4f4"
@@ -228,6 +218,16 @@
       "path": "LICENSES/nuget-metadata/Microsoft.NET.StringTools.17.11.4.THIRDPARTYNOTICES.txt.meta",
       "bytes": 158,
       "sha256": "6365fdb97a9db04d51aa0a41f0f2d7fcb7909d3991428062ea198c81f93aa16e"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/Microsoft.NET.StringTools.17.11.4.nuspec",
+      "bytes": 1742,
+      "sha256": "88a95fdb64a776c1e3a9d758bf5a5e243c2e2027c5c97137000459a96d602d69"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/Microsoft.NET.StringTools.17.11.4.nuspec.meta",
+      "bytes": 158,
+      "sha256": "a64bd1b4fe3ab73c26937c8485a2bbfce12254614430a37864b08aa2e2e2b390"
     },
     {
       "path": "LICENSES/nuget-metadata/System.Buffers.4.5.1.LICENSE.TXT",
@@ -240,16 +240,6 @@
       "sha256": "4b9ed284707341efccb7cabd6f5d3c0cf5c93334b62402b9f0f0e73cf84bb14e"
     },
     {
-      "path": "LICENSES/nuget-metadata/System.Buffers.4.5.1.nuspec",
-      "bytes": 2319,
-      "sha256": "353a5c2810bfb22de50b87616f426d4d2c8aac2040802c68e2caadedbfe66b8e"
-    },
-    {
-      "path": "LICENSES/nuget-metadata/System.Buffers.4.5.1.nuspec.meta",
-      "bytes": 158,
-      "sha256": "d6ca98760a0e3af7b732647e65f156afcb3c4f7079c27bc42533ae4a1f1ba689"
-    },
-    {
       "path": "LICENSES/nuget-metadata/System.Buffers.4.5.1.THIRD-PARTY-NOTICES.TXT",
       "bytes": 15835,
       "sha256": "7864a01e2fdef7e8fdf81b906efb1466f083206affea7ba7e6dadea429754765"
@@ -258,6 +248,16 @@
       "path": "LICENSES/nuget-metadata/System.Buffers.4.5.1.THIRD-PARTY-NOTICES.TXT.meta",
       "bytes": 158,
       "sha256": "653b75de341e24b821f20355d85663e7cd236d3d359974a6aa3d6915e69901e5"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Buffers.4.5.1.nuspec",
+      "bytes": 2319,
+      "sha256": "353a5c2810bfb22de50b87616f426d4d2c8aac2040802c68e2caadedbfe66b8e"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Buffers.4.5.1.nuspec.meta",
+      "bytes": 158,
+      "sha256": "d6ca98760a0e3af7b732647e65f156afcb3c4f7079c27bc42533ae4a1f1ba689"
     },
     {
       "path": "LICENSES/nuget-metadata/System.Collections.Immutable.8.0.0.LICENSE.TXT",
@@ -270,16 +270,6 @@
       "sha256": "a81b3ce2cc6a0aca4e7c89deeb18fff321355d81afef5efd604370318d130369"
     },
     {
-      "path": "LICENSES/nuget-metadata/System.Collections.Immutable.8.0.0.nuspec",
-      "bytes": 2323,
-      "sha256": "f02ab7c533dc1daeb6aa78ca3aa471c1d43147d257d75396252e9f3c74bf04d3"
-    },
-    {
-      "path": "LICENSES/nuget-metadata/System.Collections.Immutable.8.0.0.nuspec.meta",
-      "bytes": 158,
-      "sha256": "e8bc798a2a74efeec40620c4ffaed32ca2ec32db12f187859f912206627fb0e2"
-    },
-    {
       "path": "LICENSES/nuget-metadata/System.Collections.Immutable.8.0.0.THIRD-PARTY-NOTICES.TXT",
       "bytes": 68911,
       "sha256": "19c19dcac9f3ee6302cfbc6745bb8e79f08efc4c933eb8dc5509bf14b88347ec"
@@ -288,6 +278,16 @@
       "path": "LICENSES/nuget-metadata/System.Collections.Immutable.8.0.0.THIRD-PARTY-NOTICES.TXT.meta",
       "bytes": 158,
       "sha256": "d447bdc2bb110c49e2b488b09b28fc05cfd91d69e992e51eeb4c84cbf3eb0e80"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Collections.Immutable.8.0.0.nuspec",
+      "bytes": 2323,
+      "sha256": "f02ab7c533dc1daeb6aa78ca3aa471c1d43147d257d75396252e9f3c74bf04d3"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Collections.Immutable.8.0.0.nuspec.meta",
+      "bytes": 158,
+      "sha256": "e8bc798a2a74efeec40620c4ffaed32ca2ec32db12f187859f912206627fb0e2"
     },
     {
       "path": "LICENSES/nuget-metadata/System.Memory.4.5.5.LICENSE.TXT",
@@ -300,16 +300,6 @@
       "sha256": "13f115dfe721e0b2063461931251ce7751aa9e8c8c05e6f9c8b9cc47fb0c7040"
     },
     {
-      "path": "LICENSES/nuget-metadata/System.Memory.4.5.5.nuspec",
-      "bytes": 5381,
-      "sha256": "745bfa574a0fe397559dad595fd0b73a38d7dde40703bb8f0f1eba82edf99aa7"
-    },
-    {
-      "path": "LICENSES/nuget-metadata/System.Memory.4.5.5.nuspec.meta",
-      "bytes": 158,
-      "sha256": "97967500f7b557d2490eaba5274450ac3a5a866234ff07dd64f9a52c55ad4300"
-    },
-    {
       "path": "LICENSES/nuget-metadata/System.Memory.4.5.5.THIRD-PARTY-NOTICES.TXT",
       "bytes": 15835,
       "sha256": "7864a01e2fdef7e8fdf81b906efb1466f083206affea7ba7e6dadea429754765"
@@ -318,6 +308,16 @@
       "path": "LICENSES/nuget-metadata/System.Memory.4.5.5.THIRD-PARTY-NOTICES.TXT.meta",
       "bytes": 158,
       "sha256": "431029c288d5b36bcad9a2a951821309080196e9f1b67e7998629d2c600a06ba"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Memory.4.5.5.nuspec",
+      "bytes": 5381,
+      "sha256": "745bfa574a0fe397559dad595fd0b73a38d7dde40703bb8f0f1eba82edf99aa7"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Memory.4.5.5.nuspec.meta",
+      "bytes": 158,
+      "sha256": "97967500f7b557d2490eaba5274450ac3a5a866234ff07dd64f9a52c55ad4300"
     },
     {
       "path": "LICENSES/nuget-metadata/System.Numerics.Vectors.4.4.0.LICENSE.TXT",
@@ -330,16 +330,6 @@
       "sha256": "cb0afd87619ad1c4db301192d0894d99cf5b64dda3ad908790aa810411c87528"
     },
     {
-      "path": "LICENSES/nuget-metadata/System.Numerics.Vectors.4.4.0.nuspec",
-      "bytes": 2218,
-      "sha256": "4d3f87dc61b56fd70778c13b0d69e12ca02ef1f3485e3789486bab4ea1732167"
-    },
-    {
-      "path": "LICENSES/nuget-metadata/System.Numerics.Vectors.4.4.0.nuspec.meta",
-      "bytes": 158,
-      "sha256": "27d39a2974041cbaac9351f4e376d7ea1020822dea00aa9c35c609b677a314db"
-    },
-    {
       "path": "LICENSES/nuget-metadata/System.Numerics.Vectors.4.4.0.THIRD-PARTY-NOTICES.TXT",
       "bytes": 11591,
       "sha256": "0ef4dce1f4e8965f19a3b8b2f984f337d5c35e5aaf7f8a36b95aec66c301963a"
@@ -348,6 +338,16 @@
       "path": "LICENSES/nuget-metadata/System.Numerics.Vectors.4.4.0.THIRD-PARTY-NOTICES.TXT.meta",
       "bytes": 158,
       "sha256": "64fa3babc24505d6e02822125eace0c461660f323b01483d932df1c5dbbf8f49"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Numerics.Vectors.4.4.0.nuspec",
+      "bytes": 2218,
+      "sha256": "4d3f87dc61b56fd70778c13b0d69e12ca02ef1f3485e3789486bab4ea1732167"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Numerics.Vectors.4.4.0.nuspec.meta",
+      "bytes": 158,
+      "sha256": "27d39a2974041cbaac9351f4e376d7ea1020822dea00aa9c35c609b677a314db"
     },
     {
       "path": "LICENSES/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.LICENSE.TXT",
@@ -360,16 +360,6 @@
       "sha256": "4c22f88f918c753bb8a4d1d1239c6fb15bcf5f4eae7dd1c2e5f935a5e5480cdc"
     },
     {
-      "path": "LICENSES/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.nuspec",
-      "bytes": 1384,
-      "sha256": "edaccfd50eebadf418188db5a19cb7b24c887fbbc638f2e4d402ff94bbcc14dc"
-    },
-    {
-      "path": "LICENSES/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.nuspec.meta",
-      "bytes": 158,
-      "sha256": "5d914677971372bb8c22a87642673893c01573b37d28a3d4ece7bbcda7cb1260"
-    },
-    {
       "path": "LICENSES/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.THIRD-PARTY-NOTICES.TXT",
       "bytes": 46990,
       "sha256": "a6344bfb229bc08d1071cec400eea216e307439f961c5943ec1b56d2245acb95"
@@ -378,6 +368,16 @@
       "path": "LICENSES/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.THIRD-PARTY-NOTICES.TXT.meta",
       "bytes": 158,
       "sha256": "3bfae136b7227725bc57960140a5e8026086b49631383fc1a496741a2502d1b0"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.nuspec",
+      "bytes": 1384,
+      "sha256": "edaccfd50eebadf418188db5a19cb7b24c887fbbc638f2e4d402ff94bbcc14dc"
+    },
+    {
+      "path": "LICENSES/nuget-metadata/System.Runtime.CompilerServices.Unsafe.6.0.0.nuspec.meta",
+      "bytes": 158,
+      "sha256": "5d914677971372bb8c22a87642673893c01573b37d28a3d4ece7bbcda7cb1260"
     },
     {
       "path": "LICENSES/nuget-metadata.meta",
@@ -390,21 +390,6 @@
       "sha256": "5f20372c5820551b55d863b18e8c8707b14f38113515bc1d794dae266c820d2b"
     },
     {
-      "path": "package-content-manifest.json.meta",
-      "bytes": 158,
-      "sha256": "e773016bc49069fb92e958227c8a8420212727de1051ccaf222258a45c463e76"
-    },
-    {
-      "path": "package.json",
-      "bytes": 389,
-      "sha256": "c732638ff51d220dddb78d9984ded341ae50f1b116d0dce5263edc65b0acc207"
-    },
-    {
-      "path": "package.json.meta",
-      "bytes": 158,
-      "sha256": "67954052d86219c91543799a0c6922de597569fc693af7e887de688733562135"
-    },
-    {
       "path": "README.md",
       "bytes": 723,
       "sha256": "277a2876137d1e6583213523f5f77bde2365dd7f1c07e542261d39202e0afb06"
@@ -415,19 +400,9 @@
       "sha256": "0741dc96e5581a9bf4684851d7860f81410788d01002308bdea3be2f2a90119f"
     },
     {
-      "path": "Runtime/link.xml",
-      "bytes": 1505,
-      "sha256": "fd4cf3ec9833c17ee5be9df56ca89dc1a1f043bf186a57736f7ef566eeda5aa7"
-    },
-    {
-      "path": "Runtime/link.xml.meta",
-      "bytes": 158,
-      "sha256": "3489f7210711e2b8748a1e7153e51cbee91e62b42ac1af212d294dd2219dcd6b"
-    },
-    {
       "path": "Runtime/Plugins/Managed/GamePlatform.Backend.Contracts.dll",
-      "bytes": 20480,
-      "sha256": "b589fce4c6873db57b7a109afbdb6db4dbfff85f73cb563cfdb1218ae0ea68e1"
+      "bytes": 24064,
+      "sha256": "e8d67fe2e71ae68ab9d7fb5d01642569cdc4d04dcf81290648fe441d89075f05"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Backend.Contracts.dll.meta",
@@ -437,7 +412,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Core.dll",
       "bytes": 15872,
-      "sha256": "d498d698e65c34c69a76a086080f37116933eea56ed7042584edb1f4efa17341"
+      "sha256": "64de03e1f6355b4fbb8c5e101088e38828630436dad0001f9ddbda24539ec4dc"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Core.dll.meta",
@@ -447,7 +422,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Diagnostics.Abstractions.dll",
       "bytes": 10752,
-      "sha256": "fcbdc0425374d1b30fdce0eb69870a6bf6bf4f0adb2f230254c5053aeb2dcd53"
+      "sha256": "629c5abefa610decceb488fd3a4e7b0cf3e32b2a10865e79dc10aab8dc357995"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Diagnostics.Abstractions.dll.meta",
@@ -457,7 +432,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Contracts.dll",
       "bytes": 54272,
-      "sha256": "ce1840fe8770f9fb03336aa5a53084c43c7a68c88014a07f5a175298c4752e91"
+      "sha256": "c9648c806c3b7567aeb5ecc3dd9c15a7551f39a12f1cb67b1130a2f06d8d8785"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Contracts.dll.meta",
@@ -465,19 +440,9 @@
       "sha256": "8d578f8e73ac3f8e6574767f92e94c87e9ab94f969f847f3bfb8da4435fcec35"
     },
     {
-      "path": "Runtime/Plugins/Managed/GamePlatform.Features.dll",
-      "bytes": 232448,
-      "sha256": "2048a488445623d655fd6f4c8e02f79970ae40fcca7c4b4bdad99e66a89ae712"
-    },
-    {
-      "path": "Runtime/Plugins/Managed/GamePlatform.Features.dll.meta",
-      "bytes": 640,
-      "sha256": "81becd7b910e1a15157237e67bb372548e22c07ed03c313c52fc080401270127"
-    },
-    {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Presentation.dll",
       "bytes": 7680,
-      "sha256": "aafe4f5d750ddb431af38f33f094ab82b13d9be9c7e1b5e48f8c67ad03c08607"
+      "sha256": "60d04560ff81f2d5286e5c34c3afab85e1e9522001ca252db1c328bbfc7fc3eb"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Presentation.dll.meta",
@@ -485,9 +450,19 @@
       "sha256": "b229100e550eca2d356cd368cc8a06b28c999af8ff3f9a89002d3e4b3dffd6eb"
     },
     {
+      "path": "Runtime/Plugins/Managed/GamePlatform.Features.dll",
+      "bytes": 296960,
+      "sha256": "e0a83e3da19a5b493c6e9f55cac216ec16c9337bdcaae8d154b24a57486be979"
+    },
+    {
+      "path": "Runtime/Plugins/Managed/GamePlatform.Features.dll.meta",
+      "bytes": 640,
+      "sha256": "81becd7b910e1a15157237e67bb372548e22c07ed03c313c52fc080401270127"
+    },
+    {
       "path": "Runtime/Plugins/Managed/GamePlatform.Navigation.dll",
       "bytes": 13824,
-      "sha256": "fca563e8aed28bf4db35bffe8a4a22225e4cffc5ddb76660c68e6d14ff8f7c3c"
+      "sha256": "92fdc4e51c3df6d0af42215ab13065ef1d37b7505a2ac419f5c68ec65c138393"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Navigation.dll.meta",
@@ -497,7 +472,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.Json.dll",
       "bytes": 5632,
-      "sha256": "0d7bc7d8371df9f02a7a68e1a4e4bdcd4d29179125135138929acdc0c9d98e38"
+      "sha256": "ff045f44c1f123da1679be88917732327292b76e68073d4d79296886240305a8"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.Json.dll.meta",
@@ -506,8 +481,8 @@
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.MessagePack.dll",
-      "bytes": 218112,
-      "sha256": "3f346e1fc3fd90eb53eb7728b3bd9d13d90b55b6a9d414726007497958bffc47"
+      "bytes": 261632,
+      "sha256": "5dff04ebfe641b4c3785cb04cbc3f7988aa11ea0ba8e8748875d539d992c95b0"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.MessagePack.dll.meta",
@@ -516,8 +491,8 @@
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Abstractions.dll",
-      "bytes": 27136,
-      "sha256": "e3976dc11e4e909d6ab9762e8e91b70655dadf211932ae66bd5a22bafae579b5"
+      "bytes": 30720,
+      "sha256": "bfbe9f1e5910982900680e44ba28fe2cceca255c1f2f89f38ee44fcf1719c957"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Abstractions.dll.meta",
@@ -526,8 +501,8 @@
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Sqlite.dll",
-      "bytes": 202752,
-      "sha256": "228eeb264c1195c7ce9290bee210d295bdb0602595c7d3364c763d6df0c7f600"
+      "bytes": 244224,
+      "sha256": "ff266a8903c58f7a27f3700595eb87ada8bd02312bc32a33eaaaae59c5eb9b0e"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Sqlite.dll.meta",
@@ -536,8 +511,8 @@
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Sync.dll",
-      "bytes": 25600,
-      "sha256": "7841f53ae3e2ae4c2cc06e6a68db1da13d490250bef6ab992a26e49da42fea00"
+      "bytes": 36352,
+      "sha256": "b0f6ff913061f54180ad35cae84876172ae29b1a6252bef5983bc6ba73cc7fb4"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Sync.dll.meta",
@@ -547,7 +522,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Abstractions.dll",
       "bytes": 8704,
-      "sha256": "92867f29fabd3b47cb5e3ba5f4c965db74b138eb6ff3e2b36cf680486b31edf6"
+      "sha256": "5940687a0a7e98f994898b0f6d1f3c881d92ebb704dbe37e433366924544a69e"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Abstractions.dll.meta",
@@ -556,8 +531,8 @@
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Http.dll",
-      "bytes": 122880,
-      "sha256": "f014d496921e92bdf97c47abb772b7564befce20254f1c467707e4266c95394d"
+      "bytes": 154624,
+      "sha256": "6394bbebae69823df7af2fc2c90f66c5e63d94cd4666327cae6fc54fe11abce6"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Http.dll.meta",
@@ -566,8 +541,8 @@
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Wire.Contracts.dll",
-      "bytes": 60928,
-      "sha256": "625048bda947c75b62d10d0ffdf2bf27461cd9df7ee59996f670ac0d7e569283"
+      "bytes": 87040,
+      "sha256": "31815f5b01a00ef08d1fbb5f0955fe0f43a7ec4b41ccb2b2f8ee8ae8b942ffa0"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Wire.Contracts.dll.meta",
@@ -720,9 +695,34 @@
       "sha256": "467783662be35aa33b9730381508b2d3963dbb886f6509f7afa695f31472ea4a"
     },
     {
+      "path": "Runtime/link.xml",
+      "bytes": 1865,
+      "sha256": "98034e9506b8d7c541a6e706fabf8a8209c258f6918a95c8000a0f666281fb40"
+    },
+    {
+      "path": "Runtime/link.xml.meta",
+      "bytes": 158,
+      "sha256": "3489f7210711e2b8748a1e7153e51cbee91e62b42ac1af212d294dd2219dcd6b"
+    },
+    {
       "path": "Runtime.meta",
       "bytes": 172,
       "sha256": "17b08ae509ae9ce3b99148ce83467c05e80ae91b86126d881f719adeb314b25b"
+    },
+    {
+      "path": "package-content-manifest.json.meta",
+      "bytes": 158,
+      "sha256": "e773016bc49069fb92e958227c8a8420212727de1051ccaf222258a45c463e76"
+    },
+    {
+      "path": "package.json",
+      "bytes": 391,
+      "sha256": "bb809ea180cef99b99b64921bb721866e28209ca93375293af547a0656cc0ed2"
+    },
+    {
+      "path": "package.json.meta",
+      "bytes": 158,
+      "sha256": "67954052d86219c91543799a0c6922de597569fc693af7e887de688733562135"
     }
   ]
 }
