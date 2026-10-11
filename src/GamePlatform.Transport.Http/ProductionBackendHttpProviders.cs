@@ -76,6 +76,7 @@ namespace GamePlatform.Transport.Http
             if (installationId == Guid.Empty) throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
             PrivateSync = new PrivateSyncHttpProvider(appId, accountId, configuration, executor, new TeamsSupportingWireCodec(), auth, refresh);
             Teams = new TeamsHttpProvider(appId, accountId, configuration, executor, auth, refresh);
+            Leaderboards = new LeaderboardsHttpProvider(appId, accountId, configuration, executor, auth, refresh);
             CommandPush = new CommandPushHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh, storeQuest);
             CommandReceipts = new CommandReceiptHttpProvider(appId, accountId, installationId, configuration, executor, codec, auth, refresh,
                 BackendWireRepresentation.MessagePack, storeQuest);
@@ -84,6 +85,7 @@ namespace GamePlatform.Transport.Http
 
         public IPrivateSyncRemote PrivateSync { get; }
         public TeamsHttpProvider Teams { get; }
+        public LeaderboardsHttpProvider Leaderboards { get; }
         public ICommandRemote CommandPush { get; }
         public ICommandReceiptRemote CommandReceipts { get; }
         public G3RewardReceiptHttpProvider RewardReceipts { get; }

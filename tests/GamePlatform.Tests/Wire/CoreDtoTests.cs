@@ -127,8 +127,9 @@ namespace GamePlatform.Tests.Wire
         {
             var assembly = typeof(ProvisionRequest).Assembly;
             var carriers = assembly.GetExportedTypes().Where(t => t.IsClass && t.IsSealed && t != typeof(ExtensionValue) && t != typeof(ProtocolVersion)).ToArray();
-            Assert.Equal(77, carriers.Count(t => t.Namespace != "GamePlatform.Wire.Contracts.Teams"));
+            Assert.Equal(77, carriers.Count(t => t.Namespace != "GamePlatform.Wire.Contracts.Teams" && t.Namespace != "GamePlatform.Wire.Contracts.Leaderboards"));
             Assert.Equal(12, carriers.Count(t => t.Namespace == "GamePlatform.Wire.Contracts.Teams"));
+            Assert.Equal(6, carriers.Count(t => t.Namespace == "GamePlatform.Wire.Contracts.Leaderboards"));
             foreach (var carrier in carriers)
             {
                 foreach (var property in carrier.GetProperties()) Assert.Null(property.SetMethod);

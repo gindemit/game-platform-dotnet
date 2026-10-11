@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/v1/schemas/leaderboards.schema.json",
+  "title": "Bounded immutable leaderboard queries and country selection",
+  "$defs": {
+    "queryRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boardId",
+        "scope",
+        "limit"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "scope": {
+          "enum": [
+            "global",
+            "country"
+          ]
+        },
+        "countryCode": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "cursor": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "country"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "countryCode"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "countryCode"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "participantId",
+        "rank",
+        "score",
+        "displayName",
+        "avatarKey",
+        "badgeId",
+        "countryCode"
+      ],
+      "properties": {
+        "participantId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "rank": {
+          "$ref": "common.schema.json#/$defs/positiveInt64"
+        },
+        "score": {
+          "$ref": "common.schema.json#/$defs/positiveInt64"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "avatarKey": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "badgeId": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 48
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "countryCode": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "countrySelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currentCountryCode",
+        "pendingCountryCode",
+        "pendingEffectiveAt"
+      ],
+      "properties": {
+        "currentCountryCode": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pendingCountryCode": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pendingEffectiveAt": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "pendingCountryCode": {
+              "type": "null"
+            },
+            "pendingEffectiveAt": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "pendingCountryCode": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            "pendingEffectiveAt": {
+              "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+            }
+          }
+        }
+      ]
+    },
+    "queryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boardId",
+        "participantKind",
+        "scope",
+        "countryCode",
+        "periodId",
+        "periodStart",
+        "periodEnd",
+        "resetAt",
+        "snapshotCreatedAt",
+        "expiresAt",
+        "serverTime",
+        "snapshotId",
+        "scoreAuthority",
+        "entries",
+        "nextCursor",
+        "self",
+        "snapshotLimit",
+        "countrySelection"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "participantKind": {
+          "enum": [
+            "player",
+            "team"
+          ]
+        },
+        "scope": {
+          "enum": [
+            "global",
+            "country"
+          ]
+        },
+        "countryCode": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodId": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "periodStart": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "periodEnd": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "resetAt": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "snapshotCreatedAt": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "expiresAt": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "snapshotId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "scoreAuthority": {
+          "const": "client_trusted_unvalidated"
+        },
+        "entries": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        },
+        "nextCursor": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "self": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/entry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "snapshotLimit": {
+          "const": 500
+        },
+        "countrySelection": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/countrySelection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "countryRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationId",
+        "boardId",
+        "participantKind",
+        "countryCode"
+      ],
+      "properties": {
+        "operationId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "boardId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "participantKind": {
+          "enum": [
+            "player",
+            "team"
+          ]
+        },
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "countryCode": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "participantKind": {
+                "const": "team"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "teamId"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "teamId"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "countryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationId",
+        "boardId",
+        "participantKind",
+        "participantId",
+        "countryCode",
+        "effectiveAt"
+      ],
+      "properties": {
+        "operationId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "boardId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "participantKind": {
+          "enum": [
+            "player",
+            "team"
+          ]
+        },
+        "participantId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "countryCode": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "effectiveAt": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    }
+  }
+}

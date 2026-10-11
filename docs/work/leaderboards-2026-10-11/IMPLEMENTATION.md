@@ -29,9 +29,12 @@ exposing success. Retain one immutable request identity/body for retry; ambiguou
 transport failure is not proof of rollback. Country assignment is per boardId,
 so player/team selectors and alternate schedules never share a preference.
 Query responses also carry authenticated participant country-assignment readback,
-including pending assignment/effective time, using the final reviewed backend
-schema keys. Cohort countryCode is a query filter and must never substitute for
-that authoritative assignment. Freeze exact keys with backend before coding.
+serverTime (signed64 epoch milliseconds) and countrySelection: null or an object
+with currentCountryCode, pendingCountryCode, pendingEffectiveAt. Pending code/time
+are both null or both present. Null selection means no participant (no team); an
+unassigned participant has all three fields null. Independently timed assignment
+metadata may refresh on continuation; standings/self stay immutable. Cohort
+countryCode is a query filter, never a substitute for authoritative assignment.
 
 Initial boards are players-monthly/teams-monthly. Explicit configuration may
 enable players-daily/teams-daily/players-weekly/teams-weekly. Server owns UTC
