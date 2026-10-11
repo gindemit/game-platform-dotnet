@@ -7,6 +7,7 @@ using GamePlatform.Core;
 using GamePlatform.Storage.Abstractions;
 using GamePlatform.Storage.Abstractions.Accounts;
 using GamePlatform.Storage.Sqlite.Executor;
+using GamePlatform.Storage.Sqlite.Recovery;
 using SQLite;
 
 namespace GamePlatform.Storage.Sqlite.Features.Accounts
@@ -151,6 +152,7 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
                     if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "The principal directory migration identity, checksum, owner or timestamp changed.");
                 }
                 ValidateRequiredSchema(connection);
+                SqliteCommandStreamRecoveryMigration.Apply(connection, scope.BackendNamespace.Value, scope.AppId.ToString());
                 cancellationToken.ThrowIfCancellationRequested();
                 connection.Execute("COMMIT");
             }

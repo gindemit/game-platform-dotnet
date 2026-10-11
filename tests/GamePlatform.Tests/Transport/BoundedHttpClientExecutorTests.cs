@@ -56,7 +56,9 @@ namespace GamePlatform.Tests.Transport
         [InlineData("friends/query")]
         [InlineData("friends/commands")]
         [InlineData("leaderboards/friends/query")]
-        public async Task SelectedFriendsRoutesReachBoundedHttpExecutor(string route)
+        [InlineData("sync/streams/inspect")]
+        [InlineData("sync/streams/recover")]
+        public async Task SelectedPostRoutesReachBoundedHttpExecutor(string route)
         {
             var handler = new DelegateHandler((request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1 }) }));
             using var client = new HttpClient(handler); var executor = new BoundedHttpClientExecutor(client, Configuration());
@@ -68,6 +70,8 @@ namespace GamePlatform.Tests.Transport
         [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/unsupported")]
         [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/friends/gifts")]
         [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/friends/country")]
+        [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/sync/streams/delete")]
+        [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/sync/streams/recover/extra")]
         public async Task UnsupportedRoutesFailClosedBeforeNetwork(string path)
         {
             var handler = new DelegateHandler((_, _) => throw new InvalidOperationException("must not send"));
@@ -306,6 +310,7 @@ namespace GamePlatform.Tests.Transport
             Assert.IsType<PrivateSyncHttpProvider>(accountProviders.PrivateSync);
             Assert.IsType<CommandPushHttpProvider>(accountProviders.CommandPush);
             Assert.IsType<CommandReceiptHttpProvider>(accountProviders.CommandReceipts);
+            Assert.IsType<CommandStreamRecoveryHttpProvider>(accountProviders.CommandStreamRecovery);
             Assert.IsType<G3RewardReceiptHttpProvider>(accountProviders.RewardReceipts);
             Assert.Equal(1, handler.Calls);
         }

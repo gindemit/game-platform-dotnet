@@ -81,6 +81,8 @@ namespace GamePlatform.Transport.Http
             CommandPush = new CommandPushHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh, storeQuest);
             CommandReceipts = new CommandReceiptHttpProvider(appId, accountId, installationId, configuration, executor, codec, auth, refresh,
                 BackendWireRepresentation.MessagePack, storeQuest);
+            CommandStreamRecovery = new CommandStreamRecoveryHttpProvider(appId, accountId, installationId,
+                configuration, executor, codec, auth, refresh);
             RewardReceipts = new G3RewardReceiptHttpProvider(appId, accountId, configuration, executor, new G3RewardReceiptMessagePackCodec(), codec, auth, refresh);
         }
 
@@ -90,6 +92,7 @@ namespace GamePlatform.Transport.Http
         public LeaderboardsHttpProvider Leaderboards { get; }
         public ICommandRemote CommandPush { get; }
         public ICommandReceiptRemote CommandReceipts { get; }
+        public ICommandStreamRecoveryRemote CommandStreamRecovery { get; }
         public G3RewardReceiptHttpProvider RewardReceipts { get; }
     }
 }

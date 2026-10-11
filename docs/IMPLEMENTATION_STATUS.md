@@ -1,5 +1,14 @@
 # SDK current status
 
+## 2026-10-11 portable stream inspection and recovery
+
+Production account HTTP composition now includes the backend's stream inspect and
+recover endpoints. Portable recovery adds an immutable persistent principal-directory
+journal, atomic successor adoption, retained-command receipt reconciliation and
+account lifetime fencing. Complete bootstrap remains a consumer-host requirement;
+the change does not activate Unity recovery or product gates. See the
+[implementation and actual checks](work/stream-recovery-2026-10-11/IMPLEMENTATION.md).
+
 ## Friends generated delivery and consumer pin
 
 Source `9df6800c3109b8b122a4661bd18ae0512fa3a0be` passed CI `38151671867`

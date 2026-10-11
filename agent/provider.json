@@ -13,6 +13,17 @@
   ],
   "sections": [
     {
+      "id": "dotnet-stream-recovery",
+      "path": "docs/work/stream-recovery-2026-10-11/IMPLEMENTATION.md",
+      "heading": "# Portable command stream recovery - 2026-10-11",
+      "title": "Portable stream recovery contracts and host boundaries",
+      "summary": "Account-owned inspect/recover, durable journal, retained intents and actual acceptance limits.",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": ["accounts", "sync"],
+      "tasks": ["SDK-RECOVERY-HTTP", "SDK-RECOVERY-DURABLE", "SDK-RECOVERY-VERIFY"]
+    },
+    {
       "id": "dotnet-feature-friends",
       "path": "docs/work/friends-2026-10-11/IMPLEMENTATION.md",
       "heading": "# Portable Friends and friends rankings - 2026-10-11",
