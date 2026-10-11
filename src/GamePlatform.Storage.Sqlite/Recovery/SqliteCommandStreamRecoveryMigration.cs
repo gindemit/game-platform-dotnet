@@ -22,11 +22,23 @@ namespace GamePlatform.Storage.Sqlite.Recovery
                 connection.Execute(TableSql);
                 connection.Execute("INSERT INTO gp_command_stream_recovery_schema(singleton,version,migration_id,backend_namespace,app_id) VALUES (1,?,?,?,?)", Version, Id, backendNamespace, appId);
             }
-            else if (count != 1 || connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_command_stream_recovery_schema WHERE singleton=1 AND version=? AND migration_id=? AND backend_namespace=? AND app_id=?", Version, Id, backendNamespace, appId) != 1)
+            else if (count != 1 || connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_command_stream_recovery_schema WHERE singleton=1 AND ((version=? AND migration_id=?) OR (version=2 AND migration_id='command-stream-recovery-journal-v2')) AND backend_namespace=? AND app_id=?", Version, Id, backendNamespace, appId) != 1)
                 throw new StorageException(StorageFailure.Migration, "The command recovery journal schema marker is invalid.");
             if (connection.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='gp_command_stream_recovery'") != 1 ||
-                !string.Equals(connection.ExecuteScalar<string>("SELECT sql FROM sqlite_master WHERE type='table' AND name='gp_command_stream_recovery'"), TableSql, StringComparison.Ordinal))
+                !string.Equals(connection.ExecuteScalar<string>("SELECT sql FROM sqlite_master WHERE type='table' AND name='gp_command_stream_recovery'"),
+                    connection.ExecuteScalar<int>("SELECT version FROM gp_command_stream_recovery_schema") == 1 ? TableSql : TableSqlV2, StringComparison.Ordinal))
                 throw new StorageException(StorageFailure.Migration, "The command recovery journal schema changed.");
+            if (connection.ExecuteScalar<int>("SELECT version FROM gp_command_stream_recovery_schema") == 1)
+            {
+                // The directory caller owns this migration transaction. Preserve every immutable request.
+                connection.Execute("ALTER TABLE gp_command_stream_recovery RENAME TO gp_command_stream_recovery_v1");
+                connection.Execute(TableSqlV2);
+                connection.Execute("INSERT INTO gp_command_stream_recovery SELECT * FROM gp_command_stream_recovery_v1 ORDER BY rowid");
+                connection.Execute("DROP TABLE gp_command_stream_recovery_v1");
+                connection.Execute("UPDATE gp_command_stream_recovery_schema SET version=2,migration_id=? WHERE singleton=1", "command-stream-recovery-journal-v2");
+            }
         }
+
+        private static readonly string TableSqlV2 = TableSql.Replace("phase BETWEEN 1 AND 4", "phase BETWEEN 0 AND 4").Replace("phase = 1 AND", "phase IN (0,1) AND");
     }
 }

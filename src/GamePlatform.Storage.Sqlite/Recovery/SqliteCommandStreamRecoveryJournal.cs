@@ -52,7 +52,7 @@ namespace GamePlatform.Storage.Sqlite.Recovery
                 }
                 EnsureDirectory(connection, request.PriorStreamId, requireOwnerStream: true);
                 var pending = ReadLatest(connection);
-                if (pending != null && pending.Phase != CommandStreamRecoveryPhase.BootstrapComplete)
+                if (pending != null && pending.Phase != CommandStreamRecoveryPhase.BootstrapComplete && pending.Phase != CommandStreamRecoveryPhase.Expired)
                     throw Conflict("A different stream recovery is already pending.");
                 connection.Execute("INSERT INTO gp_command_stream_recovery(backend_namespace,app_id,issuer,subject,platform_user_id,installation_id,prior_stream_id,successor_stream_id,recovery_id,reason,inspection_token,expected_finalized_through,phase,remote_next_sequence,remote_prior_finalized_through) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1,NULL,NULL)",
                     scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, owner.AccountId!.Value.ToString(),
@@ -75,6 +75,19 @@ namespace GamePlatform.Storage.Sqlite.Recovery
                 var updated = connection.Execute("UPDATE gp_command_stream_recovery SET phase=2,remote_next_sequence=1,remote_prior_finalized_through=? WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND recovery_id=? AND phase=1",
                     priorFinalizedThrough, scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, recoveryId.ToString("D"));
                 if (updated != 1) throw Conflict("The recovery journal changed while recording the remote result.");
+                return ReadRecord(connection, recoveryId, true)!;
+            }), cancellationToken);
+
+        public Task<CommandStreamRecoveryRecord> MarkExpiredAsync(Guid recoveryId, CancellationToken cancellationToken) =>
+            database.ExecuteAsync(scope, connection => InCallerTransaction(connection, cancellationToken, () =>
+            {
+                var record = RequireRecord(connection, recoveryId);
+                EnsureDirectory(connection, record.Request.PriorStreamId, requireOwnerStream: true);
+                if (record.Phase == CommandStreamRecoveryPhase.Expired) return record;
+                if (record.Phase != CommandStreamRecoveryPhase.Prepared) throw Conflict("Only an uncommitted prepared recovery may expire.");
+                var updated = connection.Execute("UPDATE gp_command_stream_recovery SET phase=0 WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND recovery_id=? AND phase=1",
+                    scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, recoveryId.ToString("D"));
+                if (updated != 1) throw Conflict("The recovery journal changed while recording expiry.");
                 return ReadRecord(connection, recoveryId, true)!;
             }), cancellationToken);
 
@@ -142,9 +155,9 @@ namespace GamePlatform.Storage.Sqlite.Recovery
                 var request = new CommandStreamRecoveryRequest(owner.Principal, owner.AppId, owner.AccountId!.Value, owner.InstallationId,
                     new ClientStreamId(Guid.Parse(row.PriorStreamId)), new ClientStreamId(Guid.Parse(row.SuccessorStreamId)), Guid.Parse(row.RecoveryId),
                     row.Reason, row.InspectionToken, row.ExpectedFinalizedThrough);
-                if (row.Phase < 1 || row.Phase > 4) throw new StorageException(StorageFailure.Corrupt, "The recovery journal phase is invalid.");
+                if (row.Phase < 0 || row.Phase > 4) throw new StorageException(StorageFailure.Corrupt, "The recovery journal phase is invalid.");
                 var phase = (CommandStreamRecoveryPhase)row.Phase;
-                if ((phase == CommandStreamRecoveryPhase.Prepared && (row.RemoteNextSequence.HasValue || row.RemotePriorFinalizedThrough.HasValue)) ||
+                if ((phase <= CommandStreamRecoveryPhase.Prepared && (row.RemoteNextSequence.HasValue || row.RemotePriorFinalizedThrough.HasValue)) ||
                     (phase >= CommandStreamRecoveryPhase.RemoteCommitted && (row.RemoteNextSequence != 1 || row.RemotePriorFinalizedThrough != request.ExpectedFinalizedThrough)))
                     throw new StorageException(StorageFailure.Corrupt, "The recovery journal remote receipt is inconsistent.");
                 var result = new CommandStreamRecoveryRecord(request, phase, row.RemoteNextSequence, row.RemotePriorFinalizedThrough);

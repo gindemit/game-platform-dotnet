@@ -100,10 +100,17 @@ namespace GamePlatform.Sync.Recovery
                 // A retained completed journal resumes bootstrap; it cannot prove the host's DB is intact.
                 var prior = record?.Request.PriorStreamId ?? account.StreamId;
                 var retainedReason = record == null ? reason : ParseReason(record.Request.Reason);
-                var quiesceStream = record?.Phase == CommandStreamRecoveryPhase.BootstrapComplete ? record.Request.SuccessorStreamId : prior;
+                var quiesceStream = record != null && record.Phase >= CommandStreamRecoveryPhase.Adopted ? record.Request.SuccessorStreamId : prior;
                 if (!await host.QuiesceAsync(quiesceStream, retainedReason, record != null, ct).ConfigureAwait(false))
                     return CommandStreamRecoveryOutcome.DamageNotEstablished;
                 CheckCurrent(ct);
+
+                if (record?.Phase == CommandStreamRecoveryPhase.Expired)
+                {
+                    reason = retainedReason;
+                    wireReason = Reason(reason);
+                    record = null;
+                }
 
                 if (record == null || record.Phase == CommandStreamRecoveryPhase.Prepared)
                 {
@@ -152,6 +159,12 @@ namespace GamePlatform.Sync.Recovery
                     var recovered = await remote.RecoverAsync(new RemoteRequest(request.PriorStreamId, request.SuccessorStreamId,
                         request.RecoveryId, ParseReason(request.Reason), request.InspectionToken, request.ExpectedFinalizedThrough), ct).ConfigureAwait(false);
                     CheckCurrent(ct);
+                    if (!recovered.IsSuccess && recovered.Failure.Kind == RemoteFailureKind.InspectionExpired)
+                    {
+                        await journal.MarkExpiredAsync(request.RecoveryId, ct).ConfigureAwait(false);
+                        CheckCurrent(ct);
+                        return CommandStreamRecoveryOutcome.RemoteFailure;
+                    }
                     if (!recovered.IsSuccess)
                         return recovered.Failure.Kind == RemoteFailureKind.OutcomeUncertain || recovered.Failure.Kind == RemoteFailureKind.Protocol
                             ? CommandStreamRecoveryOutcome.OutcomeUncertain : CommandStreamRecoveryOutcome.RemoteFailure;

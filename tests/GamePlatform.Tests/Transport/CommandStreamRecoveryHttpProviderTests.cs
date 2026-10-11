@@ -116,6 +116,22 @@ namespace GamePlatform.Tests.Transport
             Assert.Equal(RemoteFailureKind.Dependency, plain.Failure.Kind);
         }
 
+        [Theory]
+        [InlineData(409, "conflict", "inspection_expired", "correlation", RemoteFailureKind.InspectionExpired)]
+        [InlineData(400, "conflict", "inspection_expired", "correlation", RemoteFailureKind.Conflict)]
+        [InlineData(409, "validation", "inspection_expired", "correlation", RemoteFailureKind.Validation)]
+        [InlineData(409, "conflict", "stream_changed", "correlation", RemoteFailureKind.Conflict)]
+        [InlineData(409, "conflict", "inspection_expired", "other", RemoteFailureKind.Protocol)]
+        public async Task OnlyValidatedRecoveryExpiryProvesUncommittedRequest(int status, string category, string code, string correlation, RemoteFailureKind expected)
+        {
+            var codec = new MessagePackWireCodec();
+            var error = new ErrorResponse(correlation, new CommonError(code, category, "rejected", false, default, default), 100);
+            using var refresh = new AuthRefreshCoordinator();
+            var provider = Provider(new ScriptedExecutor(_ => new HttpResponseData(status, Headers(), codec.Encode(error))), refresh);
+            Assert.Equal(expected, (await provider.RecoverAsync(Request(), CancellationToken.None)).Failure.Kind);
+            Assert.NotEqual(RemoteFailureKind.InspectionExpired, (await provider.InspectAsync(Prior, CancellationToken.None)).Failure.Kind);
+        }
+
         private static CommandStreamRecoveryRequest Request() => new CommandStreamRecoveryRequest(Prior, Successor,
             RecoveryId, CommandStreamRecoveryReason.BackupRestored, Token, 154);
 

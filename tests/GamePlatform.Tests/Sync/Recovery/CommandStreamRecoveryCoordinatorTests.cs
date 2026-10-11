@@ -55,6 +55,7 @@ namespace GamePlatform.Tests.Sync.Recovery
             f.Host.FailBootstrap = false;
             coordinator = await f.CoordinatorAsync();
             Assert.Equal(CommandStreamRecoveryOutcome.BootstrapComplete, await coordinator.ResumeAsync(CancellationToken.None));
+            Assert.Equal((await f.EntryAsync()).StreamId, f.Host.LastQuiesced);
             Assert.Equal(CommandStreamRecoveryPhase.BootstrapComplete, (await f.JournalAsync()).Phase);
             Assert.Equal(1, await f.SuccessorLongAsync("SELECT next_sequence FROM gp_stream_state"));
             Assert.Equal(0, await f.SuccessorLongAsync("SELECT COUNT(*) FROM gp_outbox"));
@@ -146,6 +147,50 @@ namespace GamePlatform.Tests.Sync.Recovery
             await Assert.ThrowsAsync<StorageException>(() => c.RecoverAsync(CommandStreamRecoveryReason.LocalDatabaseRecreated, CancellationToken.None));
             Assert.Equal(0, f.Server.Inspections);
             Assert.Equal(f.Prior, (await f.EntryAsync()).StreamId);
+            await c.StopAsync();
+        }
+
+        [Fact]
+        public async Task BootstrapCommittedBeforeJournalCompletionCrashResumesByQuiescingSuccessor()
+        {
+            await using var f = await Fixture.OpenAsync();
+            using (var injection = new SQLite.SQLiteConnection(Path.Combine(f.Folder, "directory.db")))
+                injection.Execute("CREATE TRIGGER fail_bootstrap_complete BEFORE UPDATE OF phase ON gp_command_stream_recovery WHEN NEW.phase=4 BEGIN SELECT RAISE(ABORT,'crash boundary'); END");
+            var c = await f.CoordinatorAsync();
+            await Assert.ThrowsAsync<StorageException>(() => c.RecoverAsync(CommandStreamRecoveryReason.BackupRestored, CancellationToken.None));
+            Assert.Equal(CommandStreamRecoveryPhase.Adopted, (await f.JournalAsync()).Phase);
+            Assert.Equal(1, await f.SuccessorLongAsync("SELECT ready FROM gp_stream_state"));
+            await c.StopAsync();
+            using (var injection = new SQLite.SQLiteConnection(Path.Combine(f.Folder, "directory.db"))) injection.Execute("DROP TRIGGER fail_bootstrap_complete");
+            await f.ReopenDirectoryAsync();
+            c = await f.CoordinatorAsync();
+            Assert.Equal(CommandStreamRecoveryOutcome.BootstrapComplete, await c.ResumeAsync(CancellationToken.None));
+            Assert.Equal((await f.EntryAsync()).StreamId, f.Host.LastQuiesced);
+            Assert.Equal(1, f.Server.Commits);
+            await c.StopAsync();
+        }
+
+        [Fact]
+        public async Task ExpiredUncommittedRequestIsRetainedAndResumeReinspectsWithOriginalReason()
+        {
+            await using var f = await Fixture.OpenAsync();
+            f.Server.Offline = true;
+            var c = await f.CoordinatorAsync();
+            Assert.Equal(CommandStreamRecoveryOutcome.RemoteFailure, await c.RecoverAsync(CommandStreamRecoveryReason.BackupRestored, CancellationToken.None));
+            var first = (await f.JournalAsync()).Request;
+            f.Server.Offline = false;
+            f.Server.TokenExpired = true;
+            Assert.Equal(CommandStreamRecoveryOutcome.RemoteFailure, await c.ResumeAsync(CancellationToken.None));
+            Assert.Equal(CommandStreamRecoveryPhase.Expired, (await f.JournalAsync()).Phase);
+            await c.StopAsync();
+            await f.ReopenDirectoryAsync();
+            c = await f.CoordinatorAsync();
+            f.Server.TokenExpired = false;
+            Assert.Equal(CommandStreamRecoveryOutcome.BootstrapComplete, await c.ResumeAsync(CancellationToken.None));
+            Assert.Equal(2, f.Server.Inspections);
+            Assert.NotEqual(first.RecoveryId, f.Server.Requests.Last().RecoveryId);
+            Assert.NotEqual(first.SuccessorStreamId, f.Server.Requests.Last().NewStreamId);
+            Assert.Equal(CommandStreamRecoveryReason.BackupRestored, f.Server.Requests.Last().Reason);
             await c.StopAsync();
         }
 
@@ -253,6 +298,7 @@ namespace GamePlatform.Tests.Sync.Recovery
             {
                 Requests.Add(request);
                 if (Offline) return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.NotSent));
+                if (Commits == 0 && TokenExpired) return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.InspectionExpired, 409));
                 if (Commits == 0) { Assert.False(TokenExpired); Commits++; }
                 else Assert.Equal(Requests[0].RecoveryId, request.RecoveryId);
                 if (HoldResponse) { RemoteEntered.TrySetResult(true); await ReleaseResponse.Task; }

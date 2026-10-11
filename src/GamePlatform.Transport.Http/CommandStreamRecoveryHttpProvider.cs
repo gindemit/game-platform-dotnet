@@ -51,7 +51,7 @@ namespace GamePlatform.Transport.Http
             var attempt = await SendAuthenticatedAsync("inspect", body, false, cancellationToken).ConfigureAwait(false);
             if (attempt.Failure.HasValue) return RemoteResult<CommandStreamInspection>.Failed(attempt.Failure.Value);
             var response = attempt.Response!;
-            if (response.StatusCode != 200) return RemoteResult<CommandStreamInspection>.Failed(DecodeFailure(response));
+            if (response.StatusCode != 200) return RemoteResult<CommandStreamInspection>.Failed(DecodeFailure(response, false));
             if (!ValidProtocolResponse(response)) return Failure<CommandStreamInspection>(RemoteFailureKind.Protocol, response.StatusCode);
             try
             {
@@ -83,7 +83,7 @@ namespace GamePlatform.Transport.Http
             var attempt = await SendAuthenticatedAsync("recover", body, true, cancellationToken).ConfigureAwait(false);
             if (attempt.Failure.HasValue) return RemoteResult<CommandStreamRecoveryResult>.Failed(attempt.Failure.Value);
             var response = attempt.Response!;
-            if (response.StatusCode != 200) return RemoteResult<CommandStreamRecoveryResult>.Failed(DecodeFailure(response));
+            if (response.StatusCode != 200) return RemoteResult<CommandStreamRecoveryResult>.Failed(DecodeFailure(response, true));
             if (!ValidProtocolResponse(response)) return Failure<CommandStreamRecoveryResult>(RemoteFailureKind.Protocol, response.StatusCode);
             try
             {
@@ -135,7 +135,7 @@ namespace GamePlatform.Transport.Http
             catch { return new Attempt(new RemoteFailure(changesState ? RemoteFailureKind.OutcomeUncertain : RemoteFailureKind.Dependency)); }
         }
 
-        private RemoteFailure DecodeFailure(HttpResponseData response)
+        private RemoteFailure DecodeFailure(HttpResponseData response, bool recovery)
         {
             var mapped = MapStatus(response);
             if (response.BodyLength > configuration.MaximumResponseBytes) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
@@ -148,6 +148,8 @@ namespace GamePlatform.Transport.Http
                     !response.TryGetHeader("X-Correlation-Id", out var correlation) ||
                     !string.Equals(error.CorrelationId, correlation, StringComparison.Ordinal))
                     return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
+                if (recovery && response.StatusCode == 409 && error.Error.Category == "conflict" && error.Error.Code == "inspection_expired")
+                    return new RemoteFailure(RemoteFailureKind.InspectionExpired, response.StatusCode);
                 return new RemoteFailure(MapCategory(error.Error.Category), response.StatusCode, RetryAfter(response));
             }
             catch { return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode); }

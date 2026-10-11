@@ -7,7 +7,7 @@ using GamePlatform.Storage.Abstractions.Accounts;
 
 namespace GamePlatform.Storage.Abstractions.Recovery
 {
-    public enum CommandStreamRecoveryPhase { Prepared = 1, RemoteCommitted = 2, Adopted = 3, BootstrapComplete = 4 }
+    public enum CommandStreamRecoveryPhase { Expired = 0, Prepared = 1, RemoteCommitted = 2, Adopted = 3, BootstrapComplete = 4 }
 
     /// <summary>Immutable owner and request identity persisted before stream recovery is submitted.</summary>
     public sealed class CommandStreamRecoveryRequest
@@ -78,6 +78,7 @@ namespace GamePlatform.Storage.Abstractions.Recovery
         Task<CommandStreamRecoveryRecord> PrepareAsync(CommandStreamRecoveryRequest request, CancellationToken cancellationToken);
         Task<CommandStreamRecoveryRecord> RecordRemoteCommitAsync(Guid recoveryId, Guid returnedRecoveryId, ClientStreamId priorStreamId,
             ClientStreamId successorStreamId, long priorFinalizedThrough, long nextSequence, CancellationToken cancellationToken);
+        Task<CommandStreamRecoveryRecord> MarkExpiredAsync(Guid recoveryId, CancellationToken cancellationToken);
         Task<CommandStreamRecoveryRecord> AdoptAsync(Guid recoveryId, CancellationToken cancellationToken);
         Task<CommandStreamRecoveryRecord> MarkBootstrapCompleteAsync(Guid recoveryId, CancellationToken cancellationToken);
     }

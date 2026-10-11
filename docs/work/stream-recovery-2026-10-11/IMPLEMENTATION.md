@@ -21,6 +21,44 @@ start no IO. `RecoverAsync(reason)` starts only after the host establishes the s
 damage condition and drains prior writers. `ResumeAsync` never starts a new rotation.
 The owner awaits `StopAsync` before replacing this coordinator/account lifetime.
 
+### Independent review corrections
+
+Fresh Sol review identified two crash/retry defects in the initial delivery.
+An Adopted journal now quiesces the successor, including a crash after bootstrap
+commits but before the completion journal update. An uncommitted expired request
+can now leave Prepared only after a validated recovery HTTP 409 envelope with
+category `conflict` and code `inspection_expired`. The backend serializes on the
+prior stream and checks recorded recovery success before expiry rejection.
+The retained request becomes terminal Expired history; a later explicit resume
+reconciles prior commands and obtains a fresh inspection and new identities using
+the original reason. Offline, uncertain, generic conflict and malformed responses
+never replace the retained request. Journal v2 preserves all v1 rows in the
+directory transaction, and the original directory migration checksum is unchanged.
+Luna independently reviewed these corrections; source and consumer qualification
+are recorded separately from the initial dev.138 receipt.
+
+The Unity consumer now also has a narrow serialized directory-extension API.
+`ExecuteExtensionAsync` supplies a synchronous borrowed transaction for consumer
+`pb_` tables. A `SqliteAccountsDirectoryStore` new-reservation callback shares the
+actual reservation transaction, allowing an admission witness to roll back with
+the reservation. The callback never runs for an existing reservation. Borrowed
+operations expire at callback exit, require the callback thread, and reject
+transaction controls and reentrant directory work. Consumers remain responsible
+for their extension schema and must never modify SDK directory/recovery tables.
+This API is an adapter extension, not a sandbox for untrusted SQL.
+
+Corrected-source validation in `C:/Work/sdk-recovery-review-validation-20261011`:
+72/72 focused recovery tests and 876/876 full Release tests, zero skips; locked
+restore, schema generation check, structure validation, 69/69 Python validator
+and packaging tests, and whole-solution whitespace verification pass. The first
+extension test incorrectly used Task.Run as proof of another thread; its possible
+inline execution exposed the test defect, repaired with an explicit Thread.
+Fresh Luna review also requested execution-context reentry fencing: AsyncLocal now
+rejects child-task directory calls before they can wait on the callback's writer.
+The focused/full runs above include both corrections. Real PostgreSQL, Unity and
+physical runtime remain separate downstream evidence; no backend change is needed
+for the narrow authoritative expiry response already supported by its handler.
+
 ## Durable recovery and host requirements
 
 `SqliteCommandStreamRecoveryJournal` uses `SqliteAccountsDirectoryDatabase`, outside

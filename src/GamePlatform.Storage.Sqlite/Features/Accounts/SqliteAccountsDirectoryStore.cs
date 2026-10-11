@@ -32,6 +32,19 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         public AccountDirectoryScope Scope { get; }
         public int ConnectionCount => disposed ? 0 : 1;
 
+        /// <summary>Executes a synchronous consumer pb_ extension callback in the owned serialized transaction.</summary>
+        public Task<T> ExecuteExtensionAsync<T>(AccountDirectoryScope scope,
+            Func<SqliteAccountsDirectoryExtensionTransaction, T> operation, CancellationToken cancellationToken)
+        {
+            if (operation == null) throw new ArgumentNullException(nameof(operation));
+            return ExecuteAsync(scope, connection =>
+            {
+                var borrowed = new SqliteAccountsDirectoryExtensionTransaction(connection);
+                try { return operation(borrowed); }
+                finally { borrowed.Invalidate(); }
+            }, cancellationToken);
+        }
+
         public static async Task<SqliteAccountsDirectoryDatabase> OpenAsync(
             string databasePath, AccountDirectoryScope scope, CancellationToken cancellationToken)
         {
@@ -46,6 +59,8 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         {
             if (operation == null) throw new ArgumentNullException(nameof(operation));
             if (!Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The principal directory owner scope does not match.");
+            if (SqliteAccountsDirectoryExtensionTransaction.IsBorrowedCallback)
+                throw new InvalidOperationException("A directory extension callback cannot reenter directory operations.");
             Admit();
             try
             {
@@ -300,13 +315,16 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
     {
         private readonly SqliteAccountsDirectoryDatabase database;
         private readonly AccountDirectoryScope scope;
+        private readonly Action<SqliteAccountsDirectoryExtensionTransaction, AccountDirectoryEntry>? onNewReservation;
 
-        public SqliteAccountsDirectoryStore(SqliteAccountsDirectoryDatabase database, AccountDirectoryScope scope)
+        public SqliteAccountsDirectoryStore(SqliteAccountsDirectoryDatabase database, AccountDirectoryScope scope,
+            Action<SqliteAccountsDirectoryExtensionTransaction, AccountDirectoryEntry>? onNewReservation = null)
         {
             this.database = database ?? throw new ArgumentNullException(nameof(database));
             if (!scope.IsValid) throw new ArgumentException("A valid account directory scope is required.", nameof(scope));
             if (!database.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The account directory scope does not match its database.");
             this.scope = scope;
+            this.onNewReservation = onNewReservation;
         }
 
         public Task<bool> HasAnyEntryAsync(CancellationToken cancellationToken) =>
@@ -334,7 +352,14 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
                 var existing = Read(connection, principal, appId);
                 if (existing != null) return existing;
                 connection.Execute("INSERT INTO gp_account_principal_directory(backend_namespace,app_id,issuer,subject,installation_id,client_stream_id,platform_user_id,membership_status) VALUES (?,?,?,?,?,?,NULL,NULL)", principal.BackendNamespace.Value, appId.ToString(), principal.Issuer, principal.Subject, installationId.ToString("D"), streamId.ToString());
-                return new AccountDirectoryEntry(principal, appId, installationId, streamId, null, null);
+                var reserved = new AccountDirectoryEntry(principal, appId, installationId, streamId, null, null);
+                if (onNewReservation != null)
+                {
+                    var borrowed = new SqliteAccountsDirectoryExtensionTransaction(connection);
+                    try { onNewReservation(borrowed, reserved); }
+                    finally { borrowed.Invalidate(); }
+                }
+                return reserved;
             }, cancellationToken);
         }
 

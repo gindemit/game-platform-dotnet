@@ -25,7 +25,7 @@ namespace GamePlatform.Backend.Contracts.Remote
         Task<AccessTokenSnapshot> RefreshAsync(long rejectedGeneration, CancellationToken cancellationToken);
     }
 
-    public enum RemoteFailureKind { Cancelled, NotSent, OutcomeUncertain, Authentication, Authorization, Validation, Conflict, RateLimited, Dependency, Protocol, Server, Unavailable }
+    public enum RemoteFailureKind { Cancelled, NotSent, OutcomeUncertain, Authentication, Authorization, Validation, Conflict, RateLimited, Dependency, Protocol, Server, Unavailable, InspectionExpired }
 
     public readonly struct RemoteFailure
     {
