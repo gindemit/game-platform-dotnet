@@ -23,6 +23,7 @@ jobs:
         with:
           python-version: "3.10"
       - run: python scripts/validate.py
+      - run: python src/GamePlatform.Serialization.MessagePack/generate-schema.py --check
       - run: python -m unittest discover -s scripts -p "test_*.py"
       - run: dotnet restore GamePlatform.sln --locked-mode
       - run: dotnet format GamePlatform.sln whitespace --verify-no-changes --no-restore --exclude src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs

@@ -39,7 +39,9 @@
       },
       "allOf": [
         {
+          "type": "object",
           "if": {
+            "type": "object",
             "properties": {
               "scope": {
                 "const": "country"
@@ -47,12 +49,27 @@
             }
           },
           "then": {
+            "type": "object",
+            "properties": {
+              "countryCode": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              }
+            },
             "required": [
               "countryCode"
             ]
           },
           "else": {
+            "type": "object",
             "not": {
+              "type": "object",
+              "properties": {
+                "countryCode": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{2}$"
+                }
+              },
               "required": [
                 "countryCode"
               ]
@@ -347,7 +364,9 @@
       },
       "allOf": [
         {
+          "type": "object",
           "if": {
+            "type": "object",
             "properties": {
               "participantKind": {
                 "const": "team"
@@ -355,12 +374,25 @@
             }
           },
           "then": {
+            "type": "object",
+            "properties": {
+              "teamId": {
+                "$ref": "common.schema.json#/$defs/uuidV7"
+              }
+            },
             "required": [
               "teamId"
             ]
           },
           "else": {
+            "type": "object",
             "not": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "$ref": "common.schema.json#/$defs/uuidV7"
+                }
+              },
               "required": [
                 "teamId"
               ]

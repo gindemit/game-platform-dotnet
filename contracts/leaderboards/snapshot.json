@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "contractVersion": "leaderboards-1.0.0",
   "files": {
-    "v1/schemas/leaderboards.schema.json": "c555881e9108262697ec8537bde1e4d107570a9abf0e491a7cf6a64febf92b87",
-    "leaderboards/fixtures.json": "4d42d4c6d3b395f520ab35cde835666983e36b0bd171dd85c096b2c2a58eecca"
+    "v1/schemas/leaderboards.schema.json": "550d62fa575db0816021145115c2f7933a656c2a025861eee9c161c7b081883b",
+    "leaderboards/fixtures.json": "cab49970ed72478674ecbe99afbf8d0b64e3856d1901a5a1f46554055729fd0c"
   }
 }
