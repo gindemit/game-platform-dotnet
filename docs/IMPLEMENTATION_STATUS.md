@@ -9,7 +9,8 @@ the 31-test focused Teams suite includes membership/denial/cache-epoch cases,
 backend-produced golden fixtures and private-cache erasure after command denial.
 See [Teams evidence](../src/GamePlatform.Features/Teams/EVIDENCE-2026-10-11.md).
 The generated SDK and UPM package reproduce byte-for-byte in two independent
-clean clones of source `751c80fd5e04cb44947cdbcc103eb8381274d5ed`.
+clean clones of source `21407247441ca7438d7c9ad0ad7df89b86ce031b`, including
+clean-clone validation of the canonical LF schema pin.
 Unity consumer, AOT and Android runtime acceptance remain pending at this checkpoint.
 Existing CL-114/INT-014 and P3/G3/P4 gates retain their
 original scope; these results do not certify a deployed social backend.
