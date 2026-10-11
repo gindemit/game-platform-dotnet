@@ -1,5 +1,16 @@
 # SDK current status
 
+## Friends generated delivery and consumer pin
+
+Source `9df6800c3109b8b122a4661bd18ae0512fa3a0be` passed CI `38151671867`
+and generated `0.1.0-dev.135`, delivery
+`e17d18b3bacb9fde4a992504f6e5f074167fbac7`. Pocket Bloom's committed package
+manifest and lock now select this exact delivery. Root and independent review
+verified the complete package inventory. Real generated-DLL local HTTP checks
+pass; mounted Unity, physical Android and hosted DEV results are tracked in the
+[Friends validation receipt](https://github.com/gindemit/game-platform-workspace/blob/main/docs/FRIENDS-VALIDATION-2026-10-11.md).
+The consumer pin alone does not establish those remaining runtime results.
+
 ## 2026-10-11 selected core Friends source
 
 The selected Friends service, authenticated provider, closed MessagePack contract,
@@ -74,11 +85,12 @@ behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
 
-Follow-up on 2026-10-11: the current Unity consumer requests and resolves
-`ea77967b089315c96dcbc23981dc2ca07f0c4a67` for selected leaderboard integration.
-The source/package/import evidence and completed transport repair are recorded
-above; Teams delivery `c776f43765a108105c45258c80b38536ec5bd2cd` and the October 5
-facts below remain historical.
+Follow-up on 2026-10-11: the current Unity manifest and lock select Friends SDK
+`e17d18b3bacb9fde4a992504f6e5f074167fbac7` (`0.1.0-dev.135`). Package inventory
+and generated-DLL local transport evidence are recorded above; Android acceptance
+remains separate. Leaderboards delivery `ea77967b089315c96dcbc23981dc2ca07f0c4a67`,
+Teams delivery `c776f43765a108105c45258c80b38536ec5bd2cd` and the October 5 facts
+below remain historical.
 
 At Unity `54fb156c1600b825c010cce067976bb30337d03d`, the [package lock](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Packages/packages-lock.json) requests `0.1.0-dev.119` and resolves Git UPM `1e8a6510a8db5421c9f012c1b0940e92e505600b`. The [localization evidence](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Docs/Implementation/WebPlayer/2026-10-05-localization.md) records 142 import-verified package files and bounded localization/build/browser results. These are recorded results, not a new SDK-backed Android, hosted-service or portal qualification. In particular, WebLite is not evidence of the mobile SDK runtime path.
 
