@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
+using GamePlatform.Features.Teams;
 using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Transport.Abstractions;
 using GamePlatform.Transport.Http;
@@ -59,6 +60,63 @@ namespace GamePlatform.Tests.Transport
 
             var error = await Assert.ThrowsAsync<HttpExecutionException>(() => executor.SendAsync(Request(path), CancellationToken.None));
 
+            Assert.Equal(HttpDeliveryCertainty.NotSent, error.Certainty);
+            Assert.Equal(0, handler.Calls);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ProductionTeamsProviderUsesBoundedExecutorForCanonicalRoutes(bool mutation)
+        {
+            var operation = Guid.Parse("0199f9a0-1000-7000-8000-000000000005");
+            var stateCodec = new TeamsStateCodec();
+            var handler = new DelegateHandler(async (request, _) =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/platform/v1/apps/" + App + "/teams/" + (mutation ? "commands" : "query"), request.RequestUri!.AbsolutePath);
+                Assert.Equal("Bearer token", request.Headers.Authorization!.ToString());
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Content!.Headers.ContentType!.MediaType);
+                var body = await request.Content.ReadAsByteArrayAsync();
+                if (mutation) Assert.Equal(operation, stateCodec.DecodeCommand(body).OperationId.Value);
+                else Assert.Equal(new TeamsMessagePackCodec().EncodeQuery(new GamePlatform.Wire.Contracts.Teams.TeamsQuery("mine")), body);
+                var value = new TeamsResponse(App.Value, Account.Value, Installation, 1, mutation ? operation : null, 0, null, null,
+                    Array.Empty<TeamSummary>(), Array.Empty<TeamMember>(), Array.Empty<TeamMessage>(), Array.Empty<TeamJoinRequest>(),
+                    Array.Empty<TeamInvitation>(), Array.Empty<TeamHelpRequest>(), null, mutation ? "teams.leave.accepted" : null);
+                var reply = new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(stateCodec.EncodeResponse(value)) };
+                reply.Content.Headers.TryAddWithoutValidation("Content-Type", ProvisioningHttpProvider.MediaType);
+                reply.Headers.TryAddWithoutValidation("X-Correlation-Id", "teams-bounded-test");
+                return reply;
+            });
+            using var client = new HttpClient(handler);
+            using var refresh = new AuthRefreshCoordinator();
+            var configuration = Configuration();
+            var provider = new ProductionBackendHttpProviders(configuration, new BoundedHttpClientExecutor(client, configuration), new StaticAuth(), refresh)
+                .ForAccount(App, Account, Installation).Teams;
+            var result = mutation
+                ? await provider.ExecuteAsync(new TeamsCommand(new OperationId(operation), "leave", Installation), CancellationToken.None)
+                : await provider.QueryAsync(new TeamsQuery("mine"), CancellationToken.None);
+            Assert.True(result.IsSuccess);
+            Assert.Equal(Account.Value, result.Value!.AccountId);
+            Assert.Equal(1, handler.Calls);
+        }
+
+        [Theory]
+        [InlineData("GET", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/query")]
+        [InlineData("GET", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/commands")]
+        [InlineData("POST", "v1/apps/invalid/teams/query")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/query?cursor=1")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/query/extra")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/delete")]
+        public async Task NoncanonicalTeamsRoutesFailBeforeNetwork(string method, string path)
+        {
+            var handler = new DelegateHandler((_, _) => throw new InvalidOperationException("must not send"));
+            using var client = new HttpClient(handler);
+            var executor = new BoundedHttpClientExecutor(client, Configuration());
+            var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer token", ["Accept"] = ProvisioningHttpProvider.MediaType };
+            if (method == "POST") headers["Content-Type"] = ProvisioningHttpProvider.MediaType;
+            var request = new HttpRequestData(method, Configuration().Resolve(path).AbsoluteUri, headers, method == "POST" ? new byte[] { 1 } : Array.Empty<byte>());
+            var error = await Assert.ThrowsAsync<HttpExecutionException>(() => executor.SendAsync(request, CancellationToken.None));
             Assert.Equal(HttpDeliveryCertainty.NotSent, error.Certainty);
             Assert.Equal(0, handler.Calls);
         }

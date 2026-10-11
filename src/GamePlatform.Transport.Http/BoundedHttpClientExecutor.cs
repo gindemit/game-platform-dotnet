@@ -134,6 +134,7 @@ namespace GamePlatform.Transport.Http
                 (segments.Length == 5 && segments[3] == "bootstrap" && segments[4] == "pages") ||
                 (segments.Length == 5 && segments[3] == "sync" && segments[4] == "pull") ||
                 (segments.Length == 5 && segments[3] == "sync" && segments[4] == "push") ||
+                (segments.Length == 5 && segments[3] == "teams" && (segments[4] == "query" || segments[4] == "commands")) ||
                 (segments.Length == 6 && segments[3] == "sync" && segments[4] == "receipts" && segments[5] == "lookup");
         }
 
