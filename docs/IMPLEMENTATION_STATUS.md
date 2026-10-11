@@ -11,11 +11,20 @@ See [Teams evidence](../src/GamePlatform.Features/Teams/EVIDENCE-2026-10-11.md).
 The generated SDK and UPM package reproduce byte-for-byte in two independent
 clean clones of source `21407247441ca7438d7c9ad0ad7df89b86ce031b`, including
 clean-clone validation of the canonical LF schema pin.
-Unity consumer, AOT and Android runtime acceptance remain pending at this checkpoint.
+Unity now resolves reviewed SDK delivery
+`acac568f22d8ddc624bc22cff94b9ca169cd5f58`; its main integration commit is
+`14db054879852653b000bff049c9c3eda636c911`. Exact package import and Editor
+compilation passed. The owner transferred remaining Unity/visual/Android
+integration tests to the Sol handoff in the coordination repository.
+Executed Unity UI, AOT and Android runtime acceptance remain pending at this checkpoint.
 Existing CL-114/INT-014 and P3/G3/P4 gates retain their
 original scope; these results do not certify a deployed social backend.
 
 ## 2026-10-05 consumer identity reconciliation
+
+Follow-up on 2026-10-11: the current Unity consumer requests and resolves
+`acac568f22d8ddc624bc22cff94b9ca169cd5f58` for Teams. The current source/package/import
+evidence is recorded above; the October 5 facts below remain historical.
 
 At Unity `54fb156c1600b825c010cce067976bb30337d03d`, the [package lock](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Packages/packages-lock.json) requests `0.1.0-dev.119` and resolves Git UPM `1e8a6510a8db5421c9f012c1b0940e92e505600b`. The [localization evidence](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Docs/Implementation/WebPlayer/2026-10-05-localization.md) records 142 import-verified package files and bounded localization/build/browser results. These are recorded results, not a new SDK-backed Android, hosted-service or portal qualification. In particular, WebLite is not evidence of the mobile SDK runtime path.
 
