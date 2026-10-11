@@ -102,7 +102,7 @@ Expose `ReadCachedAsync`, cache-first `ReadAsync`, forced-network `QueryAsync`,
 `ExecuteAsync` and `ReadPendingAsync`. Constructors perform no IO. An absent remote
 permits honest cache reads and forbids confirmed authority-changing operations.
 
-Capture bootstrapped playerId as well as ScopedOwnerContext, whose identity
+ Capture bootstrapped playerId as well as ScopedOwnerContext, whose identity
 covers backend/app/account/view/generation. Validate every response's app/account/
 player and requested view/context, echoed mutation operation and snapshot bounds.
 Namespace/key local state by captured player ID as well as the existing database
@@ -140,6 +140,45 @@ provider must decode the marker without copying shared graph content into privat
 projections. Unity owns applying the marker to its existing dispatcher.
 
 ## Persistent cache, expiry and graph fencing
+
+### Lazy durable app-player binding refinement
+
+The Unity account directory contains an account ID, but no app-player ID. Preserve
+its schema and avoid an extra startup request. Add one service-owned shared
+`FriendsPlayerBinding` policy/helper under `src/GamePlatform.Features/Friends`.
+It captures backend/app/account/view/generation, starts no IO in its constructor,
+and lazily reads only its account/view-scoped durable binding metadata from existing
+feature state. A constructor's absent player is an unbound sentinel, never a
+real player ID or a namespace containing Guid.Empty. No player cache/pending keys
+are read or written before a positive durable binding has been established.
+
+The first authenticated Friends query response OR friends-ranking response can
+establish the same binding in a serialized local transaction after exact captured
+app/account/owner/lifetime checks. Persist only the app-player identity metadata
+there, not credentials or a fabricated confirmed projection. Concurrent first
+responses must agree on the same nonempty player ID; conflicting responses fail
+closed, without replacing/deleting the existing binding or moving pending work.
+Every subsequent response and reopened cache/command validates that exact player.
+Both services use the same binding key and policy, even when separately constructed;
+no independent Friends/ranks identity cache may diverge. An explicitly supplied
+known player must also agree with any existing durable binding.
+
+Account-level shared invalidation epoch is readable before first binding so a
+pull marker or retirement during an unbound request fences its late reply as
+well. First binding, owner checking, fence checking and accepted response cache
+write form one local transaction. On restart binding is read locally and a still
+fresh cache remains a zero-network read. Before first binding an explicit Friends
+query/ranks query may fetch its own ordinary response; offline reads return Missing
+and cannot admit a mutation. Mutations lazily load existing binding, require it,
+and never provision it through a command receipt.
+
+Keep the current explicit-player constructor usable and add an owner-only overload
+for normal Unity composition. Preserve old LeaderboardsService callers and add
+shared lazy binding only to its selected friends path. This refinement changes
+no account directory, provisioning/core schema, gameplay bootstrap or startup IO.
+Tests cover first Friends/ranks binding in either order, concurrent conflicting
+players, explicit-known-player conflict, fresh restart without network, invalidation
+during first unbound query, offline missing binding and pending preservation.
 
 Use existing IDurableFeatureStateStore/SqliteDurableFeatureStateStore and
 ISerializedStorageExecutor; no schema migration, PlayerPrefs or memory-only cache.
