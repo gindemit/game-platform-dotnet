@@ -19,14 +19,19 @@ revision with exact content/source manifest hashes. The current finalization
 receipt is `plans/TEAMS-FINALIZATION-RESULTS-2026-10-11.md` in the coordination
 repository; original package/import receipts remain historical. Final Unity
 EditMode/PlayMode passed 74/4 with exact generated-package verification. Graphics
-capture and the Android IL2CPP build remain pending.
+source `866a1a5` passed two graphics cases with 15 inspected captures and the guarded
+Android ARM64 IL2CPP build. Retained APK inspection verifies Teams metadata and
+native SQLite; the preserved Editor also resolves/compiles the final package.
 The final generated-DLL local HTTPS/PostgreSQL journey passed 65 assertions across
 all 24 Teams actions, including dropped/cancelled response retries after restart,
 private cache erasure and zero private feed-head advancement by shared queries.
-Physical Teams startup still requires an available real nonproduction Auth grant
-and refresh service; signed-JWT desktop fixtures do not establish that acceptance.
+The owner-authorized Supabase Dev backend deployment passed its guarded workflow
+at backend `f98756a2`. Physical Teams startup still needs an authorized app startup
+configuration; the built APK has none. Signed-JWT desktop fixtures, deployment and
+the owner's earlier Android tests do not establish new physical Teams acceptance.
 Existing CL-114/INT-014 and P3/G3/P4 gates retain their
-original scope; these results do not certify a deployed social backend.
+original scope; Dev deployment does not establish authenticated hosted Teams
+behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
 
