@@ -82,8 +82,6 @@ namespace GamePlatform.Features.Shared
                 {
                     if (disposed || !entries.TryGetValue(key, out var current) || !ReferenceEquals(current, entry))
                         throw new OperationCanceledException(lifetime.Token);
-                    current.LastPublished = result;
-                    current.LastPublishedRevision = result.Revision;
                 }
                 completion.TrySetResult(result);
             }
@@ -142,8 +140,6 @@ namespace GamePlatform.Features.Shared
             public Entry(Task<FeatureSnapshot<T>> task, long expiresAt) { Task = task; ExpiresAt = expiresAt; }
             public Task<FeatureSnapshot<T>> Task { get; }
             public long ExpiresAt { get; }
-            public long LastPublishedRevision { get; set; } = -1;
-            public FeatureSnapshot<T>? LastPublished { get; set; }
         }
     }
 }
