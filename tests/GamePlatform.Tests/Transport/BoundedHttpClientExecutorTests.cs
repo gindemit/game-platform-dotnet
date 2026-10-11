@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
 using GamePlatform.Features.Teams;
+using GamePlatform.Features.Leaderboards;
+using GamePlatform.Tests.Features.Leaderboards;
 using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Transport.Abstractions;
 using GamePlatform.Transport.Http;
@@ -102,13 +104,72 @@ namespace GamePlatform.Tests.Transport
         }
 
         [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ProductionLeaderboardsProviderUsesBoundedExecutorForCanonicalRoutes(bool mutation)
+        {
+            var command = LeaderboardsServiceTests.Command();
+            var codec = new LeaderboardsMessagePackCodec();
+            var handler = new DelegateHandler(async (request, _) =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/platform/v1/apps/" + App + "/leaderboards/" + (mutation ? "country" : "query"), request.RequestUri!.AbsolutePath);
+                Assert.Equal(string.Empty, request.RequestUri.Query);
+                Assert.Equal("Bearer token", request.Headers.Authorization!.ToString());
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Headers.Accept.Single().MediaType);
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Content!.Headers.ContentType!.MediaType);
+                var body = await request.Content.ReadAsByteArrayAsync();
+                Assert.Equal(mutation ? new LeaderboardsStateCodec().EncodeCountry(command) :
+                    codec.EncodeQuery(new GamePlatform.Wire.Contracts.Leaderboards.LeaderboardsQuery("players-monthly", "global", null, null, 30)), body);
+                var country = LeaderboardsServiceTests.CountryResponse(command);
+                var bytes = mutation ? codec.EncodeCountryResponse(new GamePlatform.Wire.Contracts.Leaderboards.LeaderboardsCountryResponse(
+                    country.OperationId, country.BoardId, country.ParticipantKind, country.ParticipantId, country.CountryCode, country.EffectiveAt)) :
+                    new LeaderboardsStateCodec().EncodeResponse(LeaderboardsServiceTests.Response());
+                var reply = new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) };
+                reply.Content.Headers.TryAddWithoutValidation("Content-Type", ProvisioningHttpProvider.MediaType);
+                reply.Headers.TryAddWithoutValidation("X-Correlation-Id", "leaderboards-bounded-test");
+                return reply;
+            });
+            using var client = new HttpClient(handler);
+            using var refresh = new AuthRefreshCoordinator();
+            var configuration = Configuration();
+            var provider = new ProductionBackendHttpProviders(configuration, new BoundedHttpClientExecutor(client, configuration), new StaticAuth(), refresh)
+                .ForAccount(App, Account, Installation).Leaderboards;
+            if (mutation)
+            {
+                var result = await provider.SetCountryAsync(command, CancellationToken.None);
+                Assert.True(result.IsSuccess);
+                Assert.Equal(command.OperationId.Value, result.Value!.OperationId);
+                Assert.Equal("DE", result.Value.CountryCode);
+            }
+            else
+            {
+                var result = await provider.QueryAsync(new LeaderboardsQuery("players-monthly"), CancellationToken.None);
+                Assert.True(result.IsSuccess);
+                Assert.Equal("players-monthly", result.Value!.BoardId);
+                Assert.Equal(9_007_199_254_740_993, result.Value.Entries.Single().Score);
+            }
+            Assert.Equal(1, handler.Calls);
+        }
+
+        [Theory]
+        [InlineData("GET", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/query")]
+        [InlineData("GET", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/country")]
+        [InlineData("POST", "v1/apps/invalid/leaderboards/query")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/query?cursor=1")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/country?country=DE")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/query/extra")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/country/extra")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/commands")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/delete")]
+        [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/Query")]
         [InlineData("GET", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/query")]
         [InlineData("GET", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/commands")]
         [InlineData("POST", "v1/apps/invalid/teams/query")]
         [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/query?cursor=1")]
         [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/query/extra")]
         [InlineData("POST", "v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/teams/delete")]
-        public async Task NoncanonicalTeamsRoutesFailBeforeNetwork(string method, string path)
+        public async Task NoncanonicalSocialRoutesFailBeforeNetwork(string method, string path)
         {
             var handler = new DelegateHandler((_, _) => throw new InvalidOperationException("must not send"));
             using var client = new HttpClient(handler);

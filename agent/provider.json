@@ -546,7 +546,7 @@
     },
     {
       "id": "leaderboards",
-      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "status": "selected period service implemented; hosted transport repair and physical verification pending",
       "statusPath": "docs/IMPLEMENTATION_STATUS.md",
       "sourcePaths": [
         "src/GamePlatform.Features/Leaderboards"
@@ -556,7 +556,8 @@
       ],
       "requirements": [
         "src/GamePlatform.Features/Leaderboards/README.md",
-        "docs/FEATURES.md"
+        "docs/FEATURES.md",
+        "docs/work/leaderboards-2026-10-11/IMPLEMENTATION.md"
       ],
       "mandatoryRequirements": [
         "dotnet-agent-rules",

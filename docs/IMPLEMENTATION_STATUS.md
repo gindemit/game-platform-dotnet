@@ -1,5 +1,23 @@
 # SDK current status
 
+## 2026-10-11 selected period leaderboards
+
+The account-bound `LeaderboardsService` implements authenticated immutable
+snapshots, bounded first-page stale caches, explicit country assignment and
+durable uncertain-command retry. The legacy `LeaderboardsFeature` facade remains
+unavailable; Friends awaits a real relationship graph. Historical CL-113 and broad
+P4 acceptance are unchanged.
+
+Reviewed source `0bc4c3307225d4eac6cacfb2834f1a1c0191589e` passed 792 Release
+tests and exact-head CI. Generated delivery `0.1.0-dev.132`, commit
+`dfb732ce0cb881c27ad8d304688a98300c63519a`, passed complete 142-file Unity import
+verification. Independent hosted testing then found the production HTTP executor
+rejecting both leaderboard routes before sending them. A narrow route-admission
+repair, regenerated delivery and repeated hosted/physical verification are
+required; source tests and a generated package do not establish that acceptance.
+The current cross-repository receipt is
+[leaderboards validation](https://github.com/gindemit/game-platform-workspace/blob/main/docs/LEADERBOARDS-VALIDATION-2026-10-11.md).
+
 ## 2026-10-11 Teams source implementation
 
 Teams now has typed online queries/mutations, authenticated production HTTP
@@ -36,8 +54,10 @@ behavior or physical acceptance of this payload.
 ## 2026-10-05 consumer identity reconciliation
 
 Follow-up on 2026-10-11: the current Unity consumer requests and resolves
-`c776f43765a108105c45258c80b38536ec5bd2cd` for Teams. The current source/package/import
-evidence is recorded above; the October 5 facts below remain historical.
+`dfb732ce0cb881c27ad8d304688a98300c63519a` for selected leaderboard integration.
+The source/package/import evidence and pending transport repair are recorded
+above; Teams delivery `c776f43765a108105c45258c80b38536ec5bd2cd` and the October 5
+facts below remain historical.
 
 At Unity `54fb156c1600b825c010cce067976bb30337d03d`, the [package lock](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Packages/packages-lock.json) requests `0.1.0-dev.119` and resolves Git UPM `1e8a6510a8db5421c9f012c1b0940e92e505600b`. The [localization evidence](https://github.com/gindemit/MrSquareUnity/blob/54fb156c1600b825c010cce067976bb30337d03d/Docs/Implementation/WebPlayer/2026-10-05-localization.md) records 142 import-verified package files and bounded localization/build/browser results. These are recorded results, not a new SDK-backed Android, hosted-service or portal qualification. In particular, WebLite is not evidence of the mobile SDK runtime path.
 
