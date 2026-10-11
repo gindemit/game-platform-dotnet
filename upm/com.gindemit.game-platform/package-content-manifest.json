@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "name": "com.gindemit.game-platform",
   "version": "0.1.0-draft",
-  "sourceCommit": "21407247441ca7438d7c9ad0ad7df89b86ce031b",
-  "sourceBundleManifestSha256": "745368f4c0819a177035bd7e1729411820b963dc0970f73564d0c2398ca62120",
+  "sourceCommit": "7682812d8969e47f1828e711d7344a22e54e242f",
+  "sourceBundleManifestSha256": "03a10d6f009fbb2d624fac3cef19e569e77af15641a597e0f068370015620083",
   "preservedManagedGuids": {
     "GamePlatform.Core.dll": "68b7ad586b1f56d6a838a26b7ff2333f",
     "GamePlatform.Features.Contracts.dll": "827c6f3773525912a40a393e14fa0406"
@@ -37,7 +37,7 @@
     {
       "path": "Documentation~/sdk/dependency-manifest.json",
       "bytes": 95024,
-      "sha256": "745368f4c0819a177035bd7e1729411820b963dc0970f73564d0c2398ca62120"
+      "sha256": "03a10d6f009fbb2d624fac3cef19e569e77af15641a597e0f068370015620083"
     },
     {
       "path": "Documentation~/sdk/features.json",
@@ -57,77 +57,77 @@
     {
       "path": "Documentation~/symbols/GamePlatform.Backend.Contracts.pdb",
       "bytes": 12180,
-      "sha256": "7a10bd45e44ef5258b2b3d3ef369fdc33380487050f9eae911b18bc94cd9dc8b"
+      "sha256": "2630bbb63f7fbedab1e7ca83033ddaac9b6b32653e75064c9c8bfddaac609ce0"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Core.pdb",
       "bytes": 12476,
-      "sha256": "972c0cecfc6c5bfe9d850844c869d35ab858a72a2e495e63823102a6807f868b"
+      "sha256": "9d9b873fc67bd63d3e31806f4c62d0c646ce188833d6d87faf9b7696ca9bb167"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Diagnostics.Abstractions.pdb",
       "bytes": 9540,
-      "sha256": "45a66caeea31cf5a6bbf3cb5ec0f7f8399a607308dcb5258e1b9c4dac3839a19"
+      "sha256": "a600a93bd0a6c6c654a3c5de563a63286d96efef29b25b43d11228779bec5f37"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Features.Contracts.pdb",
       "bytes": 21052,
-      "sha256": "5adcb5c8fccd3ba331c024d0fa700d5df81862891e992318edd15a3391b76f63"
+      "sha256": "4ef85d9b2682c78397ec2ce794c7f80c88fe7e2032a28cc976fc0fe4c6dbbd71"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Features.pdb",
       "bytes": 57792,
-      "sha256": "283b91b0e3aa94f3ec0aa759b4315fdd13ec7e0dcaf11bbd1879aaf56eae33ea"
+      "sha256": "6e6e7b9b15d77d802d802c9bbefe9e1b07f3bf73822cc2f01b8b843236e6b28f"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Features.Presentation.pdb",
       "bytes": 9032,
-      "sha256": "cf0c958e339a6066a2bee1cbb2952cc6bb5d64377eecff23a4d1725d2fff306e"
+      "sha256": "c92a3b02d709d44ef7b052a17eef73917bd05845b3252f5b1d77f36b003b8fce"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Navigation.pdb",
       "bytes": 10772,
-      "sha256": "ed43014b3cdc9121100fdc96d16539d6500136a86c8efce4c29461e3c6d21fb4"
+      "sha256": "e463973901882ddd96d1fd194a930849bf859dabb07410549fd44e53f71471b0"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Serialization.Json.pdb",
       "bytes": 8372,
-      "sha256": "61702f0a8ae5468e9716638d19702376d27bcacb51ed33f406cd35a5e325934f"
+      "sha256": "17be006d8e2fa86be210c6801edce3e6ed690e49258ffbc385351a8e672d21de"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Serialization.MessagePack.pdb",
       "bytes": 36816,
-      "sha256": "f3bc68463c9b8b0005e1750f38aed4ff1e33fb52763c835b40ec9f8c51d78776"
+      "sha256": "2fa40dc0236a0e02a3c0f2ed1b5593a91d605fe1b5b103c1a64c154dc267edb8"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Storage.Abstractions.pdb",
       "bytes": 14304,
-      "sha256": "a1ef9d7ebc6634e345ea37913d12a72475e96a96ea3911243fddf374e19c3047"
+      "sha256": "d3cd9a6340e745f123ed9ac816fe8adf3244e93f670776b3ec490f482ce7b948"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Storage.Sqlite.pdb",
       "bytes": 50104,
-      "sha256": "0aa26eade6846f8cabdc1b978870b81a66de242b8831851f584edbf10d14b116"
+      "sha256": "38fbc97765e64e5caa1cc5d68196a7e3a05c0de758bdc83ab42442aa908c3b33"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Sync.pdb",
       "bytes": 12204,
-      "sha256": "70f629d7163fc4ac5bd2dd743ea1874a9a6888f170717d7bf6d7946451a93e0e"
+      "sha256": "128d1005caeb169e1f77d212b05c4472e4046f8933225ca2c843987584ccbb05"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Transport.Abstractions.pdb",
       "bytes": 8956,
-      "sha256": "7766c3992e16452fdefb1f465b9bfef32e54ae8ad80c47b883ac2172d1241cb8"
+      "sha256": "bf299b7c0850518f9086466d55c64e9f0aa0c1d44a1ab27227acb4aba3bdd81a"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Transport.Http.pdb",
       "bytes": 35468,
-      "sha256": "380c2df952294f1be90dcbd8145a969114f58c5361f01e86f000068359f40424"
+      "sha256": "8bf7903a3250db9f3042d3d57d7bee9a08a40609e115ba25767b9ce790f6bf3a"
     },
     {
       "path": "Documentation~/symbols/GamePlatform.Wire.Contracts.pdb",
       "bytes": 27484,
-      "sha256": "eacb484eda5ced252451c983fb746ce1546d198e84f17b7206986d68617c2e89"
+      "sha256": "a4c182c09c2d9b7180242c5268a796efbd6b86cfafe9befc144dee5848f1f665"
     },
     {
       "path": "LICENSES/LICENSE-NOTICE.md",
@@ -427,7 +427,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Backend.Contracts.dll",
       "bytes": 20480,
-      "sha256": "e1a6326c1a79043ac522562cae7b13bbc184b2864a6c54e33450452e11868553"
+      "sha256": "135e3e2e0ac8e5fa38e218f76fc48fd32bdce6c4a7300b72f5b60b2e9358a6a6"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Backend.Contracts.dll.meta",
@@ -437,7 +437,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Core.dll",
       "bytes": 15872,
-      "sha256": "f147049ade4626172e5df7362ff373df7830acfcab4c9daad7cf0740757f8668"
+      "sha256": "f5318088bc3a8d478fdbf8f2e1f567df74ade0bff30110572b2e21f8ac108177"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Core.dll.meta",
@@ -447,7 +447,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Diagnostics.Abstractions.dll",
       "bytes": 10752,
-      "sha256": "722d0a0c8cbed8ee1afc54b5d088b648e03ce33f9e034efb48dd97b5719daf9e"
+      "sha256": "5d56f4085293829814f8810809942e331fc6094c7a8803c5bb11d4029fe7be0a"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Diagnostics.Abstractions.dll.meta",
@@ -457,7 +457,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Contracts.dll",
       "bytes": 54272,
-      "sha256": "c781eb3202863633352d744195ee6630331d32d91e6cd917156d90c4e0c7e570"
+      "sha256": "c188c1763a81f6d7a66cf82fdbc4cec66908132ec802a20fb2356b52df7388d3"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Contracts.dll.meta",
@@ -467,7 +467,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.dll",
       "bytes": 232448,
-      "sha256": "b72918d48f55bc21a9da8c486455ee8f04d5e3a07295762e5717cb66aeffdc26"
+      "sha256": "f02d2b306e3d1581bb140fd4eeb127abd8db56443f9837e6363f29ab3c277a5b"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.dll.meta",
@@ -477,7 +477,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Presentation.dll",
       "bytes": 7680,
-      "sha256": "4c4294d9ca7909275e858a43d4d7a03b99de5facd2c297de8f37f645625afff7"
+      "sha256": "35dc0ce9a9af801e63d27337b7f35c8a9ebef2e69d7180da346a8796d06b5c77"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Features.Presentation.dll.meta",
@@ -487,7 +487,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Navigation.dll",
       "bytes": 13824,
-      "sha256": "68fb68e6383117003af5ffa11a6dab63698303393e878723085cb645059cf422"
+      "sha256": "175553e1ce1bd68488e2e7087b2f814123fa824f4fca9a21b71573c77be94f31"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Navigation.dll.meta",
@@ -497,7 +497,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.Json.dll",
       "bytes": 5632,
-      "sha256": "5a9b5ff25ce74b3ae15ee788c9321fdf38401e177527246078c3dc01e326980f"
+      "sha256": "e88468432944c153d091c6b0624552655edddeb459469c58d7b894c0f455fa8a"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.Json.dll.meta",
@@ -507,7 +507,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.MessagePack.dll",
       "bytes": 218112,
-      "sha256": "0d563afe56f9da288bf04c54c78cd46b5cbcc860701ce165e568beed2813d691"
+      "sha256": "0ecd3f4b8cdbb8ce04812e35e4033d6a8106330045885745953fe868af027bd2"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Serialization.MessagePack.dll.meta",
@@ -517,7 +517,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Abstractions.dll",
       "bytes": 27136,
-      "sha256": "348a56a30ef03f08fb4e63682ba4f0c25357217e723ef6223e31705ae93d607c"
+      "sha256": "b83f7041fc4914cc2c2022f2b70696109fd0b6fcc9402a79f3f34a38380e24f0"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Abstractions.dll.meta",
@@ -527,7 +527,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Sqlite.dll",
       "bytes": 202752,
-      "sha256": "07565984db0be13c4ec194464361a133c06f4846b66e387ef11a9c7536d8aa08"
+      "sha256": "432ff20befa0c6bb6b17fcbea1a9942cdb8fd959cd3c298a43c56db7dc29bc3b"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Storage.Sqlite.dll.meta",
@@ -537,7 +537,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Sync.dll",
       "bytes": 25600,
-      "sha256": "b4b71c5b1d347fd87c4d59719d9c6c6877f718e15a493b2d1c0307a45256273a"
+      "sha256": "140a1625d898fceb328d5903b2c551ad9701d180bcc0435ce3b72c16d79225f5"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Sync.dll.meta",
@@ -547,7 +547,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Abstractions.dll",
       "bytes": 8704,
-      "sha256": "5fd4eb4af267e8b5134517e817c7f98ba8138c3bf3843c4368ece58be5070432"
+      "sha256": "2e8e6d2ec0cf69aea744d2e5fb047b852659276c792b79a508ac38e11fb74c31"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Abstractions.dll.meta",
@@ -557,7 +557,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Http.dll",
       "bytes": 122880,
-      "sha256": "e59ce094bed7b8c0bff4b6f0fa028e2cc3faa0b9f2ce9d9c0e4436ff9fa5bc43"
+      "sha256": "9ce60e4a3187b038d9ad73a4cb2e242ae8d07ff931c939c83ccbd41d964dd0eb"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Transport.Http.dll.meta",
@@ -567,7 +567,7 @@
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Wire.Contracts.dll",
       "bytes": 60928,
-      "sha256": "cf16e4bc21d9c5a7362c5ace4b46c1dd785c50a57111477ac93946c734194217"
+      "sha256": "24986dd7383196494e50ac6502759af28ab18c563d31b10933680985ea04d31b"
     },
     {
       "path": "Runtime/Plugins/Managed/GamePlatform.Wire.Contracts.dll.meta",
