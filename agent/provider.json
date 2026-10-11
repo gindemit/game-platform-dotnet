@@ -13,6 +13,17 @@
   ],
   "sections": [
     {
+      "id": "dotnet-feature-friends",
+      "path": "docs/work/friends-2026-10-11/IMPLEMENTATION.md",
+      "heading": "# Portable Friends and friends rankings - 2026-10-11",
+      "title": "Portable friends contract and caching",
+      "summary": "Selected core friends, additive wire contracts, durable cache and verification scope.",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": ["friends"],
+      "tasks": []
+    },
+    {
       "id": "dotnet-architecture",
       "path": "docs/ARCHITECTURE.md",
       "heading": "# Architecture",
@@ -292,6 +303,15 @@
     }
   ],
   "features": [
+    {
+      "id": "friends",
+      "status": "selected; instructions prepared; implementation and runtime acceptance pending",
+      "statusPath": "docs/work/friends-2026-10-11/IMPLEMENTATION.md",
+      "sourcePaths": ["src/GamePlatform.Features"],
+      "testPaths": ["tests/GamePlatform.Tests"],
+      "requirements": ["docs/work/friends-2026-10-11/IMPLEMENTATION.md"],
+      "mandatoryRequirements": ["dotnet-agent-rules", "dotnet-architecture", "dotnet-testing", "dotnet-feature-friends"]
+    },
     {
       "id": "accounts",
       "status": "unverified (local catalog; not end-to-end acceptance)",
