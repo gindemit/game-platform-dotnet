@@ -12,6 +12,9 @@
     <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryIndex" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryDatabase/DirectoryIndexColumn" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Features.Accounts.SqliteAccountsDirectoryStore/DirectoryRow" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Recovery.SqliteCommandStreamRecoveryJournal/JournalRow" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Recovery.SqliteCommandStreamRecoveryJournal/DirectoryRow" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Recovery.SqliteRecoveryCommandStore/CommandRow" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/TerminalCommandRow" preserve="all" />
   </assembly>
