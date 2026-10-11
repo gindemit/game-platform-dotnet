@@ -53,7 +53,21 @@ namespace GamePlatform.Tests.Transport
         }
 
         [Theory]
+        [InlineData("friends/query")]
+        [InlineData("friends/commands")]
+        [InlineData("leaderboards/friends/query")]
+        public async Task SelectedFriendsRoutesReachBoundedHttpExecutor(string route)
+        {
+            var handler = new DelegateHandler((request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1 }) }));
+            using var client = new HttpClient(handler); var executor = new BoundedHttpClientExecutor(client, Configuration());
+            Assert.Equal(200, (await executor.SendAsync(Request("v1/apps/" + App + "/" + route), CancellationToken.None)).StatusCode);
+            Assert.Equal(1, handler.Calls);
+        }
+
+        [Theory]
         [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/unsupported")]
+        [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/friends/gifts")]
+        [InlineData("v1/apps/01890f3e-7a6b-7c8d-9e0f-102030405060/leaderboards/friends/country")]
         public async Task UnsupportedRoutesFailClosedBeforeNetwork(string path)
         {
             var handler = new DelegateHandler((_, _) => throw new InvalidOperationException("must not send"));

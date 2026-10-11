@@ -1,0 +1,126 @@
+{
+  "contractVersion": "friends-1.0.0",
+  "fixtures": [
+    {
+      "name": "mine",
+      "schema": "queryRequest",
+      "value": {
+        "protocolVersion": 1,
+        "view": "mine",
+        "pageSize": 50
+      }
+    },
+    {
+      "name": "send-code",
+      "schema": "commandRequest",
+      "value": {
+        "protocolVersion": 1,
+        "operationId": "019a17aa-1000-7000-8000-000000000001",
+        "action": "send",
+        "payload": {
+          "publicCode": "01ABCDEFGHJK"
+        }
+      }
+    },
+    {
+      "name": "empty-owner",
+      "schema": "response",
+      "value": {
+        "protocolVersion": 1,
+        "appId": "019a17aa-1000-7000-8000-000000000001",
+        "accountId": "019a17aa-1000-7000-8000-000000000001",
+        "playerId": "019a17aa-1000-7000-8000-000000000001",
+        "serverTimeMilliseconds": "1791712800000",
+        "cacheExpiresAtMilliseconds": "1791712860000",
+        "operationId": null,
+        "view": "mine",
+        "revision": "0",
+        "graphRevision": "0",
+        "myPublicCode": "01ABCDEFGHJK",
+        "allowRequests": true,
+        "friendCount": 0,
+        "incomingCount": 0,
+        "outgoingCount": 0,
+        "friends": [],
+        "requests": [],
+        "blockedPlayers": [],
+        "suggestions": [],
+        "player": null,
+        "request": null,
+        "relationship": null,
+        "relationshipRequestId": null,
+        "nextCursor": null,
+        "resultCode": null
+      }
+    },
+    {
+      "name": "ranking-request",
+      "schema": "rankingQueryRequest",
+      "value": {
+        "protocolVersion": 1,
+        "boardId": "players-monthly",
+        "limit": 50
+      }
+    },
+    {
+      "name": "zero-self",
+      "schema": "rankingQueryResponse",
+      "value": {
+        "protocolVersion": 1,
+        "appId": "019a17aa-1000-7000-8000-000000000001",
+        "accountId": "019a17aa-1000-7000-8000-000000000001",
+        "playerId": "019a17aa-1000-7000-8000-000000000001",
+        "boardId": "players-monthly",
+        "participantKind": "player",
+        "scope": "friends",
+        "countryCode": null,
+        "periodId": "2026-10",
+        "periodStart": "1790812800000",
+        "periodEnd": "1793491200000",
+        "resetAt": "1793491200000",
+        "snapshotId": "019a17aa-1000-7000-8000-000000000001",
+        "snapshotCreatedAt": "1791712800000",
+        "expiresAt": "1791713100000",
+        "serverTime": "1791712800000",
+        "scoreAuthority": "client_trusted_unvalidated",
+        "graphRevision": "0",
+        "snapshotLimit": 201,
+        "cohortSize": 1,
+        "entries": [
+          {
+            "participantId": "019a17aa-1000-7000-8000-000000000001",
+            "rank": "1",
+            "score": "0",
+            "displayName": "Bloom",
+            "avatarKey": null,
+            "badgeId": null,
+            "countryCode": null
+          }
+        ],
+        "nextCursor": null,
+        "self": {
+          "participantId": "019a17aa-1000-7000-8000-000000000001",
+          "rank": "1",
+          "score": "0",
+          "displayName": "Bloom",
+          "avatarKey": null,
+          "badgeId": null,
+          "countryCode": null
+        },
+        "countrySelection": null
+      }
+    },
+    {
+      "name": "invalidation",
+      "schema": "invalidation",
+      "value": {
+        "entityType": "friends",
+        "entityKey": {
+          "playerId": "019a17aa-1000-7000-8000-000000000001"
+        },
+        "revision": "1",
+        "kind": "invalidation"
+      }
+    }
+  ]
+}

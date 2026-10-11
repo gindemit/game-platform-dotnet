@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "sha256",
+  "contractVersion": "friends-1.0.0",
+  "files": {
+    "v1/schemas/friends.schema.json": "09299f9f0beaf9cb13d3edb92b9b8a48440a99cf8d4d2051232e0b2e5622a606",
+    "friends/fixtures.json": "3f0c56767395ed4845f513bc62ecd3916922b1da301d2f630b624319680d5ccd"
+  }
+}

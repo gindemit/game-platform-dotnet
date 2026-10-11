@@ -8,6 +8,22 @@ import validate
 
 
 class ValidationTests(unittest.TestCase):
+    def test_friends_additive_hash_drift_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_repository(Path(tmp))
+            path = root / "contracts/v1/schemas/friends.schema.json"
+            path.write_bytes(path.read_bytes() + b"\n")
+            self.assertIn("Friends contract hash mismatch: v1/schemas/friends.schema.json", validate.validate(root))
+
+    def test_friends_manifest_cannot_escape_additive_scope(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_repository(Path(tmp))
+            path = root / "contracts/friends/snapshot.json"
+            manifest = validate.read_json(path)
+            manifest["files"]["../outside"] = "0" * 64
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            self.assertIn("unexpected Friends contract path: ../outside", validate.validate(root))
+
     def test_project_inventory_has_fifteen(self): self.assertEqual(15, len(validate.PROJECTS))
     def test_feature_inventory_has_sixteen(self): self.assertEqual(16, len(validate.FEATURES))
 

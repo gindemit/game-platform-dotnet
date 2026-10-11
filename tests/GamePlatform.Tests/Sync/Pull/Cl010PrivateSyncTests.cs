@@ -226,6 +226,33 @@ namespace GamePlatform.Tests.Sync.Pull
         }
 
         [Fact]
+        public async Task G3FriendsInvalidationReachesTypedSinkAtomicallyWithPrivateCursor()
+        {
+            using var files = new TemporaryDatabase(); var db = await OpenReady(files.Path); var sink = new G3Sink { ThrowOnGroup = true };
+            var store = new SqlitePrivateSyncStore(db, Scope, new G3PrivateSyncProjector(new MessagePackWireCodec(), sink), _ => { });
+            var player = Guid.Parse("019a17aa-1000-7000-8000-000000000001");
+            var page = new StoredPullPage(6, new[] { new StoredPullGroup(6, new[] { new StoredProjectionMutation("friends", player.ToString("D"), 1, StoredProjectionKind.Invalidation, Array.Empty<byte>()) }) }, Token(4), false, 1001);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => store.ApplyPullPageAsync(page, CancellationToken.None));
+            Assert.Equal(0, await Scalar(db, "SELECT COUNT(*) FROM gp_confirmed_projection WHERE collection='friends'")); Assert.Equal(5, (await store.GetPullCheckpointAsync(CancellationToken.None)).CommittedThrough);
+            sink.ThrowOnGroup = false; await store.ApplyPullPageAsync(page, CancellationToken.None);
+            var marker = Assert.IsType<GamePlatform.Wire.Contracts.Friends.FriendsProjectionInvalidation>(Assert.Single(sink.GroupChanges)); Assert.Equal(player, marker.PlayerId); Assert.Equal(1, marker.Revision);
+            Assert.Equal(6, (await store.GetPullCheckpointAsync(CancellationToken.None)).CommittedThrough); Assert.Equal("invalidation", await Text(db, "SELECT state FROM gp_confirmed_projection WHERE collection='friends'")); await Dispose(db);
+        }
+        [Theory]
+        [InlineData("friends", "invalid", StoredProjectionKind.Invalidation, false)]
+        [InlineData("friends", "019a17aa-1000-7000-8000-000000000001", StoredProjectionKind.Invalidation, true)]
+        [InlineData("friends", "019a17aa-1000-7000-8000-000000000001", StoredProjectionKind.Upsert, true)]
+        [InlineData("teams", "019a17aa-1000-7000-8000-000000000001", StoredProjectionKind.Tombstone, false)]
+        public async Task SocialFeedAllowsOnlyEmptyTypedInvalidation(string collection, string key, StoredProjectionKind kind, bool payload)
+        {
+            using var files = new TemporaryDatabase(); var db = await OpenReady(files.Path);
+            var store = new SqlitePrivateSyncStore(db, Scope, new NoopProjector(), _ => { });
+            var page = new StoredPullPage(6, new[] { new StoredPullGroup(6, new[] { new StoredProjectionMutation(collection, key, 1, kind, payload ? new byte[] { 1 } : Array.Empty<byte>()) }) }, Token(4), false, 1001);
+            await Assert.ThrowsAsync<StorageException>(() => store.ApplyPullPageAsync(page, CancellationToken.None));
+            Assert.Equal(5, (await store.GetPullCheckpointAsync(CancellationToken.None)).CommittedThrough); await Dispose(db);
+        }
+
+        [Fact]
         public async Task BootstrapProjectorFailurePreservesPriorReadyCursorAndRawViewAfterReopen()
         {
             using var files = new TemporaryDatabase(); var db = await OpenReady(files.Path); await db.ExecuteAsync(Scope, t => { ((SqliteTransactionSession)t).Execute("CREATE TABLE test_typed_projection (feed_revision INTEGER NOT NULL)"); return true; }, CancellationToken.None); var store = new SqlitePrivateSyncStore(db, Scope, new WritingProjector(failSnapshot: true), _ => { });

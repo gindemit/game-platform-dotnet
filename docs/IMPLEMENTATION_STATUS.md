@@ -1,11 +1,20 @@
 # SDK current status
 
+## 2026-10-11 selected core Friends source
+
+The selected Friends service, authenticated provider, closed MessagePack contract,
+durable cache/journal and friends-ranking scope are implemented in source.
+Real SQLite restart and invalidation races, retained historical receipts and
+production composed routes have local regression coverage. See
+[Friends source evidence](work/friends-2026-10-11/EVIDENCE.md) for exact checks.
+Generated-package, Unity, Android and hosted qualification remain separate.
+
 ## 2026-10-11 selected period leaderboards
 
 The account-bound `LeaderboardsService` implements authenticated immutable
 snapshots, bounded first-page stale caches, explicit country assignment and
 durable uncertain-command retry. The legacy `LeaderboardsFeature` facade remains
-unavailable; Friends awaits a real relationship graph. Historical CL-113 and broad
+unavailable; the subsequently selected Friends source is recorded above. Historical CL-113 and broad
 P4 acceptance are unchanged.
 
 Historical SDK 132 passed source tests and import checks, but independent hosted

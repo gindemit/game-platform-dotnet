@@ -305,10 +305,10 @@
   "features": [
     {
       "id": "friends",
-      "status": "selected; instructions prepared; implementation and runtime acceptance pending",
+      "status": "source implemented; review, exact delivery and runtime acceptance pending",
       "statusPath": "docs/work/friends-2026-10-11/IMPLEMENTATION.md",
-      "sourcePaths": ["src/GamePlatform.Features"],
-      "testPaths": ["tests/GamePlatform.Tests"],
+      "sourcePaths": ["src/GamePlatform.Features/Friends", "src/GamePlatform.Features/Leaderboards", "src/GamePlatform.Wire.Contracts/Friends", "src/GamePlatform.Transport.Http/FriendsHttpProvider.cs", "src/GamePlatform.Serialization.MessagePack/FriendsMessagePackCodec.cs"],
+      "testPaths": ["tests/GamePlatform.Tests/Features/Friends", "tests/GamePlatform.Tests/Serialization/FriendsCodecTests.cs", "tests/GamePlatform.Tests/Transport/FriendsHttpProviderTests.cs"],
       "requirements": ["docs/work/friends-2026-10-11/IMPLEMENTATION.md"],
       "mandatoryRequirements": ["dotnet-agent-rules", "dotnet-architecture", "dotnet-testing", "dotnet-feature-friends"]
     },

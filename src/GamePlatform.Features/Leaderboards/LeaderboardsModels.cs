@@ -12,7 +12,7 @@ namespace GamePlatform.Features.Leaderboards
         public LeaderboardEntry(Guid participantId, long rank, long score, string displayName, string? avatarKey = null,
             string? badgeId = null, string? countryCode = null)
         {
-            if (participantId == Guid.Empty || rank < 1 || rank > 500 || score < 1) throw new ArgumentOutOfRangeException(nameof(rank));
+            if (participantId == Guid.Empty || rank < 1 || rank > 500 || score < 0) throw new ArgumentOutOfRangeException(nameof(rank));
             LeaderboardsValidation.Text(displayName, 64, nameof(displayName));
             if (avatarKey != null) LeaderboardsValidation.Text(avatarKey, 128, nameof(avatarKey), true);
             if (badgeId != null) LeaderboardsValidation.Text(badgeId, 48, nameof(badgeId), true);
@@ -48,15 +48,23 @@ namespace GamePlatform.Features.Leaderboards
         public LeaderboardsResponse(string boardId, string participantKind, string scope, string? countryCode,
             string periodId, long periodStart, long periodEnd, long resetAt, Guid snapshotId, long snapshotCreatedAt,
             long expiresAt, string scoreAuthority, IReadOnlyList<LeaderboardEntry> entries, string? nextCursor,
-            LeaderboardEntry? self, int snapshotLimit, long serverTime, LeaderboardsCountrySelection? countrySelection)
+            LeaderboardEntry? self, int snapshotLimit, long serverTime, LeaderboardsCountrySelection? countrySelection,
+            Guid? appId = null, Guid? accountId = null, Guid? playerId = null, long? graphRevision = null, int? cohortSize = null)
         {
             LeaderboardsValidation.Board(boardId); LeaderboardsValidation.Kind(participantKind);
             LeaderboardsValidation.Scope(scope, countryCode); LeaderboardsValidation.Text(periodId, 32, nameof(periodId), true);
             foreach (long value in new[] { periodStart, periodEnd, resetAt, snapshotCreatedAt, expiresAt, serverTime }) LeaderboardsValidation.Time(value);
             if (periodEnd <= periodStart || resetAt != periodEnd || expiresAt <= snapshotCreatedAt || snapshotId == Guid.Empty || snapshotId.ToString("D")[14] != '7')
                 throw new ArgumentException("Invalid period or snapshot boundary.");
-            if (scoreAuthority != "client_trusted_unvalidated" || snapshotLimit != 500 || entries == null || entries.Count > 50 || entries.Any(x => x == null))
+            if (scoreAuthority != "client_trusted_unvalidated" || scope != "friends" && snapshotLimit != 500 || entries == null || entries.Count > 50 || entries.Any(x => x == null))
                 throw new ArgumentException("Invalid bounded standings.");
+            if (scope == "friends")
+            {
+                if (participantKind != "player" || !boardId.StartsWith("players-", StringComparison.Ordinal) || !appId.HasValue || appId == Guid.Empty || !accountId.HasValue || accountId == Guid.Empty || !playerId.HasValue || playerId == Guid.Empty || !graphRevision.HasValue || graphRevision < 0 || !cohortSize.HasValue || cohortSize < 1 || cohortSize > snapshotLimit || snapshotLimit < 2 || snapshotLimit > 201 || self == null || self.ParticipantId != playerId || self.Rank > cohortSize || self.BadgeId != null || entries.Any(x => x.Rank > cohortSize || x.BadgeId != null) || countrySelection != null)
+                    throw new ArgumentException("Invalid friends cohort.");
+            }
+            else if (appId.HasValue || accountId.HasValue || playerId.HasValue || graphRevision.HasValue || cohortSize.HasValue || entries.Any(x => x.Score < 1) || self != null && self.Score < 1)
+                throw new ArgumentException("Invalid global/country standings.");
             LeaderboardsValidation.Cursor(nextCursor);
             if (entries.Select(x => x.ParticipantId).Distinct().Count() != entries.Count || entries.Select(x => x.Rank).Distinct().Count() != entries.Count)
                 throw new ArgumentException("Duplicate snapshot entry.");
@@ -75,6 +83,7 @@ namespace GamePlatform.Features.Leaderboards
             SnapshotCreatedAt = snapshotCreatedAt; ExpiresAt = expiresAt; ScoreAuthority = scoreAuthority;
             Entries = new ReadOnlyCollection<LeaderboardEntry>(entries.ToArray()); NextCursor = nextCursor; Self = self;
             SnapshotLimit = snapshotLimit; ServerTime = serverTime; CountrySelection = countrySelection;
+            AppId = appId; AccountId = accountId; PlayerId = playerId; GraphRevision = graphRevision; CohortSize = cohortSize;
         }
         public string BoardId { get; }
         public string ParticipantKind { get; }
@@ -94,6 +103,11 @@ namespace GamePlatform.Features.Leaderboards
         public int SnapshotLimit { get; }
         public long ServerTime { get; }
         public LeaderboardsCountrySelection? CountrySelection { get; }
+        public Guid? AppId { get; }
+        public Guid? AccountId { get; }
+        public Guid? PlayerId { get; }
+        public long? GraphRevision { get; }
+        public int? CohortSize { get; }
     }
 
     public sealed class LeaderboardsCountryResponse
@@ -119,7 +133,7 @@ namespace GamePlatform.Features.Leaderboards
         internal static void Board(string value) { if (value == null || !Regex.IsMatch(value, "^[a-z][a-z0-9-]{0,63}$")) throw new ArgumentOutOfRangeException(nameof(value)); }
         internal static void Kind(string value) { if (value != "player" && value != "team") throw new ArgumentOutOfRangeException(nameof(value)); }
         internal static void Country(string? value, bool nullable) { if (value == null ? !nullable : !Regex.IsMatch(value, "^[A-Z]{2}$")) throw new ArgumentOutOfRangeException(nameof(value)); }
-        internal static void Scope(string scope, string? country) { if (scope != "global" && scope != "country" || (scope == "country") != (country != null)) throw new ArgumentException("Invalid scope country binding."); Country(country, true); }
+        internal static void Scope(string scope, string? country) { if (scope != "global" && scope != "country" && scope != "friends" || (scope == "country") != (country != null)) throw new ArgumentException("Invalid scope country binding."); Country(country, true); }
         internal static void Cursor(string? value) { if (value != null) Text(value, 4096, nameof(value)); if (value != null && (value.Length < 16 || !Regex.IsMatch(value, "^[A-Za-z0-9_-]+$"))) throw new ArgumentOutOfRangeException(nameof(value)); }
         internal static void Time(long value) { if (value < 0) throw new ArgumentOutOfRangeException(nameof(value)); }
         internal static void Text(string value, int maximum, string name, bool emptyAllowed = false)

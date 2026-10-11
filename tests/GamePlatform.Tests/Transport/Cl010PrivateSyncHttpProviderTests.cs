@@ -127,6 +127,17 @@ namespace GamePlatform.Tests.Transport
         }
 
         [Fact]
+        public async Task PullMapsFriendsInvalidationWithoutSharedPayloadOrCursorFabrication()
+        {
+            var player = Guid.Parse("019a17aa-1000-7000-8000-000000000001");
+            var codec = Codec(new PullPage(new[] { new PullGroup(9, new IProjectionChange[] { new GamePlatform.Wire.Contracts.Friends.FriendsProjectionInvalidation(player, 4) }) }, TokenText(8), false, 9, 10));
+            var result = await Provider(new ScriptedExecutor(_ => Success()), codec).PullAsync(Token(7), 131072, CancellationToken.None);
+            Assert.True(result.IsSuccess); var mutation = Assert.Single(Assert.Single(result.Value!.Groups).Changes);
+            Assert.Equal("friends", mutation.Collection); Assert.Equal(player.ToString("D"), mutation.EntityKey); Assert.Equal(4, mutation.EntityRevision);
+            Assert.Equal(ProjectionMutationKind.Invalidation, mutation.Kind); Assert.Empty(mutation.CopyPayload()); Assert.Equal(Token(8), result.Value.CopyNextCursor());
+        }
+
+        [Fact]
         public async Task PullRejectsUnknownFrozenRemovalKind()
         {
             var codec = Codec(new PullPage(new[]

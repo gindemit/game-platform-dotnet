@@ -296,6 +296,28 @@ packages/UPM imports, indexes, source commits/pushes and consumer changes.
 
 ## Required checks and separate runtime gates
 
+Root authorized the final required integration seams in
+`G3PrivateSyncProjector.cs`, `PrivateSyncHttpProvider.cs`,
+`BoundedHttpClientExecutor.cs` and `SqlitePrivateSyncStore.cs`, with regression
+tests. SQLite accepts Teams/Friends only as empty, positive-player-keyed feed
+invalidation markers; bootstrap manifests, snapshot inventories and social
+upserts remain unsupported. Hosts invalidate Friends when Teams membership
+changes so suggestions and pending reads use the same account epoch.
+
+`FeatureSnapshot.LastConfirmedAtMilliseconds` exposes the original local UTC
+request-start anchor for query caches. Reopening or rereading does not replace
+that anchor or extend server expiry. Hosts calculate remaining freshness from
+the unchanged response server time and this anchor, then use their monotonic
+elapsed clock. Command receipts do not supply a current query anchor.
+
+Retained rejection identities resolve only for the reviewed admitted business
+codes target_unavailable, already_friends, outgoing_request_pending,
+incoming_request_pending, pair_cooldown, friend_limit, outgoing_limit,
+send_cooldown, request_unavailable, request_expired and not_friends (all with
+the friends. prefix), and only Validation/Conflict/RateLimited failure kinds.
+Authentication, authorization, unknown future codes and admission errors retain
+the original immutable pending command.
+
 Use deterministic clocks/IDs and controlled races, not sleeps. Focused tests cover
 real SQLite restart with a fresh cache and zero remote calls; expired/offline stale
 cache; clock rollback; exact-code/query binding; player/account/app/backend/view

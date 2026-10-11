@@ -378,7 +378,8 @@ namespace GamePlatform.Storage.Sqlite.Sync
             {
                 bytes = checked(bytes + value.CopyPayload().Length);
                 if (bytes > 262_144) throw new StorageException(StorageFailure.Capacity, "A projection page is oversized.");
-                if (!Required.Contains(value.Collection, StringComparer.Ordinal) ||
+                var additiveInvalidation = !snapshot && (value.Collection == "teams" || value.Collection == "friends") && value.Kind == StoredProjectionKind.Invalidation && value.CopyPayload().Length == 0 && Guid.TryParseExact(value.EntityKey, "D", out var playerId) && playerId != Guid.Empty;
+                if (!(Required.Contains(value.Collection, StringComparer.Ordinal) || additiveInvalidation) ||
                     !Enum.IsDefined(typeof(StoredProjectionKind), value.Kind) ||
                     (snapshot && value.Kind != StoredProjectionKind.Upsert))
                     throw new StorageException(StorageFailure.Constraint, "A required projection kind is unsupported.");

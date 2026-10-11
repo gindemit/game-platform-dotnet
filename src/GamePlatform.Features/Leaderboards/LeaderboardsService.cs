@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
 using GamePlatform.Features.Contracts.Snapshots;
+using GamePlatform.Features.Friends;
 using GamePlatform.Storage.Abstractions;
 using GamePlatform.Storage.Abstractions.FeatureState;
 namespace GamePlatform.Features.Leaderboards
@@ -49,6 +50,7 @@ namespace GamePlatform.Features.Leaderboards
         private readonly CancellationTokenSource lifetime = new CancellationTokenSource();
         private readonly object gate = new object();
         private bool disposed;
+        private Guid playerId;
         public LeaderboardsService(ScopedOwnerContext owner, ILeaderboardsRemote? remote, ILeaderboardsStateCodec codec,
             IDurableFeatureStateStore state, ISerializedStorageExecutor transactions, Func<long> nowMilliseconds)
         {
@@ -58,9 +60,25 @@ namespace GamePlatform.Features.Leaderboards
             this.state = state ?? throw new ArgumentNullException(nameof(state)); this.transactions = transactions ?? throw new ArgumentNullException(nameof(transactions));
             this.nowMilliseconds = nowMilliseconds ?? throw new ArgumentNullException(nameof(nowMilliseconds));
         }
+        public LeaderboardsService(ScopedOwnerContext owner, Guid playerId, ILeaderboardsRemote? remote, ILeaderboardsStateCodec codec,
+            IDurableFeatureStateStore state, ISerializedStorageExecutor transactions, Func<long> nowMilliseconds)
+            : this(owner, remote, codec, state, transactions, nowMilliseconds) { this.playerId = playerId; }
+        public async Task<FeatureSnapshot<LeaderboardsResponse>> ReadAsync(ScopedOwnerContext requestedOwner, LeaderboardsQuery query, CancellationToken cancellationToken)
+        {
+            var cached = await ReadCachedAsync(requestedOwner, query, cancellationToken).ConfigureAwait(false);
+            if (cached.Freshness == SnapshotFreshness.Current || remote == null) return cached;
+            try { return await QueryAsync(requestedOwner, query, cancellationToken).ConfigureAwait(false); }
+            catch (LeaderboardsOperationException error) when (cached.Value != null && (error.Failure.Kind == RemoteFailureKind.Dependency || error.Failure.Kind == RemoteFailureKind.Unavailable || error.Failure.Kind == RemoteFailureKind.NotSent || error.Failure.Kind == RemoteFailureKind.RateLimited))
+            { return await ReadCachedAsync(requestedOwner, query, cancellationToken).ConfigureAwait(false); }
+        }
         public async Task<FeatureSnapshot<LeaderboardsResponse>> ReadCachedAsync(ScopedOwnerContext requestedOwner, LeaderboardsQuery query, CancellationToken cancellationToken)
         {
             EnsureOwner(requestedOwner); if (query == null) throw new ArgumentNullException(nameof(query));
+            if (query.Scope == "friends")
+            {
+                try { return await ReadFriendsCacheAsync(requestedOwner, query, cancellationToken).ConfigureAwait(false); }
+                catch (FriendsOperationException error) { throw new LeaderboardsOperationException(error.Failure, error.ResultCode); }
+            }
             string? key = CacheKey(query); if (key == null) return Missing();
             using var linked = Link(cancellationToken);
             var cached = await state.ReadAsync(owner, Namespace, key, linked.Token).ConfigureAwait(false);
@@ -81,6 +99,7 @@ namespace GamePlatform.Features.Leaderboards
         public async Task<FeatureSnapshot<LeaderboardsResponse>> QueryAsync(ScopedOwnerContext requestedOwner, LeaderboardsQuery query, CancellationToken cancellationToken)
         {
             EnsureOwner(requestedOwner); if (query == null) throw new ArgumentNullException(nameof(query));
+            if (query.Scope == "friends") return await QueryFriendsAsync(requestedOwner, query, cancellationToken).ConfigureAwait(false);
             using var linked = Link(cancellationToken); await serial.WaitAsync(linked.Token).ConfigureAwait(false);
             try
             {
@@ -190,6 +209,74 @@ namespace GamePlatform.Features.Leaderboards
                 throw Error(RemoteFailureKind.Protocol, "leaderboards_country_mismatch");
         }
         private static string? CacheKey(LeaderboardsQuery query) => query.Cursor == null && query.Limit == 30 && Boards.Contains(query.BoardId) ? query.BoardId + ":" + query.Scope : null;
+        private async Task<FeatureSnapshot<LeaderboardsResponse>> ReadFriendsCacheAsync(ScopedOwnerContext requestedOwner, LeaderboardsQuery query, CancellationToken token)
+        {
+            if (query.Cursor != null || query.Limit != 30) return Missing();
+            using var linked = Link(token);
+            long expectedEpoch = -1;
+            var result = await transactions.ExecuteAsync(storageScope, tx =>
+            {
+                lock (gate)
+                {
+                    EnsureOwner(requestedOwner); linked.Token.ThrowIfCancellationRequested();
+                    playerId = FriendsPlayerBinding.Load(tx, state, owner, playerId); if (playerId == Guid.Empty) return Missing();
+                    string ns = FriendsCache.Namespace(playerId), key = "ranks:" + query.BoardId;
+                    var row = state.Read(tx, owner, ns, key); if (row == null || !FriendsCache.Matches(row, query.BoardId + ":30")) return Missing();
+                    var value = codec.DecodeResponse(row.CopyPayload()); ValidateFriends(query, value);
+                    var epoch = state.Read(tx, owner, FriendsPlayerBinding.Namespace, FriendsCache.Epoch); expectedEpoch = epoch?.Revision ?? 0;
+                    if (value.GraphRevision < FriendsCache.GraphFloor(epoch)) return Missing();
+                    long clock = Now();
+                    if (clock >= row.ConfirmedAtMilliseconds && clock - row.ConfirmedAtMilliseconds >= 86400000) { state.Delete(tx, owner, ns, key); return Missing(); }
+                    return Snapshot(value, FriendsCache.Fresh(row.ConfirmedAtMilliseconds, clock, value.ServerTime, value.ExpiresAt) && value.ExpiresAt <= value.PeriodEnd ? SnapshotFreshness.Current : SnapshotFreshness.Stale, row.ConfirmedAtMilliseconds);
+                }
+            }, linked.Token).ConfigureAwait(false);
+            if (result.Value != null) FriendsCache.CheckEpoch(await state.ReadAsync(owner, FriendsPlayerBinding.Namespace, FriendsCache.Epoch, linked.Token).ConfigureAwait(false), expectedEpoch);
+            EnsureOwner(requestedOwner); linked.Token.ThrowIfCancellationRequested(); return result;
+        }
+        private async Task<FeatureSnapshot<LeaderboardsResponse>> QueryFriendsAsync(ScopedOwnerContext requestedOwner, LeaderboardsQuery query, CancellationToken token)
+        {
+            using var linked = Link(token); await serial.WaitAsync(linked.Token).ConfigureAwait(false);
+            try
+            {
+                if (remote == null) throw Error(RemoteFailureKind.Unavailable, "leaderboards_offline");
+                long start = Now(); var priorEpoch = await state.ReadAsync(owner, FriendsPlayerBinding.Namespace, FriendsCache.Epoch, linked.Token).ConfigureAwait(false);
+                RemoteResult<LeaderboardsResponse> response;
+                try { response = await remote.QueryAsync(query, linked.Token).ConfigureAwait(false); }
+                catch (LeaderboardsOperationException error) { if (error.Failure.Kind == RemoteFailureKind.Authorization || error.Failure.Kind == RemoteFailureKind.Authentication) await InvalidateFriendsAsync(linked.Token).ConfigureAwait(false); throw; }
+                EnsureOwner(requestedOwner); linked.Token.ThrowIfCancellationRequested();
+                if (!response.IsSuccess) { if (response.Failure.Kind == RemoteFailureKind.Authorization || response.Failure.Kind == RemoteFailureKind.Authentication) await InvalidateFriendsAsync(linked.Token).ConfigureAwait(false); throw new LeaderboardsOperationException(response.Failure, "leaderboards_unavailable"); }
+                var value = response.Value!; ValidateFriends(query, value);
+                var committed = await transactions.ExecuteAsync(storageScope, tx =>
+                {
+                    lock (gate)
+                    {
+                        EnsureOwner(requestedOwner); linked.Token.ThrowIfCancellationRequested();
+                        var epoch = state.Read(tx, owner, FriendsPlayerBinding.Namespace, FriendsCache.Epoch); FriendsCache.CheckEpoch(epoch, priorEpoch?.Revision ?? 0);
+                        var bound = FriendsPlayerBinding.Bind(tx, state, owner, playerId, value.PlayerId!.Value);
+                        if (value.GraphRevision < FriendsCache.GraphFloor(epoch)) throw Error(RemoteFailureKind.Protocol, "leaderboards_graph_regressed");
+                        if (value.GraphRevision > FriendsCache.GraphFloor(epoch)) FriendsCache.Invalidate(tx, state, owner, bound, 0, value.GraphRevision!.Value);
+                        if (query.Cursor == null && query.Limit == 30)
+                        {
+                            string ns = FriendsCache.Namespace(bound), key = "ranks:" + query.BoardId; var row = state.Read(tx, owner, ns, key);
+                            state.Upsert(tx, new DurableFeatureMutation(owner, ns, key, checked((row?.Revision ?? 0) + 1), start, codec.EncodeResponse(value), FriendsCache.Context(query.BoardId + ":30")));
+                        }
+                        return (Player: bound, Epoch: state.Read(tx, owner, FriendsPlayerBinding.Namespace, FriendsCache.Epoch)?.Revision ?? 0);
+                    }
+                }, linked.Token).ConfigureAwait(false);
+                FriendsCache.CheckEpoch(await state.ReadAsync(owner, FriendsPlayerBinding.Namespace, FriendsCache.Epoch, linked.Token).ConfigureAwait(false), committed.Epoch);
+                lock (gate) { EnsureOwner(requestedOwner); linked.Token.ThrowIfCancellationRequested(); playerId = committed.Player; }
+                EnsureOwner(requestedOwner); linked.Token.ThrowIfCancellationRequested(); return Snapshot(value, FriendsCache.Fresh(start, Now(), value.ServerTime, value.ExpiresAt) ? SnapshotFreshness.Current : SnapshotFreshness.Stale, start);
+            }
+            catch (FriendsOperationException error) { throw new LeaderboardsOperationException(error.Failure, error.ResultCode); }
+            finally { serial.Release(); }
+        }
+        private Task<bool> InvalidateFriendsAsync(CancellationToken token) => transactions.ExecuteAsync(storageScope, tx => { lock (gate) { EnsureOwner(owner); token.ThrowIfCancellationRequested(); FriendsCache.InvalidateOwner(tx, state, owner); return true; } }, token);
+        private void ValidateFriends(LeaderboardsQuery query, LeaderboardsResponse value)
+        {
+            ValidateQuery(query, value);
+            if (value.AppId != owner.Owner.AppId.Value || value.AccountId != owner.Owner.UserId.Value || !value.PlayerId.HasValue || value.PlayerId == Guid.Empty || playerId != Guid.Empty && value.PlayerId != playerId || value.Scope != "friends" || value.Self?.ParticipantId != value.PlayerId || value.ExpiresAt > value.PeriodEnd || value.ExpiresAt - value.ServerTime > 300000)
+                throw Error(RemoteFailureKind.Protocol, "leaderboards_friends_mismatch");
+        }
         // A coarse transport/gateway failure cannot prove that an earlier ambiguous attempt did not commit.
         // Only a separately reviewed backend rejection code may release this immutable journal entry.
         private static bool DefiniteRejection(LeaderboardsOperationException error) => error.Failure.Kind == RemoteFailureKind.Validation &&
@@ -198,7 +285,7 @@ namespace GamePlatform.Features.Leaderboards
         private long Now() { long value = nowMilliseconds(); if (value < 0 || value > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(nowMilliseconds)); return value; }
         private FeatureSnapshot<LeaderboardsResponse> Missing() => new FeatureSnapshot<LeaderboardsResponse>(owner, 0, SnapshotFreshness.Missing, null);
         // No server projection revision exists in this read protocol; never fabricate one from score or time.
-        private FeatureSnapshot<LeaderboardsResponse> Snapshot(LeaderboardsResponse value, SnapshotFreshness freshness) => new FeatureSnapshot<LeaderboardsResponse>(owner, 0, freshness, value);
+        private FeatureSnapshot<LeaderboardsResponse> Snapshot(LeaderboardsResponse value, SnapshotFreshness freshness, long? localRequestStarted = null) => new FeatureSnapshot<LeaderboardsResponse>(owner, 0, freshness == SnapshotFreshness.Current ? FeatureSnapshotState.Available : FeatureSnapshotState.Stale, freshness, value, localRequestStarted, null);
         private CancellationTokenSource Link(CancellationToken token) { lock (gate) { EnsureOwner(owner); return CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.Token); } }
         private void EnsureOwner(ScopedOwnerContext value)
         { lock (gate) { if (disposed) throw new ObjectDisposedException(nameof(LeaderboardsService)); if (value != owner) throw Error(RemoteFailureKind.Authorization, "leaderboards_owner_mismatch"); } }

@@ -24,6 +24,7 @@ namespace GamePlatform.Transport.Http
         private readonly IAuthSession auth;
         private readonly AuthRefreshCoordinator refresh;
         private readonly LeaderboardsMessagePackCodec codec = new LeaderboardsMessagePackCodec();
+        private readonly FriendsMessagePackCodec friendsCodec = new FriendsMessagePackCodec();
         private readonly MessagePackWireCodec errors = new MessagePackWireCodec();
 
         public LeaderboardsHttpProvider(AppId appId, PlatformUserId accountId, BackendHttpConfiguration configuration,
@@ -41,6 +42,13 @@ namespace GamePlatform.Transport.Http
         public Task<RemoteResult<LeaderboardsResponse>> QueryAsync(LeaderboardsQuery query, CancellationToken cancellationToken)
         {
             if (query == null) throw new ArgumentNullException(nameof(query));
+            if (query.Scope == "friends") return SendAsync("friends/query", friendsCodec.EncodeRankingQuery(query.BoardId, query.Limit, query.Cursor), false,
+                bytes =>
+                {
+                    var value = LeaderboardsModelMapper.ToDomain(friendsCodec.DecodeRankingResponse(bytes));
+                    if (value.AppId != appId.Value || value.AccountId != accountId.Value || value.BoardId != query.BoardId || value.Entries.Count > query.Limit) throw new ArgumentException("Response friends context mismatch.");
+                    return value;
+                }, cancellationToken);
             return SendAsync("query", codec.EncodeQuery(LeaderboardsModelMapper.ToWire(query)), false,
                 bytes =>
                 {
