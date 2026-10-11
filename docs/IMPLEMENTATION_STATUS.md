@@ -8,15 +8,27 @@ durable uncertain-command retry. The legacy `LeaderboardsFeature` facade remains
 unavailable; Friends awaits a real relationship graph. Historical CL-113 and broad
 P4 acceptance are unchanged.
 
-Reviewed source `0bc4c3307225d4eac6cacfb2834f1a1c0191589e` passed 792 Release
-tests and exact-head CI. Generated delivery `0.1.0-dev.132`, commit
-`dfb732ce0cb881c27ad8d304688a98300c63519a`, passed complete 142-file Unity import
-verification. Independent hosted testing then found the production HTTP executor
-rejecting both leaderboard routes before sending them. A narrow route-admission
-repair, regenerated delivery and repeated hosted/physical verification are
-required; source tests and a generated package do not establish that acceptance.
+Historical SDK 132 passed source tests and import checks, but independent hosted
+testing caught the production HTTP executor rejecting both leaderboard routes.
+The SDK 133 repair and subsequent hosted/physical acceptance below supersede it.
 The current cross-repository receipt is
 [leaderboards validation](https://github.com/gindemit/game-platform-workspace/blob/main/docs/LEADERBOARDS-VALIDATION-2026-10-11.md).
+
+Route repair `8e30aaa900a90b995f8656c25a0c2919e02eb71d` passed 804 Release
+tests, 27 independent executor tests and exact CI 38140944293. Verified generated
+delivery `0.1.0-dev.133` is `ea77967b089315c96dcbc23981dc2ca07f0c4a67`.
+Independent generated-DLL DEV smoke passed all twelve kind/scope/schedule reads,
+country assignment/replay/conflicting identity and leader-only team authorization.
+Responses remain bound to the authenticated token principal regardless of a
+different local provider account argument. Empty pre-completion boards supplied
+no continuation cursor. Unity source `0200ae9d2c7c24423bb7653037ce0c186d938f8b`
+then passed 49 EditMode/four PlayMode checks and Android IL2CPP build with this
+exact package. The preserved phone account completed a real garden; 80 independent
+post-phone cloud assertions confirmed player/team score 1 on all global schedules
+and both monthly Germany boards. The owning consumer's
+[device receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/Leaderboards/DEVICE-2026-10-11.md)
+records exact artifact, network and scope limits. These results supersede the
+SDK 132 transport failure without broadening historical feature or P4 acceptance.
 
 ## 2026-10-11 Teams source implementation
 
@@ -54,8 +66,8 @@ behavior or physical acceptance of this payload.
 ## 2026-10-05 consumer identity reconciliation
 
 Follow-up on 2026-10-11: the current Unity consumer requests and resolves
-`dfb732ce0cb881c27ad8d304688a98300c63519a` for selected leaderboard integration.
-The source/package/import evidence and pending transport repair are recorded
+`ea77967b089315c96dcbc23981dc2ca07f0c4a67` for selected leaderboard integration.
+The source/package/import evidence and completed transport repair are recorded
 above; Teams delivery `c776f43765a108105c45258c80b38536ec5bd2cd` and the October 5
 facts below remain historical.
 

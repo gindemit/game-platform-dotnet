@@ -546,7 +546,7 @@
     },
     {
       "id": "leaderboards",
-      "status": "selected period service implemented; hosted transport repair and physical verification pending",
+      "status": "selected period service implemented; generated SDK, DEV and physical completion-to-score verified",
       "statusPath": "docs/IMPLEMENTATION_STATUS.md",
       "sourcePaths": [
         "src/GamePlatform.Features/Leaderboards"
