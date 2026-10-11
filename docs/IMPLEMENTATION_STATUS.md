@@ -8,6 +8,9 @@ journal, atomic successor adoption, retained-command receipt reconciliation and
 account lifetime fencing. Complete bootstrap remains a consumer-host requirement;
 the change does not activate Unity recovery or product gates. See the
 [implementation and actual checks](work/stream-recovery-2026-10-11/IMPLEMENTATION.md).
+Reviewed generated dev.138 delivery is `8429e119`, from source `83b07c6`;
+the [delivery receipt](work/stream-recovery-2026-10-11/DELIVERY.md) records exact
+hashes, successful CI and 867/867 tests against the actual delivered managed DLLs.
 
 ## Friends generated delivery and consumer pin
 
