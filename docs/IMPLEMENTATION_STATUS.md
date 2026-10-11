@@ -7,9 +7,11 @@ and generated `0.1.0-dev.135`, delivery
 `e17d18b3bacb9fde4a992504f6e5f074167fbac7`. Pocket Bloom's committed package
 manifest and lock now select this exact delivery. Root and independent review
 verified the complete package inventory. Real generated-DLL local HTTP checks
-pass; mounted Unity, physical Android and hosted DEV results are tracked in the
+pass. The same generated payload passed 72 hosted real-auth checks and the
+consumer's scoped mounted Unity, local/DEV Android and sustained offline
+restart/reconnect qualification. Exact identities and limits are tracked in the
 [Friends validation receipt](https://github.com/gindemit/game-platform-workspace/blob/main/docs/FRIENDS-VALIDATION-2026-10-11.md).
-The consumer pin alone does not establish those remaining runtime results.
+The consumer pin alone does not establish runtime results; the linked receipts do.
 
 ## 2026-10-11 selected core Friends source
 
