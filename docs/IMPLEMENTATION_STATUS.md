@@ -6,7 +6,7 @@ Reviewed source `d71f25cbd181560c5ce5aeea4fea8c2f952eb8af` fixes successor
 resume after adoption and terminal inspection expiry, and supplies the atomic
 principal-directory extension needed for a consumer admission witness.
 CI `38169608199` generated SDK `0.1.0-dev.140`, delivery
-`d3bd838123c32a9d98909c2e3a672a4f1f795818`. The selected Unity manifest, lock and
+`f86a5aee14ab8e81f0d0b9084c6d07a5fd6c2efe`. The selected Unity manifest, lock and
 import verifier pin this exact delivery. Both source and actual delivered DLL
 suites passed 876/876 with zero skips; complete package verification passed.
 Unity execution and physical storage qualification have their own
@@ -113,7 +113,7 @@ behavior or physical acceptance of this payload.
 ## 2026-10-05 consumer identity reconciliation
 
 Recovery follow-up on 2026-10-11: the selected Unity manifest and lock now pin
-`d3bd838123c32a9d98909c2e3a672a4f1f795818` (`0.1.0-dev.140`). The reviewed
+`f86a5aee14ab8e81f0d0b9084c6d07a5fd6c2efe` (`0.1.0-dev.140`). The reviewed
 correction and actual generated-DLL results are recorded at the top of this page;
 the linked consumer receipt separates Unity/device execution from package checks.
 
