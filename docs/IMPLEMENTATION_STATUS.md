@@ -9,6 +9,10 @@ CI `38169608199` generated SDK `0.1.0-dev.140`, delivery
 `f86a5aee14ab8e81f0d0b9084c6d07a5fd6c2efe`. The selected Unity manifest, lock and
 import verifier pin this exact delivery. Both source and actual delivered DLL
 suites passed 876/876 with zero skips; complete package verification passed.
+The consumer must explicitly supply the package's canonical `Runtime/link.xml`
+to Unity's linker: package metadata alone does not activate preservation. The
+selected game now supplies it through an Editor-only `IUnityLinkerProcessor`;
+physical checks and their limits belong to the linked consumer receipt.
 Unity execution and physical storage qualification have their own
 [consumer receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/StreamRecovery/VALIDATION-2026-10-11.md).
 The earlier deliveries below remain dated evidence; no broad gates change.
