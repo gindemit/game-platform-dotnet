@@ -51,7 +51,9 @@ namespace GamePlatform.Tests.Serialization
             JsonValueKind.Array => V.Array(value.EnumerateArray().Select(Parse)),
             JsonValueKind.String => V.String(value.GetString()!),
             JsonValueKind.Number => V.Integer(value.GetInt64()),
-            JsonValueKind.True => V.Boolean(true), JsonValueKind.False => V.Boolean(false), JsonValueKind.Null => V.Null,
+            JsonValueKind.True => V.Boolean(true),
+            JsonValueKind.False => V.Boolean(false),
+            JsonValueKind.Null => V.Null,
             _ => throw new InvalidOperationException()
         };
 
@@ -89,6 +91,37 @@ namespace GamePlatform.Tests.Serialization
             Assert.Throws<QualificationCodecException>(() => codec.EncodeCommand(new GamePlatform.Features.Teams.TeamsCommand(new OperationId(TeamsServiceTests.Operation), "send_message", TeamsServiceTests.Team,
                 payload: new GamePlatform.Features.Teams.TeamsCommandPayload(text: new string('x', 3000)))));
             Assert.Throws<ArgumentOutOfRangeException>(() => new GamePlatform.Features.Teams.TeamsQuery("discover", pageSize: 51));
+        }
+
+        [Theory]
+        [InlineData(33)]
+        [InlineData(64)]
+        public void QuerySearchCountsUnicodeScalarsAndRoundTrips(int scalarCount)
+        {
+            string search = string.Concat(Enumerable.Repeat("\U0001F331", scalarCount));
+            var query = new GamePlatform.Features.Teams.TeamsQuery("discover", search: search, pageSize: 50);
+            var bytes = new TeamsMessagePackCodec().EncodeQuery(new GamePlatform.Wire.Contracts.Teams.TeamsQuery(query.View, query.TeamId, query.Search, query.Cursor, query.PageSize));
+            var codec = new QualificationMessagePackCodec();
+            var decoded = codec.Decode("teams.schema.json#/$defs/queryRequest", bytes);
+            Assert.Equal(search, decoded.Properties["search"].StringValue);
+            Assert.Equal(bytes, codec.Encode("teams.schema.json#/$defs/queryRequest", decoded));
+        }
+
+        [Fact]
+        public void QuerySearchRejectsOverlongMalformedAndBackendInvalidText()
+        {
+            string[] invalid = { string.Concat(Enumerable.Repeat("\U0001F331", 65)), "\uD800", "\uDC00", "a\uD800b", "a\u0000b", "a\u001Fb", "a\u007Fb" };
+            foreach (string search in invalid)
+            {
+                Assert.Throws<ArgumentOutOfRangeException>(() => new GamePlatform.Features.Teams.TeamsQuery("discover", search: search));
+                Assert.Throws<ArgumentOutOfRangeException>(() => new GamePlatform.Wire.Contracts.Teams.TeamsQuery("discover", search: search));
+            }
+            Assert.Null(new GamePlatform.Features.Teams.TeamsQuery("discover").Search);
+            Assert.Equal("", new GamePlatform.Features.Teams.TeamsQuery("discover", search: "").Search);
+            Assert.Equal("a\u0085b", new GamePlatform.Features.Teams.TeamsQuery("discover", search: "a\u0085b").Search);
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GamePlatform.Features.Teams.TeamsQuery("discover", teamId: Guid.Empty));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GamePlatform.Features.Teams.TeamsQuery("discover", pageSize: 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GamePlatform.Features.Teams.TeamsQuery("discover", cursor: new string('a', 129)));
         }
 
         [Fact]
