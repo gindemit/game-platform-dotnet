@@ -66,8 +66,13 @@ namespace GamePlatform.Tests.Sync.Recovery
                 if (barrier == "remote-commit") await f.ControlAsync("hold-next-recovery");
                 await f.CloseDatabasesAsync();
                 var assembly = typeof(JoinedCommandStreamRecoveryTests).Assembly.Location;
-                var start = new ProcessStartInfo("dotnet") { UseShellExecute = false, CreateNoWindow = true,
-                    RedirectStandardOutput = true, RedirectStandardError = true };
+                var start = new ProcessStartInfo("dotnet")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
                 foreach (var arg in new[] { "vstest", assembly, "--TestCaseFilter:FullyQualifiedName=GamePlatform.Tests.Sync.Recovery.JoinedCommandStreamRecoveryTests.ProcessRecoveryChild" }) start.ArgumentList.Add(arg);
                 start.Environment["GP_RECOVERY_CHILD_FOLDER"] = f.Folder;
                 start.Environment["GP_RECOVERY_CHILD_ACCOUNT"] = f.Account.ToString();
