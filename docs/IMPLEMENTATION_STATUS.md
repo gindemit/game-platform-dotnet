@@ -1,5 +1,20 @@
 # SDK current status
 
+## 2026-10-12 FIN-ANDROID configured consumer qualification
+
+Current reviewed consumer Git delivery is `0.1.0-dev.150`,
+`aa80f9dd48794b32e66391aba5cdfa53c347580c`, from source
+`6ad5efeb0f700a6acc3c262be319a94fac161274`; final SDK CI passed.
+The main checkout's generated dev.145 payload remains a separate identity.
+Unity repinned manifest/lock/verifier to that exact tagged delivery and passed
+400 Player plus 48 Review EditMode cases, 44 PlayMode cases, resolved inventory,
+configured ARM64 IL2CPP build and an isolated High fixture. Physical Dev Android
+retained-account gameplay/social/offline restart/reconnect and real isolated hosted
+missing-storage recovery passed; successor pending command bytes survived process
+death and acceptance. Exact artifacts, initial harness/import failures and limits
+are in the [FIN-ANDROID receipt](https://github.com/gindemit/game-platform-workspace/blob/main/docs/FIN-ANDROID-RESULTS-2026-10-12.md).
+P3 stays closed; broad P4/public release holds and earlier dated receipts remain.
+
 ## 2026-10-12 FIN-AUTH desktop response bound
 
 The desktop Supabase Auth executor now accepts up to 64 combined response/content
@@ -145,7 +160,12 @@ behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
 
-Current consumer on 2026-10-12: manifest, lock and verifier select
+Current FIN-ANDROID consumer on 2026-10-12: manifest, lock and verifier select
+`aa80f9dd48794b32e66391aba5cdfa53c347580c` (`0.1.0-dev.150`), generated from
+source `6ad5efeb0f700a6acc3c262be319a94fac161274`. Configured Dev physical
+qualification is linked at the top; source main's generated payload remains separate.
+
+Earlier consumer on 2026-10-12: manifest, lock and verifier selected
 `281ce9b6c45682c1caa32cd6ca52a756734cbcff` (`0.1.0-dev.144`), generated from
 source `020695b5ead664f829ed866867100faa87b1f444`. The updated validation receipt
 is linked at the top of this document; the following entries describe earlier pins.
