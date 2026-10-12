@@ -1,5 +1,16 @@
 # SDK current status
 
+## 2026-10-12 updated consumer validation
+
+Reviewed SDK source `020695b5ead664f829ed866867100faa87b1f444` is delivered as
+`0.1.0-dev.144`, Git UPM commit `281ce9b6c45682c1caa32cd6ca52a756734cbcff`.
+Delivery CI [38197914770](https://github.com/gindemit/game-platform-dotnet/actions/runs/38197914770)
+passes. The selected Unity manifest, lock and import verifier pin this delivery.
+Both WebGL candidates, configured Android Player shell tests and isolated physical
+ARM64 native tests passed with the updated package. Exact checks and limits are in
+the [consumer receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/PlatformValidation/2026-10-12-sdk-dev144.md).
+This reconciles the current consumer identity; earlier sections remain dated evidence.
+
 ## 2026-10-11 reviewed recovery corrections and consumer update
 
 Reviewed source `d71f25cbd181560c5ce5aeea4fea8c2f952eb8af` fixes successor
@@ -115,6 +126,11 @@ original scope; Dev deployment does not establish authenticated hosted Teams
 behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
+
+Current consumer on 2026-10-12: manifest, lock and verifier select
+`281ce9b6c45682c1caa32cd6ca52a756734cbcff` (`0.1.0-dev.144`), generated from
+source `020695b5ead664f829ed866867100faa87b1f444`. The updated validation receipt
+is linked at the top of this document; the following entries describe earlier pins.
 
 Recovery follow-up on 2026-10-11: the selected Unity manifest and lock now pin
 `f86a5aee14ab8e81f0d0b9084c6d07a5fd6c2efe` (`0.1.0-dev.140`). The reviewed
