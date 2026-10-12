@@ -1,5 +1,17 @@
 # SDK current status
 
+## 2026-10-12 FIN-AUTH desktop response bound
+
+The desktop Supabase Auth executor now accepts up to 64 combined response/content
+headers, including the legitimate 20-header shape previously rejected at 16.
+Name/value, duplicate, body, authority and route guards are retained. Focused
+lifecycle tests pass 55/55 and the Release SDK suite passes 883/883, zero skips.
+The [local validation receipt](FIN-AUTH-VALIDATION-2026-10-12.md) distinguishes
+fake-store provider reconstruction from durable storage/process restart. The
+coordinator additionally verified real DEV signup/refresh (20 headers), encrypted
+host-store restart with the same subject (21 headers), and authenticated hosted
+health/readiness. Package and consumer evidence remain separate; no broad gate changes.
+
 ## 2026-10-12 updated consumer validation
 
 Reviewed SDK source `020695b5ead664f829ed866867100faa87b1f444` is delivered as

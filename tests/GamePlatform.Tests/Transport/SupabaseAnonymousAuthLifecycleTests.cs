@@ -29,6 +29,74 @@ namespace GamePlatform.Tests.Transport
         [Fact] public async Task CancellationUnavailableOverflowAndNullSnapshotFailClosed() { var s = new Store(); using var c = new CancellationTokenSource(); c.Cancel(); Assert.Equal(AccountAuthLifecycleKind.Cancelled, (await P(new Scripted(), s).AuthenticateAsync(c.Token)).Kind); s.Available = false; Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(new Scripted(), s).AuthenticateAsync(CancellationToken.None)).Kind); var o = new Store(); await o.Force(SupabaseAnonymousSessionState.Known, Subject.ToString("D"), new byte[16385]); Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(new Scripted(), o).AuthenticateAsync(CancellationToken.None)).Kind); o.NullRead = true; Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(new Scripted(), o).AuthenticateAsync(CancellationToken.None)).Kind); }
         [Fact] public async Task InvalidOrOverflowSnapshotAndMalformedStoreSuccessAreRecovery() { Assert.Throws<ArgumentOutOfRangeException>(() => new SupabaseAnonymousSessionSnapshot(new SupabaseAnonymousSessionPublicRecord(0, SupabaseAnonymousSessionState.Known, Subject.ToString("D")), null)); Assert.Throws<ArgumentOutOfRangeException>(() => new SupabaseAnonymousSessionPublicRecord(1, (SupabaseAnonymousSessionState)999, null)); var overflow = new Store { Current = new SupabaseAnonymousSessionSnapshot(new SupabaseAnonymousSessionPublicRecord(long.MaxValue, SupabaseAnonymousSessionState.FreshAuthorized, null), null) }; Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, (await P(new Scripted(Response()), overflow).AuthenticateAsync(CancellationToken.None)).Kind); Assert.Empty(new Scripted().Requests); var corrupt = new Store { ReturnMaxOnSuccess = true }; var p = P(new Scripted(Response()), corrupt); Assert.False(await p.AuthorizeFreshAsync(CancellationToken.None)); }
         [Fact] public async Task BoundedExecutorRejectsAuthorityRouteRedirectAndOversize() { var cfg = C(1024); var h = new Handler((r, _) => r.RequestUri!.AbsolutePath.EndsWith("signup", StringComparison.Ordinal) ? Task.FromResult(new HttpResponseMessage(HttpStatusCode.Redirect) { RequestMessage = r }) : Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = r, Content = new ByteArrayContent(new byte[1025]) })); using var e = new BoundedSupabaseAuthHttpExecutor(cfg, h); await Assert.ThrowsAsync<HttpExecutionException>(() => e.SendAsync(new HttpRequestData("POST", "https://other.example.test/auth/v1/signup", H(), Encoding.UTF8.GetBytes("{}")), CancellationToken.None)); await Assert.ThrowsAsync<HttpExecutionException>(() => e.SendAsync(new HttpRequestData("POST", cfg.Resolve("bad").AbsoluteUri, H(), Encoding.UTF8.GetBytes("{}")), CancellationToken.None)); await Assert.ThrowsAsync<HttpExecutionException>(() => e.SendAsync(new HttpRequestData("POST", cfg.Resolve("signup").AbsoluteUri, H(), Encoding.UTF8.GetBytes("{}")), CancellationToken.None)); await Assert.ThrowsAsync<HttpExecutionException>(() => e.SendAsync(new HttpRequestData("POST", cfg.Resolve("token?grant_type=refresh_token").AbsoluteUri, H(), Encoding.UTF8.GetBytes("{}")), CancellationToken.None)); }
+        [Fact]
+        public async Task BoundedExecutorAcceptsTwentyHeaderSignupRotationAndSameSubjectRestart()
+        {
+            var store = new Store();
+            var calls = 0;
+            using var executor = new BoundedSupabaseAuthHttpExecutor(C(), new Handler((request, _) =>
+            {
+                calls++;
+                var secret = "refresh" + calls;
+                return Task.FromResult(HeaderResponse(request, 20, Response("access" + calls, secret).CopyBody()));
+            }));
+            var provider = P(executor, store);
+            Assert.True(await provider.AuthorizeFreshAsync(CancellationToken.None));
+            var signup = await provider.AuthenticateAsync(CancellationToken.None);
+            AssertPrincipal(signup);
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, signup.Kind);
+            var refreshed = await signup.Session!.RefreshAsync(0, CancellationToken.None);
+            Assert.Equal("access2", refreshed.Value);
+            Assert.Equal("refresh2", RetainedSecret(store));
+            Assert.Equal(SupabaseAnonymousSessionState.Known, store.Current.Public!.State);
+            var restarted = await P(executor, store).AuthenticateAsync(CancellationToken.None);
+            AssertPrincipal(restarted);
+            Assert.Equal(AccountAuthLifecycleKind.Authenticated, restarted.Kind);
+            Assert.Equal("refresh3", RetainedSecret(store));
+            Assert.Equal(3, calls);
+        }
+
+        [Theory]
+        [InlineData(20, true)]
+        [InlineData(64, true)]
+        [InlineData(65, false)]
+        public async Task BoundedExecutorPreservesFiniteCombinedHeaderCount(int count, bool accepted)
+        {
+            using var executor = new BoundedSupabaseAuthHttpExecutor(C(), new Handler((request, _) => Task.FromResult(HeaderResponse(request, count, Response().CopyBody()))));
+            var request = new HttpRequestData("POST", C().Resolve("signup").AbsoluteUri, H(), Encoding.UTF8.GetBytes("{}"));
+            if (accepted) Assert.Equal(count, (await executor.SendAsync(request, CancellationToken.None)).Headers.Count);
+            else Assert.Equal(HttpDeliveryCertainty.ResponseReceived, (await Assert.ThrowsAsync<HttpExecutionException>(() => executor.SendAsync(request, CancellationToken.None))).Certainty);
+        }
+
+        [Theory]
+        [InlineData("duplicate")]
+        [InlineData("name")]
+        [InlineData("value")]
+        public async Task BoundedExecutorRejectsInvalidHeadersAfterResponse(string fault)
+        {
+            using var executor = new BoundedSupabaseAuthHttpExecutor(C(), new Handler((request, _) =>
+            {
+                var response = HeaderResponse(request, 20, Response().CopyBody());
+                if (fault == "duplicate")
+                {
+                    response.Headers.TryAddWithoutValidation("X-Duplicate", "first");
+                    response.Content.Headers.TryAddWithoutValidation("x-duplicate", "second");
+                }
+                else response.Headers.TryAddWithoutValidation(fault == "name" ? new string('x', 129) : "X-Large", fault == "value" ? new string('x', 16385) : "value");
+                return Task.FromResult(response);
+            }));
+            var request = new HttpRequestData("POST", C().Resolve("signup").AbsoluteUri, H(), Encoding.UTF8.GetBytes("{}"));
+            Assert.Equal(HttpDeliveryCertainty.ResponseReceived, (await Assert.ThrowsAsync<HttpExecutionException>(() => executor.SendAsync(request, CancellationToken.None))).Certainty);
+        }
+
+        static HttpResponseMessage HeaderResponse(HttpRequestMessage request, int count, byte[] body)
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK) { RequestMessage = request, Content = new ByteArrayContent(body) };
+            response.Content.Headers.TryAddWithoutValidation("Content-Type", "application/json");
+            for (var i = 1; i < count; i++) response.Headers.TryAddWithoutValidation("X-Auth-Fixture-" + i, "bounded");
+            return response;
+        }
+
         static string RetainedSecret(Store s) => Encoding.UTF8.GetString(s.Current.CopySecret()!);
         static void AssertPrincipal(AccountAuthLifecycleResult r) { Assert.NotNull(r.Principal); Assert.Equal(Subject.ToString("D"), r.Principal!.Subject); }
         [Fact] public async Task RecoveryRequiredIsTerminalWithoutAnExplicitRecoveryPath_UncertainRefreshKeepsPrincipalAndSecret() { var s = await Known(); var x = new Scripted(new HttpExecutionException(HttpDeliveryCertainty.Uncertain, "test")); var r = await P(x, s).AuthenticateAsync(CancellationToken.None); Assert.Equal(AccountAuthLifecycleKind.RecoveryRequired, r.Kind); AssertPrincipal(r); Assert.Single(x.Requests); Assert.Equal(SupabaseAnonymousSessionState.RecoveryRequired, s.Current.Public!.State); Assert.Equal(Subject.ToString("D"), s.Current.Public.Subject); Assert.NotNull(s.Current.CopySecret()); Assert.Equal("refresh1", RetainedSecret(s)); }

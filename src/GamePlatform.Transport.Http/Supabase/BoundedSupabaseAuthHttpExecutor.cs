@@ -13,7 +13,7 @@ namespace GamePlatform.Transport.Http.Supabase
     public sealed class BoundedSupabaseAuthHttpExecutor : IHttpExecutor, IDisposable
     {
         private const int MaximumRequestBytes = 65_536;
-        private const int MaximumHeaderCount = 16;
+        private const int MaximumHeaderCount = 64;
         private const int MaximumHeaderNameLength = 128;
         private const int MaximumHeaderValueLength = 16_384;
         private readonly HttpClient client;
