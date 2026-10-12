@@ -93,3 +93,39 @@ not Android Keystore, power-loss durability, complete platform bootstrap or
 recovery back into game. Backend current readiness still has the separate
 FIN-BACKEND social-schema coverage gap; HTTP 200 does not close it. Generated
 package and consumer evidence remain distinct.
+
+## Reviewed deterministic Git UPM delivery
+
+Reviewed source is pushed as `13c8ed92ecbf935795088555a2ea03ab2852d20b`.
+Manual [source CI 38262786200](https://github.com/gindemit/game-platform-dotnet/actions/runs/38262786200)
+passed validation/build/test/package; the tagged release job was skipped as intended.
+Source commit used `[skip ci]` followed by manual workflow dispatch to preserve
+the existing tagged-publication hold.
+
+A clean exact-source disposable clone at
+`C:/Work/fin-auth-20261012/sdk-package` generated the full deterministic bundle
+with the existing packaging scripts, without dirty/no-build overrides. Bundle
+verification passed 23 managed assemblies and three qualified native inputs.
+Git UPM `0.1.0-dev.145` export and independent complete inventory/hash/native
+verification passed. Source commit is exactly `13c8ed92`; the package changes
+33 generated files (15 DLLs, 15 PDBs and three JSON manifests/version files).
+Native assets, import metadata and AOT/link policy bytes are unchanged.
+
+Bundle dependency-manifest SHA256:
+`d60c46cfa6b9b96f3c7fcc12cfbbb652eedb3150cbceb969bd634bbd1d555b98`.
+UPM content-manifest SHA256:
+`3e37b1798bdbe8e77dee56304c479c653f35cb6fee65bb3d4821e744806eb62e`.
+Packaged transport DLL SHA256:
+`3ba09580127790b79c27ecf3895b6489a62bedb1ddd41677d222a87adc254765`.
+
+Root rebuilt the external harness against the generated package and verified the
+loaded transport DLL matches those exact bytes. An additional separate-process
+DEV restart refresh passed with 21 headers, same subject, response-matching
+rotated secret, encrypted durable state and health/readiness 200. The original
+source-run restart summary remains `source-restart-summary.json`; the package-run
+summary is `restart-summary.json`, alongside the original fresh summary.
+
+Fresh nonauthor source/hosted-receipt/package reviews passed. A second complete
+independent rebuild for byte reproducibility was not run. Git delivery is not a
+registry/tag publication or Unity qualification: the game remains pinned to its
+previous dev.144 delivery, with consumer repin and physical acceptance deferred.

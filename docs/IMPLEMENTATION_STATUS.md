@@ -12,6 +12,12 @@ coordinator additionally verified real DEV signup/refresh (20 headers), encrypte
 host-store restart with the same subject (21 headers), and authenticated hosted
 health/readiness. Package and consumer evidence remain separate; no broad gate changes.
 
+Independently reviewed generated Git UPM dev.145 now carries source
+`13c8ed92ecbf935795088555a2ea03ab2852d20b`; source CI passed and full package
+verification plus a package-byte-matched DEV restart refresh passed. Native/import/
+AOT policy bytes are unchanged. The Unity consumer remains on dev.144 until its
+separate repin and qualification; no release tag or registry publication was made.
+
 ## 2026-10-12 updated consumer validation
 
 Reviewed SDK source `020695b5ead664f829ed866867100faa87b1f444` is delivered as
