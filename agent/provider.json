@@ -65,7 +65,7 @@
       "path": "docs/IMPLEMENTATION_STATUS.md",
       "heading": "# SDK current status",
       "title": "SDK current status",
-      "summary": "SDK current status",
+      "summary": "Current dev.144 source and consumer identity, scoped runtime evidence and historical acceptance limits.",
       "kind": "status",
       "authority": "current_evidence",
       "topics": [
@@ -78,7 +78,7 @@
       "path": "docs/implementation/CAMPAIGN_UPM_HANDOFF.md",
       "heading": "# SDK handoff \u2014 campaign recovery and package delivery",
       "title": "SDK handoff \u2014 campaign recovery and package delivery",
-      "summary": "SDK handoff \u2014 campaign recovery and package delivery",
+      "summary": "Current dev.144 delivery routing, remaining recovery/Auth checks and dated campaign evidence.",
       "kind": "requirement",
       "authority": "binding",
       "topics": [
@@ -316,8 +316,8 @@
   "features": [
     {
       "id": "friends",
-      "status": "source implemented; review, exact delivery and runtime acceptance pending",
-      "statusPath": "docs/work/friends-2026-10-11/IMPLEMENTATION.md",
+      "status": "selected core service delivered; scoped hosted DEV and Android acceptance recorded; gifts, private chat and broad acceptance remain separate",
+      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
       "sourcePaths": ["src/GamePlatform.Features/Friends", "src/GamePlatform.Features/Leaderboards", "src/GamePlatform.Wire.Contracts/Friends", "src/GamePlatform.Transport.Http/FriendsHttpProvider.cs", "src/GamePlatform.Serialization.MessagePack/FriendsMessagePackCodec.cs"],
       "testPaths": ["tests/GamePlatform.Tests/Features/Friends", "tests/GamePlatform.Tests/Serialization/FriendsCodecTests.cs", "tests/GamePlatform.Tests/Transport/FriendsHttpProviderTests.cs"],
       "requirements": ["docs/work/friends-2026-10-11/IMPLEMENTATION.md"],
@@ -493,8 +493,8 @@
     },
     {
       "id": "quests",
-      "status": "stubbed (local catalog; not end-to-end acceptance)",
-      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "status": "durable occurrence-claim intent implemented; capability default off; objective engine, UI and broad acceptance pending",
+      "statusPath": "src/GamePlatform.Features/Quests/README.md",
       "sourcePaths": [
         "src/GamePlatform.Features/Quests"
       ],
@@ -535,8 +535,8 @@
     },
     {
       "id": "store",
-      "status": "stubbed (local catalog; not end-to-end acceptance)",
-      "statusPath": "docs/IMPLEMENTATION_STATUS.md",
+      "status": "durable server-priced purchase intent implemented; capability default off; offer browsing, UI and broad acceptance pending",
+      "statusPath": "src/GamePlatform.Features/Store/README.md",
       "sourcePaths": [
         "src/GamePlatform.Features/Store"
       ],
@@ -599,7 +599,7 @@
     },
     {
       "id": "teams",
-      "status": "implemented and locally tested; reproducible package verified; Unity and runtime acceptance pending",
+      "status": "selected service delivered; scoped hosted DEV and physical Android acceptance recorded; full CL-114/INT-014 and P4 acceptance remain separate",
       "statusPath": "docs/IMPLEMENTATION_STATUS.md",
       "sourcePaths": [
         "src/GamePlatform.Features/Teams",

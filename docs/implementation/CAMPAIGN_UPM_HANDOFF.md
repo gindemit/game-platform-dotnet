@@ -1,5 +1,36 @@
 # SDK handoff — campaign recovery and package delivery
 
+## Current delivery — 2026-10-12
+
+Use [SDK current status](../IMPLEMENTATION_STATUS.md) for the current identity and
+acceptance summary. Reviewed source `020695b5ead664f829ed866867100faa87b1f444`
+is delivered as `0.1.0-dev.144`, Git UPM
+`281ce9b6c45682c1caa32cd6ca52a756734cbcff`. Unity's manifest, lock and strict
+import verifier select that delivery. The [October 12 consumer receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/PlatformValidation/2026-10-12-sdk-dev144.md)
+records both WebGL candidates, configured Android shell tests and isolated native
+Android qualification across two physical launches. Its physical evidence is
+native-only; hosted recovery, ordinary-device gameplay and portal certification
+were not rerun by that validation.
+
+Inspect/recover production providers, durable recovery journal and corrected
+successor adoption are implemented and delivered. Unity's reviewed admission
+witness, verified-missing-database recovery host and explicit linker activation
+are integrated. Real joined PostgreSQL/hosted successor recovery, including its
+failure/retry and complete-bootstrap-to-gameplay journey, remains separate from
+the synthetic/native proof. See [recovery implementation and limits](../work/stream-recovery-2026-10-11/IMPLEMENTATION.md)
+and the [consumer recovery receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/StreamRecovery/VALIDATION-2026-10-11.md).
+
+The desktop [Supabase Auth executor](../../src/GamePlatform.Transport.Http/Supabase/BoundedSupabaseAuthHttpExecutor.cs)
+still caps response headers at 16. The [Teams DEV receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/DualEdition/2026-10-11-teams-device.md)
+records a real refresh with 20 valid headers rejected before its rotated credential
+could be retained, and leaves that desktop defect unresolved. This requires a
+bounded transport repair and rotation-retention regression; Android's separate
+executor and corrected compression handling have their own passing evidence.
+
+The sections below are dated historical receipts. Their then-current pins and
+pending statements are not the latest consumer inventory. Preserve each result's
+original scope; current delivery does not promote broad P4 or production gates.
+
 ## 2026-10-04 hosted-dev status
 
 Latest SDK main/generated UPM is `5d3819d` from source `6915723`; Unity retains `cae1a21` pending new-pin Editor qualification. The currently recorded hosted backend function source is `f317ced` on project `anvbhjteuxaufnqkbhju`, with migrations 001–018 recorded. Hosted request validation was reached by a temporary real JWT, but complete provision/bootstrap and SDK integration have not passed. The Data API disablement evidence includes a conflicting CLI diagnostic, so it remains a recorded caveat. The [retained-dev preflight](../../integration/HostedDevSmoke/README.md) performs only local target/token-claim checks; a run-owned app fixture, exact-ID cleanup and nonauthor review are needed before any hosted write. This status does not move Unity's package pin or earlier acceptance gates.
