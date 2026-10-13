@@ -20,8 +20,15 @@
       "summary": "Account-owned inspect/recover, durable journal, retained intents and actual acceptance limits.",
       "kind": "requirement",
       "authority": "binding",
-      "topics": ["accounts", "sync"],
-      "tasks": ["SDK-RECOVERY-HTTP", "SDK-RECOVERY-DURABLE", "SDK-RECOVERY-VERIFY"]
+      "topics": [
+        "accounts",
+        "sync"
+      ],
+      "tasks": [
+        "SDK-RECOVERY-HTTP",
+        "SDK-RECOVERY-DURABLE",
+        "SDK-RECOVERY-VERIFY"
+      ]
     },
     {
       "id": "dotnet-feature-friends",
@@ -31,7 +38,9 @@
       "summary": "Selected core friends, additive wire contracts, durable cache and verification scope.",
       "kind": "requirement",
       "authority": "binding",
-      "topics": ["friends"],
+      "topics": [
+        "friends"
+      ],
       "tasks": []
     },
     {
@@ -311,6 +320,19 @@
           "dotnet"
         ]
       }
+    },
+    {
+      "id": "dotnet-configuration-core",
+      "path": "docs/implementation/remote-config/IMPLEMENTATION.md",
+      "heading": "# Optional remote configuration core",
+      "title": "Optional remote configuration core",
+      "summary": "Standalone bounded JSON/evaluator/activation; feature facade and publishing unavailable.",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "remote-config"
+      ],
+      "tasks": []
     }
   ],
   "features": [
@@ -318,10 +340,27 @@
       "id": "friends",
       "status": "selected core service delivered; scoped hosted DEV and Android acceptance recorded; gifts, private chat and broad acceptance remain separate",
       "statusPath": "docs/IMPLEMENTATION_STATUS.md",
-      "sourcePaths": ["src/GamePlatform.Features/Friends", "src/GamePlatform.Features/Leaderboards", "src/GamePlatform.Wire.Contracts/Friends", "src/GamePlatform.Transport.Http/FriendsHttpProvider.cs", "src/GamePlatform.Serialization.MessagePack/FriendsMessagePackCodec.cs"],
-      "testPaths": ["tests/GamePlatform.Tests/Features/Friends", "tests/GamePlatform.Tests/Serialization/FriendsCodecTests.cs", "tests/GamePlatform.Tests/Transport/FriendsHttpProviderTests.cs"],
-      "requirements": ["docs/work/friends-2026-10-11/IMPLEMENTATION.md"],
-      "mandatoryRequirements": ["dotnet-agent-rules", "dotnet-architecture", "dotnet-testing", "dotnet-feature-friends"]
+      "sourcePaths": [
+        "src/GamePlatform.Features/Friends",
+        "src/GamePlatform.Features/Leaderboards",
+        "src/GamePlatform.Wire.Contracts/Friends",
+        "src/GamePlatform.Transport.Http/FriendsHttpProvider.cs",
+        "src/GamePlatform.Serialization.MessagePack/FriendsMessagePackCodec.cs"
+      ],
+      "testPaths": [
+        "tests/GamePlatform.Tests/Features/Friends",
+        "tests/GamePlatform.Tests/Serialization/FriendsCodecTests.cs",
+        "tests/GamePlatform.Tests/Transport/FriendsHttpProviderTests.cs"
+      ],
+      "requirements": [
+        "docs/work/friends-2026-10-11/IMPLEMENTATION.md"
+      ],
+      "mandatoryRequirements": [
+        "dotnet-agent-rules",
+        "dotnet-architecture",
+        "dotnet-testing",
+        "dotnet-feature-friends"
+      ]
     },
     {
       "id": "accounts",
@@ -625,23 +664,27 @@
     },
     {
       "id": "remote-config",
-      "status": "stubbed (local catalog; not end-to-end acceptance)",
+      "status": "optional core implemented; feature facade remains unavailable (no end-to-end acceptance)",
       "statusPath": "docs/IMPLEMENTATION_STATUS.md",
       "sourcePaths": [
-        "src/GamePlatform.Features/RemoteConfig"
+        "src/GamePlatform.Features/RemoteConfig",
+        "src/GamePlatform.Configuration"
       ],
       "testPaths": [
-        "tests/GamePlatform.Tests"
+        "tests/GamePlatform.Tests",
+        "tests/GamePlatform.Configuration.Tests"
       ],
       "requirements": [
         "src/GamePlatform.Features/RemoteConfig/README.md",
-        "docs/FEATURES.md"
+        "docs/FEATURES.md",
+        "docs/implementation/remote-config/IMPLEMENTATION.md"
       ],
       "mandatoryRequirements": [
         "dotnet-agent-rules",
         "dotnet-architecture",
         "dotnet-testing",
-        "dotnet-feature-remote-config"
+        "dotnet-feature-remote-config",
+        "dotnet-configuration-core"
       ]
     },
     {

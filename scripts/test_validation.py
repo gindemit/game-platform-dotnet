@@ -24,7 +24,7 @@ class ValidationTests(unittest.TestCase):
             path.write_text(json.dumps(manifest), encoding="utf-8")
             self.assertIn("unexpected Friends contract path: ../outside", validate.validate(root))
 
-    def test_project_inventory_has_fifteen(self): self.assertEqual(15, len(validate.PROJECTS))
+    def test_project_inventory_has_sixteen(self): self.assertEqual(16, len(validate.PROJECTS))
     def test_feature_inventory_has_sixteen(self): self.assertEqual(16, len(validate.FEATURES))
 
     def test_sha256_is_byte_exact(self):

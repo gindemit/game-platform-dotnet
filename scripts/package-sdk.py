@@ -14,6 +14,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_REPOSITORY_URL = 'https://github.com/gindemit/game-platform-dotnet'
 MESSAGEPACK_PROJECT = 'GamePlatform.Serialization.MessagePack'
+OPTIONAL_PROJECTS = {'GamePlatform.Configuration'}
+
+
+def regular_runtime_projects(root):
+    return [project for project in sorted((root / 'src').glob('*/*.csproj'))
+            if project.stem not in OPTIONAL_PROJECTS]
+
 MESSAGEPACK_PACKAGES = {
     'MessagePack': '3.1.8', 'MessagePack.Annotations': '3.1.8',
     'MessagePackAnalyzer': '3.1.8', 'Microsoft.NET.StringTools': '17.11.4',
@@ -463,7 +470,9 @@ def build_bundle(output, sqlite_source, allow_dirty=False, skip_build=False):
     dirty = bool(run(['git', 'status', '--porcelain', '--untracked-files=normal'], capture=True))
     if dirty and not allow_dirty:
         raise ValueError('source_tree_dirty: commit changes or use --allow-dirty for development')
-    projects = sorted((root / 'src').glob('*/*.csproj'))
+    # Optional WebGL-safe configuration is staged separately; adding a solution
+    # project must not silently expand the established mobile UPM payload.
+    projects = regular_runtime_projects(root)
     validate_inputs(root, projects)
     if not skip_build:
         run(['dotnet', 'restore', 'GamePlatform.sln', '--locked-mode'])

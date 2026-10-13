@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 PROJECTS = {
+    "GamePlatform.Configuration",
     "GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Features.Contracts",
     "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions", "GamePlatform.Features",
     "GamePlatform.Sync", "GamePlatform.Navigation", "GamePlatform.Features.Presentation",
@@ -292,7 +293,7 @@ def main() -> int:
         for error in errors: print(f"ERROR: {error}")
         print(f"Validation failed with {len(errors)} error(s).")
         return 1
-    print("Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and reviewed contract pins.")
+    print(f"Validation passed: {len(PROJECTS)} projects, {len(FEATURES)} evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and reviewed contract pins.")
     return 0
 
 

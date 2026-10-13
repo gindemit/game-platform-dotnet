@@ -1,6 +1,12 @@
 # Architecture
 
-The repository has fifteen `netstandard2.1` assemblies. Core owns neutral IDs, failures and results. Diagnostics owns the small `IAppLog` boundary, bounded safe records and injected/null sinks. Feature/backend/storage contracts are inward ports. Features, Sync, Navigation and feature presenters contain portable policy. Wire and transport abstractions isolate DTO/byte concerns. HTTP, SQLite, MessagePack and JSON are replaceable adapters.
+The repository has sixteen `netstandard2.1` assemblies. Core owns neutral IDs, failures and results. Diagnostics owns the small `IAppLog` boundary, bounded safe records and injected/null sinks. Feature/backend/storage contracts are inward ports. Features, Sync, Navigation and feature presenters contain portable policy. Wire and transport abstractions isolate DTO/byte concerns. HTTP, SQLite, MessagePack and JSON are replaceable adapters.
+
+Optional `GamePlatform.Configuration` owns bounded static JSON, immutable compiled
+selectors, pure evaluation and activation policy. It has no project or runtime
+package dependencies; it is usable independently on Android/WebGL. It is excluded
+from the regular mobile SDK UPM export and has a separate config-only staging path.
+Fetching, durable cache, enrollment and game integration remain outer/later work.
 
 `architecture.json` is the allowed direct-reference map and `scripts/validate.py` compares it with actual ProjectReferences. Allowed does not mean required. Core/contracts have BCL-only package dependencies. Manual constructor injection, narrow factories and explicit disposal owners are required. Runtime infrastructure may outlive an application; account services and their factories may not. No service locator, ambient account or global mutable registry.
 
