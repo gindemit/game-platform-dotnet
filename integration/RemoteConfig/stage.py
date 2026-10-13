@@ -12,7 +12,7 @@ META = '''fileFormatVersion: 2
 guid: 8775d311ce6a49d3a3cd583ead52be55
 PluginImporter:
   externalObjects: {}
-  serializedVersion: 3
+  serializedVersion: 2
   iconMap: {}
   executionOrder: {}
   defineConstraints: []
@@ -22,16 +22,28 @@ PluginImporter:
   validateReferences: 1
   platformData:
   - first:
-      Any:
+      : Any
     second:
       enabled: 0
-      settings: {}
+      settings:
+        Exclude Android: 0
+        Exclude Editor: 0
+        Exclude WebGL: 0
+        Exclude Win: 1
+        Exclude Win64: 1
+        Exclude Linux64: 1
+        Exclude OSXUniversal: 1
+        Exclude WindowsStoreApps: 1
+        Exclude iOS: 1
+        Exclude tvOS: 1
+        Exclude VisionOS: 1
   - first:
       Editor: Editor
     second:
       enabled: 1
       settings:
         CPU: AnyCPU
+        DefaultValueInitialized: true
         OS: AnyOS
   - first:
       Android: Android
