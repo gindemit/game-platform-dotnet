@@ -1,0 +1,8 @@
+{
+  "authority": "game-platform-backend/contracts/remote-config",
+  "files": {
+    "contract-v1.json": "1e97f4ba2407dac3ffaf53a6c01d5e921067a642b1c39fd71412e853b7ff203a",
+    "corpus-v1.json": "a6aeb382e98a87a20872f25ddd4a865354561c70b783732d176636dfd1a543e2",
+    "selector-v1.json": "ae9553c706d3082263da93ce4a8f91020d321a2ca8b39dbe224f35871d851c0a"
+  }
+}
