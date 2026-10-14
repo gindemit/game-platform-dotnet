@@ -31,7 +31,8 @@ namespace GamePlatform.Serialization.MessagePack
 
         public byte[] EncodePushRequest(PushRequest value)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
             return codec.Encode(Schema + "request", Obj(("protocolVersion", V.Integer(value.ProtocolVersion)), ("clientStreamId", Uuid(value.ClientStreamId)),
                 ("operations", V.Array(value.Operations.Select(WriteOperation)))));
         }
@@ -44,7 +45,8 @@ namespace GamePlatform.Serialization.MessagePack
 
         public byte[] EncodePushResponse(PushResponse value)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
             return codec.Encode(Schema + "response", Obj(("protocolVersion", V.Integer(value.ProtocolVersion)), ("clientStreamId", Uuid(value.ClientStreamId)),
                 ("operationResults", V.Array(value.OperationResults.Select(WriteResult))), ("finalizedThrough", Wide(value.FinalizedThrough)), ("serverTime", V.Integer(value.ServerTime))));
         }
@@ -61,7 +63,8 @@ namespace GamePlatform.Serialization.MessagePack
 
         public byte[] EncodeReceiptResponse(RecoveryReceiptResponse value)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
             var result = value.Result switch
             {
                 null => V.Null,
@@ -87,7 +90,8 @@ namespace GamePlatform.Serialization.MessagePack
 
         private V WriteResult(IPushResult value)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
             return value is PushAccepted accepted && IsStoreQuest(accepted.Result) ? WriteAccepted(accepted) : typed.ToDiagnostic(value);
         }
 
@@ -97,7 +101,8 @@ namespace GamePlatform.Serialization.MessagePack
 
         private static bool IsStoreQuestAccepted(V value)
         {
-            if (!value.Properties.TryGetValue("status", out var status) || status.StringValue != "accepted") return false;
+            if (!value.Properties.TryGetValue("status", out var status) || status.StringValue != "accepted")
+                return false;
             var kind = value.Properties["result"].Properties["kind"].StringValue;
             return kind == "store_offer_purchased" || kind == "quest_claimed";
         }

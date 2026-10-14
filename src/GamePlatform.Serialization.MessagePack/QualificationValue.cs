@@ -6,22 +6,36 @@ using System.Text;
 
 namespace GamePlatform.Serialization.MessagePack
 {
-    public enum QualificationValueKind { Null, Boolean, Integer, String, Binary, Array, Object }
+    public enum QualificationValueKind
+    {
+        Null, Boolean, Integer, String, Binary, Array, Object
+    }
 
     /// <summary>Immutable semantic value for explicit desktop protocol qualification. Not a production codec contract.</summary>
     public sealed class QualificationValue
     {
         internal static readonly UTF8Encoding Utf8 = new UTF8Encoding(false, true);
         private readonly object? value;
-        public QualificationValueKind Kind { get; }
-        internal long EncodedByteLength { get; set; }
-        private QualificationValue(QualificationValueKind kind, object? value) { Kind = kind; this.value = value; }
+        public QualificationValueKind Kind
+        {
+            get;
+        }
+        internal long EncodedByteLength
+        {
+            get; set;
+        }
+        private QualificationValue(QualificationValueKind kind, object? value)
+        {
+            Kind = kind;
+            this.value = value;
+        }
         public static QualificationValue Null { get; } = new QualificationValue(QualificationValueKind.Null, null);
         public static QualificationValue Boolean(bool value) => new QualificationValue(QualificationValueKind.Boolean, value);
         public static QualificationValue Integer(long value) => new QualificationValue(QualificationValueKind.Integer, value);
         public static QualificationValue String(string value)
         {
-            if (value == null) throw new ArgumentNullException(nameof(value));
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
             Utf8.GetByteCount(value);
             return new QualificationValue(QualificationValueKind.String, value);
         }
@@ -29,7 +43,8 @@ namespace GamePlatform.Serialization.MessagePack
         public static QualificationValue Array(IEnumerable<QualificationValue> values)
         {
             var copy = (values ?? throw new ArgumentNullException(nameof(values))).ToArray();
-            if (copy.Any(v => v == null)) throw new ArgumentException("Null value reference.");
+            if (copy.Any(v => v == null))
+                throw new ArgumentException("Null value reference.");
             return new QualificationValue(QualificationValueKind.Array, System.Array.AsReadOnly(copy));
         }
         public static QualificationValue Object(IEnumerable<KeyValuePair<string, QualificationValue>> values)
@@ -38,7 +53,8 @@ namespace GamePlatform.Serialization.MessagePack
             foreach (var pair in values ?? throw new ArgumentNullException(nameof(values)))
             {
                 Utf8.GetByteCount(pair.Key);
-                if (pair.Value == null || !copy.TryAdd(pair.Key, pair.Value)) throw new ArgumentException("Null value or duplicate key.");
+                if (pair.Value == null || !copy.TryAdd(pair.Key, pair.Value))
+                    throw new ArgumentException("Null value or duplicate key.");
             }
             return new QualificationValue(QualificationValueKind.Object, new ReadOnlyDictionary<string, QualificationValue>(copy));
         }

@@ -102,7 +102,8 @@ public sealed class StoreQuestFingerprintVectorTests
         {
             var input = vector.GetProperty("input");
             var kind = input.GetProperty("type").GetString()!;
-            if (kind != "profile.patch" && kind != "gameplay.session.completed") continue;
+            if (kind != "profile.patch" && kind != "gameplay.session.completed")
+                continue;
             var body = codec.Encode(kind == "profile.patch" ? "profile.schema.json#/$defs/patchCommand" : "gameplay.schema.json#/$defs/completionCommand", QualificationCodecTests.Parse(input.GetProperty("payload")));
             var destination = new byte[32];
             new CanonicalCommandFingerprint(true).Compute(
@@ -134,6 +135,12 @@ public sealed class StoreQuestFingerprintVectorTests
 
     private static string Root
     {
-        get { var directory = new DirectoryInfo(AppContext.BaseDirectory); while (directory != null && !File.Exists(Path.Combine(directory.FullName, "GamePlatform.sln"))) directory = directory.Parent; return directory?.FullName ?? throw new InvalidOperationException(); }
+        get
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "GamePlatform.sln")))
+                directory = directory.Parent;
+            return directory?.FullName ?? throw new InvalidOperationException();
+        }
     }
 }

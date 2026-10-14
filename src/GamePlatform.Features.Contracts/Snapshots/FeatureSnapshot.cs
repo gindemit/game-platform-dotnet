@@ -39,10 +39,14 @@ namespace GamePlatform.Features.Contracts.Snapshots
             long? lastConfirmedAtMilliseconds,
             string? diagnosticCode)
         {
-            if (!owner.IsValid) throw new ArgumentException("A valid captured owner is required.", nameof(owner));
-            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
-            if (!Enum.IsDefined(typeof(FeatureSnapshotState), state)) throw new ArgumentOutOfRangeException(nameof(state));
-            if (!Enum.IsDefined(typeof(SnapshotFreshness), freshness)) throw new ArgumentOutOfRangeException(nameof(freshness));
+            if (!owner.IsValid)
+                throw new ArgumentException("A valid captured owner is required.", nameof(owner));
+            if (revision < 0)
+                throw new ArgumentOutOfRangeException(nameof(revision));
+            if (!Enum.IsDefined(typeof(FeatureSnapshotState), state))
+                throw new ArgumentOutOfRangeException(nameof(state));
+            if (!Enum.IsDefined(typeof(SnapshotFreshness), freshness))
+                throw new ArgumentOutOfRangeException(nameof(freshness));
             if (lastConfirmedAtMilliseconds.HasValue && (lastConfirmedAtMilliseconds.Value < 0 || lastConfirmedAtMilliseconds.Value > 253_402_300_799_999L))
                 throw new ArgumentOutOfRangeException(nameof(lastConfirmedAtMilliseconds));
             if (diagnosticCode != null && (diagnosticCode.Length == 0 || diagnosticCode.Length > 128 || diagnosticCode.IndexOfAny(new[] { '\r', '\n', '\0' }) >= 0))
@@ -71,13 +75,34 @@ namespace GamePlatform.Features.Contracts.Snapshots
             DiagnosticCode = diagnosticCode;
         }
 
-        public ScopedOwnerContext Owner { get; }
-        public long Revision { get; }
-        public FeatureSnapshotState State { get; }
-        public SnapshotFreshness Freshness { get; }
-        public T? Value { get; }
-        public long? LastConfirmedAtMilliseconds { get; }
-        public string? DiagnosticCode { get; }
+        public ScopedOwnerContext Owner
+        {
+            get;
+        }
+        public long Revision
+        {
+            get;
+        }
+        public FeatureSnapshotState State
+        {
+            get;
+        }
+        public SnapshotFreshness Freshness
+        {
+            get;
+        }
+        public T? Value
+        {
+            get;
+        }
+        public long? LastConfirmedAtMilliseconds
+        {
+            get;
+        }
+        public string? DiagnosticCode
+        {
+            get;
+        }
     }
 
     public interface IFeatureSnapshotReader<in TQuery, TSnapshot> where TSnapshot : class

@@ -181,7 +181,8 @@ namespace GamePlatform.Tests.Features.StoreQuest
                     "The test database did not drain before fixture cleanup.");
             }
             databases.Clear();
-            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
         }
 
         private StoreService Store(SqliteDatabase database) => new StoreService(Context, Stream, new SqliteDurableFeatureStateStore(database, Scope), Commands(database), bodies, ids);
@@ -197,7 +198,8 @@ namespace GamePlatform.Tests.Features.StoreQuest
         {
             var database = await SqliteDatabase.OpenAsync(Path.Combine(directory, file), scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
             databases.Add(database);
-            if (seed) await database.ExecuteAsync(scope, transaction =>
+            if (seed)
+                await database.ExecuteAsync(scope, transaction =>
             {
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) VALUES (1, ?, ?, ?, ?, ?, 1, 1, 0, 0)",
                     owner.Backend.Value, owner.AppId.ToString(), owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D"));

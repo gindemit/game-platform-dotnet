@@ -22,8 +22,10 @@ namespace GamePlatform.Storage.Sqlite.Recovery
         public SqliteRecoveryCommandStore(SqliteDatabase database, StorageScope scope, Guid installationId, bool verifiedRecreatedAndEmpty = false)
         {
             this.database = database ?? throw new ArgumentNullException(nameof(database));
-            if (!database.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "Recovery storage belongs to another owner.");
-            if (!UuidIdentity.IsValid(installationId)) throw new ArgumentException("A valid installation is required.", nameof(installationId));
+            if (!database.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "Recovery storage belongs to another owner.");
+            if (!UuidIdentity.IsValid(installationId))
+                throw new ArgumentException("A valid installation is required.", nameof(installationId));
             this.scope = scope;
             this.installationId = installationId;
             recreatedAndEmpty = verifiedRecreatedAndEmpty;
@@ -31,7 +33,8 @@ namespace GamePlatform.Storage.Sqlite.Recovery
 
         public async Task<IReadOnlyList<LeasedCommand>> SuspendAndReadAsync(ClientStreamId priorStreamId, CancellationToken cancellationToken)
         {
-            if (!priorStreamId.IsValid) throw new ArgumentException("A prior stream is required.", nameof(priorStreamId));
+            if (!priorStreamId.IsValid)
+                throw new ArgumentException("A prior stream is required.", nameof(priorStreamId));
             await database.ExecuteAsync(scope, transaction =>
             {
                 var s = (SqliteTransactionSession)transaction;
@@ -65,7 +68,8 @@ namespace GamePlatform.Storage.Sqlite.Recovery
 
         public Task RecordReceiptAsync(LeasedCommand command, CommandTerminalOutcome outcome, byte[]? result, CancellationToken cancellationToken)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
             if (command.InstallationId != installationId || (result?.Length ?? 0) > 65_536 ||
                 (outcome != CommandTerminalOutcome.Accepted && outcome != CommandTerminalOutcome.Rejected))
                 throw new ArgumentException("A valid retained receipt is required.");
@@ -101,7 +105,8 @@ namespace GamePlatform.Storage.Sqlite.Recovery
 
         private void RequireOwner(SqliteTransactionSession s, ClientStreamId priorStreamId)
         {
-            if (!priorStreamId.IsValid) throw new ArgumentException("A retained prior identity is required.", nameof(priorStreamId));
+            if (!priorStreamId.IsValid)
+                throw new ArgumentException("A retained prior identity is required.", nameof(priorStreamId));
             if (recreatedAndEmpty && s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_stream_state") == 0 &&
                 s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox") == 0 &&
                 s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_sync_state") == 0 &&
@@ -132,11 +137,23 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             public string OperationId { get; set; } = "";
             public string StreamId { get; set; } = "";
             public string InstallationId { get; set; } = "";
-            public long Sequence { get; set; }
+            public long Sequence
+            {
+                get; set;
+            }
             public string OperationKind { get; set; } = "";
-            public int SchemaVersion { get; set; }
-            public int FingerprintVersion { get; set; }
-            public long CreatedAt { get; set; }
+            public int SchemaVersion
+            {
+                get; set;
+            }
+            public int FingerprintVersion
+            {
+                get; set;
+            }
+            public long CreatedAt
+            {
+                get; set;
+            }
             public byte[] Body { get; set; } = Array.Empty<byte>();
             public byte[] Fingerprint { get; set; } = Array.Empty<byte>();
         }

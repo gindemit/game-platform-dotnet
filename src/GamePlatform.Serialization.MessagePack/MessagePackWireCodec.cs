@@ -26,7 +26,8 @@ namespace GamePlatform.Serialization.MessagePack
 
         public T Decode<T>(byte[] payload)
         {
-            if (payload == null) throw new ArgumentNullException(nameof(payload));
+            if (payload == null)
+                throw new ArgumentNullException(nameof(payload));
             return codec.Decode<T>(payload);
         }
     }

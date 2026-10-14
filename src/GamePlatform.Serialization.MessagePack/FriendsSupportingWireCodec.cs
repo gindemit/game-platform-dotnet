@@ -17,18 +17,22 @@ namespace GamePlatform.Serialization.MessagePack
         public byte[] Encode<T>(T value) => frozen.Encode(value);
         public T Decode<T>(byte[] payload)
         {
-            if (typeof(T) != typeof(IPullResponse)) return frozen.Decode<T>(payload);
+            if (typeof(T) != typeof(IPullResponse))
+                return frozen.Decode<T>(payload);
             var value = codec.Decode("friends.schema.json#/$defs/pullResponse", payload);
             var p = value.Properties;
-            if (p["resetRequired"].BooleanValue) return (T)(object)typed.FromDiagnostic<IPullResponse>(value);
+            if (p["resetRequired"].BooleanValue)
+                return (T)(object)typed.FromDiagnostic<IPullResponse>(value);
             var groups = p["changes"].Items.Select(group =>
             {
                 var g = group.Properties;
                 var changes = g["changes"].Items.Select(change =>
                 {
                     var c = change.Properties;
-                    if (c["entityType"].StringValue == "friends") return (IProjectionChange)new FriendsProjectionInvalidation(Guid.Parse(c["entityKey"].Properties["playerId"].StringValue), Wide(c["revision"]));
-                    if (c["entityType"].StringValue == "teams") return (IProjectionChange)new TeamsProjectionInvalidation(Guid.Parse(c["entityKey"].Properties["teamId"].StringValue), Wide(c["revision"]));
+                    if (c["entityType"].StringValue == "friends")
+                        return (IProjectionChange)new FriendsProjectionInvalidation(Guid.Parse(c["entityKey"].Properties["playerId"].StringValue), Wide(c["revision"]));
+                    if (c["entityType"].StringValue == "teams")
+                        return (IProjectionChange)new TeamsProjectionInvalidation(Guid.Parse(c["entityKey"].Properties["teamId"].StringValue), Wide(c["revision"]));
                     return typed.FromDiagnostic<IProjectionChange>(change);
                 }).ToArray();
                 return new PullGroup(Wide(g["feedRevision"]), changes);

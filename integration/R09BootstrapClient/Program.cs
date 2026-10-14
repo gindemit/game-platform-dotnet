@@ -30,7 +30,8 @@ internal static class Program
         if (url.Scheme != Uri.UriSchemeHttps || url.Host != "localhost" || url.AbsolutePath != "/platform")
             throw new InvalidOperationException("The fixture URL must be exact-host local HTTPS /platform");
         var pin = Required("R09_BOOTSTRAP_CERT_SHA256");
-        if (pin.Length != 64 || !pin.All(Uri.IsHexDigit)) throw new InvalidOperationException("Invalid certificate pin");
+        if (pin.Length != 64 || !pin.All(Uri.IsHexDigit))
+            throw new InvalidOperationException("Invalid certificate pin");
         var app = Guid.Parse(Required("R09_BOOTSTRAP_APP"));
         var account = Guid.Parse(Required("R09_BOOTSTRAP_ACCOUNT"));
         var stream = Guid.Parse(Required("R09_BOOTSTRAP_STREAM"));
@@ -105,7 +106,11 @@ internal static class Program
         new SqlitePrivateSyncStore(database, scope, NoopProjector.Instance, _ => { });
     private static Task<int> Scalar(SqliteDatabase database, StorageScope scope, string sql) =>
         database.ExecuteAsync(scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>(sql), CancellationToken.None);
-    private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
+    private static void Require(bool condition, string message)
+    {
+        if (!condition)
+            throw new InvalidOperationException(message);
+    }
     private sealed class StaticAuth : IAuthSession
     {
         public string SessionKey => "r09-local-bootstrap";
@@ -115,7 +120,11 @@ internal static class Program
     private sealed class NoopProjector : IPrivateSyncProjectionProjector
     {
         public static readonly NoopProjector Instance = new NoopProjector();
-        public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group) { }
-        public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot) { }
+        public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group)
+        {
+        }
+        public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot)
+        {
+        }
     }
 }

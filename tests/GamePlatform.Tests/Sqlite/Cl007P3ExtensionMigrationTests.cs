@@ -185,7 +185,8 @@ namespace GamePlatform.Tests.Sqlite
                 }, CancellationToken.None);
                 Assert.Equal(7, observed.Platform);
                 Assert.Equal(1, observed.Extensions);
-                foreach (var database in databases) Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+                foreach (var database in databases)
+                    Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
             }
         }
 
@@ -199,17 +200,30 @@ namespace GamePlatform.Tests.Sqlite
         });
 
         private static int Exists(SqliteTransactionSession session, string table) => session.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", table);
-        private sealed class InjectedFailure : Exception { }
+        private sealed class InjectedFailure : Exception
+        {
+        }
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-extension-migrations", Guid.NewGuid().ToString("N"));
-            public TemporaryDatabase() { Directory.CreateDirectory(directory); Path = System.IO.Path.Combine(directory, "platform.sqlite3"); }
-            public string Path { get; }
+            public TemporaryDatabase()
+            {
+                Directory.CreateDirectory(directory);
+                Path = System.IO.Path.Combine(directory, "platform.sqlite3");
+            }
+            public string Path
+            {
+                get;
+            }
             public void Dispose()
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
-                try { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
+                try
+                {
+                    if (Directory.Exists(directory))
+                        Directory.Delete(directory, recursive: true);
+                }
                 catch (IOException) { } // SQLite native handle cleanup is outside migration assertions.
             }
         }

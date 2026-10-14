@@ -192,7 +192,10 @@ namespace GamePlatform.Tests.Serialization
         private sealed class InlineExecutor : IHttpExecutor
         {
             private readonly Func<HttpRequestData, HttpResponseData> send;
-            public InlineExecutor(Func<HttpRequestData, HttpResponseData> send) { this.send = send; }
+            public InlineExecutor(Func<HttpRequestData, HttpResponseData> send)
+            {
+                this.send = send;
+            }
             public List<HttpRequestData> Requests { get; } = new List<HttpRequestData>();
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {
@@ -209,7 +212,10 @@ namespace GamePlatform.Tests.Serialization
         private sealed class TestOnlyQualificationPortAdapter : IWireCodec
         {
             private readonly DesktopQualificationWireCodec candidate;
-            public TestOnlyQualificationPortAdapter(DesktopQualificationWireCodec candidate) { this.candidate = candidate; }
+            public TestOnlyQualificationPortAdapter(DesktopQualificationWireCodec candidate)
+            {
+                this.candidate = candidate;
+            }
             public byte[] Encode<T>(T value)
             {
                 return value switch
@@ -222,14 +228,19 @@ namespace GamePlatform.Tests.Serialization
             }
             public T Decode<T>(byte[] payload)
             {
-                if (typeof(T) == typeof(ProvisionRequest)) return (T)(object)candidate.Decode<ProvisionRequest>(payload);
-                if (typeof(T) == typeof(ProvisionResponse)) return (T)(object)candidate.Decode<ProvisionResponse>(payload);
-                if (typeof(T) == typeof(BootstrapStartResponse)) return (T)(object)candidate.Decode<BootstrapStartResponse>(payload);
+                if (typeof(T) == typeof(ProvisionRequest))
+                    return (T)(object)candidate.Decode<ProvisionRequest>(payload);
+                if (typeof(T) == typeof(ProvisionResponse))
+                    return (T)(object)candidate.Decode<ProvisionResponse>(payload);
+                if (typeof(T) == typeof(BootstrapStartResponse))
+                    return (T)(object)candidate.Decode<BootstrapStartResponse>(payload);
                 throw new QualificationCodecException("Unsupported test bridge DTO.");
             }
         }
 
-        private sealed class UnsupportedDto { }
+        private sealed class UnsupportedDto
+        {
+        }
 
         private sealed class StaticAuth : IAuthSession
         {

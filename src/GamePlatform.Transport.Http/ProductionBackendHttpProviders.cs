@@ -50,8 +50,14 @@ namespace GamePlatform.Transport.Http
         private readonly AuthRefreshCoordinator refresh;
         private readonly MessagePackWireCodec codec;
         private readonly StoreQuestCapability storeQuest;
-        public IProvisioningRemote Provisioning { get; }
-        public ICommandFingerprint CommandFingerprint { get; }
+        public IProvisioningRemote Provisioning
+        {
+            get;
+        }
+        public ICommandFingerprint CommandFingerprint
+        {
+            get;
+        }
 
         public ProductionAccountHttpProviders ForAccount(AppId appId, PlatformUserId accountId, Guid installationId) =>
             new ProductionAccountHttpProviders(appId, accountId, installationId, configuration, executor, codec, auth, refresh, storeQuest);
@@ -71,9 +77,12 @@ namespace GamePlatform.Transport.Http
             AuthRefreshCoordinator refresh,
             StoreQuestCapability storeQuest)
         {
-            if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
-            if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
-            if (installationId == Guid.Empty) throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app ID is required.", nameof(appId));
+            if (!accountId.IsValid)
+                throw new ArgumentException("A valid account ID is required.", nameof(accountId));
+            if (installationId == Guid.Empty)
+                throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
             PrivateSync = new PrivateSyncHttpProvider(appId, accountId, configuration, executor, new FriendsSupportingWireCodec(), auth, refresh);
             Teams = new TeamsHttpProvider(appId, accountId, configuration, executor, auth, refresh);
             Friends = new FriendsHttpProvider(appId, accountId, configuration, executor, auth, refresh);
@@ -86,13 +95,37 @@ namespace GamePlatform.Transport.Http
             RewardReceipts = new G3RewardReceiptHttpProvider(appId, accountId, configuration, executor, new G3RewardReceiptMessagePackCodec(), codec, auth, refresh);
         }
 
-        public IPrivateSyncRemote PrivateSync { get; }
-        public TeamsHttpProvider Teams { get; }
-        public FriendsHttpProvider Friends { get; }
-        public LeaderboardsHttpProvider Leaderboards { get; }
-        public ICommandRemote CommandPush { get; }
-        public ICommandReceiptRemote CommandReceipts { get; }
-        public ICommandStreamRecoveryRemote CommandStreamRecovery { get; }
-        public G3RewardReceiptHttpProvider RewardReceipts { get; }
+        public IPrivateSyncRemote PrivateSync
+        {
+            get;
+        }
+        public TeamsHttpProvider Teams
+        {
+            get;
+        }
+        public FriendsHttpProvider Friends
+        {
+            get;
+        }
+        public LeaderboardsHttpProvider Leaderboards
+        {
+            get;
+        }
+        public ICommandRemote CommandPush
+        {
+            get;
+        }
+        public ICommandReceiptRemote CommandReceipts
+        {
+            get;
+        }
+        public ICommandStreamRecoveryRemote CommandStreamRecovery
+        {
+            get;
+        }
+        public G3RewardReceiptHttpProvider RewardReceipts
+        {
+            get;
+        }
     }
 }

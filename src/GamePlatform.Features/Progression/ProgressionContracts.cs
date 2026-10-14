@@ -10,8 +10,14 @@ using GamePlatform.Features.Contracts;
 namespace GamePlatform.Features.Progression
 {
     /// <summary>The only currently approved admission label. It explicitly does not claim server gameplay validation.</summary>
-    public enum ProgressionOutcomeAuthority { ClientTrustedUnvalidated = 0 }
-    public enum ProgressionPendingStatus { AwaitingReceipt = 0, AcceptedAwaitingPull = 1 }
+    public enum ProgressionOutcomeAuthority
+    {
+        ClientTrustedUnvalidated = 0
+    }
+    public enum ProgressionPendingStatus
+    {
+        AwaitingReceipt = 0, AcceptedAwaitingPull = 1
+    }
 
     /// <summary>Immutable game-neutral string extension for a completion command; the server remains authoritative.</summary>
     public sealed class ProgressionCommandExtension
@@ -20,19 +26,30 @@ namespace GamePlatform.Features.Progression
         public ProgressionCommandExtension(string schema, int version, IReadOnlyDictionary<string, string> value)
         {
             ProgressionValidation.Semantic(schema, nameof(schema));
-            if (version < 1) throw new ArgumentOutOfRangeException(nameof(version));
-            if (value == null || value.Count > 128) throw new ArgumentOutOfRangeException(nameof(value));
+            if (version < 1)
+                throw new ArgumentOutOfRangeException(nameof(version));
+            if (value == null || value.Count > 128)
+                throw new ArgumentOutOfRangeException(nameof(value));
             var copied = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var item in value)
             {
                 ProgressionValidation.Semantic(item.Key, nameof(value));
-                if (item.Value == null || item.Value.Length > 4096) throw new ArgumentOutOfRangeException(nameof(value));
+                if (item.Value == null || item.Value.Length > 4096)
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 copied.Add(item.Key, item.Value);
             }
-            Schema = schema; Version = version; this.value = new ReadOnlyDictionary<string, string>(copied);
+            Schema = schema;
+            Version = version;
+            this.value = new ReadOnlyDictionary<string, string>(copied);
         }
-        public string Schema { get; }
-        public int Version { get; }
+        public string Schema
+        {
+            get;
+        }
+        public int Version
+        {
+            get;
+        }
         public IReadOnlyDictionary<string, string> Value => value;
     }
 
@@ -43,27 +60,66 @@ namespace GamePlatform.Features.Progression
             string businessSource, GameplayOutcome outcome, int contentVersion, ProgressionOutcomeAuthority outcomeAuthority,
             string validationScheme = "untrusted-reference", ProgressionCommandExtension? extension = null)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!operationId.IsValid) throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
-            if (!streamId.IsValid) throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!operationId.IsValid)
+                throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
+            if (!streamId.IsValid)
+                throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
             ProgressionValidation.BusinessSource(businessSource, nameof(businessSource));
-            if (outcome == null) throw new ArgumentNullException(nameof(outcome));
-            if (contentVersion < 1) throw new ArgumentOutOfRangeException(nameof(contentVersion));
-            if (!Enum.IsDefined(typeof(ProgressionOutcomeAuthority), outcomeAuthority)) throw new ArgumentOutOfRangeException(nameof(outcomeAuthority));
+            if (outcome == null)
+                throw new ArgumentNullException(nameof(outcome));
+            if (contentVersion < 1)
+                throw new ArgumentOutOfRangeException(nameof(contentVersion));
+            if (!Enum.IsDefined(typeof(ProgressionOutcomeAuthority), outcomeAuthority))
+                throw new ArgumentOutOfRangeException(nameof(outcomeAuthority));
             ProgressionValidation.Semantic(validationScheme, nameof(validationScheme));
-            Owner = owner; OperationId = operationId; StreamId = streamId; BusinessSource = businessSource;
-            Outcome = outcome; ContentVersion = contentVersion; OutcomeAuthority = outcomeAuthority;
-            ValidationScheme = validationScheme; Extension = extension;
+            Owner = owner;
+            OperationId = operationId;
+            StreamId = streamId;
+            BusinessSource = businessSource;
+            Outcome = outcome;
+            ContentVersion = contentVersion;
+            OutcomeAuthority = outcomeAuthority;
+            ValidationScheme = validationScheme;
+            Extension = extension;
         }
-        public ScopedOwnerContext Owner { get; }
-        public OperationId OperationId { get; }
-        public ClientStreamId StreamId { get; }
-        public string BusinessSource { get; }
-        public GameplayOutcome Outcome { get; }
-        public int ContentVersion { get; }
-        public ProgressionOutcomeAuthority OutcomeAuthority { get; }
-        public string ValidationScheme { get; }
-        public ProgressionCommandExtension? Extension { get; }
+        public ScopedOwnerContext Owner
+        {
+            get;
+        }
+        public OperationId OperationId
+        {
+            get;
+        }
+        public ClientStreamId StreamId
+        {
+            get;
+        }
+        public string BusinessSource
+        {
+            get;
+        }
+        public GameplayOutcome Outcome
+        {
+            get;
+        }
+        public int ContentVersion
+        {
+            get;
+        }
+        public ProgressionOutcomeAuthority OutcomeAuthority
+        {
+            get;
+        }
+        public string ValidationScheme
+        {
+            get;
+        }
+        public ProgressionCommandExtension? Extension
+        {
+            get;
+        }
     }
 
     /// <summary>Durable local intent. Accepted means only that the command receipt was retained; pull remains authoritative.</summary>
@@ -74,26 +130,67 @@ namespace GamePlatform.Features.Progression
             ProgressionPendingStatus status, string validationScheme = "untrusted-reference",
             ProgressionCommandExtension? extension = null)
         {
-            if (!operationId.IsValid || !streamId.IsValid) throw new ArgumentException("Valid command identities are required.");
+            if (!operationId.IsValid || !streamId.IsValid)
+                throw new ArgumentException("Valid command identities are required.");
             ProgressionValidation.BusinessSource(businessSource, nameof(businessSource));
-            if (outcome == null) throw new ArgumentNullException(nameof(outcome));
-            if (contentVersion < 1 || localRevision < 1) throw new ArgumentOutOfRangeException(contentVersion < 1 ? nameof(contentVersion) : nameof(localRevision));
-            if (!Enum.IsDefined(typeof(ProgressionOutcomeAuthority), outcomeAuthority) || !Enum.IsDefined(typeof(ProgressionPendingStatus), status)) throw new ArgumentOutOfRangeException(nameof(status));
+            if (outcome == null)
+                throw new ArgumentNullException(nameof(outcome));
+            if (contentVersion < 1 || localRevision < 1)
+                throw new ArgumentOutOfRangeException(contentVersion < 1 ? nameof(contentVersion) : nameof(localRevision));
+            if (!Enum.IsDefined(typeof(ProgressionOutcomeAuthority), outcomeAuthority) || !Enum.IsDefined(typeof(ProgressionPendingStatus), status))
+                throw new ArgumentOutOfRangeException(nameof(status));
             ProgressionValidation.Semantic(validationScheme, nameof(validationScheme));
-            OperationId = operationId; StreamId = streamId; BusinessSource = businessSource; Outcome = outcome;
-            ContentVersion = contentVersion; OutcomeAuthority = outcomeAuthority; LocalRevision = localRevision; Status = status;
-            ValidationScheme = validationScheme; Extension = extension;
+            OperationId = operationId;
+            StreamId = streamId;
+            BusinessSource = businessSource;
+            Outcome = outcome;
+            ContentVersion = contentVersion;
+            OutcomeAuthority = outcomeAuthority;
+            LocalRevision = localRevision;
+            Status = status;
+            ValidationScheme = validationScheme;
+            Extension = extension;
         }
-        public OperationId OperationId { get; }
-        public ClientStreamId StreamId { get; }
-        public string BusinessSource { get; }
-        public GameplayOutcome Outcome { get; }
-        public int ContentVersion { get; }
-        public ProgressionOutcomeAuthority OutcomeAuthority { get; }
-        public long LocalRevision { get; }
-        public ProgressionPendingStatus Status { get; }
-        public string ValidationScheme { get; }
-        public ProgressionCommandExtension? Extension { get; }
+        public OperationId OperationId
+        {
+            get;
+        }
+        public ClientStreamId StreamId
+        {
+            get;
+        }
+        public string BusinessSource
+        {
+            get;
+        }
+        public GameplayOutcome Outcome
+        {
+            get;
+        }
+        public int ContentVersion
+        {
+            get;
+        }
+        public ProgressionOutcomeAuthority OutcomeAuthority
+        {
+            get;
+        }
+        public long LocalRevision
+        {
+            get;
+        }
+        public ProgressionPendingStatus Status
+        {
+            get;
+        }
+        public string ValidationScheme
+        {
+            get;
+        }
+        public ProgressionCommandExtension? Extension
+        {
+            get;
+        }
     }
 
     /// <summary>One server-owned semantic progression key/value. It is not a game checkpoint and may not be inferred from completion.</summary>
@@ -101,12 +198,21 @@ namespace GamePlatform.Features.Progression
     {
         public ProgressionConfirmedState(SemanticId stateKey, long value)
         {
-            if (!stateKey.IsValid) throw new ArgumentException("A state key is required.", nameof(stateKey));
-            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
-            StateKey = stateKey; Value = value;
+            if (!stateKey.IsValid)
+                throw new ArgumentException("A state key is required.", nameof(stateKey));
+            if (value < 0)
+                throw new ArgumentOutOfRangeException(nameof(value));
+            StateKey = stateKey;
+            Value = value;
         }
-        public SemanticId StateKey { get; }
-        public long Value { get; }
+        public SemanticId StateKey
+        {
+            get;
+        }
+        public long Value
+        {
+            get;
+        }
     }
 
     /// <summary>A complete authoritative projection boundary supplied by bootstrap/pull. Its revision is owned by the synchronization adapter.</summary>
@@ -115,15 +221,25 @@ namespace GamePlatform.Features.Progression
         private readonly ReadOnlyCollection<ProgressionConfirmedState> states;
         public ProgressionConfirmedProjection(long revision, long confirmedAtMilliseconds, IReadOnlyList<ProgressionConfirmedState> states)
         {
-            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (revision < 0)
+                throw new ArgumentOutOfRangeException(nameof(revision));
             ProgressionValidation.Timestamp(confirmedAtMilliseconds, nameof(confirmedAtMilliseconds));
-            if (states == null || states.Count > 1024 || states.Any(value => value == null)) throw new ArgumentOutOfRangeException(nameof(states));
-            if (states.GroupBy(value => value.StateKey).Any(group => group.Count() != 1)) throw new ArgumentException("Confirmed progression state keys must be unique.", nameof(states));
-            Revision = revision; ConfirmedAtMilliseconds = confirmedAtMilliseconds;
+            if (states == null || states.Count > 1024 || states.Any(value => value == null))
+                throw new ArgumentOutOfRangeException(nameof(states));
+            if (states.GroupBy(value => value.StateKey).Any(group => group.Count() != 1))
+                throw new ArgumentException("Confirmed progression state keys must be unique.", nameof(states));
+            Revision = revision;
+            ConfirmedAtMilliseconds = confirmedAtMilliseconds;
             this.states = new ReadOnlyCollection<ProgressionConfirmedState>(states.ToArray());
         }
-        public long Revision { get; }
-        public long ConfirmedAtMilliseconds { get; }
+        public long Revision
+        {
+            get;
+        }
+        public long ConfirmedAtMilliseconds
+        {
+            get;
+        }
         public IReadOnlyList<ProgressionConfirmedState> States => states;
     }
 
@@ -133,14 +249,22 @@ namespace GamePlatform.Features.Progression
         private readonly ReadOnlyCollection<OperationId> confirmedOperationIds;
         public ProgressionConfirmation(ScopedOwnerContext owner, ProgressionConfirmedProjection projection, IReadOnlyList<OperationId> confirmedOperationIds)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
             Projection = projection ?? throw new ArgumentNullException(nameof(projection));
             if (confirmedOperationIds == null || confirmedOperationIds.Any(value => !value.IsValid) || confirmedOperationIds.Distinct().Count() != confirmedOperationIds.Count)
                 throw new ArgumentException("Confirmed operation identities must be valid and unique.", nameof(confirmedOperationIds));
-            Owner = owner; this.confirmedOperationIds = new ReadOnlyCollection<OperationId>(confirmedOperationIds.ToArray());
+            Owner = owner;
+            this.confirmedOperationIds = new ReadOnlyCollection<OperationId>(confirmedOperationIds.ToArray());
         }
-        public ScopedOwnerContext Owner { get; }
-        public ProgressionConfirmedProjection Projection { get; }
+        public ScopedOwnerContext Owner
+        {
+            get;
+        }
+        public ProgressionConfirmedProjection Projection
+        {
+            get;
+        }
         public IReadOnlyList<OperationId> ConfirmedOperationIds => confirmedOperationIds;
     }
 
@@ -149,10 +273,15 @@ namespace GamePlatform.Features.Progression
         private readonly ReadOnlyCollection<PendingProgressionCompletion> pending;
         public ProgressionSnapshot(ProgressionConfirmedProjection? confirmed, IReadOnlyList<PendingProgressionCompletion> pending)
         {
-            if (pending == null || pending.Any(value => value == null)) throw new ArgumentNullException(nameof(pending));
-            Confirmed = confirmed; this.pending = new ReadOnlyCollection<PendingProgressionCompletion>(pending.ToArray());
+            if (pending == null || pending.Any(value => value == null))
+                throw new ArgumentNullException(nameof(pending));
+            Confirmed = confirmed;
+            this.pending = new ReadOnlyCollection<PendingProgressionCompletion>(pending.ToArray());
         }
-        public ProgressionConfirmedProjection? Confirmed { get; }
+        public ProgressionConfirmedProjection? Confirmed
+        {
+            get;
+        }
         public IReadOnlyList<PendingProgressionCompletion> PendingCompletions => pending;
     }
 
@@ -160,12 +289,21 @@ namespace GamePlatform.Features.Progression
     {
         public ProgressionAcceptance(ScopedOwnerContext owner, OperationId operationId)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!operationId.IsValid) throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
-            Owner = owner; OperationId = operationId;
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!operationId.IsValid)
+                throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
+            Owner = owner;
+            OperationId = operationId;
         }
-        public ScopedOwnerContext Owner { get; }
-        public OperationId OperationId { get; }
+        public ScopedOwnerContext Owner
+        {
+            get;
+        }
+        public OperationId OperationId
+        {
+            get;
+        }
     }
 
     /// <summary>Serialization/transport boundary. An adapter maps the frozen gameplay command and projection; it must not invent rewards.</summary>
@@ -178,15 +316,33 @@ namespace GamePlatform.Features.Progression
         ProgressionConfirmedProjection DecodeConfirmed(long revision, long confirmedAtMilliseconds, ReadOnlySpan<byte> payload);
     }
 
-    public sealed class ProgressionConflictException : InvalidOperationException { public ProgressionConflictException(string message) : base(message) { } }
-    public sealed class ProgressionOwnerMismatchException : InvalidOperationException { public ProgressionOwnerMismatchException() : base("The progression request does not belong to the captured account/view generation.") { } }
+    public sealed class ProgressionConflictException : InvalidOperationException
+    {
+        public ProgressionConflictException(string message) : base(message) { }
+    }
+    public sealed class ProgressionOwnerMismatchException : InvalidOperationException
+    {
+        public ProgressionOwnerMismatchException() : base("The progression request does not belong to the captured account/view generation.") { }
+    }
 
     internal static class ProgressionValidation
     {
         private static readonly Regex Source = new Regex("^[^\\r\\n\\0]{1,256}$", RegexOptions.CultureInvariant);
-        internal static void BusinessSource(string value, string parameter) { if (string.IsNullOrWhiteSpace(value) || !Source.IsMatch(value)) throw new ArgumentOutOfRangeException(parameter); }
+        internal static void BusinessSource(string value, string parameter)
+        {
+            if (string.IsNullOrWhiteSpace(value) || !Source.IsMatch(value))
+                throw new ArgumentOutOfRangeException(parameter);
+        }
         private static readonly Regex SemanticPattern = new Regex("^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", RegexOptions.CultureInvariant);
-        internal static void Semantic(string value, string parameter) { if (value == null || !SemanticPattern.IsMatch(value)) throw new ArgumentOutOfRangeException(parameter); }
-        internal static void Timestamp(long value, string parameter) { if (value < 0 || value > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(parameter); }
+        internal static void Semantic(string value, string parameter)
+        {
+            if (value == null || !SemanticPattern.IsMatch(value))
+                throw new ArgumentOutOfRangeException(parameter);
+        }
+        internal static void Timestamp(long value, string parameter)
+        {
+            if (value < 0 || value > 253_402_300_799_999L)
+                throw new ArgumentOutOfRangeException(parameter);
+        }
     }
 }

@@ -59,7 +59,11 @@ namespace GamePlatform.Tests.Transport
             using var refresh = new AuthRefreshCoordinator();
             var bytes = new MessagePackWireCodec().Encode(new ErrorResponse("teams-test", new CommonError("teams.rate_limited", "rate_limit", "private diagnostic text", true, default, default), 1_790_000_000_000));
             var executor = new Executor((_, __) => new HttpResponseData(429, new Dictionary<string, string>
-            { ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType, ["X-Correlation-Id"] = "teams-test", ["Retry-After"] = "7" }, bytes));
+            {
+                ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType,
+                ["X-Correlation-Id"] = "teams-test",
+                ["Retry-After"] = "7"
+            }, bytes));
             var error = await Assert.ThrowsAsync<TeamsOperationException>(() => Provider(executor, new Auth(), refresh).QueryAsync(new TeamsQuery("mine"), CancellationToken.None));
             Assert.Equal("teams.rate_limited", error.ResultCode);
             Assert.Equal(TimeSpan.FromSeconds(7), error.Failure.RetryAfter);
@@ -87,20 +91,31 @@ namespace GamePlatform.Tests.Transport
             new ProductionBackendHttpProviders(new BackendHttpConfiguration(new Uri("https://unit.invalid/"), new BackendNamespace("teams-test")), executor, auth, refresh)
                 .ForAccount(new AppId(TeamsServiceTests.App), new PlatformUserId(TeamsServiceTests.Account), TeamsServiceTests.Player).Teams;
         private static HttpResponseData Reply(TeamsResponse value) => new HttpResponseData(200, new Dictionary<string, string>
-        { ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType, ["X-Correlation-Id"] = "teams-test" }, new TeamsStateCodec().EncodeResponse(value));
+        {
+            ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType,
+            ["X-Correlation-Id"] = "teams-test"
+        }, new TeamsStateCodec().EncodeResponse(value));
         private sealed class Executor : IHttpExecutor
         {
             private readonly Func<HttpRequestData, int, HttpResponseData> response;
             public List<HttpRequestData> Requests = new List<HttpRequestData>();
             public Executor(Func<HttpRequestData, int, HttpResponseData> response) => this.response = response;
-            public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken token) { Requests.Add(request); return Task.FromResult(response(request, Requests.Count)); }
+            public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken token)
+            {
+                Requests.Add(request);
+                return Task.FromResult(response(request, Requests.Count));
+            }
         }
         private sealed class Auth : IAuthSession
         {
             public int Refreshes;
             public string SessionKey => "teams-test";
             public Task<AccessTokenSnapshot> GetAsync(CancellationToken token) => Task.FromResult(new AccessTokenSnapshot("old-test-token", 1));
-            public Task<AccessTokenSnapshot> RefreshAsync(long generation, CancellationToken token) { Refreshes++; return Task.FromResult(new AccessTokenSnapshot("fresh-test-token", 2)); }
+            public Task<AccessTokenSnapshot> RefreshAsync(long generation, CancellationToken token)
+            {
+                Refreshes++;
+                return Task.FromResult(new AccessTokenSnapshot("fresh-test-token", 2));
+            }
         }
     }
 }

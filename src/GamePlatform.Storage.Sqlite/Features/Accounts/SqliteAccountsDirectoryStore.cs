@@ -29,18 +29,25 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             Scope = scope;
         }
 
-        public AccountDirectoryScope Scope { get; }
+        public AccountDirectoryScope Scope
+        {
+            get;
+        }
         public int ConnectionCount => disposed ? 0 : 1;
 
         /// <summary>Executes a synchronous consumer pb_ extension callback in the owned serialized transaction.</summary>
         public Task<T> ExecuteExtensionAsync<T>(AccountDirectoryScope scope,
             Func<SqliteAccountsDirectoryExtensionTransaction, T> operation, CancellationToken cancellationToken)
         {
-            if (operation == null) throw new ArgumentNullException(nameof(operation));
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
             return ExecuteAsync(scope, connection =>
             {
                 var borrowed = new SqliteAccountsDirectoryExtensionTransaction(connection);
-                try { return operation(borrowed); }
+                try
+                {
+                    return operation(borrowed);
+                }
                 finally { borrowed.Invalidate(); }
             }, cancellationToken);
         }
@@ -48,8 +55,10 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         public static async Task<SqliteAccountsDirectoryDatabase> OpenAsync(
             string databasePath, AccountDirectoryScope scope, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(databasePath)) throw new ArgumentException("A database path is required.", nameof(databasePath));
-            if (!scope.IsValid) throw new ArgumentException("A valid account directory scope is required.", nameof(scope));
+            if (string.IsNullOrWhiteSpace(databasePath))
+                throw new ArgumentException("A database path is required.", nameof(databasePath));
+            if (!scope.IsValid)
+                throw new ArgumentException("A valid account directory scope is required.", nameof(scope));
             cancellationToken.ThrowIfCancellationRequested();
             return await Task.Run(() => OpenCore(Path.GetFullPath(databasePath), scope, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
@@ -57,8 +66,10 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         internal async Task<T> ExecuteAsync<T>(
             AccountDirectoryScope scope, Func<SQLiteConnection, T> operation, CancellationToken cancellationToken)
         {
-            if (operation == null) throw new ArgumentNullException(nameof(operation));
-            if (!Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The principal directory owner scope does not match.");
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
+            if (!Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The principal directory owner scope does not match.");
             if (SqliteAccountsDirectoryExtensionTransaction.IsBorrowedCallback)
                 throw new InvalidOperationException("A directory extension callback cannot reenter directory operations.");
             Admit();
@@ -77,21 +88,25 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
 
         public async Task<bool> DisposeAsync(TimeSpan timeout)
         {
-            if (timeout < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(timeout));
+            if (timeout < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException(nameof(timeout));
             Task drainTask;
             lock (lifecycle)
             {
-                if (disposed) return true;
+                if (disposed)
+                    return true;
                 accepting = false;
                 drainTask = drained.Task;
             }
-            if (await Task.WhenAny(drainTask, Task.Delay(timeout)).ConfigureAwait(false) != drainTask) return false;
+            if (await Task.WhenAny(drainTask, Task.Delay(timeout)).ConfigureAwait(false) != drainTask)
+                return false;
             await writer.WaitAsync().ConfigureAwait(false);
             try
             {
                 lock (lifecycle)
                 {
-                    if (disposed) return true;
+                    if (disposed)
+                        return true;
                     connection.Dispose();
                     disposed = true;
                     return true;
@@ -107,7 +122,8 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var directory = Path.GetDirectoryName(databasePath);
-                if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException("Database path must have a directory.", nameof(databasePath));
+                if (string.IsNullOrWhiteSpace(directory))
+                    throw new ArgumentException("Database path must have a directory.", nameof(databasePath));
                 Directory.CreateDirectory(directory);
                 connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
                 connection.BusyTimeout = SqliteDatabaseOptions.Default.BusyTimeout;
@@ -154,17 +170,21 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
                 var markerCount = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_principal_directory_schema_migrations");
                 if (markerCount == 0)
                 {
-                    foreach (var statement in migration.Statements) connection.Execute(statement);
+                    foreach (var statement in migration.Statements)
+                        connection.Execute(statement);
                     cancellationToken.ThrowIfCancellationRequested();
                     connection.Execute("INSERT INTO gp_principal_directory_schema_migrations(version,migration_id,checksum,backend_namespace,app_id,applied_at) VALUES (?,?,?,?,?,?)", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace.Value, scope.AppId.ToString(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
                 }
                 else
                 {
-                    if (markerCount != 1) throw new StorageException(StorageFailure.Migration, "The principal directory migration journal contains extra or duplicate version rows.");
+                    if (markerCount != 1)
+                        throw new StorageException(StorageFailure.Migration, "The principal directory migration journal contains extra or duplicate version rows.");
                     var markerVersion = connection.ExecuteScalar<int>("SELECT version FROM gp_principal_directory_schema_migrations");
-                    if (markerVersion != migration.Version) throw new StorageException(StorageFailure.Migration, "The principal directory migration journal has a gap or unsupported version.");
+                    if (markerVersion != migration.Version)
+                        throw new StorageException(StorageFailure.Migration, "The principal directory migration journal has a gap or unsupported version.");
                     var identityMatches = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_principal_directory_schema_migrations WHERE version=? AND migration_id=? AND checksum=? AND backend_namespace=? AND app_id=? AND applied_at BETWEEN 0 AND 253402300799999", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace.Value, scope.AppId.ToString());
-                    if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "The principal directory migration identity, checksum, owner or timestamp changed.");
+                    if (identityMatches != 1)
+                        throw new StorageException(StorageFailure.Migration, "The principal directory migration identity, checksum, owner or timestamp changed.");
                 }
                 ValidateRequiredSchema(connection);
                 SqliteCommandStreamRecoveryMigration.Apply(connection, scope.BackendNamespace.Value, scope.AppId.ToString());
@@ -173,7 +193,10 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             }
             catch
             {
-                try { connection.Execute("ROLLBACK"); }
+                try
+                {
+                    connection.Execute("ROLLBACK");
+                }
                 catch { }
                 throw;
             }
@@ -226,26 +249,50 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
 
         private sealed class DirectoryColumn
         {
-            public int Cid { get; set; }
+            public int Cid
+            {
+                get; set;
+            }
             public string Name { get; set; } = string.Empty;
             public string Type { get; set; } = string.Empty;
-            public int Notnull { get; set; }
-            public int Pk { get; set; }
+            public int Notnull
+            {
+                get; set;
+            }
+            public int Pk
+            {
+                get; set;
+            }
         }
 
         private sealed class DirectoryIndex
         {
-            public int Seq { get; set; }
+            public int Seq
+            {
+                get; set;
+            }
             public string Name { get; set; } = string.Empty;
-            public int Unique { get; set; }
+            public int Unique
+            {
+                get; set;
+            }
             public string Origin { get; set; } = string.Empty;
-            public int Partial { get; set; }
+            public int Partial
+            {
+                get; set;
+            }
         }
 
         private sealed class DirectoryIndexColumn
         {
-            public int Seq { get; set; }
-            public int Cid { get; set; }
+            public int Seq
+            {
+                get; set;
+            }
+            public int Cid
+            {
+                get; set;
+            }
             public string Name { get; set; } = string.Empty;
         }
 
@@ -261,9 +308,13 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             }
             catch (Exception error)
             {
-                try { connection.Rollback(); }
+                try
+                {
+                    connection.Rollback();
+                }
                 catch { }
-                if (error is OperationCanceledException) throw;
+                if (error is OperationCanceledException)
+                    throw;
                 throw Map(error, StorageFailure.Io, "Account directory SQLite transaction failed.");
             }
         }
@@ -272,8 +323,10 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         {
             lock (lifecycle)
             {
-                if (!accepting || disposed) throw new StorageException(StorageFailure.Closing, "The account directory database is closing.");
-                if (admitted == 0) drained = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                if (!accepting || disposed)
+                    throw new StorageException(StorageFailure.Closing, "The account directory database is closing.");
+                if (admitted == 0)
+                    drained = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 admitted++;
             }
         }
@@ -283,13 +336,15 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             lock (lifecycle)
             {
                 admitted--;
-                if (admitted == 0) drained.TrySetResult(true);
+                if (admitted == 0)
+                    drained.TrySetResult(true);
             }
         }
 
         private static Exception Map(Exception error, StorageFailure fallback, string message)
         {
-            if (error is StorageException || error is OperationCanceledException) return error;
+            if (error is StorageException || error is OperationCanceledException)
+                return error;
             if (error is SQLiteException sqlite)
             {
                 var failure = sqlite.Result == SQLite3.Result.Busy || sqlite.Result == SQLite3.Result.Locked ? StorageFailure.Busy :
@@ -321,8 +376,10 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             Action<SqliteAccountsDirectoryExtensionTransaction, AccountDirectoryEntry>? onNewReservation = null)
         {
             this.database = database ?? throw new ArgumentNullException(nameof(database));
-            if (!scope.IsValid) throw new ArgumentException("A valid account directory scope is required.", nameof(scope));
-            if (!database.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The account directory scope does not match its database.");
+            if (!scope.IsValid)
+                throw new ArgumentException("A valid account directory scope is required.", nameof(scope));
+            if (!database.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The account directory scope does not match its database.");
             this.scope = scope;
             this.onNewReservation = onNewReservation;
         }
@@ -332,7 +389,8 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             {
                 var total = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_account_principal_directory");
                 var inScope = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_account_principal_directory WHERE backend_namespace=? AND app_id=?", scope.BackendNamespace.Value, scope.AppId.ToString());
-                if (total != inScope) throw new StorageException(StorageFailure.InvalidOwner, "The principal directory contains an entry outside its backend/app scope.");
+                if (total != inScope)
+                    throw new StorageException(StorageFailure.InvalidOwner, "The principal directory contains an entry outside its backend/app scope.");
                 return inScope != 0;
             }, cancellationToken);
 
@@ -350,13 +408,17 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             return database.ExecuteAsync(scope, connection =>
             {
                 var existing = Read(connection, principal, appId);
-                if (existing != null) return existing;
+                if (existing != null)
+                    return existing;
                 connection.Execute("INSERT INTO gp_account_principal_directory(backend_namespace,app_id,issuer,subject,installation_id,client_stream_id,platform_user_id,membership_status) VALUES (?,?,?,?,?,?,NULL,NULL)", principal.BackendNamespace.Value, appId.ToString(), principal.Issuer, principal.Subject, installationId.ToString("D"), streamId.ToString());
                 var reserved = new AccountDirectoryEntry(principal, appId, installationId, streamId, null, null);
                 if (onNewReservation != null)
                 {
                     var borrowed = new SqliteAccountsDirectoryExtensionTransaction(connection);
-                    try { onNewReservation(borrowed, reserved); }
+                    try
+                    {
+                        onNewReservation(borrowed, reserved);
+                    }
                     finally { borrowed.Invalidate(); }
                 }
                 return reserved;
@@ -365,7 +427,8 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
 
         public Task<AccountDirectoryEntry> BindIssuedAccountAsync(AccountDirectoryEntry reservation, PlatformUserId accountId, string membershipStatus, CancellationToken cancellationToken)
         {
-            if (reservation == null) throw new ArgumentNullException(nameof(reservation));
+            if (reservation == null)
+                throw new ArgumentNullException(nameof(reservation));
             Validate(reservation.Principal, reservation.AppId);
             if (!accountId.IsValid || string.IsNullOrWhiteSpace(membershipStatus) || membershipStatus.Length > 64)
                 throw new ArgumentException("A valid issued account and membership are required.");
@@ -381,7 +444,8 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
                     return current;
                 }
                 var updated = connection.Execute("UPDATE gp_account_principal_directory SET platform_user_id=?,membership_status=? WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND platform_user_id IS NULL", accountId.ToString(), membershipStatus, reservation.Principal.BackendNamespace.Value, reservation.AppId.ToString(), reservation.Principal.Issuer, reservation.Principal.Subject);
-                if (updated != 1) throw new StorageException(StorageFailure.IdentityConflict, "The durable reservation could not be bound exactly once.");
+                if (updated != 1)
+                    throw new StorageException(StorageFailure.IdentityConflict, "The durable reservation could not be bound exactly once.");
                 return new AccountDirectoryEntry(reservation.Principal, reservation.AppId, reservation.InstallationId, reservation.StreamId, accountId, membershipStatus);
             }, cancellationToken);
         }
@@ -389,8 +453,10 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         private static AccountDirectoryEntry? Read(SQLiteConnection connection, AccountPrincipalDescriptor principal, AppId appId)
         {
             var rows = connection.Query<DirectoryRow>("SELECT installation_id AS InstallationId,client_stream_id AS ClientStreamId,platform_user_id AS PlatformUserId,membership_status AS MembershipStatus FROM gp_account_principal_directory WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=?", principal.BackendNamespace.Value, appId.ToString(), principal.Issuer, principal.Subject);
-            if (rows.Count == 0) return null;
-            if (rows.Count != 1) throw new StorageException(StorageFailure.Corrupt, "The account directory contains duplicate principal entries.");
+            if (rows.Count == 0)
+                return null;
+            if (rows.Count != 1)
+                throw new StorageException(StorageFailure.Corrupt, "The account directory contains duplicate principal entries.");
             var row = rows[0];
             try
             {
@@ -408,8 +474,10 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
 
         private void Validate(AccountPrincipalDescriptor principal, AppId appId)
         {
-            if (principal == null) throw new ArgumentNullException(nameof(principal));
-            if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
+            if (principal == null)
+                throw new ArgumentNullException(nameof(principal));
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app is required.", nameof(appId));
             if (principal.BackendNamespace != scope.BackendNamespace || appId != scope.AppId)
                 throw new StorageException(StorageFailure.InvalidOwner, "The principal or app does not belong to this directory scope.");
         }
@@ -418,8 +486,14 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         {
             public string InstallationId { get; set; } = string.Empty;
             public string ClientStreamId { get; set; } = string.Empty;
-            public string? PlatformUserId { get; set; }
-            public string? MembershipStatus { get; set; }
+            public string? PlatformUserId
+            {
+                get; set;
+            }
+            public string? MembershipStatus
+            {
+                get; set;
+            }
         }
     }
 }

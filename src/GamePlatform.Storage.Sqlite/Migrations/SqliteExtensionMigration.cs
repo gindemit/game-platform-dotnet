@@ -15,9 +15,12 @@ namespace GamePlatform.Storage.Sqlite.Migrations
     {
         public SqliteExtensionDescriptor(string extensionNamespace, int minimumPlatformVersion, IReadOnlyList<SqliteExtensionMigration> migrations)
         {
-            if (!IsValidNamespace(extensionNamespace)) throw new ArgumentOutOfRangeException(nameof(extensionNamespace));
-            if (minimumPlatformVersion <= 0) throw new ArgumentOutOfRangeException(nameof(minimumPlatformVersion));
-            if (migrations == null || migrations.Count == 0) throw new ArgumentException("At least one extension migration is required.", nameof(migrations));
+            if (!IsValidNamespace(extensionNamespace))
+                throw new ArgumentOutOfRangeException(nameof(extensionNamespace));
+            if (minimumPlatformVersion <= 0)
+                throw new ArgumentOutOfRangeException(nameof(minimumPlatformVersion));
+            if (migrations == null || migrations.Count == 0)
+                throw new ArgumentException("At least one extension migration is required.", nameof(migrations));
             var copied = new SqliteExtensionMigration[migrations.Count];
             for (var index = 0; index < migrations.Count; index++)
             {
@@ -31,19 +34,30 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             Migrations = new ReadOnlyCollection<SqliteExtensionMigration>(copied);
         }
 
-        public string ExtensionNamespace { get; }
-        public int MinimumPlatformVersion { get; }
-        public IReadOnlyList<SqliteExtensionMigration> Migrations { get; }
+        public string ExtensionNamespace
+        {
+            get;
+        }
+        public int MinimumPlatformVersion
+        {
+            get;
+        }
+        public IReadOnlyList<SqliteExtensionMigration> Migrations
+        {
+            get;
+        }
 
         internal string GetChecksum(SqliteExtensionMigration migration) => migration.GetChecksum(ExtensionNamespace, MinimumPlatformVersion);
 
         internal static bool IsValidNamespace(string value)
         {
-            if (string.IsNullOrWhiteSpace(value) || value.Length > 128 || value.IndexOf('.') <= 0) return false;
+            if (string.IsNullOrWhiteSpace(value) || value.Length > 128 || value.IndexOf('.') <= 0)
+                return false;
             for (var index = 0; index < value.Length; index++)
             {
                 var character = value[index];
-                if (!(character >= 'a' && character <= 'z') && !(character >= '0' && character <= '9') && character != '.' && character != '-' && character != '_') return false;
+                if (!(character >= 'a' && character <= 'z') && !(character >= '0' && character <= '9') && character != '.' && character != '-' && character != '_')
+                    return false;
             }
             return true;
         }
@@ -53,15 +67,20 @@ namespace GamePlatform.Storage.Sqlite.Migrations
     {
         public SqliteExtensionMigration(int version, string id, IReadOnlyList<string> statements)
         {
-            if (version <= 0) throw new ArgumentOutOfRangeException(nameof(version));
-            if (string.IsNullOrWhiteSpace(id) || id.Length > 128) throw new ArgumentOutOfRangeException(nameof(id));
-            if (statements == null || statements.Count == 0) throw new ArgumentException("At least one statement is required.", nameof(statements));
+            if (version <= 0)
+                throw new ArgumentOutOfRangeException(nameof(version));
+            if (string.IsNullOrWhiteSpace(id) || id.Length > 128)
+                throw new ArgumentOutOfRangeException(nameof(id));
+            if (statements == null || statements.Count == 0)
+                throw new ArgumentException("At least one statement is required.", nameof(statements));
             var copied = new string[statements.Count];
             for (var index = 0; index < statements.Count; index++)
             {
                 var statement = statements[index];
-                if (string.IsNullOrWhiteSpace(statement)) throw new ArgumentException("Migration statements cannot be empty.", nameof(statements));
-                if (ReferencesPlatformTable(statement)) throw new ArgumentException("Consumer extension migrations cannot reference gp_* platform tables.", nameof(statements));
+                if (string.IsNullOrWhiteSpace(statement))
+                    throw new ArgumentException("Migration statements cannot be empty.", nameof(statements));
+                if (ReferencesPlatformTable(statement))
+                    throw new ArgumentException("Consumer extension migrations cannot reference gp_* platform tables.", nameof(statements));
                 copied[index] = statement;
             }
             Version = version;
@@ -69,19 +88,30 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             Statements = new ReadOnlyCollection<string>(copied);
         }
 
-        public int Version { get; }
-        public string Id { get; }
-        public IReadOnlyList<string> Statements { get; }
+        public int Version
+        {
+            get;
+        }
+        public string Id
+        {
+            get;
+        }
+        public IReadOnlyList<string> Statements
+        {
+            get;
+        }
 
         internal string GetChecksum(string extensionNamespace, int minimumPlatformVersion)
         {
             var canonical = new StringBuilder();
             canonical.Append(extensionNamespace).Append('\n').Append(minimumPlatformVersion).Append('\n').Append(Version).Append('\n').Append(Id).Append('\n');
-            for (var index = 0; index < Statements.Count; index++) canonical.Append(Statements[index].Length).Append(':').Append(Statements[index]).Append('\n');
+            for (var index = 0; index < Statements.Count; index++)
+                canonical.Append(Statements[index].Length).Append(':').Append(Statements[index]).Append('\n');
             using var sha256 = SHA256.Create();
             var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(canonical.ToString()));
             var result = new StringBuilder(bytes.Length * 2);
-            foreach (var value in bytes) result.Append(value.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
+            foreach (var value in bytes)
+                result.Append(value.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
             return result.ToString();
         }
 
@@ -92,8 +122,10 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             var lower = statement.ToLowerInvariant();
             for (var index = 0; index <= lower.Length - 3; index++)
             {
-                if (lower[index] != 'g' || lower[index + 1] != 'p' || lower[index + 2] != '_') continue;
-                if (index == 0 || !IsIdentifierCharacter(lower[index - 1])) return true;
+                if (lower[index] != 'g' || lower[index + 1] != 'p' || lower[index + 2] != '_')
+                    continue;
+                if (index == 0 || !IsIdentifierCharacter(lower[index - 1]))
+                    return true;
             }
             return false;
         }

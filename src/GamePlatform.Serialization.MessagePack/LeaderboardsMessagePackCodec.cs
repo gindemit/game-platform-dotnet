@@ -16,8 +16,10 @@ namespace GamePlatform.Serialization.MessagePack
         public byte[] EncodeQuery(LeaderboardsQuery value)
         {
             var fields = new List<(string, V)> { ("boardId", V.String(value.BoardId)), ("scope", V.String(value.Scope)), ("limit", V.Integer(value.Limit)) };
-            if (value.CountryCode != null) fields.Add(("countryCode", V.String(value.CountryCode)));
-            if (value.Cursor != null) fields.Add(("cursor", V.String(value.Cursor)));
+            if (value.CountryCode != null)
+                fields.Add(("countryCode", V.String(value.CountryCode)));
+            if (value.Cursor != null)
+                fields.Add(("cursor", V.String(value.Cursor)));
             return codec.Encode(Schema + "queryRequest", Obj(fields.ToArray()));
         }
         public LeaderboardsQuery DecodeQuery(byte[] bytes)
@@ -31,7 +33,8 @@ namespace GamePlatform.Serialization.MessagePack
         {
             var fields = new List<(string, V)> { ("operationId", Id(value.OperationId)), ("boardId", V.String(value.BoardId)),
                 ("participantKind", V.String(value.ParticipantKind)), ("countryCode", V.String(value.CountryCode)) };
-            if (value.TeamId.HasValue) fields.Add(("teamId", Id(value.TeamId.Value)));
+            if (value.TeamId.HasValue)
+                fields.Add(("teamId", Id(value.TeamId.Value)));
             return codec.Encode(Schema + "countryRequest", Obj(fields.ToArray()));
         }
         public LeaderboardsCountryCommand DecodeCountry(byte[] bytes)

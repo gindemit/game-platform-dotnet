@@ -80,36 +80,56 @@ namespace GamePlatform.Serialization.MessagePack
         private static V WriteQuery(TeamsQuery value)
         {
             var fields = new List<(string, V)> { ("protocolVersion", V.Integer(1)), ("view", V.String(value.View)), ("pageSize", V.Integer(value.PageSize)) };
-            if (value.TeamId.HasValue) fields.Add(("teamId", Uuid(value.TeamId.Value)));
-            if (value.Search != null) fields.Add(("search", V.String(value.Search)));
-            if (value.Cursor != null) fields.Add(("cursor", V.String(value.Cursor)));
+            if (value.TeamId.HasValue)
+                fields.Add(("teamId", Uuid(value.TeamId.Value)));
+            if (value.Search != null)
+                fields.Add(("search", V.String(value.Search)));
+            if (value.Cursor != null)
+                fields.Add(("cursor", V.String(value.Cursor)));
             return Obj(fields.ToArray());
         }
         private static V WriteCommand(TeamsCommand value)
         {
             var fields = new List<(string, V)> { ("protocolVersion", V.Integer(1)), ("operationId", Uuid(value.OperationId)), ("action", V.String(value.Action)), ("payload", WritePayload(value.Payload)) };
-            if (value.TeamId.HasValue) fields.Add(("teamId", Uuid(value.TeamId.Value)));
-            if (value.ExpectedRevision.HasValue) fields.Add(("expectedRevision", Wide(value.ExpectedRevision.Value)));
+            if (value.TeamId.HasValue)
+                fields.Add(("teamId", Uuid(value.TeamId.Value)));
+            if (value.ExpectedRevision.HasValue)
+                fields.Add(("expectedRevision", Wide(value.ExpectedRevision.Value)));
             return Obj(fields.ToArray());
         }
         private static V WritePayload(TeamsCommandPayload value)
         {
             var fields = new List<(string, V)>();
-            if (value.Name != null) fields.Add(("name", V.String(value.Name)));
-            if (value.Description != null) fields.Add(("description", V.String(value.Description)));
-            if (value.BadgeId != null) fields.Add(("badgeId", V.String(value.BadgeId)));
-            if (value.Language != null) fields.Add(("language", V.String(value.Language)));
-            if (value.JoinPolicy != null) fields.Add(("joinPolicy", V.String(value.JoinPolicy)));
-            if (value.RequiredLevel.HasValue) fields.Add(("requiredLevel", V.Integer(value.RequiredLevel.Value)));
-            if (value.Capacity.HasValue) fields.Add(("capacity", V.Integer(value.Capacity.Value)));
-            if (value.TargetPlayerId.HasValue) fields.Add(("targetPlayerId", Uuid(value.TargetPlayerId.Value)));
-            if (value.InviteId.HasValue) fields.Add(("inviteId", Uuid(value.InviteId.Value)));
-            if (value.MessageId.HasValue) fields.Add(("messageId", Uuid(value.MessageId.Value)));
-            if (value.RequestId.HasValue) fields.Add(("requestId", Uuid(value.RequestId.Value)));
-            if (value.Role != null) fields.Add(("role", V.String(value.Role)));
-            if (value.Text != null) fields.Add(("text", V.String(value.Text)));
-            if (value.Reason != null) fields.Add(("reason", V.String(value.Reason)));
-            if (value.DurationMinutes.HasValue) fields.Add(("durationMinutes", V.Integer(value.DurationMinutes.Value)));
+            if (value.Name != null)
+                fields.Add(("name", V.String(value.Name)));
+            if (value.Description != null)
+                fields.Add(("description", V.String(value.Description)));
+            if (value.BadgeId != null)
+                fields.Add(("badgeId", V.String(value.BadgeId)));
+            if (value.Language != null)
+                fields.Add(("language", V.String(value.Language)));
+            if (value.JoinPolicy != null)
+                fields.Add(("joinPolicy", V.String(value.JoinPolicy)));
+            if (value.RequiredLevel.HasValue)
+                fields.Add(("requiredLevel", V.Integer(value.RequiredLevel.Value)));
+            if (value.Capacity.HasValue)
+                fields.Add(("capacity", V.Integer(value.Capacity.Value)));
+            if (value.TargetPlayerId.HasValue)
+                fields.Add(("targetPlayerId", Uuid(value.TargetPlayerId.Value)));
+            if (value.InviteId.HasValue)
+                fields.Add(("inviteId", Uuid(value.InviteId.Value)));
+            if (value.MessageId.HasValue)
+                fields.Add(("messageId", Uuid(value.MessageId.Value)));
+            if (value.RequestId.HasValue)
+                fields.Add(("requestId", Uuid(value.RequestId.Value)));
+            if (value.Role != null)
+                fields.Add(("role", V.String(value.Role)));
+            if (value.Text != null)
+                fields.Add(("text", V.String(value.Text)));
+            if (value.Reason != null)
+                fields.Add(("reason", V.String(value.Reason)));
+            if (value.DurationMinutes.HasValue)
+                fields.Add(("durationMinutes", V.Integer(value.DurationMinutes.Value)));
             return Obj(fields.ToArray());
         }
         private static V Uuid(Guid value) => V.String(value.ToString("D"));

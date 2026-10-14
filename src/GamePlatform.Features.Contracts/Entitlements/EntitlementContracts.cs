@@ -8,10 +8,16 @@ using GamePlatform.Core;
 namespace GamePlatform.Features.Contracts.Entitlements
 {
     /// <summary>Server-confirmed right state. Active is not itself offline proof when an expiry exists.</summary>
-    public enum EntitlementRightState { Active = 0, Revoked = 1, Expired = 2, Unknown = 3 }
+    public enum EntitlementRightState
+    {
+        Active = 0, Revoked = 1, Expired = 2, Unknown = 3
+    }
 
     /// <summary>What a client may honestly present from a cached projection. It never grants a right.</summary>
-    public enum EntitlementOfflineEligibility { Eligible = 0, Ineligible = 1, ExpiryUncertain = 2, Unknown = 3 }
+    public enum EntitlementOfflineEligibility
+    {
+        Eligible = 0, Ineligible = 1, ExpiryUncertain = 2, Unknown = 3
+    }
 
     /// <summary>Non-secret receipt identity retained only as the server-confirmed origin of a right.</summary>
     public sealed class EntitlementOriginReceipt
@@ -20,14 +26,22 @@ namespace GamePlatform.Features.Contracts.Entitlements
 
         public EntitlementOriginReceipt(PlatformId receiptId, string businessSource)
         {
-            if (!receiptId.IsValid) throw new ArgumentException("A receipt identity is required.", nameof(receiptId));
-            if (string.IsNullOrWhiteSpace(businessSource) || !Source.IsMatch(businessSource)) throw new ArgumentOutOfRangeException(nameof(businessSource));
+            if (!receiptId.IsValid)
+                throw new ArgumentException("A receipt identity is required.", nameof(receiptId));
+            if (string.IsNullOrWhiteSpace(businessSource) || !Source.IsMatch(businessSource))
+                throw new ArgumentOutOfRangeException(nameof(businessSource));
             ReceiptId = receiptId;
             BusinessSource = businessSource;
         }
 
-        public PlatformId ReceiptId { get; }
-        public string BusinessSource { get; }
+        public PlatformId ReceiptId
+        {
+            get;
+        }
+        public string BusinessSource
+        {
+            get;
+        }
     }
 
     /// <summary>One opaque server-confirmed entitlement. Payload is not parsed or made authoritative by this feature.</summary>
@@ -39,15 +53,19 @@ namespace GamePlatform.Features.Contracts.Entitlements
         public EntitlementRight(PlatformId entitlementId, long revision, EntitlementRightState state,
             EntitlementOriginReceipt originReceipt, long? expiresAtServerMilliseconds, ReadOnlySpan<byte> payload)
         {
-            if (!entitlementId.IsValid) throw new ArgumentException("An entitlement identity is required.", nameof(entitlementId));
-            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
-            if (!Enum.IsDefined(typeof(EntitlementRightState), state)) throw new ArgumentOutOfRangeException(nameof(state));
+            if (!entitlementId.IsValid)
+                throw new ArgumentException("An entitlement identity is required.", nameof(entitlementId));
+            if (revision < 0)
+                throw new ArgumentOutOfRangeException(nameof(revision));
+            if (!Enum.IsDefined(typeof(EntitlementRightState), state))
+                throw new ArgumentOutOfRangeException(nameof(state));
             OriginReceipt = originReceipt ?? throw new ArgumentNullException(nameof(originReceipt));
             if (expiresAtServerMilliseconds.HasValue && (expiresAtServerMilliseconds.Value < 0 || expiresAtServerMilliseconds.Value > 253_402_300_799_999L))
                 throw new ArgumentOutOfRangeException(nameof(expiresAtServerMilliseconds));
             if ((state == EntitlementRightState.Expired || state == EntitlementRightState.Revoked) && payload.Length != 0)
                 throw new ArgumentException("Revoked and expired rights carry no opaque payload.", nameof(payload));
-            if (payload.Length > MaximumPayloadBytes) throw new ArgumentOutOfRangeException(nameof(payload));
+            if (payload.Length > MaximumPayloadBytes)
+                throw new ArgumentOutOfRangeException(nameof(payload));
             EntitlementId = entitlementId;
             Revision = revision;
             State = state;
@@ -55,11 +73,26 @@ namespace GamePlatform.Features.Contracts.Entitlements
             this.payload = payload.ToArray();
         }
 
-        public PlatformId EntitlementId { get; }
-        public long Revision { get; }
-        public EntitlementRightState State { get; }
-        public EntitlementOriginReceipt OriginReceipt { get; }
-        public long? ExpiresAtServerMilliseconds { get; }
+        public PlatformId EntitlementId
+        {
+            get;
+        }
+        public long Revision
+        {
+            get;
+        }
+        public EntitlementRightState State
+        {
+            get;
+        }
+        public EntitlementOriginReceipt OriginReceipt
+        {
+            get;
+        }
+        public long? ExpiresAtServerMilliseconds
+        {
+            get;
+        }
         public byte[] CopyPayload() => (byte[])payload.Clone();
     }
 
@@ -70,9 +103,12 @@ namespace GamePlatform.Features.Contracts.Entitlements
 
         public EntitlementConfirmedSnapshot(long revision, long confirmedAtMilliseconds, IEnumerable<EntitlementRight> rights)
         {
-            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
-            if (confirmedAtMilliseconds < 0 || confirmedAtMilliseconds > 253_402_300_799_999L) throw new ArgumentOutOfRangeException(nameof(confirmedAtMilliseconds));
-            if (rights == null) throw new ArgumentNullException(nameof(rights));
+            if (revision < 0)
+                throw new ArgumentOutOfRangeException(nameof(revision));
+            if (confirmedAtMilliseconds < 0 || confirmedAtMilliseconds > 253_402_300_799_999L)
+                throw new ArgumentOutOfRangeException(nameof(confirmedAtMilliseconds));
+            if (rights == null)
+                throw new ArgumentNullException(nameof(rights));
             this.rights = rights.ToArray();
             if (this.rights.Length > 512 || this.rights.Any(value => value == null) || this.rights.Select(value => value.EntitlementId).Distinct().Count() != this.rights.Length)
                 throw new ArgumentException("Entitlement projection contains invalid or duplicate rights.", nameof(rights));
@@ -80,8 +116,14 @@ namespace GamePlatform.Features.Contracts.Entitlements
             ConfirmedAtMilliseconds = confirmedAtMilliseconds;
         }
 
-        public long Revision { get; }
-        public long ConfirmedAtMilliseconds { get; }
+        public long Revision
+        {
+            get;
+        }
+        public long ConfirmedAtMilliseconds
+        {
+            get;
+        }
         public IReadOnlyList<EntitlementRight> Rights => Array.AsReadOnly(rights);
     }
 
@@ -90,12 +132,19 @@ namespace GamePlatform.Features.Contracts.Entitlements
         public EntitlementRightView(EntitlementRight right, EntitlementOfflineEligibility offlineEligibility)
         {
             Right = right ?? throw new ArgumentNullException(nameof(right));
-            if (!Enum.IsDefined(typeof(EntitlementOfflineEligibility), offlineEligibility)) throw new ArgumentOutOfRangeException(nameof(offlineEligibility));
+            if (!Enum.IsDefined(typeof(EntitlementOfflineEligibility), offlineEligibility))
+                throw new ArgumentOutOfRangeException(nameof(offlineEligibility));
             OfflineEligibility = offlineEligibility;
         }
 
-        public EntitlementRight Right { get; }
-        public EntitlementOfflineEligibility OfflineEligibility { get; }
+        public EntitlementRight Right
+        {
+            get;
+        }
+        public EntitlementOfflineEligibility OfflineEligibility
+        {
+            get;
+        }
     }
 
     /// <summary>Presentation projection. No local clock is accepted because device time cannot create authority.</summary>
@@ -106,14 +155,18 @@ namespace GamePlatform.Features.Contracts.Entitlements
         public EntitlementSnapshot(EntitlementConfirmedSnapshot confirmed, IEnumerable<EntitlementRightView> rights)
         {
             Confirmed = confirmed ?? throw new ArgumentNullException(nameof(confirmed));
-            if (rights == null) throw new ArgumentNullException(nameof(rights));
+            if (rights == null)
+                throw new ArgumentNullException(nameof(rights));
             this.rights = rights.ToArray();
             if (this.rights.Length != confirmed.Rights.Count || this.rights.Any(value => value == null) ||
                 this.rights.Select(value => value.Right.EntitlementId).Distinct().Count() != this.rights.Length)
                 throw new ArgumentException("Entitlement views do not faithfully describe the confirmed projection.", nameof(rights));
         }
 
-        public EntitlementConfirmedSnapshot Confirmed { get; }
+        public EntitlementConfirmedSnapshot Confirmed
+        {
+            get;
+        }
         public IReadOnlyList<EntitlementRightView> Rights => Array.AsReadOnly(rights);
     }
 

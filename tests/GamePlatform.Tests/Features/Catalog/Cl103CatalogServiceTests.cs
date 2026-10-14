@@ -136,11 +136,19 @@ namespace GamePlatform.Tests.Features.Catalog
         private sealed class TestProvider : ICatalogSnapshotProvider
         {
             private readonly Func<CatalogSnapshotRequest, CatalogSnapshot> download;
-            public TestProvider(Func<CatalogSnapshotRequest, CatalogSnapshot> download) { this.download = download; }
-            public int Calls { get; private set; }
+            public TestProvider(Func<CatalogSnapshotRequest, CatalogSnapshot> download)
+            {
+                this.download = download;
+            }
+            public int Calls
+            {
+                get; private set;
+            }
             public Task<CatalogSnapshot> DownloadAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken)
             {
-                cancellationToken.ThrowIfCancellationRequested(); Calls++; return Task.FromResult(download(request));
+                cancellationToken.ThrowIfCancellationRequested();
+                Calls++;
+                return Task.FromResult(download(request));
             }
         }
 
@@ -148,17 +156,24 @@ namespace GamePlatform.Tests.Features.Catalog
         {
             private readonly Dictionary<string, CatalogSnapshot> snapshots = new Dictionary<string, CatalogSnapshot>();
             public List<CatalogSnapshot> Installed { get; } = new List<CatalogSnapshot>();
-            public Exception? ReadFailure { get; set; }
+            public Exception? ReadFailure
+            {
+                get; set;
+            }
             public Task<CatalogSnapshot?> ReadAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (ReadFailure != null) throw ReadFailure;
-                snapshots.TryGetValue(Key(request), out var snapshot); return Task.FromResult<CatalogSnapshot?>(snapshot);
+                if (ReadFailure != null)
+                    throw ReadFailure;
+                snapshots.TryGetValue(Key(request), out var snapshot);
+                return Task.FromResult<CatalogSnapshot?>(snapshot);
             }
             public Task InstallAsync(CatalogSnapshot snapshot, CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                snapshots[Key(snapshot.Request)] = snapshot; Installed.Add(snapshot); return Task.CompletedTask;
+                snapshots[Key(snapshot.Request)] = snapshot;
+                Installed.Add(snapshot);
+                return Task.CompletedTask;
             }
             private static string Key(CatalogSnapshotRequest request) => request.Owner.Owner.AppId.Value.ToString("D") + "/" + request.Owner.Owner.UserId.Value.ToString("D") + "/" + request.Owner.ViewKey.Value + "/" + request.Owner.Generation + "/" + request.ToCanonicalQuery();
         }

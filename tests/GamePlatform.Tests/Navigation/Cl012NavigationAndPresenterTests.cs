@@ -144,7 +144,10 @@ namespace GamePlatform.Tests.Navigation
         private sealed class ImmediateLoader : IRouteLoader
         {
             private readonly RouteLoadResult result;
-            public ImmediateLoader(RouteLoadResult result = RouteLoadResult.Available) { this.result = result; }
+            public ImmediateLoader(RouteLoadResult result = RouteLoadResult.Available)
+            {
+                this.result = result;
+            }
             public Task<RouteLoadResult> LoadAsync(NavigationRoute route, CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -156,12 +159,16 @@ namespace GamePlatform.Tests.Navigation
         {
             private readonly bool ignoreCancellation;
             private readonly TaskCompletionSource<RouteLoadResult> completion = new TaskCompletionSource<RouteLoadResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            public DeferredLoader(bool ignoreCancellation) { this.ignoreCancellation = ignoreCancellation; }
+            public DeferredLoader(bool ignoreCancellation)
+            {
+                this.ignoreCancellation = ignoreCancellation;
+            }
             public TaskCompletionSource<bool> Entered { get; } = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             public async Task<RouteLoadResult> LoadAsync(NavigationRoute route, CancellationToken cancellationToken)
             {
                 Entered.TrySetResult(true);
-                if (ignoreCancellation) return await completion.Task.ConfigureAwait(false);
+                if (ignoreCancellation)
+                    return await completion.Task.ConfigureAwait(false);
                 var cancelled = new TaskCompletionSource<RouteLoadResult>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using (cancellationToken.Register(() => cancelled.TrySetCanceled(cancellationToken)))
                     return await await Task.WhenAny(completion.Task, cancelled.Task).ConfigureAwait(false);
@@ -171,7 +178,10 @@ namespace GamePlatform.Tests.Navigation
 
         private sealed class TrackedDisposable : IDisposable
         {
-            public bool Disposed { get; private set; }
+            public bool Disposed
+            {
+                get; private set;
+            }
             public void Dispose() => Disposed = true;
         }
     }

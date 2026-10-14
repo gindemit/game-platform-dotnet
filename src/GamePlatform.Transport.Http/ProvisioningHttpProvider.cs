@@ -26,26 +26,38 @@ namespace GamePlatform.Transport.Http
             this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
             this.auth = auth ?? throw new ArgumentNullException(nameof(auth));
             this.refresh = refresh ?? throw new ArgumentNullException(nameof(refresh));
-            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256) throw new ArgumentException("The auth session key is invalid.", nameof(auth));
+            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256)
+                throw new ArgumentException("The auth session key is invalid.", nameof(auth));
         }
 
         public async Task<RemoteResult<ProvisioningSnapshot>> ProvisionAsync(AppId appId, Guid installationId, ClientStreamId streamId, CancellationToken cancellationToken)
         {
-            if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
-            if (installationId == Guid.Empty) throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
-            if (!streamId.IsValid) throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app ID is required.", nameof(appId));
+            if (installationId == Guid.Empty)
+                throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
+            if (!streamId.IsValid)
+                throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
             var request = new ProvisionRequest(installationId, streamId.Value);
             byte[] body;
-            try { body = codec.Encode(request); }
+            try
+            {
+                body = codec.Encode(request);
+            }
             catch { return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol)); }
-            if (body.Length == 0 || body.Length > 262_144) return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol));
+            if (body.Length == 0 || body.Length > 262_144)
+                return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol));
 
             AccessTokenSnapshot token;
-            try { token = await auth.GetAsync(cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                token = await auth.GetAsync(cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Cancelled)); }
 
             var response = await SendOnce(appId, body, token, cancellationToken).ConfigureAwait(false);
-            if (response.Failure.HasValue) return RemoteResult<ProvisioningSnapshot>.Failed(response.Failure.Value);
+            if (response.Failure.HasValue)
+                return RemoteResult<ProvisioningSnapshot>.Failed(response.Failure.Value);
             if (response.Response!.StatusCode == 401)
             {
                 try
@@ -55,7 +67,8 @@ namespace GamePlatform.Transport.Http
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Cancelled)); }
                 catch { return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Authentication, 401)); }
                 response = await SendOnce(appId, body, token, cancellationToken).ConfigureAwait(false);
-                if (response.Failure.HasValue) return RemoteResult<ProvisioningSnapshot>.Failed(response.Failure.Value);
+                if (response.Failure.HasValue)
+                    return RemoteResult<ProvisioningSnapshot>.Failed(response.Failure.Value);
             }
             return Decode(appId, request, response.Response!);
         }
@@ -69,7 +82,10 @@ namespace GamePlatform.Transport.Http
                 ["Content-Type"] = MediaType
             };
             var request = new HttpRequestData("POST", configuration.Resolve("v1/apps/" + appId + "/provision").AbsoluteUri, headers, body);
-            try { return new Attempt(await executor.SendAsync(request, cancellationToken).ConfigureAwait(false)); }
+            try
+            {
+                return new Attempt(await executor.SendAsync(request, cancellationToken).ConfigureAwait(false));
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.OutcomeUncertain)); }
             catch (HttpExecutionException error)
             {
@@ -81,15 +97,24 @@ namespace GamePlatform.Transport.Http
 
         private RemoteResult<ProvisioningSnapshot> Decode(AppId appId, ProvisionRequest request, HttpResponseData response)
         {
-            if (response.StatusCode != 200) return RemoteResult<ProvisioningSnapshot>.Failed(MapStatus(response));
-            if (response.BodyLength == 0 || response.BodyLength > configuration.MaximumResponseBytes) return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
-            if (!response.TryGetHeader("Content-Type", out var contentType) || !string.Equals(contentType, MediaType, StringComparison.OrdinalIgnoreCase)) return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
-            if (response.TryGetHeader("Content-Encoding", out var encoding) && !string.Equals(encoding, "identity", StringComparison.OrdinalIgnoreCase)) return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
-            if (!response.TryGetHeader("X-Correlation-Id", out var correlation) || string.IsNullOrWhiteSpace(correlation) || correlation.Length > 128) return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
+            if (response.StatusCode != 200)
+                return RemoteResult<ProvisioningSnapshot>.Failed(MapStatus(response));
+            if (response.BodyLength == 0 || response.BodyLength > configuration.MaximumResponseBytes)
+                return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
+            if (!response.TryGetHeader("Content-Type", out var contentType) || !string.Equals(contentType, MediaType, StringComparison.OrdinalIgnoreCase))
+                return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
+            if (response.TryGetHeader("Content-Encoding", out var encoding) && !string.Equals(encoding, "identity", StringComparison.OrdinalIgnoreCase))
+                return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
+            if (!response.TryGetHeader("X-Correlation-Id", out var correlation) || string.IsNullOrWhiteSpace(correlation) || correlation.Length > 128)
+                return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
             ProvisionResponse value;
-            try { value = codec.Decode<ProvisionResponse>(response.CopyBody()); }
+            try
+            {
+                value = codec.Decode<ProvisionResponse>(response.CopyBody());
+            }
             catch { return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode)); }
-            if (value == null || value.ProtocolVersion != 1 || value.Membership.AppId != appId.Value || value.ClientStreamId != request.ClientStreamId || value.NextSequence <= 0) return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
+            if (value == null || value.ProtocolVersion != 1 || value.Membership.AppId != appId.Value || value.ClientStreamId != request.ClientStreamId || value.NextSequence <= 0)
+                return RemoteResult<ProvisioningSnapshot>.Failed(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode));
             try
             {
                 return RemoteResult<ProvisioningSnapshot>.Success(new ProvisioningSnapshot(
@@ -107,16 +132,31 @@ namespace GamePlatform.Transport.Http
                 response.StatusCode == 502 || response.StatusCode == 503 || response.StatusCode == 504 ? RemoteFailureKind.Dependency :
                 response.StatusCode >= 500 ? RemoteFailureKind.Server : RemoteFailureKind.Protocol;
             TimeSpan? retryAfter = null;
-            if (response.TryGetHeader("Retry-After", out var value) && int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds) && seconds >= 0 && seconds <= 86_400) retryAfter = TimeSpan.FromSeconds(seconds);
+            if (response.TryGetHeader("Retry-After", out var value) && int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds) && seconds >= 0 && seconds <= 86_400)
+                retryAfter = TimeSpan.FromSeconds(seconds);
             return new RemoteFailure(kind, response.StatusCode, retryAfter);
         }
 
         private readonly struct Attempt
         {
-            public Attempt(HttpResponseData response) { Response = response; Failure = null; }
-            public Attempt(RemoteFailure failure) { Response = null; Failure = failure; }
-            public HttpResponseData? Response { get; }
-            public RemoteFailure? Failure { get; }
+            public Attempt(HttpResponseData response)
+            {
+                Response = response;
+                Failure = null;
+            }
+            public Attempt(RemoteFailure failure)
+            {
+                Response = null;
+                Failure = failure;
+            }
+            public HttpResponseData? Response
+            {
+                get;
+            }
+            public RemoteFailure? Failure
+            {
+                get;
+            }
         }
     }
 }

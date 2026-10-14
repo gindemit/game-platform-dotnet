@@ -55,20 +55,26 @@ namespace GamePlatform.Transport.Http
             BackendWireRepresentation representation,
             StoreQuestCapability storeQuest)
         {
-            if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
-            if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
-            if (installationId == Guid.Empty) throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app ID is required.", nameof(appId));
+            if (!accountId.IsValid)
+                throw new ArgumentException("A valid account ID is required.", nameof(accountId));
+            if (installationId == Guid.Empty)
+                throw new ArgumentException("A valid installation ID is required.", nameof(installationId));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.executor = executor ?? throw new ArgumentNullException(nameof(executor));
             this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
             this.auth = auth ?? throw new ArgumentNullException(nameof(auth));
             this.refresh = refresh ?? throw new ArgumentNullException(nameof(refresh));
-            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256) throw new ArgumentException("The auth session key is invalid.", nameof(auth));
-            if (!Enum.IsDefined(typeof(BackendWireRepresentation), representation)) throw new ArgumentOutOfRangeException(nameof(representation));
+            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256)
+                throw new ArgumentException("The auth session key is invalid.", nameof(auth));
+            if (!Enum.IsDefined(typeof(BackendWireRepresentation), representation))
+                throw new ArgumentOutOfRangeException(nameof(representation));
             this.appId = appId;
             this.accountId = accountId;
             this.installationId = installationId;
-            if (storeQuest == null) throw new ArgumentNullException(nameof(storeQuest));
+            if (storeQuest == null)
+                throw new ArgumentNullException(nameof(storeQuest));
             if (storeQuest.Enabled && representation != BackendWireRepresentation.MessagePack)
                 throw new ArgumentException("The store/quest receipt superset is MessagePack only.", nameof(representation));
             this.storeQuest = storeQuest.Codec;
@@ -77,9 +83,11 @@ namespace GamePlatform.Transport.Http
 
         public async Task<RemoteResult<RemoteCommandReceipt>> LookupAsync(RemoteCommand command, CancellationToken cancellationToken)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
             var fingerprint = command.Fingerprint;
-            if (command.FingerprintVersion != 1 || fingerprint.Length != 32) return ProtocolFailure();
+            if (command.FingerprintVersion != 1 || fingerprint.Length != 32)
+                return ProtocolFailure();
 
             byte[] body;
             try
@@ -92,16 +100,23 @@ namespace GamePlatform.Transport.Http
                     Hex(fingerprint)));
             }
             catch { return ProtocolFailure(); }
-            if (body.Length == 0 || body.Length > 262_144) return ProtocolFailure();
+            if (body.Length == 0 || body.Length > 262_144)
+                return ProtocolFailure();
 
             var attempt = await SendAuthenticatedAsync(body, cancellationToken).ConfigureAwait(false);
-            if (attempt.Failure.HasValue) return RemoteResult<RemoteCommandReceipt>.Failed(attempt.Failure.Value);
+            if (attempt.Failure.HasValue)
+                return RemoteResult<RemoteCommandReceipt>.Failed(attempt.Failure.Value);
             var response = attempt.Response!;
-            if (response.StatusCode != 200) return RemoteResult<RemoteCommandReceipt>.Failed(DecodeFailure(response));
-            if (!ValidProtocolResponse(response)) return ProtocolFailure(response.StatusCode);
+            if (response.StatusCode != 200)
+                return RemoteResult<RemoteCommandReceipt>.Failed(DecodeFailure(response));
+            if (!ValidProtocolResponse(response))
+                return ProtocolFailure(response.StatusCode);
 
             RecoveryReceiptResponse value;
-            try { value = storeQuest != null ? storeQuest.DecodeReceiptResponse(response.CopyBody()) : codec.Decode<RecoveryReceiptResponse>(response.CopyBody()); }
+            try
+            {
+                value = storeQuest != null ? storeQuest.DecodeReceiptResponse(response.CopyBody()) : codec.Decode<RecoveryReceiptResponse>(response.CopyBody());
+            }
             catch { return ProtocolFailure(response.StatusCode); }
             try
             {
@@ -112,11 +127,13 @@ namespace GamePlatform.Transport.Http
 
                 if (!value.Found)
                 {
-                    if (value.Result != null || value.ObservedFinalizedThrough >= command.Sequence) return ProtocolFailure(response.StatusCode);
+                    if (value.Result != null || value.ObservedFinalizedThrough >= command.Sequence)
+                        return ProtocolFailure(response.StatusCode);
                     return RemoteResult<RemoteCommandReceipt>.Success(new RemoteCommandReceipt(false, null, value.ObservedFinalizedThrough));
                 }
 
-                if (value.Result == null || value.ObservedFinalizedThrough < command.Sequence) return ProtocolFailure(response.StatusCode);
+                if (value.Result == null || value.ObservedFinalizedThrough < command.Sequence)
+                    return ProtocolFailure(response.StatusCode);
                 RemoteCommandStatus status;
                 switch (value.Result)
                 {
@@ -132,9 +149,13 @@ namespace GamePlatform.Transport.Http
                 }
 
                 byte[] terminalResult;
-                try { terminalResult = EncodeTerminal(command, value.Result); }
+                try
+                {
+                    terminalResult = EncodeTerminal(command, value.Result);
+                }
                 catch { return ProtocolFailure(response.StatusCode); }
-                if (terminalResult.Length == 0 || terminalResult.Length > 65_536) return ProtocolFailure(response.StatusCode);
+                if (terminalResult.Length == 0 || terminalResult.Length > 65_536)
+                    return ProtocolFailure(response.StatusCode);
                 var outcome = new RemoteCommandOutcome(status, terminalResult);
                 return RemoteResult<RemoteCommandReceipt>.Success(new RemoteCommandReceipt(true, outcome, value.ObservedFinalizedThrough));
             }
@@ -143,7 +164,8 @@ namespace GamePlatform.Transport.Http
 
         private byte[] EncodeTerminal(RemoteCommand command, IPushFinalResult result)
         {
-            if (IsStoreQuestKind(command.OperationKind)) return storeQuest!.EncodeResult((IPushResult)result);
+            if (IsStoreQuestKind(command.OperationKind))
+                return storeQuest!.EncodeResult((IPushResult)result);
             return result is PushAccepted accepted ? codec.Encode(accepted) : codec.Encode((PushTerminalRejected)result);
         }
 
@@ -153,13 +175,20 @@ namespace GamePlatform.Transport.Http
         private async Task<Attempt> SendAuthenticatedAsync(byte[] body, CancellationToken cancellationToken)
         {
             AccessTokenSnapshot token;
-            try { token = await auth.GetAsync(cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                token = await auth.GetAsync(cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.Cancelled)); }
             catch { return new Attempt(new RemoteFailure(RemoteFailureKind.Authentication)); }
 
             var response = await SendOnce(body, token, cancellationToken).ConfigureAwait(false);
-            if (response.Failure.HasValue || response.Response!.StatusCode != 401) return response;
-            try { token = await refresh.RefreshAsync(auth, accountId, token.Generation, cancellationToken).ConfigureAwait(false); }
+            if (response.Failure.HasValue || response.Response!.StatusCode != 401)
+                return response;
+            try
+            {
+                token = await refresh.RefreshAsync(auth, accountId, token.Generation, cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.Cancelled)); }
             catch { return new Attempt(new RemoteFailure(RemoteFailureKind.Authentication, 401)); }
             return await SendOnce(body, token, cancellationToken).ConfigureAwait(false);
@@ -174,7 +203,10 @@ namespace GamePlatform.Transport.Http
                 ["Content-Type"] = mediaType
             };
             var request = new HttpRequestData("POST", configuration.Resolve("v1/apps/" + appId + "/sync/receipts/lookup").AbsoluteUri, headers, body);
-            try { return new Attempt(await executor.SendAsync(request, cancellationToken).ConfigureAwait(false)); }
+            try
+            {
+                return new Attempt(await executor.SendAsync(request, cancellationToken).ConfigureAwait(false));
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.Cancelled)); }
             catch (HttpExecutionException error) { return new Attempt(new RemoteFailure(error.Certainty == HttpDeliveryCertainty.NotSent ? RemoteFailureKind.NotSent : RemoteFailureKind.Dependency)); }
             catch { return new Attempt(new RemoteFailure(RemoteFailureKind.Dependency)); }
@@ -182,10 +214,13 @@ namespace GamePlatform.Transport.Http
 
         private RemoteFailure DecodeFailure(HttpResponseData response)
         {
-            if (response.BodyLength > configuration.MaximumResponseBytes) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
+            if (response.BodyLength > configuration.MaximumResponseBytes)
+                return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
             var mapped = MapStatus(response);
-            if (!HasProtocolMediaType(response)) return mapped;
-            if (!ValidProtocolResponse(response)) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
+            if (!HasProtocolMediaType(response))
+                return mapped;
+            if (!ValidProtocolResponse(response))
+                return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
             try
             {
                 var error = codec.Decode<ErrorResponse>(response.CopyBody());
@@ -244,10 +279,24 @@ namespace GamePlatform.Transport.Http
 
         private readonly struct Attempt
         {
-            public Attempt(HttpResponseData response) { Response = response; Failure = null; }
-            public Attempt(RemoteFailure failure) { Response = null; Failure = failure; }
-            public HttpResponseData? Response { get; }
-            public RemoteFailure? Failure { get; }
+            public Attempt(HttpResponseData response)
+            {
+                Response = response;
+                Failure = null;
+            }
+            public Attempt(RemoteFailure failure)
+            {
+                Response = null;
+                Failure = failure;
+            }
+            public HttpResponseData? Response
+            {
+                get;
+            }
+            public RemoteFailure? Failure
+            {
+                get;
+            }
         }
     }
 }

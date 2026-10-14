@@ -130,7 +130,11 @@ public sealed class SafeAppLogTests
         var visited = 0;
         IEnumerable<KeyValuePair<string, object?>> Infinite()
         {
-            while (true) { visited++; yield return new(new string('x', 1000), 1); }
+            while (true)
+            {
+                visited++;
+                yield return new(new string('x', 1000), 1);
+            }
         }
         new SafeAppLog(sink, Context()).Write(AppLogLevel.Information, "Sync", "Done", Infinite);
         Assert.Equal(SafeAppLog.MaximumFields, visited);
@@ -143,7 +147,8 @@ public sealed class SafeAppLogTests
         var sink = new CollectingSink();
         var log = new SafeAppLog(sink, Context());
         var fields = new Dictionary<string, object?>();
-        for (var i = 0; i < 100; i++) fields.Add("field" + i, i);
+        for (var i = 0; i < 100; i++)
+            fields.Add("field" + i, i);
         log.Write(AppLogLevel.Debug, "Sync", "Done", () => fields);
         Assert.Equal(SafeAppLog.MaximumFields, Assert.Single(sink.Records).Fields.Count);
         log.Write((AppLogLevel)99, "Sync", "Done", () => throw new Exception());

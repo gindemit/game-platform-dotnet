@@ -13,7 +13,10 @@ using GamePlatform.Storage.Sqlite.Executor;
 
 namespace GamePlatform.Storage.Sqlite.Sync
 {
-    internal enum SyncCheckpoint { PageStaged, BeforeBootstrapInstall, BootstrapInstalled, BeforePullCommit, BeforeDemotionCommit }
+    internal enum SyncCheckpoint
+    {
+        PageStaged, BeforeBootstrapInstall, BootstrapInstalled, BeforePullCommit, BeforeDemotionCommit
+    }
 
     public sealed class SqlitePrivateSyncStore : IPrivateSyncStore
     {
@@ -47,14 +50,16 @@ namespace GamePlatform.Storage.Sqlite.Sync
             this.projector = projector ?? throw new ArgumentNullException(nameof(projector));
             this.rebuildOverlays = rebuildOverlays ?? throw new ArgumentNullException(nameof(rebuildOverlays));
             this.scope = scope;
-            if (!database.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The sync scope does not match the database.");
+            if (!database.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The sync scope does not match the database.");
             this.checkpoint = checkpoint;
         }
 
         public Task<BootstrapProgress?> GetBootstrapProgressAsync(CancellationToken token) => database.ExecuteAsync(scope, t =>
         {
             var s = (SqliteTransactionSession)t;
-            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1") == 0) return null;
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1") == 0)
+                return null;
             return new BootstrapProgress(
                 new ClientStreamId(Guid.Parse(s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1"))),
                 s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1"),
@@ -67,7 +72,9 @@ namespace GamePlatform.Storage.Sqlite.Sync
 
         public Task BeginBootstrapAsync(BootstrapBoundary start, CancellationToken token)
         {
-            if (start == null) throw new ArgumentNullException(nameof(start)); ValidateManifest(start.RequiredCollections);
+            if (start == null)
+                throw new ArgumentNullException(nameof(start));
+            ValidateManifest(start.RequiredCollections);
             return database.ExecuteAsync(scope, t =>
             {
                 var s = (SqliteTransactionSession)t;
@@ -95,7 +102,9 @@ namespace GamePlatform.Storage.Sqlite.Sync
 
         public Task StageBootstrapPageAsync(StagedBootstrapPage page, CancellationToken token)
         {
-            if (page == null) throw new ArgumentNullException(nameof(page)); ValidateMutations(page.Entities, true);
+            if (page == null)
+                throw new ArgumentNullException(nameof(page));
+            ValidateMutations(page.Entities, true);
             return database.ExecuteAsync(scope, t =>
             {
                 var s = (SqliteTransactionSession)t;
@@ -107,7 +116,8 @@ namespace GamePlatform.Storage.Sqlite.Sync
                     !Equal(pageToken, page.CopyRequestedPageToken()) ||
                     page.CommittedThrough != s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1"))
                     throw new StorageException(StorageFailure.IdentityConflict, "The snapshot page is outside the staged boundary.");
-                foreach (var entity in page.Entities) UpsertStaged(s, entity);
+                foreach (var entity in page.Entities)
+                    UpsertStaged(s, entity);
                 var next = page.CopyNextPageToken();
                 var cursor = page.CopyInitialPullCursor();
                 s.Execute("INSERT INTO gp_bootstrap_pages(page_token,next_page_token,final_cursor) VALUES (?,?,?)", pageToken, next, cursor);
@@ -140,7 +150,9 @@ namespace GamePlatform.Storage.Sqlite.Sync
 
         public Task ApplyPullPageAsync(StoredPullPage page, CancellationToken token)
         {
-            if (page == null) throw new ArgumentNullException(nameof(page)); ValidateGroups(page);
+            if (page == null)
+                throw new ArgumentNullException(nameof(page));
+            ValidateGroups(page);
             return database.ExecuteAsync(scope, t =>
             {
                 var s = (SqliteTransactionSession)t;
@@ -156,16 +168,21 @@ namespace GamePlatform.Storage.Sqlite.Sync
                 {
                     if (group.Revision <= current)
                         throw new StorageException(StorageFailure.IdentityConflict, "A pull group is not after the durable checkpoint.");
-                    foreach (var change in group.Changes) Apply(s, change);
-                    if (projector is IObservedPrivateSyncProjectionProjector observed) observed.ProjectConfirmedGroup(s, group, observation);
-                    else projector.ProjectConfirmedGroup(s, group);
+                    foreach (var change in group.Changes)
+                        Apply(s, change);
+                    if (projector is IObservedPrivateSyncProjectionProjector observed)
+                        observed.ProjectConfirmedGroup(s, group, observation);
+                    else
+                        projector.ProjectConfirmedGroup(s, group);
                 }
                 rebuildOverlays(s);
                 checkpoint?.Invoke(SyncCheckpoint.BeforePullCommit);
                 var cursor = page.CopyNextCursor();
                 var applied = page.Groups.Count == 0 ? current : page.Groups[page.Groups.Count - 1].Revision;
-                if (!page.HasMore) applied = page.CommittedThrough;
-                if (applied < current) throw new StorageException(StorageFailure.IdentityConflict, "The pull checkpoint would regress.");
+                if (!page.HasMore)
+                    applied = page.CommittedThrough;
+                if (applied < current)
+                    throw new StorageException(StorageFailure.IdentityConflict, "The pull checkpoint would regress.");
                 s.Execute(
                     "UPDATE gp_sync_state SET pull_cursor=?, committed_through=?, fixed_through=? WHERE singleton=1",
                     cursor,
@@ -217,8 +234,10 @@ namespace GamePlatform.Storage.Sqlite.Sync
 
         private static bool TryReadRegressedBoundary(SqliteTransactionSession s, out long serverFinal, out long localFinal, out string stream)
         {
-            serverFinal = localFinal = 0; stream = string.Empty;
-            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1 AND stream_state='active'") != 1) return false;
+            serverFinal = localFinal = 0;
+            stream = string.Empty;
+            if (s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_state WHERE singleton=1 AND stream_state='active'") != 1)
+                return false;
             stream = s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");
             EnsureStream(s, new ClientStreamId(Guid.Parse(stream)));
             serverFinal = s.ExecuteScalar<long>("SELECT finalized_through FROM gp_bootstrap_state WHERE singleton=1");
@@ -235,7 +254,8 @@ namespace GamePlatform.Storage.Sqlite.Sync
             var through = s.ExecuteScalar<long>("SELECT committed_through FROM gp_bootstrap_state WHERE singleton=1");
             if (projector is IObservedPrivateSyncProjectionProjector observed)
                 observed.ReplaceConfirmedSnapshot(s, snapshot, new PrivateSyncProjectionObservation(through, serverTime));
-            else projector.ReplaceConfirmedSnapshot(s, snapshot);
+            else
+                projector.ReplaceConfirmedSnapshot(s, snapshot);
             var stream = s.ExecuteScalar<string>("SELECT client_stream_id FROM gp_bootstrap_state WHERE singleton=1");
             var streamState = s.ExecuteScalar<string>("SELECT stream_state FROM gp_bootstrap_state WHERE singleton=1");
             var visibility = s.ExecuteScalar<long>("SELECT visibility_generation FROM gp_bootstrap_state WHERE singleton=1");
@@ -280,7 +300,8 @@ namespace GamePlatform.Storage.Sqlite.Sync
                 throw new StorageException(StorageFailure.StreamRecoveryRequired, "Local terminal state is ahead of the authoritative boundary.");
             if (state == "active")
             {
-                if (serverFinal == long.MaxValue) throw new StorageException(StorageFailure.SequenceExhausted, "An exhausted stream cannot accept commands.");
+                if (serverFinal == long.MaxValue)
+                    throw new StorageException(StorageFailure.SequenceExhausted, "An exhausted stream cannot accept commands.");
                 var serverNext = s.ExecuteScalar<long>("SELECT authoritative_next_sequence FROM gp_bootstrap_state WHERE singleton=1");
                 if (serverNext != serverFinal + 1 || localNext < serverNext)
                     throw new StorageException(StorageFailure.StreamRecoveryRequired, "The active stream sequence boundary is inconsistent.");
@@ -290,9 +311,11 @@ namespace GamePlatform.Storage.Sqlite.Sync
         }
         private static void UpsertStaged(SqliteTransactionSession s, StoredProjectionMutation e)
         {
-            if (e.Kind != StoredProjectionKind.Upsert) throw new StorageException(StorageFailure.Constraint, "Snapshot entities must be upserts.");
+            if (e.Kind != StoredProjectionKind.Upsert)
+                throw new StorageException(StorageFailure.Constraint, "Snapshot entities must be upserts.");
             var count = s.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_bootstrap_entities WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
-            if (count == 0) s.Execute("INSERT INTO gp_bootstrap_entities VALUES (?,?,?,?)", e.Collection, e.EntityKey, e.Revision, e.CopyPayload());
+            if (count == 0)
+                s.Execute("INSERT INTO gp_bootstrap_entities VALUES (?,?,?,?)", e.Collection, e.EntityKey, e.Revision, e.CopyPayload());
             else
             {
                 var revision = s.ExecuteScalar<long>(
@@ -309,7 +332,8 @@ namespace GamePlatform.Storage.Sqlite.Sync
             if (count != 0)
             {
                 var revision = s.ExecuteScalar<long>("SELECT entity_revision FROM gp_confirmed_projection WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey);
-                if (e.Revision < revision) return;
+                if (e.Revision < revision)
+                    return;
                 if (e.Revision == revision)
                 {
                     var state = s.ExecuteScalar<string>(
@@ -319,7 +343,8 @@ namespace GamePlatform.Storage.Sqlite.Sync
                     var same = state == expected && (e.Kind != StoredProjectionKind.Upsert || Equal(
                         s.ExecuteScalar<byte[]>("SELECT payload FROM gp_confirmed_projection WHERE collection=? AND entity_key=?", e.Collection, e.EntityKey),
                         payload));
-                    if (!same) throw new StorageException(StorageFailure.IdentityConflict, "An entity revision changed meaning.");
+                    if (!same)
+                        throw new StorageException(StorageFailure.IdentityConflict, "An entity revision changed meaning.");
                     return;
                 }
                 s.Execute(
@@ -365,19 +390,23 @@ namespace GamePlatform.Storage.Sqlite.Sync
             {
                 if (!Required.Contains(value, StringComparer.Ordinal))
                     throw new StorageException(StorageFailure.Constraint, "An unknown required collection was declared.");
-                if (!seen.Add(value)) throw new StorageException(StorageFailure.Constraint, "A collection was declared twice.");
+                if (!seen.Add(value))
+                    throw new StorageException(StorageFailure.Constraint, "A collection was declared twice.");
             }
             foreach (var required in Required)
-                if (!seen.Contains(required)) throw new StorageException(StorageFailure.Constraint, "The bootstrap manifest is incomplete.");
+                if (!seen.Contains(required))
+                    throw new StorageException(StorageFailure.Constraint, "The bootstrap manifest is incomplete.");
         }
         private static void ValidateMutations(IReadOnlyList<StoredProjectionMutation> values, bool snapshot)
         {
             long bytes = 0;
-            if (values.Count > 1024) throw new StorageException(StorageFailure.Capacity, "A projection page is oversized.");
+            if (values.Count > 1024)
+                throw new StorageException(StorageFailure.Capacity, "A projection page is oversized.");
             foreach (var value in values)
             {
                 bytes = checked(bytes + value.CopyPayload().Length);
-                if (bytes > 262_144) throw new StorageException(StorageFailure.Capacity, "A projection page is oversized.");
+                if (bytes > 262_144)
+                    throw new StorageException(StorageFailure.Capacity, "A projection page is oversized.");
                 var additiveInvalidation = !snapshot && (value.Collection == "teams" || value.Collection == "friends") && value.Kind == StoredProjectionKind.Invalidation && value.CopyPayload().Length == 0 && Guid.TryParseExact(value.EntityKey, "D", out var playerId) && playerId != Guid.Empty;
                 if (!(Required.Contains(value.Collection, StringComparer.Ordinal) || additiveInvalidation) ||
                     !Enum.IsDefined(typeof(StoredProjectionKind), value.Kind) ||
@@ -400,27 +429,44 @@ namespace GamePlatform.Storage.Sqlite.Sync
         }
         private static bool Equal(byte[] a, byte[] b)
         {
-            if (a == null || b == null || a.Length != b.Length) return false;
+            if (a == null || b == null || a.Length != b.Length)
+                return false;
             var d = 0;
-            for (var i = 0; i < a.Length; i++) d |= a[i] ^ b[i];
+            for (var i = 0; i < a.Length; i++)
+                d |= a[i] ^ b[i];
             return d == 0;
         }
         private sealed class StagedProjectionRow
         {
             public string Collection { get; set; } = string.Empty;
             public string EntityKey { get; set; } = string.Empty;
-            public long EntityRevision { get; set; }
+            public long EntityRevision
+            {
+                get; set;
+            }
             public byte[] Payload { get; set; } = Array.Empty<byte>();
         }
         private sealed class TerminalCommandRow
         {
             public string OperationId { get; set; } = string.Empty;
             public string InstallationId { get; set; } = string.Empty;
-            public long Sequence { get; set; }
+            public long Sequence
+            {
+                get; set;
+            }
             public string OperationKind { get; set; } = string.Empty;
-            public int SchemaVersion { get; set; }
-            public int FingerprintVersion { get; set; }
-            public long ClientCreatedAt { get; set; }
+            public int SchemaVersion
+            {
+                get; set;
+            }
+            public int FingerprintVersion
+            {
+                get; set;
+            }
+            public long ClientCreatedAt
+            {
+                get; set;
+            }
             public byte[] SemanticBody { get; set; } = Array.Empty<byte>();
             public byte[] Fingerprint { get; set; } = Array.Empty<byte>();
             public string DeliveryState { get; set; } = string.Empty;

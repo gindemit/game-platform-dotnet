@@ -29,7 +29,8 @@ namespace GamePlatform.Storage.Sqlite.Recovery
                 !UuidIdentity.IsValid(owner.InstallationId) || !owner.StreamId.IsValid)
                 throw new ArgumentException("An issued account directory entry is required.", nameof(issuedEntry));
             scope = new AccountDirectoryScope(owner.Principal.BackendNamespace, owner.AppId);
-            if (!database.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The recovery journal owner does not match its directory database.");
+            if (!database.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The recovery journal owner does not match its directory database.");
         }
 
         public Task<CommandStreamRecoveryRecord?> LoadAsync(CancellationToken cancellationToken) =>
@@ -67,14 +68,18 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             database.ExecuteAsync(scope, connection => InCallerTransaction(connection, cancellationToken, () =>
             {
                 var record = RequireRecord(connection, recoveryId);
-                if (returnedRecoveryId != recoveryId) throw Conflict("The server recovery result ID does not match the durable request.");
+                if (returnedRecoveryId != recoveryId)
+                    throw Conflict("The server recovery result ID does not match the durable request.");
                 ValidateRemoteResult(record.Request, priorStreamId, successorStreamId, priorFinalizedThrough, nextSequence);
-                if (record.Phase >= CommandStreamRecoveryPhase.RemoteCommitted) return record;
-                if (record.Phase != CommandStreamRecoveryPhase.Prepared) throw Conflict("The recovery journal is in an invalid phase.");
+                if (record.Phase >= CommandStreamRecoveryPhase.RemoteCommitted)
+                    return record;
+                if (record.Phase != CommandStreamRecoveryPhase.Prepared)
+                    throw Conflict("The recovery journal is in an invalid phase.");
                 EnsureDirectory(connection, record.Request.PriorStreamId, requireOwnerStream: true);
                 var updated = connection.Execute("UPDATE gp_command_stream_recovery SET phase=2,remote_next_sequence=1,remote_prior_finalized_through=? WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND recovery_id=? AND phase=1",
                     priorFinalizedThrough, scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, recoveryId.ToString("D"));
-                if (updated != 1) throw Conflict("The recovery journal changed while recording the remote result.");
+                if (updated != 1)
+                    throw Conflict("The recovery journal changed while recording the remote result.");
                 return ReadRecord(connection, recoveryId, true)!;
             }), cancellationToken);
 
@@ -83,11 +88,14 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             {
                 var record = RequireRecord(connection, recoveryId);
                 EnsureDirectory(connection, record.Request.PriorStreamId, requireOwnerStream: true);
-                if (record.Phase == CommandStreamRecoveryPhase.Expired) return record;
-                if (record.Phase != CommandStreamRecoveryPhase.Prepared) throw Conflict("Only an uncommitted prepared recovery may expire.");
+                if (record.Phase == CommandStreamRecoveryPhase.Expired)
+                    return record;
+                if (record.Phase != CommandStreamRecoveryPhase.Prepared)
+                    throw Conflict("Only an uncommitted prepared recovery may expire.");
                 var updated = connection.Execute("UPDATE gp_command_stream_recovery SET phase=0 WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND recovery_id=? AND phase=1",
                     scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, recoveryId.ToString("D"));
-                if (updated != 1) throw Conflict("The recovery journal changed while recording expiry.");
+                if (updated != 1)
+                    throw Conflict("The recovery journal changed while recording expiry.");
                 return ReadRecord(connection, recoveryId, true)!;
             }), cancellationToken);
 
@@ -100,15 +108,18 @@ namespace GamePlatform.Storage.Sqlite.Recovery
                     EnsureDirectory(connection, record.Request.SuccessorStreamId, requireOwnerStream: true);
                     return record;
                 }
-                if (record.Phase != CommandStreamRecoveryPhase.RemoteCommitted) throw Conflict("The remote recovery result is not durable yet.");
+                if (record.Phase != CommandStreamRecoveryPhase.RemoteCommitted)
+                    throw Conflict("The remote recovery result is not durable yet.");
                 EnsureDirectory(connection, record.Request.PriorStreamId, requireOwnerStream: true);
                 var updatedDirectory = connection.Execute("UPDATE gp_account_principal_directory SET client_stream_id=? WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND platform_user_id=? AND installation_id=? AND client_stream_id=?",
                     record.Request.SuccessorStreamId.ToString(), scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject,
                     owner.AccountId!.Value.ToString(), owner.InstallationId.ToString("D"), record.Request.PriorStreamId.ToString());
-                if (updatedDirectory != 1) throw Conflict("The issued account directory changed before successor adoption.");
+                if (updatedDirectory != 1)
+                    throw Conflict("The issued account directory changed before successor adoption.");
                 var updatedJournal = connection.Execute("UPDATE gp_command_stream_recovery SET phase=3 WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND recovery_id=? AND phase=2",
                     scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, recoveryId.ToString("D"));
-                if (updatedJournal != 1) throw Conflict("The recovery journal changed during successor adoption.");
+                if (updatedJournal != 1)
+                    throw Conflict("The recovery journal changed during successor adoption.");
                 return ReadRecord(connection, recoveryId, true)!;
             }), cancellationToken);
 
@@ -117,11 +128,14 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             {
                 var record = RequireRecord(connection, recoveryId);
                 EnsureDirectory(connection, record.Request.SuccessorStreamId, requireOwnerStream: true);
-                if (record.Phase == CommandStreamRecoveryPhase.BootstrapComplete) return record;
-                if (record.Phase != CommandStreamRecoveryPhase.Adopted) throw Conflict("The successor has not been adopted.");
+                if (record.Phase == CommandStreamRecoveryPhase.BootstrapComplete)
+                    return record;
+                if (record.Phase != CommandStreamRecoveryPhase.Adopted)
+                    throw Conflict("The successor has not been adopted.");
                 var updated = connection.Execute("UPDATE gp_command_stream_recovery SET phase=4 WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND recovery_id=? AND phase=3",
                     scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, recoveryId.ToString("D"));
-                if (updated != 1) throw Conflict("The recovery journal changed while completing bootstrap.");
+                if (updated != 1)
+                    throw Conflict("The recovery journal changed while completing bootstrap.");
                 return ReadRecord(connection, recoveryId, true)!;
             }), cancellationToken);
 
@@ -130,7 +144,8 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             var record = ReadLatest(connection);
             if (record == null)
             {
-                if (checkDirectory) EnsureDirectory(connection, owner.StreamId, requireOwnerStream: true);
+                if (checkDirectory)
+                    EnsureDirectory(connection, owner.StreamId, requireOwnerStream: true);
                 return null;
             }
             if (checkDirectory)
@@ -145,8 +160,10 @@ namespace GamePlatform.Storage.Sqlite.Recovery
         {
             var rows = connection.Query<JournalRow>("SELECT platform_user_id AS AccountId,installation_id AS InstallationId,prior_stream_id AS PriorStreamId,successor_stream_id AS SuccessorStreamId,recovery_id AS RecoveryId,reason AS Reason,inspection_token AS InspectionToken,expected_finalized_through AS ExpectedFinalizedThrough,phase AS Phase,remote_next_sequence AS RemoteNextSequence,remote_prior_finalized_through AS RemotePriorFinalizedThrough FROM gp_command_stream_recovery WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND recovery_id=?",
                 scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, recoveryId.ToString("D"));
-            if (rows.Count == 0) return null;
-            if (rows.Count != 1) throw new StorageException(StorageFailure.Corrupt, "The recovery journal contains duplicate recovery records.");
+            if (rows.Count == 0)
+                return null;
+            if (rows.Count != 1)
+                throw new StorageException(StorageFailure.Corrupt, "The recovery journal contains duplicate recovery records.");
             var row = rows[0];
             try
             {
@@ -155,7 +172,8 @@ namespace GamePlatform.Storage.Sqlite.Recovery
                 var request = new CommandStreamRecoveryRequest(owner.Principal, owner.AppId, owner.AccountId!.Value, owner.InstallationId,
                     new ClientStreamId(Guid.Parse(row.PriorStreamId)), new ClientStreamId(Guid.Parse(row.SuccessorStreamId)), Guid.Parse(row.RecoveryId),
                     row.Reason, row.InspectionToken, row.ExpectedFinalizedThrough);
-                if (row.Phase < 0 || row.Phase > 4) throw new StorageException(StorageFailure.Corrupt, "The recovery journal phase is invalid.");
+                if (row.Phase < 0 || row.Phase > 4)
+                    throw new StorageException(StorageFailure.Corrupt, "The recovery journal phase is invalid.");
                 var phase = (CommandStreamRecoveryPhase)row.Phase;
                 if ((phase <= CommandStreamRecoveryPhase.Prepared && (row.RemoteNextSequence.HasValue || row.RemotePriorFinalizedThrough.HasValue)) ||
                     (phase >= CommandStreamRecoveryPhase.RemoteCommitted && (row.RemoteNextSequence != 1 || row.RemotePriorFinalizedThrough != request.ExpectedFinalizedThrough)))
@@ -170,14 +188,17 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             }
             catch (StorageException) { throw; }
             catch (Exception error) when (error is ArgumentException || error is FormatException)
-            { throw new StorageException(StorageFailure.Corrupt, "The recovery journal identity is invalid.", error); }
+            {
+                throw new StorageException(StorageFailure.Corrupt, "The recovery journal identity is invalid.", error);
+            }
         }
 
         private CommandStreamRecoveryRecord? ReadLatest(SQLiteConnection connection)
         {
             var currentStream = connection.ExecuteScalar<string>("SELECT client_stream_id FROM gp_account_principal_directory WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND platform_user_id=? AND installation_id=?",
                 scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, owner.AccountId!.Value.ToString(), owner.InstallationId.ToString("D"));
-            if (string.IsNullOrEmpty(currentStream)) return null;
+            if (string.IsNullOrEmpty(currentStream))
+                return null;
             var recoveryId = connection.ExecuteScalar<string>("SELECT recovery_id FROM gp_command_stream_recovery WHERE backend_namespace=? AND app_id=? AND issuer=? AND subject=? AND (phase<4 OR successor_stream_id=?) ORDER BY rowid DESC LIMIT 1",
                 scope.BackendNamespace.Value, owner.AppId.ToString(), owner.Principal.Issuer, owner.Principal.Subject, currentStream);
             return string.IsNullOrEmpty(recoveryId) ? null : ReadRecord(connection, Guid.Parse(recoveryId), false);
@@ -185,9 +206,11 @@ namespace GamePlatform.Storage.Sqlite.Recovery
 
         private CommandStreamRecoveryRecord RequireRecord(SQLiteConnection connection, Guid recoveryId)
         {
-            if (recoveryId == Guid.Empty || !UuidIdentity.IsValid(recoveryId, false)) throw new ArgumentException("A UUIDv7 recovery ID is required.", nameof(recoveryId));
+            if (recoveryId == Guid.Empty || !UuidIdentity.IsValid(recoveryId, false))
+                throw new ArgumentException("A UUIDv7 recovery ID is required.", nameof(recoveryId));
             var record = ReadRecord(connection, recoveryId, true);
-            if (record == null || record.Request.RecoveryId != recoveryId) throw Conflict("The recovery request does not match the durable journal.");
+            if (record == null || record.Request.RecoveryId != recoveryId)
+                throw Conflict("The recovery request does not match the durable journal.");
             return record;
         }
 
@@ -204,7 +227,8 @@ namespace GamePlatform.Storage.Sqlite.Recovery
 
         private void ValidateRequestOwner(CommandStreamRecoveryRequest request)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             if (!request.Principal.Equals(owner.Principal) || request.AppId != owner.AppId || request.AccountId != owner.AccountId ||
                 request.InstallationId != owner.InstallationId)
                 throw new StorageException(StorageFailure.InvalidOwner, "The recovery request does not belong to the issued account directory entry.");
@@ -237,11 +261,30 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             public string AccountId { get; set; } = string.Empty; public string InstallationId { get; set; } = string.Empty;
             public string PriorStreamId { get; set; } = string.Empty; public string SuccessorStreamId { get; set; } = string.Empty;
             public string RecoveryId { get; set; } = string.Empty; public string Reason { get; set; } = string.Empty;
-            public string InspectionToken { get; set; } = string.Empty; public long ExpectedFinalizedThrough { get; set; }
-            public int Phase { get; set; }
-            public long? RemoteNextSequence { get; set; }
-            public long? RemotePriorFinalizedThrough { get; set; }
+            public string InspectionToken { get; set; } = string.Empty; public long ExpectedFinalizedThrough
+            {
+                get; set;
+            }
+            public int Phase
+            {
+                get; set;
+            }
+            public long? RemoteNextSequence
+            {
+                get; set;
+            }
+            public long? RemotePriorFinalizedThrough
+            {
+                get; set;
+            }
         }
-        private sealed class DirectoryRow { public string InstallationId { get; set; } = string.Empty; public string StreamId { get; set; } = string.Empty; public string? AccountId { get; set; } public string MembershipStatus { get; set; } = string.Empty; }
+        private sealed class DirectoryRow
+        {
+            public string InstallationId { get; set; } = string.Empty; public string StreamId { get; set; } = string.Empty; public string? AccountId
+            {
+                get; set;
+            }
+            public string MembershipStatus { get; set; } = string.Empty;
+        }
     }
 }

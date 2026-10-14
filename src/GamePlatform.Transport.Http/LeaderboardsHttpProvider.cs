@@ -30,23 +30,29 @@ namespace GamePlatform.Transport.Http
         public LeaderboardsHttpProvider(AppId appId, PlatformUserId accountId, BackendHttpConfiguration configuration,
             IHttpExecutor executor, IAuthSession auth, AuthRefreshCoordinator refresh)
         {
-            if (!appId.IsValid || !accountId.IsValid) throw new ArgumentException("Valid authenticated app/account identities are required.");
-            this.appId = appId; this.accountId = accountId;
+            if (!appId.IsValid || !accountId.IsValid)
+                throw new ArgumentException("Valid authenticated app/account identities are required.");
+            this.appId = appId;
+            this.accountId = accountId;
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.executor = executor ?? throw new ArgumentNullException(nameof(executor));
             this.auth = auth ?? throw new ArgumentNullException(nameof(auth));
             this.refresh = refresh ?? throw new ArgumentNullException(nameof(refresh));
-            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256) throw new ArgumentException("Invalid auth session key.", nameof(auth));
+            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256)
+                throw new ArgumentException("Invalid auth session key.", nameof(auth));
         }
 
         public Task<RemoteResult<LeaderboardsResponse>> QueryAsync(LeaderboardsQuery query, CancellationToken cancellationToken)
         {
-            if (query == null) throw new ArgumentNullException(nameof(query));
-            if (query.Scope == "friends") return SendAsync("friends/query", friendsCodec.EncodeRankingQuery(query.BoardId, query.Limit, query.Cursor), false,
+            if (query == null)
+                throw new ArgumentNullException(nameof(query));
+            if (query.Scope == "friends")
+                return SendAsync("friends/query", friendsCodec.EncodeRankingQuery(query.BoardId, query.Limit, query.Cursor), false,
                 bytes =>
                 {
                     var value = LeaderboardsModelMapper.ToDomain(friendsCodec.DecodeRankingResponse(bytes));
-                    if (value.AppId != appId.Value || value.AccountId != accountId.Value || value.BoardId != query.BoardId || value.Entries.Count > query.Limit) throw new ArgumentException("Response friends context mismatch.");
+                    if (value.AppId != appId.Value || value.AccountId != accountId.Value || value.BoardId != query.BoardId || value.Entries.Count > query.Limit)
+                        throw new ArgumentException("Response friends context mismatch.");
                     return value;
                 }, cancellationToken);
             return SendAsync("query", codec.EncodeQuery(LeaderboardsModelMapper.ToWire(query)), false,
@@ -60,7 +66,8 @@ namespace GamePlatform.Transport.Http
         }
         public Task<RemoteResult<LeaderboardsCountryResponse>> SetCountryAsync(LeaderboardsCountryCommand command, CancellationToken cancellationToken)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
             return SendAsync("country", codec.EncodeCountry(LeaderboardsModelMapper.ToWire(command)), true,
                 bytes =>
                 {
@@ -76,22 +83,32 @@ namespace GamePlatform.Transport.Http
         {
             cancellationToken.ThrowIfCancellationRequested();
             AccessTokenSnapshot token;
-            try { token = await auth.GetAsync(cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                token = await auth.GetAsync(cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return Failure<T>(RemoteFailureKind.Cancelled); }
             catch { return Failure<T>(RemoteFailureKind.Authentication); }
             var attempt = await SendOnceAsync(route, body, token, mutation, cancellationToken).ConfigureAwait(false);
-            if (attempt.Failure.HasValue) return RemoteResult<T>.Failed(attempt.Failure.Value);
+            if (attempt.Failure.HasValue)
+                return RemoteResult<T>.Failed(attempt.Failure.Value);
             if (attempt.Response!.StatusCode == 401)
             {
-                try { token = await refresh.RefreshAsync(auth, accountId, token.Generation, cancellationToken).ConfigureAwait(false); }
+                try
+                {
+                    token = await refresh.RefreshAsync(auth, accountId, token.Generation, cancellationToken).ConfigureAwait(false);
+                }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return Failure<T>(RemoteFailureKind.Cancelled); }
                 catch { return Failure<T>(RemoteFailureKind.Authentication, 401); }
                 attempt = await SendOnceAsync(route, body, token, mutation, cancellationToken).ConfigureAwait(false);
-                if (attempt.Failure.HasValue) return RemoteResult<T>.Failed(attempt.Failure.Value);
+                if (attempt.Failure.HasValue)
+                    return RemoteResult<T>.Failed(attempt.Failure.Value);
             }
             var response = attempt.Response!;
-            if (response.StatusCode != 200) throw DecodeFailure(response);
-            if (!ValidResponse(response)) return Failure<T>(RemoteFailureKind.Protocol, response.StatusCode);
+            if (response.StatusCode != 200)
+                throw DecodeFailure(response);
+            if (!ValidResponse(response))
+                return Failure<T>(RemoteFailureKind.Protocol, response.StatusCode);
             try
             {
                 var value = decode(response.CopyBody());
@@ -114,9 +131,13 @@ namespace GamePlatform.Transport.Http
                 return new Attempt(response);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            { return new Attempt(new RemoteFailure(mutation ? RemoteFailureKind.OutcomeUncertain : RemoteFailureKind.Cancelled)); }
+            {
+                return new Attempt(new RemoteFailure(mutation ? RemoteFailureKind.OutcomeUncertain : RemoteFailureKind.Cancelled));
+            }
             catch (HttpExecutionException error)
-            { return new Attempt(new RemoteFailure(error.Certainty == HttpDeliveryCertainty.NotSent ? RemoteFailureKind.NotSent : mutation ? RemoteFailureKind.OutcomeUncertain : RemoteFailureKind.Dependency)); }
+            {
+                return new Attempt(new RemoteFailure(error.Certainty == HttpDeliveryCertainty.NotSent ? RemoteFailureKind.NotSent : mutation ? RemoteFailureKind.OutcomeUncertain : RemoteFailureKind.Dependency));
+            }
             catch { return new Attempt(new RemoteFailure(mutation ? RemoteFailureKind.OutcomeUncertain : RemoteFailureKind.Dependency)); }
         }
 
@@ -127,7 +148,8 @@ namespace GamePlatform.Transport.Http
 
         private LeaderboardsOperationException DecodeFailure(HttpResponseData response)
         {
-            if (!ValidResponse(response)) return new LeaderboardsOperationException(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode), "leaderboards_protocol");
+            if (!ValidResponse(response))
+                return new LeaderboardsOperationException(new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode), "leaderboards_protocol");
             var kind = response.StatusCode == 401 ? RemoteFailureKind.Authentication : response.StatusCode == 403 ? RemoteFailureKind.Authorization :
                 response.StatusCode == 409 ? RemoteFailureKind.Conflict : response.StatusCode == 429 ? RemoteFailureKind.RateLimited :
                 response.StatusCode == 404 ? RemoteFailureKind.Unavailable : response.StatusCode >= 500 ? RemoteFailureKind.Dependency : RemoteFailureKind.Validation;
@@ -140,7 +162,8 @@ namespace GamePlatform.Transport.Http
                 try
                 {
                     var error = errors.Decode<ErrorResponse>(response.CopyBody());
-                    if (error.CorrelationId != response.Headers["X-Correlation-Id"]) return new LeaderboardsOperationException(new RemoteFailure(RemoteFailureKind.Protocol), "leaderboards_protocol");
+                    if (error.CorrelationId != response.Headers["X-Correlation-Id"])
+                        return new LeaderboardsOperationException(new RemoteFailure(RemoteFailureKind.Protocol), "leaderboards_protocol");
                     code = error.Error.Code;
                 }
                 catch { return new LeaderboardsOperationException(new RemoteFailure(RemoteFailureKind.Protocol), "leaderboards_protocol"); }
@@ -150,10 +173,24 @@ namespace GamePlatform.Transport.Http
         private static RemoteResult<T> Failure<T>(RemoteFailureKind kind, int? status = null) where T : class => RemoteResult<T>.Failed(new RemoteFailure(kind, status));
         private readonly struct Attempt
         {
-            public Attempt(HttpResponseData response) { Response = response; Failure = null; }
-            public Attempt(RemoteFailure failure) { Response = null; Failure = failure; }
-            public HttpResponseData? Response { get; }
-            public RemoteFailure? Failure { get; }
+            public Attempt(HttpResponseData response)
+            {
+                Response = response;
+                Failure = null;
+            }
+            public Attempt(RemoteFailure failure)
+            {
+                Response = null;
+                Failure = failure;
+            }
+            public HttpResponseData? Response
+            {
+                get;
+            }
+            public RemoteFailure? Failure
+            {
+                get;
+            }
         }
     }
 }

@@ -14,7 +14,8 @@ namespace GamePlatform.Configuration
         public static ConfigurationDefinition Definition(JsonValue root)
         {
             Fields(root, "schema", "app", "environment", "release", "features");
-            if (root["schema"].AsString() != ConfigurationDefinition.Schema) throw new InvalidConfigurationException("schema_unsupported");
+            if (root["schema"].AsString() != ConfigurationDefinition.Schema)
+                throw new InvalidConfigurationException("schema_unsupported");
             var features = new List<FeatureDefinition>();
             foreach (var feature in root["features"].AsArray())
             {
@@ -38,8 +39,11 @@ namespace GamePlatform.Configuration
         private static void Fields(JsonValue value, params string[] names)
         {
             var map = value.AsObject();
-            if (map.Count != names.Length) throw new InvalidConfigurationException("field_set");
-            foreach (string name in names) if (!map.ContainsKey(name)) throw new InvalidConfigurationException("field_missing:" + name);
+            if (map.Count != names.Length)
+                throw new InvalidConfigurationException("field_set");
+            foreach (string name in names)
+                if (!map.ContainsKey(name))
+                    throw new InvalidConfigurationException("field_missing:" + name);
         }
         private static Choice ChoiceValue(JsonValue value)
         {
@@ -60,14 +64,16 @@ namespace GamePlatform.Configuration
                 Fields(value, "kind", "choice");
                 return Outcome.Serve(ChoiceValue(value["choice"]));
             }
-            if (kind != "percentage") throw new InvalidConfigurationException("outcome_unknown");
+            if (kind != "percentage")
+                throw new InvalidConfigurationException("outcome_unknown");
             Fields(value, "kind", "experimentKey", "experimentVersion", "allocationAlgorithm", "allocations");
             var allocations = new List<Allocation>();
             foreach (var allocation in value["allocations"].AsArray())
             {
                 Fields(allocation, "weight", "choice");
                 long weight = allocation["weight"].AsInteger();
-                if (weight < 0 || weight > 100) throw new InvalidConfigurationException("weight_range");
+                if (weight < 0 || weight > 100)
+                    throw new InvalidConfigurationException("weight_range");
                 allocations.Add(new Allocation((int)weight, ChoiceValue(allocation["choice"])));
             }
             return Outcome.Percentage(new ExperimentReference(value["experimentKey"].AsString(), value["experimentVersion"].AsString()), allocations, value["allocationAlgorithm"].AsString());
@@ -80,9 +86,12 @@ namespace GamePlatform.Configuration
             => Compile(definition, expectedApp, expectedEnvironment, null);
         internal static CompiledConfiguration Compile(ConfigurationDefinition definition, string expectedApp, string expectedEnvironment, string? representationSha)
         {
-            if (definition == null) throw new ArgumentNullException(nameof(definition));
-            ConfigurationLimits.String(expectedApp, true); ConfigurationLimits.String(expectedEnvironment, true);
-            if (definition.App != expectedApp || definition.Environment != expectedEnvironment) throw new InvalidConfigurationException("scope_mismatch");
+            if (definition == null)
+                throw new ArgumentNullException(nameof(definition));
+            ConfigurationLimits.String(expectedApp, true);
+            ConfigurationLimits.String(expectedEnvironment, true);
+            if (definition.App != expectedApp || definition.Environment != expectedEnvironment)
+                throw new InvalidConfigurationException("scope_mismatch");
             // Typed constructors validate semantics; canonical traversal applies the same
             // total size/depth/node limits to typed and decoded definitions.
             byte[] bytes = CanonicalJson.Serialize(ToJson(definition));
@@ -90,7 +99,8 @@ namespace GamePlatform.Configuration
         }
         public static JsonValue ToJson(ConfigurationDefinition definition)
         {
-            if (definition == null) throw new ArgumentNullException(nameof(definition));
+            if (definition == null)
+                throw new ArgumentNullException(nameof(definition));
             var features = new List<JsonValue>();
             foreach (var feature in definition.Features)
             {
@@ -109,21 +119,25 @@ namespace GamePlatform.Configuration
         private static JsonValue ChoiceJson(Choice choice)
         {
             var dependencies = new List<JsonValue>();
-            foreach (var dependency in choice.Dependencies) dependencies.Add(Object("key", Text(dependency.Key), "revision", Text(dependency.Revision), "semanticSha", Text(dependency.SemanticSha)));
+            foreach (var dependency in choice.Dependencies)
+                dependencies.Add(Object("key", Text(dependency.Key), "revision", Text(dependency.Revision), "semanticSha", Text(dependency.SemanticSha)));
             return Object("revision", Text(choice.Revision), "semanticSha", Text(choice.SemanticSha), "variant", Text(choice.Variant), "value", choice.Value, "dependencies", JsonValue.Array(dependencies));
         }
         private static JsonValue OutcomeJson(Outcome outcome)
         {
-            if (outcome.Choice != null) return Object("kind", Text("serve"), "choice", ChoiceJson(outcome.Choice));
+            if (outcome.Choice != null)
+                return Object("kind", Text("serve"), "choice", ChoiceJson(outcome.Choice));
             var allocations = new List<JsonValue>();
-            foreach (var allocation in outcome.Allocations) allocations.Add(Object("weight", JsonValue.Integer(allocation.Weight), "choice", ChoiceJson(allocation.Choice)));
+            foreach (var allocation in outcome.Allocations)
+                allocations.Add(Object("weight", JsonValue.Integer(allocation.Weight), "choice", ChoiceJson(allocation.Choice)));
             return Object("kind", Text("percentage"), "experimentKey", Text(outcome.Experiment!.Key), "experimentVersion", Text(outcome.Experiment.Version), "allocationAlgorithm", Text(Outcome.AllocationAlgorithm), "allocations", JsonValue.Array(allocations));
         }
         private static JsonValue Text(string value) => JsonValue.String(value);
         private static JsonValue Object(params object[] fields)
         {
             var pairs = new List<KeyValuePair<string, JsonValue>>();
-            for (int i = 0; i < fields.Length; i += 2) pairs.Add(new KeyValuePair<string, JsonValue>((string)fields[i], (JsonValue)fields[i + 1]));
+            for (int i = 0; i < fields.Length; i += 2)
+                pairs.Add(new KeyValuePair<string, JsonValue>((string)fields[i], (JsonValue)fields[i + 1]));
             return JsonValue.Object(pairs);
         }
     }

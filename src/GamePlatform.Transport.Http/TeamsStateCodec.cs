@@ -20,7 +20,8 @@ namespace GamePlatform.Transport.Http
         }
         public TeamsCommand DecodeCommand(byte[] bytes)
         {
-            var value = codec.DecodeCommand(bytes); var p = value.Payload;
+            var value = codec.DecodeCommand(bytes);
+            var p = value.Payload;
             return new TeamsCommand(new OperationId(value.OperationId), value.Action, value.TeamId, value.ExpectedRevision,
                 new TeamsCommandPayload(p.Name, p.Description, p.BadgeId, p.Language, p.JoinPolicy, p.RequiredLevel, p.Capacity, p.TargetPlayerId,
                     p.InviteId, p.MessageId, p.RequestId, p.Role, p.Text, p.Reason, p.DurationMinutes));

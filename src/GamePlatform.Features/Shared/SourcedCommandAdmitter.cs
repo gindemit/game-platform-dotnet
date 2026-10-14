@@ -24,8 +24,10 @@ namespace GamePlatform.Features.Shared
         internal SourcedCommandAdmitter(ScopedOwnerContext owner, ClientStreamId streamId, string featureNamespace, IDurableFeatureStateStore state,
             IAtomicCommandStore commands, UuidV7Generator ids)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!streamId.IsValid) throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!streamId.IsValid)
+                throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
             this.owner = owner;
             this.streamId = streamId;
             this.featureNamespace = featureNamespace;

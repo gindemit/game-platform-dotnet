@@ -61,7 +61,8 @@ namespace GamePlatform.Tests.Transport
         public async Task SelectedPostRoutesReachBoundedHttpExecutor(string route)
         {
             var handler = new DelegateHandler((request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1 }) }));
-            using var client = new HttpClient(handler); var executor = new BoundedHttpClientExecutor(client, Configuration());
+            using var client = new HttpClient(handler);
+            var executor = new BoundedHttpClientExecutor(client, Configuration());
             Assert.Equal(200, (await executor.SendAsync(Request("v1/apps/" + App + "/" + route), CancellationToken.None)).StatusCode);
             Assert.Equal(1, handler.Calls);
         }
@@ -98,8 +99,10 @@ namespace GamePlatform.Tests.Transport
                 Assert.Equal("Bearer token", request.Headers.Authorization!.ToString());
                 Assert.Equal(ProvisioningHttpProvider.MediaType, request.Content!.Headers.ContentType!.MediaType);
                 var body = await request.Content.ReadAsByteArrayAsync();
-                if (mutation) Assert.Equal(operation, stateCodec.DecodeCommand(body).OperationId.Value);
-                else Assert.Equal(new TeamsMessagePackCodec().EncodeQuery(new GamePlatform.Wire.Contracts.Teams.TeamsQuery("mine")), body);
+                if (mutation)
+                    Assert.Equal(operation, stateCodec.DecodeCommand(body).OperationId.Value);
+                else
+                    Assert.Equal(new TeamsMessagePackCodec().EncodeQuery(new GamePlatform.Wire.Contracts.Teams.TeamsQuery("mine")), body);
                 var value = new TeamsResponse(App.Value, Account.Value, Installation, 1, mutation ? operation : null, 0, null, null,
                     Array.Empty<TeamSummary>(), Array.Empty<TeamMember>(), Array.Empty<TeamMessage>(), Array.Empty<TeamJoinRequest>(),
                     Array.Empty<TeamInvitation>(), Array.Empty<TeamHelpRequest>(), null, mutation ? "teams.leave.accepted" : null);
@@ -193,7 +196,8 @@ namespace GamePlatform.Tests.Transport
             using var client = new HttpClient(handler);
             var executor = new BoundedHttpClientExecutor(client, Configuration());
             var headers = new Dictionary<string, string> { ["Authorization"] = "Bearer token", ["Accept"] = ProvisioningHttpProvider.MediaType };
-            if (method == "POST") headers["Content-Type"] = ProvisioningHttpProvider.MediaType;
+            if (method == "POST")
+                headers["Content-Type"] = ProvisioningHttpProvider.MediaType;
             var request = new HttpRequestData(method, Configuration().Resolve(path).AbsoluteUri, headers, method == "POST" ? new byte[] { 1 } : Array.Empty<byte>());
             var error = await Assert.ThrowsAsync<HttpExecutionException>(() => executor.SendAsync(request, CancellationToken.None));
             Assert.Equal(HttpDeliveryCertainty.NotSent, error.Certainty);
@@ -226,9 +230,11 @@ namespace GamePlatform.Tests.Transport
         {
             var operation = Guid.Parse("0199f9a0-0700-7000-8000-000000000010");
             var handler = new DelegateHandler((request, _) => { Assert.Equal(HttpMethod.Get, request.Method); Assert.Null(request.Content); return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1 }) }); });
-            using var client = new HttpClient(handler); var executor = new BoundedHttpClientExecutor(client, Configuration());
+            using var client = new HttpClient(handler);
+            var executor = new BoundedHttpClientExecutor(client, Configuration());
             var response = await executor.SendAsync(GetRequest("v1/apps/" + App + "/gameplay/reward-receipts/" + operation), CancellationToken.None);
-            Assert.Equal(200, response.StatusCode); Assert.Equal(1, handler.Calls);
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(1, handler.Calls);
         }
 
         [Fact]
@@ -334,8 +340,14 @@ namespace GamePlatform.Tests.Transport
         private sealed class DelegateHandler : HttpMessageHandler
         {
             private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send;
-            public DelegateHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) { this.send = send; }
-            public int Calls { get; private set; }
+            public DelegateHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send)
+            {
+                this.send = send;
+            }
+            public int Calls
+            {
+                get; private set;
+            }
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 Calls++;

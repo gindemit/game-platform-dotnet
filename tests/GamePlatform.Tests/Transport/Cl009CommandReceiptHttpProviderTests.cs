@@ -189,14 +189,19 @@ namespace GamePlatform.Tests.Transport
 
         public void Dispose()
         {
-            foreach (var coordinator in ownedRefresh) coordinator.Dispose();
+            foreach (var coordinator in ownedRefresh)
+                coordinator.Dispose();
         }
 
         private CommandReceiptHttpProvider Provider(IHttpExecutor executor, IWireCodec codec,
             BackendWireRepresentation representation = BackendWireRepresentation.MessagePack,
             AuthSession? auth = null, AuthRefreshCoordinator? refresh = null)
         {
-            if (refresh == null) { refresh = new AuthRefreshCoordinator(); ownedRefresh.Add(refresh); }
+            if (refresh == null)
+            {
+                refresh = new AuthRefreshCoordinator();
+                ownedRefresh.Add(refresh);
+            }
             return new CommandReceiptHttpProvider(App, Account, Installation,
                 new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test")),
                 executor, codec, auth ?? new AuthSession(), refresh, representation);
@@ -211,15 +216,29 @@ namespace GamePlatform.Tests.Transport
         private sealed class StubCodec : IWireCodec
         {
             private readonly object decoded;
-            public StubCodec(object decoded) { this.decoded = decoded; }
-            public bool ThrowOnDecode { get; set; }
-            public int DecodeCount { get; private set; }
+            public StubCodec(object decoded)
+            {
+                this.decoded = decoded;
+            }
+            public bool ThrowOnDecode
+            {
+                get; set;
+            }
+            public int DecodeCount
+            {
+                get; private set;
+            }
             public List<object> Encoded { get; } = new List<object>();
-            public byte[] Encode<T>(T value) { Encoded.Add(value!); return new byte[] { 1, 2, 3 }; }
+            public byte[] Encode<T>(T value)
+            {
+                Encoded.Add(value!);
+                return new byte[] { 1, 2, 3 };
+            }
             public T Decode<T>(byte[] payload)
             {
                 DecodeCount++;
-                if (ThrowOnDecode) throw new InvalidOperationException("malformed");
+                if (ThrowOnDecode)
+                    throw new InvalidOperationException("malformed");
                 return (T)decoded;
             }
         }
@@ -227,7 +246,10 @@ namespace GamePlatform.Tests.Transport
         private sealed class TestOnlyQualificationPortAdapter : IWireCodec
         {
             private readonly DesktopQualificationWireCodec candidate;
-            public TestOnlyQualificationPortAdapter(DesktopQualificationWireCodec candidate) { this.candidate = candidate; }
+            public TestOnlyQualificationPortAdapter(DesktopQualificationWireCodec candidate)
+            {
+                this.candidate = candidate;
+            }
             public byte[] Encode<T>(T value)
             {
                 return value switch
@@ -240,8 +262,10 @@ namespace GamePlatform.Tests.Transport
             }
             public T Decode<T>(byte[] payload)
             {
-                if (typeof(T) == typeof(RecoveryReceiptResponse)) return (T)(object)candidate.Decode<RecoveryReceiptResponse>(payload);
-                if (typeof(T) == typeof(ErrorResponse)) return (T)(object)candidate.Decode<ErrorResponse>(payload);
+                if (typeof(T) == typeof(RecoveryReceiptResponse))
+                    return (T)(object)candidate.Decode<RecoveryReceiptResponse>(payload);
+                if (typeof(T) == typeof(ErrorResponse))
+                    return (T)(object)candidate.Decode<ErrorResponse>(payload);
                 throw new QualificationCodecException("Unsupported test bridge DTO.");
             }
         }
@@ -249,7 +273,10 @@ namespace GamePlatform.Tests.Transport
         private sealed class ScriptedExecutor : IHttpExecutor
         {
             private readonly Func<HttpRequestData, HttpResponseData> send;
-            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send) { this.send = send; }
+            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send)
+            {
+                this.send = send;
+            }
             public List<HttpRequestData> Requests { get; } = new List<HttpRequestData>();
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {

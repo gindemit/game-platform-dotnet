@@ -8,7 +8,8 @@ namespace GamePlatform.Features.Contracts.Snapshots
     {
         public ScopedQueryKey(ScopedOwnerContext owner, string featureNamespace, string canonicalQuery)
         {
-            if (!owner.IsValid) throw new ArgumentException("A valid owner is required.", nameof(owner));
+            if (!owner.IsValid)
+                throw new ArgumentException("A valid owner is required.", nameof(owner));
             Validate(featureNamespace, 128, nameof(featureNamespace));
             Validate(canonicalQuery, 1024, nameof(canonicalQuery));
             Owner = owner;
@@ -16,9 +17,18 @@ namespace GamePlatform.Features.Contracts.Snapshots
             CanonicalQuery = canonicalQuery;
         }
 
-        public ScopedOwnerContext Owner { get; }
-        public string FeatureNamespace { get; }
-        public string CanonicalQuery { get; }
+        public ScopedOwnerContext Owner
+        {
+            get;
+        }
+        public string FeatureNamespace
+        {
+            get;
+        }
+        public string CanonicalQuery
+        {
+            get;
+        }
 
         public bool Equals(ScopedQueryKey other) => Owner == other.Owner &&
             string.Equals(FeatureNamespace, other.FeatureNamespace, StringComparison.Ordinal) &&

@@ -12,20 +12,27 @@ namespace GamePlatform.Features.Presentation.Shared
 
         public PresenterLifetime(ScopedOwnerContext owner, object borrowedService)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
             Owner = owner;
             this.borrowedService = borrowedService ?? throw new ArgumentNullException(nameof(borrowedService));
         }
 
-        public ScopedOwnerContext Owner { get; }
+        public ScopedOwnerContext Owner
+        {
+            get;
+        }
         public object BorrowedService => borrowedService;
         public bool IsBound => subscription != null;
 
         public void Bind(IDisposable newSubscription, IDisposable newOwnedViewLease)
         {
-            if (newSubscription == null) throw new ArgumentNullException(nameof(newSubscription));
-            if (newOwnedViewLease == null) throw new ArgumentNullException(nameof(newOwnedViewLease));
-            if (disposed) throw new ObjectDisposedException(nameof(PresenterLifetime));
+            if (newSubscription == null)
+                throw new ArgumentNullException(nameof(newSubscription));
+            if (newOwnedViewLease == null)
+                throw new ArgumentNullException(nameof(newOwnedViewLease));
+            if (disposed)
+                throw new ObjectDisposedException(nameof(PresenterLifetime));
             Unbind();
             subscription = newSubscription;
             ownedViewLease = newOwnedViewLease;
@@ -33,8 +40,10 @@ namespace GamePlatform.Features.Presentation.Shared
 
         public bool TryPublish(ScopedOwnerContext callbackOwner, Action publish)
         {
-            if (publish == null) throw new ArgumentNullException(nameof(publish));
-            if (disposed || subscription == null || callbackOwner != Owner) return false;
+            if (publish == null)
+                throw new ArgumentNullException(nameof(publish));
+            if (disposed || subscription == null || callbackOwner != Owner)
+                return false;
             publish();
             return true;
         }
@@ -51,7 +60,8 @@ namespace GamePlatform.Features.Presentation.Shared
 
         public void Dispose()
         {
-            if (disposed) return;
+            if (disposed)
+                return;
             disposed = true;
             Unbind();
         }
@@ -61,12 +71,19 @@ namespace GamePlatform.Features.Presentation.Shared
     {
         public ResultPresentation(GamePlatform.Navigation.CompletionPresentationState state, string diagnosticCode)
         {
-            if (string.IsNullOrWhiteSpace(diagnosticCode) || diagnosticCode.Length > 64) throw new ArgumentOutOfRangeException(nameof(diagnosticCode));
+            if (string.IsNullOrWhiteSpace(diagnosticCode) || diagnosticCode.Length > 64)
+                throw new ArgumentOutOfRangeException(nameof(diagnosticCode));
             State = state;
             DiagnosticCode = diagnosticCode;
         }
-        public GamePlatform.Navigation.CompletionPresentationState State { get; }
-        public string DiagnosticCode { get; }
+        public GamePlatform.Navigation.CompletionPresentationState State
+        {
+            get;
+        }
+        public string DiagnosticCode
+        {
+            get;
+        }
         public bool CanAdvance => State == GamePlatform.Navigation.CompletionPresentationState.Confirmed;
         public bool CanRetrySave => State == GamePlatform.Navigation.CompletionPresentationState.SaveFailed;
     }

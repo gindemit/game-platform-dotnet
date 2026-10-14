@@ -16,14 +16,22 @@ namespace GamePlatform.Diagnostics.Abstractions
     {
         public AppLogContext(Guid correlationId, long generation)
         {
-            if (correlationId == Guid.Empty) throw new ArgumentException("Correlation must be nonempty.", nameof(correlationId));
-            if (generation < 0) throw new ArgumentOutOfRangeException(nameof(generation));
+            if (correlationId == Guid.Empty)
+                throw new ArgumentException("Correlation must be nonempty.", nameof(correlationId));
+            if (generation < 0)
+                throw new ArgumentOutOfRangeException(nameof(generation));
             CorrelationId = correlationId;
             Generation = generation;
         }
 
-        public Guid CorrelationId { get; }
-        public long Generation { get; }
+        public Guid CorrelationId
+        {
+            get;
+        }
+        public long Generation
+        {
+            get;
+        }
     }
 
     /// <summary>Immutable sanitized data. Exceptions, arbitrary strings and mutable objects never cross this boundary.</summary>
@@ -40,18 +48,38 @@ namespace GamePlatform.Diagnostics.Abstractions
             HasException = hasException;
         }
 
-        public AppLogLevel Level { get; }
-        public string Category { get; }
-        public string EventName { get; }
-        public AppLogContext Context { get; }
-        public IReadOnlyDictionary<string, object?> Fields { get; }
-        public bool HasException { get; }
+        public AppLogLevel Level
+        {
+            get;
+        }
+        public string Category
+        {
+            get;
+        }
+        public string EventName
+        {
+            get;
+        }
+        public AppLogContext Context
+        {
+            get;
+        }
+        public IReadOnlyDictionary<string, object?> Fields
+        {
+            get;
+        }
+        public bool HasException
+        {
+            get;
+        }
     }
 
     public sealed class NullStructuredAppLogSink : IStructuredAppLogSink
     {
         public bool IsEnabled(AppLogLevel level, string category) => false;
-        public void Write(AppLogRecord record) { }
+        public void Write(AppLogRecord record)
+        {
+        }
     }
 
     /// <summary>Best-effort diagnostics. Sink, enumeration and factory failures are contained and never affect business results.</summary>
@@ -71,7 +99,10 @@ namespace GamePlatform.Diagnostics.Abstractions
 
         public bool IsEnabled(AppLogLevel level, string category)
         {
-            try { return ValidLevel(level) && ValidSymbol(category) && sink.IsEnabled(level, category); }
+            try
+            {
+                return ValidLevel(level) && ValidSymbol(category) && sink.IsEnabled(level, category);
+            }
             catch (Exception) { return false; }
         }
 
@@ -79,7 +110,8 @@ namespace GamePlatform.Diagnostics.Abstractions
         public void Write(AppLogLevel level, string category, string eventName,
             Func<IEnumerable<KeyValuePair<string, object?>>> fieldsFactory, Exception? exception = null)
         {
-            if (!ValidSymbol(eventName) || !IsEnabled(level, category)) return;
+            if (!ValidSymbol(eventName) || !IsEnabled(level, category))
+                return;
             try
             {
                 var fields = new Dictionary<string, object?>(StringComparer.Ordinal);
@@ -89,7 +121,8 @@ namespace GamePlatform.Diagnostics.Abstractions
                     for (var i = 0; i < MaximumFields && iterator.MoveNext(); i++)
                     {
                         var field = iterator.Current;
-                        if (!ValidSymbol(field.Key)) continue;
+                        if (!ValidSymbol(field.Key))
+                            continue;
                         fields[field.Key] = Metric(field.Key) ? SafeValue(field.Value) : Redacted;
                     }
                 }
@@ -107,7 +140,8 @@ namespace GamePlatform.Diagnostics.Abstractions
 
         private static bool ValidSymbol(string value)
         {
-            if (string.IsNullOrEmpty(value) || value.Length > MaximumSymbolLength) return false;
+            if (string.IsNullOrEmpty(value) || value.Length > MaximumSymbolLength)
+                return false;
             foreach (var c in value)
                 if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '-'))
                     return false;
@@ -135,7 +169,8 @@ namespace GamePlatform.Diagnostics.Abstractions
                 case "sequence":
                 case "nothing":
                     return true;
-                default: return false;
+                default:
+                    return false;
             }
         }
 
@@ -143,9 +178,12 @@ namespace GamePlatform.Diagnostics.Abstractions
         {
             // Do not call arbitrary ToString(), serialize nested data, or keep mutable references.
             if (value == null || value is bool || value is byte || value is sbyte || value is short || value is ushort ||
-                value is int || value is uint || value is long || value is ulong || value is decimal) return value;
-            if (value is double d && !double.IsNaN(d) && !double.IsInfinity(d)) return d;
-            if (value is float f && !float.IsNaN(f) && !float.IsInfinity(f)) return f;
+                value is int || value is uint || value is long || value is ulong || value is decimal)
+                return value;
+            if (value is double d && !double.IsNaN(d) && !double.IsInfinity(d))
+                return d;
+            if (value is float f && !float.IsNaN(f) && !float.IsInfinity(f))
+                return f;
             return Redacted;
         }
     }

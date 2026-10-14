@@ -20,7 +20,10 @@ namespace GamePlatform.Storage.Sqlite.Executor
             Scope = scope;
         }
 
-        public StorageScope Scope { get; }
+        public StorageScope Scope
+        {
+            get;
+        }
 
         public int Execute(string sql, params object[] parameters)
         {
@@ -47,12 +50,14 @@ namespace GamePlatform.Storage.Sqlite.Executor
 
         private void EnsureActive()
         {
-            if (!active) throw new ObjectDisposedException(nameof(SqliteTransactionSession));
+            if (!active)
+                throw new ObjectDisposedException(nameof(SqliteTransactionSession));
         }
 
         private static void ValidateSql(string sql)
         {
-            if (string.IsNullOrWhiteSpace(sql)) throw new ArgumentException("SQL is required.", nameof(sql));
+            if (string.IsNullOrWhiteSpace(sql))
+                throw new ArgumentException("SQL is required.", nameof(sql));
             var withoutTrailingTerminator = sql.TrimEnd();
             if (withoutTrailingTerminator.EndsWith(";", StringComparison.Ordinal))
                 withoutTrailingTerminator = withoutTrailingTerminator.Substring(0, withoutTrailingTerminator.Length - 1);

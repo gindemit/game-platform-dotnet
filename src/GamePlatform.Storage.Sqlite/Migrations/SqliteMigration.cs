@@ -10,14 +10,18 @@ namespace GamePlatform.Storage.Sqlite.Migrations
     {
         public SqliteMigration(int version, string id, IReadOnlyList<string> statements)
         {
-            if (version <= 0) throw new ArgumentOutOfRangeException(nameof(version));
-            if (string.IsNullOrWhiteSpace(id) || id.Length > 128) throw new ArgumentOutOfRangeException(nameof(id));
-            if (statements == null || statements.Count == 0) throw new ArgumentException("At least one statement is required.", nameof(statements));
+            if (version <= 0)
+                throw new ArgumentOutOfRangeException(nameof(version));
+            if (string.IsNullOrWhiteSpace(id) || id.Length > 128)
+                throw new ArgumentOutOfRangeException(nameof(id));
+            if (statements == null || statements.Count == 0)
+                throw new ArgumentException("At least one statement is required.", nameof(statements));
             var copied = new string[statements.Count];
             for (var index = 0; index < statements.Count; index++)
             {
                 var statement = statements[index];
-                if (string.IsNullOrWhiteSpace(statement)) throw new ArgumentException("Migration statements cannot be empty.", nameof(statements));
+                if (string.IsNullOrWhiteSpace(statement))
+                    throw new ArgumentException("Migration statements cannot be empty.", nameof(statements));
                 copied[index] = statement;
             }
             Version = version;
@@ -26,10 +30,22 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             Checksum = ComputeChecksum(version, id, copied);
         }
 
-        public int Version { get; }
-        public string Id { get; }
-        public IReadOnlyList<string> Statements { get; }
-        public string Checksum { get; }
+        public int Version
+        {
+            get;
+        }
+        public string Id
+        {
+            get;
+        }
+        public IReadOnlyList<string> Statements
+        {
+            get;
+        }
+        public string Checksum
+        {
+            get;
+        }
 
         private static string ComputeChecksum(int version, string id, IReadOnlyList<string> statements)
         {
@@ -40,7 +56,8 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             using var sha256 = SHA256.Create();
             var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(canonical.ToString()));
             var result = new StringBuilder(bytes.Length * 2);
-            foreach (var value in bytes) result.Append(value.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
+            foreach (var value in bytes)
+                result.Append(value.ToString("x2", System.Globalization.CultureInfo.InvariantCulture));
             return result.ToString();
         }
     }

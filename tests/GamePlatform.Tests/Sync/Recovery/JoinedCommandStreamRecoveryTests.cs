@@ -51,7 +51,9 @@ namespace GamePlatform.Tests.Sync.Recovery
     }
 
     [CollectionDefinition("Joined recovery", DisableParallelization = true)]
-    public sealed class JoinedRecoveryCollection { }
+    public sealed class JoinedRecoveryCollection
+    {
+    }
 
     [Collection("Joined recovery")]
     public sealed class JoinedCommandStreamRecoveryTests
@@ -63,7 +65,8 @@ namespace GamePlatform.Tests.Sync.Recovery
             {
                 await using var f = await Fixture.OpenAsync();
                 var economy = await f.EconomyAsync();
-                if (barrier == "remote-commit") await f.ControlAsync("hold-next-recovery");
+                if (barrier == "remote-commit")
+                    await f.ControlAsync("hold-next-recovery");
                 await f.CloseDatabasesAsync();
                 var assembly = typeof(JoinedCommandStreamRecoveryTests).Assembly.Location;
                 var start = new ProcessStartInfo("dotnet")
@@ -73,7 +76,8 @@ namespace GamePlatform.Tests.Sync.Recovery
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 };
-                foreach (var arg in new[] { "vstest", assembly, "--TestCaseFilter:FullyQualifiedName=GamePlatform.Tests.Sync.Recovery.JoinedCommandStreamRecoveryTests.ProcessRecoveryChild" }) start.ArgumentList.Add(arg);
+                foreach (var arg in new[] { "vstest", assembly, "--TestCaseFilter:FullyQualifiedName=GamePlatform.Tests.Sync.Recovery.JoinedCommandStreamRecoveryTests.ProcessRecoveryChild" })
+                    start.ArgumentList.Add(arg);
                 start.Environment["GP_RECOVERY_CHILD_FOLDER"] = f.Folder;
                 start.Environment["GP_RECOVERY_CHILD_ACCOUNT"] = f.Account.ToString();
                 start.Environment["GP_RECOVERY_CHILD_BARRIER"] = barrier;
@@ -82,7 +86,8 @@ namespace GamePlatform.Tests.Sync.Recovery
                 var stderr = child.StandardError.ReadToEndAsync();
                 try
                 {
-                    if (barrier == "remote-commit") await f.WaitForRecoveryCommitAsync();
+                    if (barrier == "remote-commit")
+                        await f.WaitForRecoveryCommitAsync();
                     else
                     {
                         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
@@ -99,9 +104,15 @@ namespace GamePlatform.Tests.Sync.Recovery
                 }
                 finally
                 {
-                    if (!child.HasExited) { child.Kill(entireProcessTree: true); await child.WaitForExitAsync(); }
-                    if (barrier == "remote-commit") await f.ControlAsync("release");
-                    await stdout; await stderr;
+                    if (!child.HasExited)
+                    {
+                        child.Kill(entireProcessTree: true);
+                        await child.WaitForExitAsync();
+                    }
+                    if (barrier == "remote-commit")
+                        await f.ControlAsync("release");
+                    await stdout;
+                    await stderr;
                     await f.OpenDatabasesAsync();
                 }
                 var interrupted = await f.JournalAsync();
@@ -311,7 +322,10 @@ namespace GamePlatform.Tests.Sync.Recovery
             private readonly bool ownsFolder;
             private bool databasesOpen;
             private Fixture(string? folder = null)
-            { Folder = folder ?? Path.Combine(Path.GetTempPath(), "gp-joined-recovery", Guid.NewGuid().ToString("N")); ownsFolder = folder == null; }
+            {
+                Folder = folder ?? Path.Combine(Path.GetTempPath(), "gp-joined-recovery", Guid.NewGuid().ToString("N"));
+                ownsFolder = folder == null;
+            }
             public SqliteAccountsDirectoryDatabase DirectoryDb = null!;
             public SqliteDatabase PriorDb = null!;
             public SqliteDatabase? SuccessorDb;
@@ -381,7 +395,10 @@ namespace GamePlatform.Tests.Sync.Recovery
                 new CommandStreamRecoveryHttpProvider(app, Account, installation, configuration, executor, codec, new Auth(token), refresh);
             public async Task ControlAsync(string action)
             {
-                using var content = new StringContent(JsonSerializer.Serialize(new { action }), Encoding.UTF8, "application/json");
+                using var content = new StringContent(JsonSerializer.Serialize(new
+                {
+                    action
+                }), Encoding.UTF8, "application/json");
                 using var response = await client.PostAsync("qualification/control", content);
                 Assert.True(response.IsSuccessStatusCode, "Fixture control failed: " + action + " " + await response.Content.ReadAsStringAsync());
             }
@@ -402,7 +419,11 @@ namespace GamePlatform.Tests.Sync.Recovery
             public async Task<CommandStreamRecoveryCoordinator> CoordinatorAsync() => new CommandStreamRecoveryCoordinator(await EntryAsync(), Remote, Receipts,
                 new SqliteCommandStreamRecoveryJournal(DirectoryDb, await EntryAsync()), new SqliteRecoveryCommandStore(PriorDb, Scope, Installation), Host,
                 () => Guid.Parse($"0199f9a1-{++ids:x4}-7777-8888-999999999999"));
-            public void DirectoryTrigger(string sql) { using var connection = new SQLite.SQLiteConnection(Path.Combine(Folder, "directory.db")); connection.Execute(sql); }
+            public void DirectoryTrigger(string sql)
+            {
+                using var connection = new SQLite.SQLiteConnection(Path.Combine(Folder, "directory.db"));
+                connection.Execute(sql);
+            }
             public async Task ReopenAsync()
             {
                 await CloseDatabasesAsync();
@@ -410,17 +431,20 @@ namespace GamePlatform.Tests.Sync.Recovery
             }
             public async Task CloseDatabasesAsync()
             {
-                if (!databasesOpen) return;
+                if (!databasesOpen)
+                    return;
                 Assert.True(await DirectoryDb.DisposeAsync(TimeSpan.FromSeconds(5)));
                 Assert.True(await PriorDb.DisposeAsync(TimeSpan.FromSeconds(5)));
-                if (SuccessorDb != null) Assert.True(await SuccessorDb.DisposeAsync(TimeSpan.FromSeconds(5)));
+                if (SuccessorDb != null)
+                    Assert.True(await SuccessorDb.DisposeAsync(TimeSpan.FromSeconds(5)));
                 databasesOpen = false;
             }
             public async Task OpenDatabasesAsync()
             {
                 DirectoryDb = await SqliteAccountsDirectoryDatabase.OpenAsync(Path.Combine(Folder, "directory.db"), DirectoryScope, default);
                 PriorDb = await OpenGameAsync("prior.db");
-                if (File.Exists(Path.Combine(Folder, "successor.db"))) SuccessorDb = await OpenGameAsync("successor.db");
+                if (File.Exists(Path.Combine(Folder, "successor.db")))
+                    SuccessorDb = await OpenGameAsync("successor.db");
                 databasesOpen = true;
             }
             public Task<long> PriorLongAsync(string sql) => PriorDb.ExecuteAsync(Scope, t => ((SqliteTransactionSession)t).ExecuteScalar<long>(sql), default);
@@ -488,7 +512,8 @@ namespace GamePlatform.Tests.Sync.Recovery
                 while (true)
                 {
                     using var e = await EvidenceAsync();
-                    if (e.RootElement.GetProperty("streams").EnumerateArray().Any(s => s.GetProperty("state").GetString() == "retired")) return;
+                    if (e.RootElement.GetProperty("streams").EnumerateArray().Any(s => s.GetProperty("state").GetString() == "retired"))
+                        return;
                     await Task.Delay(20, timeout.Token);
                 }
             }
@@ -497,21 +522,28 @@ namespace GamePlatform.Tests.Sync.Recovery
                 await CloseDatabasesAsync();
                 client.Dispose();
                 refresh.Dispose();
-                if (ownsFolder) Directory.Delete(Folder, true);
+                if (ownsFolder)
+                    Directory.Delete(Folder, true);
             }
         }
 
         private sealed class Host : ICommandStreamRecoveryHost
         {
             private readonly Fixture f;
-            public Host(Fixture fixture) { f = fixture; }
+            public Host(Fixture fixture)
+            {
+                f = fixture;
+            }
             public bool IsCurrentAccount { get; set; } = true;
             public bool DamageEstablished = true;
             public bool InterruptBootstrap;
             public bool PauseAfterAdoption;
             public ClientStreamId LastQuiesced;
             public Task<bool> QuiesceAsync(ClientStreamId stream, CommandStreamRecoveryReason reason, bool resume, CancellationToken ct)
-            { LastQuiesced = stream; return Task.FromResult(resume || DamageEstablished); }
+            {
+                LastQuiesced = stream;
+                return Task.FromResult(resume || DamageEstablished);
+            }
             public async Task<bool> BootstrapSuccessorAsync(ClientStreamId stream, CancellationToken ct)
             {
                 Assert.Equal(stream, (await f.EntryAsync()).StreamId);
@@ -539,17 +571,24 @@ namespace GamePlatform.Tests.Sync.Recovery
                 Assert.NotEmpty(snapshot);
                 Assert.Contains(snapshot, x => x.Collection == "wallet");
             }
-            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group) { }
+            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group)
+            {
+            }
         }
         private sealed class Auth : IAuthSession
         {
             private readonly string token;
-            public Auth(string token) { this.token = token; }
+            public Auth(string token)
+            {
+                this.token = token;
+            }
             public string SessionKey => token;
             public Task<AccessTokenSnapshot> GetAsync(CancellationToken ct) => Task.FromResult(new AccessTokenSnapshot(token, 0));
             public Task<AccessTokenSnapshot> RefreshAsync(long rejectedGeneration, CancellationToken ct) => GetAsync(ct);
         }
         private sealed class FixedClock : IUnixMillisecondClock
-        { public long GetUnixMilliseconds() => 1726704000000; }
+        {
+            public long GetUnixMilliseconds() => 1726704000000;
+        }
     }
 }

@@ -9,9 +9,15 @@ using GamePlatform.Storage.Sqlite.Executor;
 
 namespace GamePlatform.Storage.Sqlite.Outbox
 {
-    internal enum AdmissionCheckpoint { ProjectionApplied, SequenceAllocated, OutboxInserted }
+    internal enum AdmissionCheckpoint
+    {
+        ProjectionApplied, SequenceAllocated, OutboxInserted
+    }
 
-    public enum StreamRecoveryState { Current, LocalGap, ServerAheadOfLocalState }
+    public enum StreamRecoveryState
+    {
+        Current, LocalGap, ServerAheadOfLocalState
+    }
 
     public readonly struct StreamRecoveryAssessment
     {
@@ -21,9 +27,18 @@ namespace GamePlatform.Storage.Sqlite.Outbox
             LocalNextSequence = localNextSequence;
             ServerFinalizedThrough = serverFinalizedThrough;
         }
-        public StreamRecoveryState State { get; }
-        public long LocalNextSequence { get; }
-        public long ServerFinalizedThrough { get; }
+        public StreamRecoveryState State
+        {
+            get;
+        }
+        public long LocalNextSequence
+        {
+            get;
+        }
+        public long ServerFinalizedThrough
+        {
+            get;
+        }
     }
 
     public sealed class SqliteAtomicCommandStore : IAtomicCommandStore
@@ -43,8 +58,10 @@ namespace GamePlatform.Storage.Sqlite.Outbox
             this.database = database ?? throw new ArgumentNullException(nameof(database));
             this.fingerprint = fingerprint ?? throw new ArgumentNullException(nameof(fingerprint));
             this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
-            if (!owner.IsValid) throw new ArgumentException("A valid owner is required.", nameof(owner));
-            if (!Matches(scope, owner)) throw new StorageException(StorageFailure.InvalidOwner, "The command owner does not match the database scope.");
+            if (!owner.IsValid)
+                throw new ArgumentException("A valid owner is required.", nameof(owner));
+            if (!Matches(scope, owner))
+                throw new StorageException(StorageFailure.InvalidOwner, "The command owner does not match the database scope.");
             this.scope = scope;
             this.owner = owner;
             this.checkpoint = checkpoint;
@@ -58,16 +75,20 @@ namespace GamePlatform.Storage.Sqlite.Outbox
         {
             if (string.IsNullOrWhiteSpace(businessRunId) || businessRunId.Length > 256)
                 throw new ArgumentOutOfRangeException(nameof(businessRunId));
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            if (applyProjection == null) throw new ArgumentNullException(nameof(applyProjection));
-            if (command.Owner != owner) throw new StorageException(StorageFailure.InvalidOwner, "The command owner does not match the store owner.");
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+            if (applyProjection == null)
+                throw new ArgumentNullException(nameof(applyProjection));
+            if (command.Owner != owner)
+                throw new StorageException(StorageFailure.InvalidOwner, "The command owner does not match the store owner.");
             return database.ExecuteAsync(scope, transaction => CommitCore(
                 (SqliteTransactionSession)transaction, businessRunId, command, applyProjection, cancellationToken), cancellationToken);
         }
 
         public Task<StreamRecoveryAssessment> AssessRecoveryAsync(long serverFinalizedThrough, CancellationToken cancellationToken)
         {
-            if (serverFinalizedThrough < 0) throw new ArgumentOutOfRangeException(nameof(serverFinalizedThrough));
+            if (serverFinalizedThrough < 0)
+                throw new ArgumentOutOfRangeException(nameof(serverFinalizedThrough));
             return database.ExecuteAsync(scope, transaction =>
             {
                 var session = (SqliteTransactionSession)transaction;
@@ -86,7 +107,8 @@ namespace GamePlatform.Storage.Sqlite.Outbox
 
         public Task<int> RecoverExpiredLeasesAsync(long nowMilliseconds, CancellationToken cancellationToken)
         {
-            if (nowMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(nowMilliseconds));
+            if (nowMilliseconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(nowMilliseconds));
             return database.ExecuteAsync(scope, transaction =>
             {
                 var session = (SqliteTransactionSession)transaction;
@@ -166,11 +188,13 @@ namespace GamePlatform.Storage.Sqlite.Outbox
         private void EnsureReady(SqliteTransactionSession session, ClientStreamId stream)
         {
             var count = session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_stream_state WHERE singleton = 1 AND backend_namespace = ? AND app_id = ? AND account_id = ? AND ready = 1", owner.Backend.Value, owner.AppId.ToString(), owner.UserId.ToString());
-            if (count != 1) throw new StorageException(StorageFailure.NotReady, "Owned mutation requires a Ready stream.");
+            if (count != 1)
+                throw new StorageException(StorageFailure.NotReady, "Owned mutation requires a Ready stream.");
             if (stream.IsValid)
             {
                 var streamMatches = session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_stream_state WHERE singleton = 1 AND client_stream_id = ?", stream.ToString());
-                if (streamMatches != 1) throw new StorageException(StorageFailure.StreamRecoveryRequired, "The command stream does not match durable state.");
+                if (streamMatches != 1)
+                    throw new StorageException(StorageFailure.StreamRecoveryRequired, "The command stream does not match durable state.");
             }
         }
 
@@ -183,9 +207,11 @@ namespace GamePlatform.Storage.Sqlite.Outbox
 
         private static bool Equal(byte[] left, byte[] right)
         {
-            if (left == null || left.Length != right.Length) return false;
+            if (left == null || left.Length != right.Length)
+                return false;
             var difference = 0;
-            for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index];
+            for (var index = 0; index < left.Length; index++)
+                difference |= left[index] ^ right[index];
             return difference == 0;
         }
 

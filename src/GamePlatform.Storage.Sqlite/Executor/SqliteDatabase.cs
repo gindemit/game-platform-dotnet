@@ -28,7 +28,10 @@ namespace GamePlatform.Storage.Sqlite.Executor
             Scope = scope;
         }
 
-        public StorageScope Scope { get; }
+        public StorageScope Scope
+        {
+            get;
+        }
         public int ConnectionCount => disposed ? 0 : 1;
         public int NativeVersionNumber => connection.LibVersionNumber;
         public int MaximumConcurrentTransactions => Volatile.Read(ref maximumConcurrentTransactions);
@@ -84,10 +87,14 @@ namespace GamePlatform.Storage.Sqlite.Executor
             Action<ExtensionMigrationCheckpoint, SqliteExtensionDescriptor, SqliteExtensionMigration>? extensionCheckpoint,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(databasePath)) throw new ArgumentException("A database path is required.", nameof(databasePath));
-            if (migrations == null) throw new ArgumentNullException(nameof(migrations));
-            if (extensions == null) throw new ArgumentNullException(nameof(extensions));
-            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (string.IsNullOrWhiteSpace(databasePath))
+                throw new ArgumentException("A database path is required.", nameof(databasePath));
+            if (migrations == null)
+                throw new ArgumentNullException(nameof(migrations));
+            if (extensions == null)
+                throw new ArgumentNullException(nameof(extensions));
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
             ValidateMigrationOrder(migrations);
             ValidateExtensionOrder(extensions, migrations.Count);
             cancellationToken.ThrowIfCancellationRequested();
@@ -99,8 +106,10 @@ namespace GamePlatform.Storage.Sqlite.Executor
             Func<ILocalStorageTransaction, T> operation,
             CancellationToken cancellationToken)
         {
-            if (operation == null) throw new ArgumentNullException(nameof(operation));
-            if (!Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The database owner scope does not match.");
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
+            if (!Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The database owner scope does not match.");
             Admit();
             try
             {
@@ -123,22 +132,26 @@ namespace GamePlatform.Storage.Sqlite.Executor
 
         public async Task<bool> DisposeAsync(TimeSpan timeout)
         {
-            if (timeout < TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(timeout));
+            if (timeout < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException(nameof(timeout));
             Task drainTask;
             lock (lifecycle)
             {
-                if (disposed) return true;
+                if (disposed)
+                    return true;
                 accepting = false;
                 drainTask = drained.Task;
             }
             var timeoutTask = Task.Delay(timeout);
-            if (await Task.WhenAny(drainTask, timeoutTask).ConfigureAwait(false) != drainTask) return false;
+            if (await Task.WhenAny(drainTask, timeoutTask).ConfigureAwait(false) != drainTask)
+                return false;
             await writer.WaitAsync().ConfigureAwait(false);
             try
             {
                 lock (lifecycle)
                 {
-                    if (disposed) return true;
+                    if (disposed)
+                        return true;
                     connection.Dispose();
                     disposed = true;
                     return true;
@@ -194,7 +207,8 @@ namespace GamePlatform.Storage.Sqlite.Executor
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var directory = Path.GetDirectoryName(databasePath);
-                if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException("Database path must have a directory.", nameof(databasePath));
+                if (string.IsNullOrWhiteSpace(directory))
+                    throw new ArgumentException("Database path must have a directory.", nameof(databasePath));
                 Directory.CreateDirectory(directory);
                 connection = new SQLiteConnection(databasePath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
                 connection.BusyTimeout = options.BusyTimeout;
@@ -237,11 +251,16 @@ namespace GamePlatform.Storage.Sqlite.Executor
             }
             catch (Exception error)
             {
-                try { connection.Rollback(); }
+                try
+                {
+                    connection.Rollback();
+                }
                 catch { }
                 session?.Close();
-                if (error is OperationCanceledException) throw;
-                if (error is SQLiteException) throw Map(error, StorageFailure.Io, "SQLite transaction failed.");
+                if (error is OperationCanceledException)
+                    throw;
+                if (error is SQLiteException)
+                    throw Map(error, StorageFailure.Io, "SQLite transaction failed.");
                 throw;
             }
             finally
@@ -254,8 +273,10 @@ namespace GamePlatform.Storage.Sqlite.Executor
         {
             lock (lifecycle)
             {
-                if (!accepting || disposed) throw new StorageException(StorageFailure.Closing, "The database is closing.");
-                if (admitted == 0) drained = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                if (!accepting || disposed)
+                    throw new StorageException(StorageFailure.Closing, "The database is closing.");
+                if (admitted == 0)
+                    drained = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 admitted++;
             }
         }
@@ -265,7 +286,8 @@ namespace GamePlatform.Storage.Sqlite.Executor
             lock (lifecycle)
             {
                 admitted--;
-                if (admitted == 0) drained.TrySetResult(true);
+                if (admitted == 0)
+                    drained.TrySetResult(true);
             }
         }
 
@@ -274,7 +296,8 @@ namespace GamePlatform.Storage.Sqlite.Executor
             while (true)
             {
                 var observed = Volatile.Read(ref maximumConcurrentTransactions);
-                if (observed >= concurrent || Interlocked.CompareExchange(ref maximumConcurrentTransactions, concurrent, observed) == observed) return;
+                if (observed >= concurrent || Interlocked.CompareExchange(ref maximumConcurrentTransactions, concurrent, observed) == observed)
+                    return;
             }
         }
 
@@ -293,7 +316,8 @@ namespace GamePlatform.Storage.Sqlite.Executor
                 else
                 {
                     var matches = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_database_scope WHERE singleton = 1 AND backend_namespace = ? AND app_id = ? AND account_id = ?", scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
-                    if (matches != 1) throw new StorageException(StorageFailure.InvalidOwner, "The database belongs to another owner scope.");
+                    if (matches != 1)
+                        throw new StorageException(StorageFailure.InvalidOwner, "The database belongs to another owner scope.");
                 }
                 connection.Commit();
             }
@@ -330,13 +354,15 @@ namespace GamePlatform.Storage.Sqlite.Executor
                     if (existing == 1)
                     {
                         var identityMatches = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_migrations WHERE version = ? AND migration_id = ? AND checksum = ? AND backend_namespace = ? AND app_id = ? AND account_id = ?", migration.Version, migration.Id, migration.Checksum, scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
-                        if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "An applied migration identity or checksum changed.");
+                        if (identityMatches != 1)
+                            throw new StorageException(StorageFailure.Migration, "An applied migration identity or checksum changed.");
                         connection.Execute("COMMIT");
                         continue;
                     }
                     if (migration.Version <= recordedMaximum)
                         throw new StorageException(StorageFailure.Migration, "The migration journal has a gap or conflicting version.");
-                    foreach (var statement in migration.Statements) connection.Execute(statement);
+                    foreach (var statement in migration.Statements)
+                        connection.Execute(statement);
                     checkpoint?.Invoke(MigrationCheckpoint.EffectsApplied, migration);
                     var appliedAt = options.NowMilliseconds();
                     if (appliedAt < 0 || appliedAt > 253_402_300_799_999L)
@@ -348,7 +374,10 @@ namespace GamePlatform.Storage.Sqlite.Executor
                 }
                 catch
                 {
-                    try { connection.Execute("ROLLBACK"); }
+                    try
+                    {
+                        connection.Execute("ROLLBACK");
+                    }
                     catch { }
                     throw;
                 }
@@ -377,15 +406,21 @@ namespace GamePlatform.Storage.Sqlite.Executor
             var foreignOwner = connection.ExecuteScalar<int>(
                 "SELECT COUNT(*) FROM gp_extension_migrations WHERE backend_namespace <> ? OR app_id <> ? OR account_id <> ?",
                 scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
-            if (foreignOwner != 0) throw new StorageException(StorageFailure.InvalidOwner, "An extension migration marker belongs to another owner scope.");
+            if (foreignOwner != 0)
+                throw new StorageException(StorageFailure.InvalidOwner, "An extension migration marker belongs to another owner scope.");
 
             var recordedNamespaces = connection.Query<ExtensionNamespaceRow>("SELECT DISTINCT extension_namespace AS ExtensionNamespace FROM gp_extension_migrations");
             foreach (var recorded in recordedNamespaces)
             {
                 var found = false;
                 for (var index = 0; index < extensions.Count; index++)
-                    if (string.Equals(extensions[index].ExtensionNamespace, recorded.ExtensionNamespace, StringComparison.Ordinal)) { found = true; break; }
-                if (!found) throw new StorageException(StorageFailure.Migration, "The database retains an extension that was not explicitly supplied.");
+                    if (string.Equals(extensions[index].ExtensionNamespace, recorded.ExtensionNamespace, StringComparison.Ordinal))
+                    {
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                    throw new StorageException(StorageFailure.Migration, "The database retains an extension that was not explicitly supplied.");
             }
 
             foreach (var extension in extensions)
@@ -420,13 +455,15 @@ namespace GamePlatform.Storage.Sqlite.Executor
                                 "SELECT COUNT(*) FROM gp_extension_migrations WHERE extension_namespace = ? AND version = ? AND migration_id = ? AND checksum = ? AND minimum_platform_version = ? AND backend_namespace = ? AND app_id = ? AND account_id = ?",
                                 extension.ExtensionNamespace, migration.Version, migration.Id, checksum, extension.MinimumPlatformVersion,
                                 scope.BackendNamespace, scope.AppId.Value, scope.AccountId.Value);
-                            if (identityMatches != 1) throw new StorageException(StorageFailure.Migration, "An applied extension migration identity or checksum changed.");
+                            if (identityMatches != 1)
+                                throw new StorageException(StorageFailure.Migration, "An applied extension migration identity or checksum changed.");
                             connection.Execute("COMMIT");
                             continue;
                         }
                         if (migration.Version <= recordedMaximum)
                             throw new StorageException(StorageFailure.Migration, "The extension migration journal has a gap or conflicting version.");
-                        foreach (var statement in migration.Statements) connection.Execute(statement);
+                        foreach (var statement in migration.Statements)
+                            connection.Execute(statement);
                         checkpoint?.Invoke(ExtensionMigrationCheckpoint.EffectsApplied, extension, migration);
                         var appliedAt = options.NowMilliseconds();
                         if (appliedAt < 0 || appliedAt > 253_402_300_799_999L)
@@ -441,7 +478,10 @@ namespace GamePlatform.Storage.Sqlite.Executor
                     }
                     catch
                     {
-                        try { connection.Execute("ROLLBACK"); }
+                        try
+                        {
+                            connection.Execute("ROLLBACK");
+                        }
                         catch { }
                         throw;
                     }
@@ -455,7 +495,8 @@ namespace GamePlatform.Storage.Sqlite.Executor
             for (var index = 0; index < extensions.Count; index++)
             {
                 var extension = extensions[index];
-                if (extension == null) throw new StorageException(StorageFailure.Migration, "Extension descriptors cannot be null.");
+                if (extension == null)
+                    throw new StorageException(StorageFailure.Migration, "Extension descriptors cannot be null.");
                 if (extension.MinimumPlatformVersion > platformVersion)
                     throw new StorageException(StorageFailure.Migration, "An extension requires a platform migration that was not supplied.");
                 if (previous != null && string.CompareOrdinal(previous, extension.ExtensionNamespace) >= 0)
@@ -471,7 +512,8 @@ namespace GamePlatform.Storage.Sqlite.Executor
 
         private static Exception Map(Exception error, StorageFailure fallback, string message)
         {
-            if (error is StorageException || error is OperationCanceledException) return error;
+            if (error is StorageException || error is OperationCanceledException)
+                return error;
             if (error is SQLiteException sqlite)
             {
                 var failure = sqlite.Result == SQLite3.Result.Busy || sqlite.Result == SQLite3.Result.Locked ? StorageFailure.Busy :

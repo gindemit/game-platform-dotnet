@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import tempfile
 import unittest
@@ -57,8 +58,12 @@ class ValidationTests(unittest.TestCase):
 
     def arrange_implemented_accounts(self, root: Path, selected_tests: int = 1, report_path: str = "docs/implementation/evidence/CL-101/accounts.trx") -> None:
         stubs = root / "src/GamePlatform.Features/FeatureStubs.cs"
-        stubs.write_text(stubs.read_text(encoding="utf-8").replace(
-            '    public sealed class AccountsFeature : UnavailableFeature { public AccountsFeature() : base("accounts") { } }\n', ""), encoding="utf-8")
+        source, removed = re.subn(
+            r'\bpublic\s+sealed\s+class\s+AccountsFeature\s*:\s*UnavailableFeature\s*'
+            r'\{\s*public\s+AccountsFeature\(\)\s*:\s*base\("accounts"\)\s*\{\s*\}\s*\}',
+            "", stubs.read_text(encoding="utf-8"), count=1)
+        self.assertEqual(1, removed, "The implemented-accounts fixture must remove exactly one unavailable stub.")
+        stubs.write_text(source, encoding="utf-8")
         implementation = root / "src/GamePlatform.Features/Accounts/AccountsFeature.cs"
         implementation.write_text(
             "using System.Threading; using System.Threading.Tasks; using GamePlatform.Core; using GamePlatform.Features.Contracts; "

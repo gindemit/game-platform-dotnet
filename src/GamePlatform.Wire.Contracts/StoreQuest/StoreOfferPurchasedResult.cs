@@ -18,12 +18,33 @@ namespace GamePlatform.Wire.Contracts
             Lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }
 
-        public Guid PurchaseId { get; }
-        public Guid OriginatingOperationId { get; }
-        public string OfferId { get; }
-        public int OfferVersion { get; }
-        public Guid PurchaseKey { get; }
-        public StoreOfferDebit Debit { get; }
-        public IReadOnlyList<ILiveSliceRewardLine> Lines { get; }
+        public Guid PurchaseId
+        {
+            get;
+        }
+        public Guid OriginatingOperationId
+        {
+            get;
+        }
+        public string OfferId
+        {
+            get;
+        }
+        public int OfferVersion
+        {
+            get;
+        }
+        public Guid PurchaseKey
+        {
+            get;
+        }
+        public StoreOfferDebit Debit
+        {
+            get;
+        }
+        public IReadOnlyList<ILiveSliceRewardLine> Lines
+        {
+            get;
+        }
     }
 }

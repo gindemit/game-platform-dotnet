@@ -5,12 +5,19 @@ namespace GamePlatform.Navigation
 {
     public abstract class NavigationRoute
     {
-        internal NavigationRoute(string kind) { Kind = kind; }
-        public string Kind { get; }
+        internal NavigationRoute(string kind)
+        {
+            Kind = kind;
+        }
+        public string Kind
+        {
+            get;
+        }
 
         internal static string RequireKey(string value, string parameterName)
         {
-            if (string.IsNullOrWhiteSpace(value) || value.Length > 128) throw new ArgumentOutOfRangeException(parameterName);
+            if (string.IsNullOrWhiteSpace(value) || value.Length > 128)
+                throw new ArgumentOutOfRangeException(parameterName);
             return value;
         }
     }
@@ -24,27 +31,45 @@ namespace GamePlatform.Navigation
     {
         public PlayRoute(SemanticId contentKey, long levelScopeGeneration) : base("play")
         {
-            if (!contentKey.IsValid) throw new ArgumentException("A content key is required.", nameof(contentKey));
-            if (levelScopeGeneration < 0) throw new ArgumentOutOfRangeException(nameof(levelScopeGeneration));
+            if (!contentKey.IsValid)
+                throw new ArgumentException("A content key is required.", nameof(contentKey));
+            if (levelScopeGeneration < 0)
+                throw new ArgumentOutOfRangeException(nameof(levelScopeGeneration));
             ContentKey = contentKey;
             LevelScopeGeneration = levelScopeGeneration;
         }
-        public SemanticId ContentKey { get; }
-        public long LevelScopeGeneration { get; }
+        public SemanticId ContentKey
+        {
+            get;
+        }
+        public long LevelScopeGeneration
+        {
+            get;
+        }
     }
 
-    public enum CompletionPresentationState { Pending, Confirmed, SaveFailed }
+    public enum CompletionPresentationState
+    {
+        Pending, Confirmed, SaveFailed
+    }
 
     public sealed class ResultRoute : NavigationRoute
     {
         public ResultRoute(SemanticId contentKey, CompletionPresentationState state) : base("result")
         {
-            if (!contentKey.IsValid) throw new ArgumentException("A content key is required.", nameof(contentKey));
+            if (!contentKey.IsValid)
+                throw new ArgumentException("A content key is required.", nameof(contentKey));
             ContentKey = contentKey;
             State = state;
         }
-        public SemanticId ContentKey { get; }
-        public CompletionPresentationState State { get; }
+        public SemanticId ContentKey
+        {
+            get;
+        }
+        public CompletionPresentationState State
+        {
+            get;
+        }
     }
 
     public readonly struct CallerReturnContext
@@ -52,17 +77,27 @@ namespace GamePlatform.Navigation
         public CallerReturnContext(NavigationRoute route, string callerKey)
         {
             Route = route ?? throw new ArgumentNullException(nameof(route));
-            if (string.IsNullOrWhiteSpace(callerKey) || callerKey.Length > 128) throw new ArgumentOutOfRangeException(nameof(callerKey));
+            if (string.IsNullOrWhiteSpace(callerKey) || callerKey.Length > 128)
+                throw new ArgumentOutOfRangeException(nameof(callerKey));
             CallerKey = callerKey;
         }
-        public NavigationRoute Route { get; }
-        public string CallerKey { get; }
+        public NavigationRoute Route
+        {
+            get;
+        }
+        public string CallerKey
+        {
+            get;
+        }
     }
 
     public sealed class ProfileRoute : NavigationRoute
     {
         public ProfileRoute(CallerReturnContext returnContext) : base("profile") { ReturnContext = returnContext; }
-        public CallerReturnContext ReturnContext { get; }
+        public CallerReturnContext ReturnContext
+        {
+            get;
+        }
     }
 
     public sealed class DestinationRoute : NavigationRoute
@@ -71,7 +106,10 @@ namespace GamePlatform.Navigation
         {
             DestinationKey = RequireKey(destinationKey, nameof(destinationKey));
         }
-        public string DestinationKey { get; }
+        public string DestinationKey
+        {
+            get;
+        }
     }
 
     public sealed class DetailRoute : NavigationRoute
@@ -81,8 +119,14 @@ namespace GamePlatform.Navigation
             DetailKey = RequireKey(detailKey, nameof(detailKey));
             ReturnContext = returnContext;
         }
-        public string DetailKey { get; }
-        public CallerReturnContext ReturnContext { get; }
+        public string DetailKey
+        {
+            get;
+        }
+        public CallerReturnContext ReturnContext
+        {
+            get;
+        }
     }
 
     public sealed class ModalRoute : NavigationRoute
@@ -91,6 +135,9 @@ namespace GamePlatform.Navigation
         {
             ModalKey = RequireKey(modalKey, nameof(modalKey));
         }
-        public string ModalKey { get; }
+        public string ModalKey
+        {
+            get;
+        }
     }
 }

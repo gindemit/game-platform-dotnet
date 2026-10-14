@@ -164,7 +164,8 @@ namespace GamePlatform.Tests.Transport
                 var isReceipt = request.Uri.EndsWith("/sync/receipts/lookup", StringComparison.Ordinal);
                 (isReceipt ? Receipts : Pushes).Add(request);
                 var send = isReceipt ? receipt : push;
-                if (send == null) throw new InvalidOperationException("Unexpected route.");
+                if (send == null)
+                    throw new InvalidOperationException("Unexpected route.");
                 return Task.FromResult(send());
             }
         }

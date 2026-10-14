@@ -16,7 +16,8 @@ internal static class DiagnosticJson
 
     internal static QualificationValue Parse(byte[] bytes)
     {
-        if (bytes.Length > 262144) throw new InvalidDataException("diagnostic_input_limit");
+        if (bytes.Length > 262144)
+            throw new InvalidDataException("diagnostic_input_limit");
         _ = StrictUtf8.GetString(bytes);
         using var doc = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 32 });
         int nodes = 0;
@@ -31,13 +32,18 @@ internal static class DiagnosticJson
 
     private static QualificationValue Read(JsonElement value, ref int nodes)
     {
-        if (++nodes > 16384) throw new InvalidDataException("diagnostic_nodes_limit");
+        if (++nodes > 16384)
+            throw new InvalidDataException("diagnostic_nodes_limit");
         switch (value.ValueKind)
         {
-            case JsonValueKind.Null: return QualificationValue.Null;
-            case JsonValueKind.True: return QualificationValue.Boolean(true);
-            case JsonValueKind.False: return QualificationValue.Boolean(false);
-            case JsonValueKind.String: return QualificationValue.String(Text(value.GetString()!));
+            case JsonValueKind.Null:
+                return QualificationValue.Null;
+            case JsonValueKind.True:
+                return QualificationValue.Boolean(true);
+            case JsonValueKind.False:
+                return QualificationValue.Boolean(false);
+            case JsonValueKind.String:
+                return QualificationValue.String(Text(value.GetString()!));
             case JsonValueKind.Number:
                 string raw = value.GetRawText();
                 if (raw == "-0" || raw.IndexOfAny(new[] { '.', 'e', 'E', '+' }) >= 0 ||
@@ -45,9 +51,11 @@ internal static class DiagnosticJson
                     throw new InvalidDataException("diagnostic_integer_lexical_form");
                 return QualificationValue.Integer(integer);
             case JsonValueKind.Array:
-                if (value.GetArrayLength() > 1024) throw new InvalidDataException("diagnostic_array_limit");
+                if (value.GetArrayLength() > 1024)
+                    throw new InvalidDataException("diagnostic_array_limit");
                 var items = new List<QualificationValue>();
-                foreach (var item in value.EnumerateArray()) items.Add(Read(item, ref nodes));
+                foreach (var item in value.EnumerateArray())
+                    items.Add(Read(item, ref nodes));
                 return QualificationValue.Array(items);
             case JsonValueKind.Object:
                 var fields = new List<KeyValuePair<string, QualificationValue>>();
@@ -55,25 +63,30 @@ internal static class DiagnosticJson
                 foreach (var field in value.EnumerateObject())
                 {
                     string key = Text(field.Name);
-                    if (!keys.Add(key)) throw new InvalidDataException("diagnostic_duplicate_key");
-                    if (keys.Count > 256 || ++nodes > 16384) throw new InvalidDataException("diagnostic_map_limit");
+                    if (!keys.Add(key))
+                        throw new InvalidDataException("diagnostic_duplicate_key");
+                    if (keys.Count > 256 || ++nodes > 16384)
+                        throw new InvalidDataException("diagnostic_map_limit");
                     fields.Add(new(key, Read(field.Value, ref nodes)));
                 }
                 return QualificationValue.Object(fields);
-            default: throw new InvalidDataException("diagnostic_kind");
+            default:
+                throw new InvalidDataException("diagnostic_kind");
         }
     }
 
     private static string Text(string text)
     {
-        if (StrictUtf8.GetByteCount(text) > 8192) throw new InvalidDataException("diagnostic_string_limit");
+        if (StrictUtf8.GetByteCount(text) > 8192)
+            throw new InvalidDataException("diagnostic_string_limit");
         return text;
     }
 
     internal static byte[] Write(QualificationValue value)
     {
         using var output = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(output)) Write(writer, value);
+        using (var writer = new Utf8JsonWriter(output))
+            Write(writer, value);
         return output.ToArray();
     }
 
@@ -81,20 +94,35 @@ internal static class DiagnosticJson
     {
         switch (value.Kind.ToString())
         {
-            case "Null": writer.WriteNullValue(); break;
-            case "Boolean": writer.WriteBooleanValue(value.BooleanValue); break;
-            case "Integer": writer.WriteNumberValue(value.IntegerValue); break;
-            case "String": writer.WriteStringValue(value.StringValue); break;
+            case "Null":
+                writer.WriteNullValue();
+                break;
+            case "Boolean":
+                writer.WriteBooleanValue(value.BooleanValue);
+                break;
+            case "Integer":
+                writer.WriteNumberValue(value.IntegerValue);
+                break;
+            case "String":
+                writer.WriteStringValue(value.StringValue);
+                break;
             case "Array":
                 writer.WriteStartArray();
-                foreach (var item in value.Items) Write(writer, item);
-                writer.WriteEndArray(); break;
+                foreach (var item in value.Items)
+                    Write(writer, item);
+                writer.WriteEndArray();
+                break;
             case "Object":
                 writer.WriteStartObject();
                 foreach (var field in value.Properties.OrderBy(p => p.Key, StringComparer.Ordinal))
-                { writer.WritePropertyName(field.Key); Write(writer, field.Value); }
-                writer.WriteEndObject(); break;
-            default: throw new InvalidDataException("binary_not_diagnostic");
+                {
+                    writer.WritePropertyName(field.Key);
+                    Write(writer, field.Value);
+                }
+                writer.WriteEndObject();
+                break;
+            default:
+                throw new InvalidDataException("binary_not_diagnostic");
         }
     }
 }

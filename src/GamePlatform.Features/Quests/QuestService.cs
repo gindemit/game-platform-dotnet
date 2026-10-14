@@ -29,8 +29,10 @@ namespace GamePlatform.Features.Quests
         /// </summary>
         public Task<CommandAdmission> ClaimAsync(string questId, string occurrenceKey, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(questId)) throw new ArgumentException("A quest ID is required.", nameof(questId));
-            if (string.IsNullOrWhiteSpace(occurrenceKey) || occurrenceKey.Length > 128) throw new ArgumentException("An occurrence key is required.", nameof(occurrenceKey));
+            if (string.IsNullOrWhiteSpace(questId))
+                throw new ArgumentException("A quest ID is required.", nameof(questId));
+            if (string.IsNullOrWhiteSpace(occurrenceKey) || occurrenceKey.Length > 128)
+                throw new ArgumentException("An occurrence key is required.", nameof(occurrenceKey));
             var body = codec.EncodeClaimCommand(questId, occurrenceKey);
             return admitter.AdmitAsync("quest.claim:" + occurrenceKey, "quest.claim", body, cancellationToken);
         }

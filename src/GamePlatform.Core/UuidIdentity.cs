@@ -8,19 +8,33 @@ namespace GamePlatform.Core
     {
         public static void WriteRfcBytes(Guid value, Span<byte> destination)
         {
-            if (destination.Length < 16) throw new ArgumentException("Sixteen bytes required.", nameof(destination));
+            if (destination.Length < 16)
+                throw new ArgumentException("Sixteen bytes required.", nameof(destination));
             var bytes = value.ToByteArray();
-            destination[0] = bytes[3]; destination[1] = bytes[2]; destination[2] = bytes[1]; destination[3] = bytes[0];
-            destination[4] = bytes[5]; destination[5] = bytes[4]; destination[6] = bytes[7]; destination[7] = bytes[6];
+            destination[0] = bytes[3];
+            destination[1] = bytes[2];
+            destination[2] = bytes[1];
+            destination[3] = bytes[0];
+            destination[4] = bytes[5];
+            destination[5] = bytes[4];
+            destination[6] = bytes[7];
+            destination[7] = bytes[6];
             bytes.AsSpan(8, 8).CopyTo(destination.Slice(8));
         }
 
         public static Guid FromRfcBytes(ReadOnlySpan<byte> bytes)
         {
-            if (bytes.Length != 16) throw new ArgumentException("Exactly sixteen bytes required.", nameof(bytes));
+            if (bytes.Length != 16)
+                throw new ArgumentException("Exactly sixteen bytes required.", nameof(bytes));
             var mixed = bytes.ToArray();
-            mixed[0] = bytes[3]; mixed[1] = bytes[2]; mixed[2] = bytes[1]; mixed[3] = bytes[0];
-            mixed[4] = bytes[5]; mixed[5] = bytes[4]; mixed[6] = bytes[7]; mixed[7] = bytes[6];
+            mixed[0] = bytes[3];
+            mixed[1] = bytes[2];
+            mixed[2] = bytes[1];
+            mixed[3] = bytes[0];
+            mixed[4] = bytes[5];
+            mixed[5] = bytes[4];
+            mixed[6] = bytes[7];
+            mixed[7] = bytes[6];
             return new Guid(mixed);
         }
 
@@ -35,15 +49,28 @@ namespace GamePlatform.Core
 
         public static int Compare(Guid left, Guid right)
         {
-            Span<byte> a = stackalloc byte[16]; Span<byte> b = stackalloc byte[16];
-            WriteRfcBytes(left, a); WriteRfcBytes(right, b);
-            for (int i = 0; i < 16; i++) { int order = a[i].CompareTo(b[i]); if (order != 0) return order; }
+            Span<byte> a = stackalloc byte[16];
+            Span<byte> b = stackalloc byte[16];
+            WriteRfcBytes(left, a);
+            WriteRfcBytes(right, b);
+            for (int i = 0; i < 16; i++)
+            {
+                int order = a[i].CompareTo(b[i]);
+                if (order != 0)
+                    return order;
+            }
             return 0;
         }
     }
 
-    public interface IUnixMillisecondClock { long GetUnixMilliseconds(); }
-    public interface IUuidRandomSource { void Fill(Span<byte> destination); }
+    public interface IUnixMillisecondClock
+    {
+        long GetUnixMilliseconds();
+    }
+    public interface IUuidRandomSource
+    {
+        void Fill(Span<byte> destination);
+    }
 
     public sealed class SystemUnixMillisecondClock : IUnixMillisecondClock
     {
@@ -78,12 +105,17 @@ namespace GamePlatform.Core
                 timestamp = Math.Max(timestamp, lastTimestamp);
                 Span<byte> bytes = stackalloc byte[16];
                 random.Fill(bytes);
-                for (int i = 5; i >= 0; i--) { bytes[i] = (byte)timestamp; timestamp >>= 8; }
+                for (int i = 5; i >= 0; i--)
+                {
+                    bytes[i] = (byte)timestamp;
+                    timestamp >>= 8;
+                }
                 bytes[6] = (byte)((bytes[6] & 15) | 0x70);
                 bytes[8] = (byte)((bytes[8] & 63) | 0x80);
                 Guid result = UuidIdentity.FromRfcBytes(bytes);
                 long observed = 0;
-                for (int i = 0; i < 6; i++) observed = (observed << 8) | bytes[i];
+                for (int i = 0; i < 6; i++)
+                    observed = (observed << 8) | bytes[i];
                 lastTimestamp = observed;
                 return result;
             }
@@ -95,13 +127,15 @@ namespace GamePlatform.Core
         public const long MaximumUnixMilliseconds = 253402300799999;
         public static long UnixMilliseconds(long value)
         {
-            if (value < 0 || value > MaximumUnixMilliseconds) throw new ArgumentOutOfRangeException(nameof(value));
+            if (value < 0 || value > MaximumUnixMilliseconds)
+                throw new ArgumentOutOfRangeException(nameof(value));
             return value;
         }
         public static long Add(long value, long delta) => checked(value + delta);
         public static long NextPositiveSequence(long current)
         {
-            if (current < 0) throw new ArgumentOutOfRangeException(nameof(current));
+            if (current < 0)
+                throw new ArgumentOutOfRangeException(nameof(current));
             return checked(current + 1);
         }
     }

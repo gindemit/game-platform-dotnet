@@ -36,41 +36,57 @@ namespace GamePlatform.Tests.Features.Progression
         [Fact]
         public async Task RealSqliteLocalCompletionAndOutboxCommitTogetherAndSurviveSoftRestart()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var request = Request("0199f9a0-0000-7000-8000-000000000111", "run-a", 3);
             var pending = await service.CompleteAsync(request, CancellationToken.None);
-            Assert.Equal(FeatureSnapshotState.Pending, pending.State); Assert.Single(pending.Value!.PendingCompletions);
+            Assert.Equal(FeatureSnapshotState.Pending, pending.State);
+            Assert.Single(pending.Value!.PendingCompletions);
             var rows = await database.ExecuteAsync(Scope, transaction => { var sql = (SqliteTransactionSession)transaction; return (sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox"), sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='progression'")); }, CancellationToken.None);
-            Assert.Equal(1, rows.Item1); Assert.Equal(1, rows.Item2);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            Assert.Equal(1, rows.Item1);
+            Assert.Equal(1, rows.Item2);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(FeatureSnapshotState.Pending, cached.State); Assert.Equal(3, cached.Value!.PendingCompletions.Single().ContentVersion);
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            Assert.Equal(FeatureSnapshotState.Pending, cached.State);
+            Assert.Equal(3, cached.Value!.PendingCompletions.Single().ContentVersion);
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task DuplicateCallbackIsIdempotentButSameRunOrOperationWithDifferentPayloadFailsClosed()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var one = Request("0199f9a0-0000-7000-8000-000000000112", "run-b", 1);
-            await service.CompleteAsync(one, CancellationToken.None); await service.CompleteAsync(one, CancellationToken.None);
+            await service.CompleteAsync(one, CancellationToken.None);
+            await service.CompleteAsync(one, CancellationToken.None);
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.CompleteAsync(Request("0199f9a0-0000-7000-8000-000000000113", "run-b", 2), CancellationToken.None));
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.CompleteAsync(Request("0199f9a0-0000-7000-8000-000000000112", "run-c", 2), CancellationToken.None));
             var count = await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox"), CancellationToken.None);
-            Assert.Equal(1, count); service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            Assert.Equal(1, count);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task GameOwnedCompletionCallbackSharesAdmissionTransactionAndDoesNotReplay()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var failed = Request("0199f9a0-0000-7000-8000-000000000130", "run-game-failed", 1);
             using var cancelled = new CancellationTokenSource();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => service.CompleteAsync(failed, (transaction, revision) =>
             {
                 ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_feature_state VALUES (?,?,?,?,?,?,?)", Context.ViewKey.Value, "game-owned", "checkpoint", revision, 100L, new byte[] { 1 }, Array.Empty<byte>());
-                cancelled.Cancel(); cancelled.Token.ThrowIfCancellationRequested();
+                cancelled.Cancel();
+                cancelled.Token.ThrowIfCancellationRequested();
             }, CancellationToken.None));
             var afterFailure = await database.ExecuteAsync(Scope, transaction =>
             {
@@ -95,13 +111,16 @@ namespace GamePlatform.Tests.Features.Progression
                 return (sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_outbox"), sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='progression'"), sql.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='game-owned'"));
             }, CancellationToken.None);
             Assert.Equal((1, 1, 1), committed);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task LostAckRetainsPendingUntilExplicitAcceptedThenPullConfirmationWithoutAllocatingValue()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var request = Request("0199f9a0-0000-7000-8000-000000000114", "run-c", 1);
             await service.CompleteAsync(request, CancellationToken.None);
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()), CancellationToken.None);
@@ -115,30 +134,38 @@ namespace GamePlatform.Tests.Features.Progression
             Assert.Equal(10, accepted.Value.Confirmed!.States.Single().Value);
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(2, 11), new[] { request.OperationId }), CancellationToken.None);
             var confirmed = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Single(confirmed.Value!.PendingCompletions); Assert.Equal(unrelated.OperationId, confirmed.Value.PendingCompletions.Single().OperationId);
+            Assert.Single(confirmed.Value!.PendingCompletions);
+            Assert.Equal(unrelated.OperationId, confirmed.Value.PendingCompletions.Single().OperationId);
             Assert.Equal(11, confirmed.Value.Confirmed!.States.Single().Value);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task UnknownOrPrematureConfirmationIsRejectedBeforeProjectionOrPendingMutation()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var awaiting = Request("0199f9a0-0000-7000-8000-000000000121", "run-confirmation", 1);
             await service.CompleteAsync(awaiting, CancellationToken.None);
             var unknown = new OperationId(Guid.Parse("0199f9a0-0000-7000-8000-000000000122"));
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), new[] { unknown }), CancellationToken.None));
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), new[] { awaiting.OperationId }), CancellationToken.None));
             var unchanged = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Null(unchanged.Value!.Confirmed); Assert.Single(unchanged.Value.PendingCompletions);
+            Assert.Null(unchanged.Value!.Confirmed);
+            Assert.Single(unchanged.Value.PendingCompletions);
             Assert.Equal(ProgressionPendingStatus.AwaitingReceipt, unchanged.Value.PendingCompletions.Single().Status);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task ConveniencePullIsMonotonicNoopForOlderAndExactReplayButRejectsChangedSameRevision()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(2, 20), Array.Empty<OperationId>()), CancellationToken.None);
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()), CancellationToken.None);
             var afterOlder = await service.ReadCachedAsync(Context, CancellationToken.None);
@@ -151,28 +178,35 @@ namespace GamePlatform.Tests.Features.Progression
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(3, 30), new[] { accepted.OperationId }), CancellationToken.None);
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(3, 30), new[] { accepted.OperationId }), CancellationToken.None);
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(3, 30), Array.Empty<OperationId>()), CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task AbsentProjectionInstallsSemanticRevisionZeroReplaysExactlyAndThenAdvancesToOne()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var zero = new ProgressionConfirmation(Context, new ProgressionConfirmedProjection(0, 100, Array.Empty<ProgressionConfirmedState>()), Array.Empty<OperationId>());
             await service.ApplyConfirmedAsync(zero, CancellationToken.None);
             var installed = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(0, installed.Value!.Confirmed!.Revision); Assert.Empty(installed.Value.Confirmed.States);
+            Assert.Equal(0, installed.Value!.Confirmed!.Revision);
+            Assert.Empty(installed.Value.Confirmed.States);
             await service.ApplyConfirmedAsync(zero, CancellationToken.None);
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(0, 1), Array.Empty<OperationId>()), CancellationToken.None));
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()), CancellationToken.None);
             Assert.Equal(1, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.Confirmed!.Revision);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task BorrowedProjectionAndCursorSentinelRollbackTogetherThenCommitAndReopen()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cursor_side_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
             await Assert.ThrowsAsync<InvalidOperationException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
@@ -185,26 +219,35 @@ namespace GamePlatform.Tests.Features.Progression
             await database.ExecuteAsync(Scope, transaction =>
             {
                 service.ApplyConfirmedProjection(transaction, Context, null, new ProgressionConfirmation(Context, Projection(0, 10), Array.Empty<OperationId>()));
-                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (1)"); return true;
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO cursor_side_sentinel VALUES (1)");
+                return true;
             }, CancellationToken.None);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(0, cached.Value!.Confirmed!.Revision); Assert.Equal(10, cached.Value.Confirmed.States.Single().Value);
+            Assert.Equal(0, cached.Value!.Confirmed!.Revision);
+            Assert.Equal(10, cached.Value.Confirmed.States.Single().Value);
             Assert.Equal(1, await reopened.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cursor_side_sentinel"), CancellationToken.None));
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task BorrowedMarkerPersistsOnlyAcceptedIdsAndRejectsRevisionOrEvidenceReplacement()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var accepted = Request("0199f9a0-0000-7000-8000-000000000123", "run-borrowed-a", 1);
             var unrelated = Request("0199f9a0-0000-7000-8000-000000000124", "run-borrowed-b", 1);
-            await service.CompleteAsync(accepted, CancellationToken.None); await service.CompleteAsync(unrelated, CancellationToken.None);
+            await service.CompleteAsync(accepted, CancellationToken.None);
+            await service.CompleteAsync(unrelated, CancellationToken.None);
             await Assert.ThrowsAsync<ProgressionConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 0, new ProgressionConfirmation(Context, Projection(1, 10), new[] { accepted.OperationId })); return true;
+                service.ApplyConfirmedProjection(transaction, Context, 0, new ProgressionConfirmation(Context, Projection(1, 10), new[] { accepted.OperationId }));
+                return true;
             }, CancellationToken.None));
             Assert.Equal(0, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='progression-confirmation'"), CancellationToken.None));
             await service.MarkAcceptedAwaitingPullAsync(new ProgressionAcceptance(Context, accepted.OperationId), CancellationToken.None);
@@ -215,38 +258,52 @@ namespace GamePlatform.Tests.Features.Progression
             }, CancellationToken.None);
             await Assert.ThrowsAsync<ProgressionConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 1, new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>())); return true;
+                service.ApplyConfirmedProjection(transaction, Context, 1, new ProgressionConfirmation(Context, Projection(1, 10), Array.Empty<OperationId>()));
+                return true;
             }, CancellationToken.None));
             await Assert.ThrowsAsync<ProgressionConflictException>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
-                service.ApplyConfirmedProjection(transaction, Context, 1, new ProgressionConfirmation(Context, Projection(2, 11), new[] { accepted.OperationId })); return true;
+                service.ApplyConfirmedProjection(transaction, Context, 1, new ProgressionConfirmation(Context, Projection(2, 11), new[] { accepted.OperationId }));
+                return true;
             }, CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
             Assert.Equal(10, cached.Value!.Confirmed!.States.Single().Value);
-            Assert.Single(cached.Value.PendingCompletions); Assert.Equal(unrelated.OperationId, cached.Value.PendingCompletions.Single().OperationId);
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            Assert.Single(cached.Value.PendingCompletions);
+            Assert.Equal(unrelated.OperationId, cached.Value.PendingCompletions.Single().OperationId);
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task TerminalRejectionPreservesOtherPendingWorkAndPermitsNextSequence()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var rejected = Request("0199f9a0-0000-7000-8000-000000000115", "run-d", 1);
             var retained = Request("0199f9a0-0000-7000-8000-000000000116", "run-e", 1);
-            await service.CompleteAsync(rejected, CancellationToken.None); await service.CompleteAsync(retained, CancellationToken.None);
+            await service.CompleteAsync(rejected, CancellationToken.None);
+            await service.CompleteAsync(retained, CancellationToken.None);
             await service.RejectAsync(Context, rejected.OperationId, CancellationToken.None);
             var next = await service.CompleteAsync(Request("0199f9a0-0000-7000-8000-000000000117", "run-f", 1), CancellationToken.None);
-            Assert.Equal(2, next.Value!.PendingCompletions.Count); Assert.DoesNotContain(next.Value.PendingCompletions, x => x.OperationId == rejected.OperationId);
+            Assert.Equal(2, next.Value!.PendingCompletions.Count);
+            Assert.DoesNotContain(next.Value.PendingCompletions, x => x.OperationId == rejected.OperationId);
             var sequence = await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<long>("SELECT next_sequence FROM gp_stream_state WHERE singleton=1"), CancellationToken.None);
-            Assert.Equal(4, sequence); service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            Assert.Equal(4, sequence);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task TerminalRejectionCanAtomicallyReconcileGameOwnedProjection()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var rejected = Request("0199f9a0-0000-7000-8000-000000000215", "run-rejected-game", 1);
             await service.CompleteAsync(rejected, (transaction, revision) =>
             {
@@ -262,13 +319,16 @@ namespace GamePlatform.Tests.Features.Progression
                 ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='game-owned'"), CancellationToken.None);
             Assert.Equal(0, count);
             Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task FailedGameRejectionRollsBackSdkPendingAndGameOwnedStateAcrossReopen()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var rejected = Request("0199f9a0-0000-7000-8000-000000000216", "run-rejected-rollback", 1);
             await service.CompleteAsync(rejected, (transaction, revision) =>
             {
@@ -281,20 +341,25 @@ namespace GamePlatform.Tests.Features.Progression
                     ((SqliteTransactionSession)transaction).Execute("DELETE FROM gp_feature_state WHERE feature_namespace='game-owned' AND entity_key='completed'");
                     throw new InvalidOperationException("Injected game reconciliation failure.");
                 }, CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             Assert.Contains((await restored.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions,
                 value => value.OperationId == rejected.OperationId);
             var count = await reopened.ExecuteAsync(Scope, transaction =>
                 ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='game-owned'"), CancellationToken.None);
             Assert.Equal(1, count);
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task AccountOrGenerationSwitchCannotReadOrMutatePendingOutcomeAndResetProjectionRetainsIt()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var request = Request("0199f9a0-0000-7000-8000-000000000118", "run-g", 1);
             await service.CompleteAsync(request, CancellationToken.None);
             var switched = new ScopedOwnerContext(Owner, new SemanticId("private"), 8);
@@ -304,14 +369,18 @@ namespace GamePlatform.Tests.Features.Progression
             var reset = new ProgressionConfirmedProjection(2, 11, Array.Empty<ProgressionConfirmedState>());
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, reset, Array.Empty<OperationId>()), CancellationToken.None);
             var snapshot = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Single(snapshot.Value!.PendingCompletions); Assert.Empty(snapshot.Value.Confirmed!.States);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            Assert.Single(snapshot.Value!.PendingCompletions);
+            Assert.Empty(snapshot.Value.Confirmed!.States);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task LateAcceptedCompletionConfirmsAgainstTheInstalledRevisionAndSurvivesReopen()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var first = await AcceptAsync(service, Operation(130), "run-late-a");
             var second = await AcceptAsync(service, Operation(131), "run-late-b");
             var third = await AcceptAsync(service, Operation(132), "run-late-c");
@@ -324,39 +393,52 @@ namespace GamePlatform.Tests.Features.Progression
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(7, 70), Array.Empty<OperationId>()), CancellationToken.None));
             var confirmed = await service.ReadCachedAsync(Context, CancellationToken.None);
             Assert.Equal(new[] { third }, confirmed.Value!.PendingCompletions.Select(value => value.OperationId));
-            Assert.Equal(7, confirmed.Value.Confirmed!.Revision); Assert.Equal(70, confirmed.Value.Confirmed.States.Single().Value);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            Assert.Equal(7, confirmed.Value.Confirmed!.Revision);
+            Assert.Equal(70, confirmed.Value.Confirmed.States.Single().Value);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
             Assert.Equal(new[] { third }, cached.Value!.PendingCompletions.Select(value => value.OperationId));
             Assert.Equal(70, cached.Value.Confirmed!.States.Single().Value);
             var evidence = await new SqliteConfirmationStore(reopened).ReadAsync(Context, CancellationToken.None);
             Assert.Equal(new long[] { 7, 7 }, evidence.Select(value => value.ProjectionRevision));
             Assert.Equal(new[] { first, second }, evidence.Select(value => value.OperationIds.Single()));
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task MoreAcceptedCompletionsThanOneEvidenceGroupDrainAtOneStableRevision()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var accepted = new List<OperationId>();
-            for (var index = 0; index != 300; index++) accepted.Add(await AcceptAsync(service, Operation(1000 + index), "run-drain-" + index));
+            for (var index = 0; index != 300; index++)
+                accepted.Add(await AcceptAsync(service, Operation(1000 + index), "run-drain-" + index));
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(9, 90), accepted.Take(256).ToArray()), CancellationToken.None);
             Assert.Equal(44, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions.Count);
             await service.ApplyConfirmedAsync(new ProgressionConfirmation(Context, Projection(9, 90), accepted.Skip(256).ToArray()), CancellationToken.None);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             var cached = await restored.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(FeatureSnapshotState.Stale, cached.State); Assert.Empty(cached.Value!.PendingCompletions);
-            Assert.Equal(9, cached.Value.Confirmed!.Revision); Assert.Equal(90, cached.Value.Confirmed.States.Single().Value);
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            Assert.Equal(FeatureSnapshotState.Stale, cached.State);
+            Assert.Empty(cached.Value!.PendingCompletions);
+            Assert.Equal(9, cached.Value.Confirmed!.Revision);
+            Assert.Equal(90, cached.Value.Confirmed.States.Single().Value);
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task SameRevisionAcknowledgementLeavesStateUnchangedOnFaultCancellationOrOwnerSwitch()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
             var faulting = new FaultingConfirmationStore(new SqliteConfirmationStore(database));
             var service = Create(database, Context, faulting);
             var first = await AcceptAsync(service, Operation(140), "run-fault-a");
@@ -377,14 +459,16 @@ namespace GamePlatform.Tests.Features.Progression
             Assert.Equal(new[] { second }, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions.Select(value => value.OperationId));
             await service.ApplyConfirmedAsync(late, CancellationToken.None);
             Assert.Empty((await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public void ContractPreservesSigned64OutcomeValuesAndRejectsLocalRewardShapes()
         {
             var request = Request("0199f9a0-0000-7000-8000-000000000119", "run-h", int.MaxValue, long.MinValue);
-            Assert.Equal(long.MinValue, request.Outcome.Score); Assert.Equal(ProgressionOutcomeAuthority.ClientTrustedUnvalidated, request.OutcomeAuthority);
+            Assert.Equal(long.MinValue, request.Outcome.Score);
+            Assert.Equal(ProgressionOutcomeAuthority.ClientTrustedUnvalidated, request.OutcomeAuthority);
             Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressionConfirmedState(new SemanticId("campaign.level"), -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => new ProgressionCompletionRequest(Context, request.OperationId, Stream, "run", request.Outcome, 0, ProgressionOutcomeAuthority.ClientTrustedUnvalidated));
         }
@@ -396,7 +480,9 @@ namespace GamePlatform.Tests.Features.Progression
             var extension = new ProgressionCommandExtension("campaign.milestone", 1, values);
             values["campaignVersion"] = "tampered";
             Assert.Equal("generated-campaign-v1", extension.Value["campaignVersion"]);
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var plain = Request("0199f9a0-0000-7000-8000-000000000119", "run-extension", 1);
             var campaign = new ProgressionCompletionRequest(Context, plain.OperationId, Stream, plain.BusinessSource,
                 plain.Outcome, plain.ContentVersion, plain.OutcomeAuthority, "campaign.local", extension);
@@ -406,19 +492,24 @@ namespace GamePlatform.Tests.Features.Progression
             Assert.Equal("generated-campaign-v1", retained.Extension!.Value["campaignVersion"]);
             await Assert.ThrowsAsync<ProgressionConflictException>(() => service.CompleteAsync(plain, CancellationToken.None));
             await service.MarkAcceptedAwaitingPullAsync(new ProgressionAcceptance(Context, campaign.OperationId), CancellationToken.None);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             var afterReopen = (await restored.ReadCachedAsync(Context, CancellationToken.None)).Value!.PendingCompletions.Single();
             Assert.Equal(ProgressionPendingStatus.AcceptedAwaitingPull, afterReopen.Status);
             Assert.Equal("campaign.local", afterReopen.ValidationScheme);
             Assert.Equal("generated-campaign-v1", afterReopen.Extension!.Value["campaignVersion"]);
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task AcceptedReceiptAssociationAndGameMutationCommitTogetherAndSurviveReopen()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenReady(files.Path); var service = Create(database, Context);
+            using var files = new TemporaryDatabase();
+            var database = await OpenReady(files.Path);
+            var service = Create(database, Context);
             var accepted = await AcceptAsync(service, Operation(160), "run-receipt");
             var unrelated = Request(Operation(161), "run-unrelated", 1);
             await service.CompleteAsync(unrelated, CancellationToken.None);
@@ -454,11 +545,14 @@ namespace GamePlatform.Tests.Features.Progression
                 return (sql.ExecuteScalar<int>("SELECT COUNT(*) FROM game_receipt_sentinel"),
                     sql.ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='progression-receipt-confirmation'"));
             }, CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            var reopened = await OpenReady(files.Path, false); var restored = Create(reopened, Context);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            var reopened = await OpenReady(files.Path, false);
+            var restored = Create(reopened, Context);
             Assert.Equal(new[] { unrelated.OperationId }, (await restored.ReadCachedAsync(Context, CancellationToken.None))
                 .Value!.PendingCompletions.Select(value => value.OperationId));
-            restored.Dispose(); Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
+            restored.Dispose();
+            Assert.True(await reopened.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         private static ProgressionService Create(SqliteDatabase database, ScopedOwnerContext context, IProgressionConfirmationEvidenceStore? confirmations = null) => new ProgressionService(context, Scope, new SqliteDurableFeatureStateStore(database, Scope), database, new SqliteAtomicCommandStore(database, Scope, Owner, new Fingerprint(), new FixedClock()), new Codec(), confirmations ?? new SqliteConfirmationStore(database), () => 100);
@@ -476,7 +570,8 @@ namespace GamePlatform.Tests.Features.Progression
         private static async Task<SqliteDatabase> OpenReady(string path, bool seed = true)
         {
             var database = await SqliteDatabase.OpenAsync(path, Scope, Migrations, CancellationToken.None);
-            if (seed) await database.ExecuteAsync(Scope, tx => { ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D")); return true; }, CancellationToken.None);
+            if (seed)
+                await database.ExecuteAsync(Scope, tx => { ((SqliteTransactionSession)tx).Execute("INSERT INTO gp_stream_state(singleton, backend_namespace, app_id, account_id, client_stream_id, installation_id, ready, next_sequence, local_revision, finalized_through) SELECT 1, ?, ?, ?, ?, ?, 1, 1, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM gp_stream_state)", Owner.Backend.Value, Owner.AppId.ToString(), Owner.UserId.ToString(), Stream.ToString(), Installation.ToString("D")); return true; }, CancellationToken.None);
             return database;
         }
 
@@ -485,7 +580,10 @@ namespace GamePlatform.Tests.Features.Progression
             public int GetFingerprintLength(int version) => version == 1 ? 32 : 0;
             public void Compute(OwnerScope _, OperationId __, ClientStreamId ___, Guid ____, long _____, string ______, int _______, int ________, long _________, ReadOnlySpan<byte> body, Span<byte> destination) => SHA256.HashData(body).CopyTo(destination);
         }
-        private sealed class FixedClock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1_789_555_200_000; }
+        private sealed class FixedClock : IUnixMillisecondClock
+        {
+            public long GetUnixMilliseconds() => 1_789_555_200_000;
+        }
 
         private sealed class Codec : IProgressionStateCodec
         {
@@ -493,15 +591,35 @@ namespace GamePlatform.Tests.Features.Progression
             public byte[] EncodePending(IReadOnlyList<PendingProgressionCompletion> values) => Text("P", string.Join(";", values.Select(value => string.Join(",", value.OperationId.ToString(), value.StreamId.ToString(), B(value.BusinessSource), value.ContentVersion, (int)value.OutcomeAuthority, value.LocalRevision, (int)value.Status, B(value.Outcome.Session.Value), B(value.Outcome.Mode.Value), B(value.Outcome.Content.Value), B(value.Outcome.Difficulty.Value), value.Outcome.Success ? "1" : "0", value.Outcome.Score, value.Outcome.DurationTicks, value.Outcome.TicksPerSecond, B(value.Outcome.ValidationReference), B(value.ValidationScheme), B(EncodeExtension(value.Extension))))));
             public IReadOnlyList<PendingProgressionCompletion> DecodePending(long _, ReadOnlySpan<byte> payload)
             {
-                var items = Parts(payload, 2)[1]; if (string.IsNullOrEmpty(items)) return Array.Empty<PendingProgressionCompletion>();
+                var items = Parts(payload, 2)[1];
+                if (string.IsNullOrEmpty(items))
+                    return Array.Empty<PendingProgressionCompletion>();
                 return items.Split(';').Select(item => { var p = item.Split(','); var outcome = new GameplayOutcome(new PlatformId(U(p[7])), new PlatformId(U(p[8])), new PlatformId(U(p[9])), new PlatformId(U(p[10])), p[11] == "1", long.Parse(p[12]), long.Parse(p[13]), int.Parse(p[14]), new Dictionary<string, long>(), U(p[15])); return new PendingProgressionCompletion(new OperationId(Guid.Parse(p[0])), new ClientStreamId(Guid.Parse(p[1])), U(p[2]), outcome, int.Parse(p[3]), (ProgressionOutcomeAuthority)int.Parse(p[4]), long.Parse(p[5]), (ProgressionPendingStatus)int.Parse(p[6]), p.Length == 18 ? U(p[16]) : "untrusted-reference", p.Length == 18 ? DecodeExtension(U(p[17])) : null); }).ToArray();
             }
             public byte[] EncodeConfirmed(ProgressionConfirmedProjection value) => Text("S", string.Join(";", value.States.Select(state => B(state.StateKey.Value) + "," + state.Value)));
-            public ProgressionConfirmedProjection DecodeConfirmed(long revision, long at, ReadOnlySpan<byte> payload) { var part = Parts(payload, 2)[1]; var states = string.IsNullOrEmpty(part) ? Array.Empty<ProgressionConfirmedState>() : part.Split(';').Select(value => { var p = value.Split(','); return new ProgressionConfirmedState(new SemanticId(U(p[0])), long.Parse(p[1])); }).ToArray(); return new ProgressionConfirmedProjection(revision, at, states); }
+            public ProgressionConfirmedProjection DecodeConfirmed(long revision, long at, ReadOnlySpan<byte> payload)
+            {
+                var part = Parts(payload, 2)[1];
+                var states = string.IsNullOrEmpty(part) ? Array.Empty<ProgressionConfirmedState>() : part.Split(';').Select(value => { var p = value.Split(','); return new ProgressionConfirmedState(new SemanticId(U(p[0])), long.Parse(p[1])); }).ToArray();
+                return new ProgressionConfirmedProjection(revision, at, states);
+            }
             private static string EncodeExtension(ProgressionCommandExtension? extension) => extension == null ? string.Empty : string.Join("^", B(extension.Schema), extension.Version.ToString(), string.Join(":", extension.Value.OrderBy(value => value.Key, StringComparer.Ordinal).Select(value => B(value.Key) + "." + B(value.Value))));
-            private static ProgressionCommandExtension? DecodeExtension(string value) { if (string.IsNullOrEmpty(value)) return null; var parts = value.Split('^'); var pairs = string.IsNullOrEmpty(parts[2]) ? Array.Empty<string>() : parts[2].Split(':'); return new ProgressionCommandExtension(U(parts[0]), int.Parse(parts[1]), pairs.ToDictionary(pair => U(pair.Split('.')[0]), pair => U(pair.Split('.')[1]), StringComparer.Ordinal)); }
+            private static ProgressionCommandExtension? DecodeExtension(string value)
+            {
+                if (string.IsNullOrEmpty(value))
+                    return null;
+                var parts = value.Split('^');
+                var pairs = string.IsNullOrEmpty(parts[2]) ? Array.Empty<string>() : parts[2].Split(':');
+                return new ProgressionCommandExtension(U(parts[0]), int.Parse(parts[1]), pairs.ToDictionary(pair => U(pair.Split('.')[0]), pair => U(pair.Split('.')[1]), StringComparer.Ordinal));
+            }
             private static byte[] Text(params string[] values) => Encoding.UTF8.GetBytes(string.Join("|", values.Select(B)));
-            private static string[] Parts(ReadOnlySpan<byte> value, int count) { var all = Encoding.UTF8.GetString(value).Split('|').Select(U).ToArray(); if (all.Length != count) throw new InvalidOperationException("Invalid test codec payload."); return all; }
+            private static string[] Parts(ReadOnlySpan<byte> value, int count)
+            {
+                var all = Encoding.UTF8.GetString(value).Split('|').Select(U).ToArray();
+                if (all.Length != count)
+                    throw new InvalidOperationException("Invalid test codec payload.");
+                return all;
+            }
             private static string B(string value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value)); private static string U(string value) => Encoding.UTF8.GetString(Convert.FromBase64String(value));
         }
 
@@ -511,21 +629,26 @@ namespace GamePlatform.Tests.Features.Progression
             private const string Namespace = "progression-confirmation";
             private const string Key = "markers";
             private readonly SqliteDatabase database;
-            public SqliteConfirmationStore(SqliteDatabase database) { this.database = database; }
+            public SqliteConfirmationStore(SqliteDatabase database)
+            {
+                this.database = database;
+            }
             public async Task<IReadOnlyList<ProgressionConfirmationEvidence>> ReadAsync(ScopedOwnerContext owner, CancellationToken cancellationToken)
             {
                 return await database.ExecuteAsync(Scope, transaction =>
                 {
                     var session = (SqliteTransactionSession)transaction;
                     var args = new object[] { owner.ViewKey.Value, Namespace, Key };
-                    if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0) return (IReadOnlyList<ProgressionConfirmationEvidence>)Array.Empty<ProgressionConfirmationEvidence>();
+                    if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0)
+                        return (IReadOnlyList<ProgressionConfirmationEvidence>)Array.Empty<ProgressionConfirmationEvidence>();
                     return Decode(session.ExecuteScalar<byte[]>("SELECT payload FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args));
                 }, cancellationToken).ConfigureAwait(false);
             }
             public void ValidateAndInsert(ILocalStorageTransaction transaction, ScopedOwnerContext owner, ProgressionConfirmationEvidence evidence, IProgressionStateCodec codec)
             {
                 var session = transaction as SqliteTransactionSession ?? throw new InvalidOperationException("Expected the SQLite transaction.");
-                if (codec == null) throw new ArgumentNullException(nameof(codec));
+                if (codec == null)
+                    throw new ArgumentNullException(nameof(codec));
                 if (evidence.OperationIds.Count != 0)
                 {
                     var pendingArgs = new object[] { owner.ViewKey.Value, "progression", "pending" };
@@ -551,13 +674,16 @@ namespace GamePlatform.Tests.Features.Progression
                 if (evidence.ProjectionRevision < latest || (evidence.ProjectionRevision == latest && evidence.OperationIds.Count == 0) || prior.SelectMany(value => value.OperationIds).Intersect(evidence.OperationIds).Any())
                     throw new ProgressionConflictException("A progression confirmation cannot replace immutable evidence.");
                 var next = prior.Concat(new[] { evidence }).ToArray();
-                if (next.Length > 1024 || next.SelectMany(value => value.OperationIds).Count() > 1024) throw new ProgressionConflictException("Progression confirmation evidence exceeds its durable bound.");
+                if (next.Length > 1024 || next.SelectMany(value => value.OperationIds).Count() > 1024)
+                    throw new ProgressionConflictException("Progression confirmation evidence exceeds its durable bound.");
                 session.Execute("UPDATE gp_feature_state SET revision=?, confirmed_at=?, payload=?, extensions=? WHERE view_key=? AND feature_namespace=? AND entity_key=?", evidence.ProjectionRevision, 0L, Encode(next), Array.Empty<byte>(), owner.ViewKey.Value, Namespace, Key);
             }
             private static byte[] Encode(IReadOnlyList<ProgressionConfirmationEvidence> values) => Encoding.UTF8.GetBytes(string.Join(";", values.Select(value => value.ProjectionRevision + ":" + string.Join(",", value.OperationIds.Select(operation => operation.ToString())))));
             private static IReadOnlyList<ProgressionConfirmationEvidence> Decode(byte[] payload)
             {
-                var text = Encoding.UTF8.GetString(payload); if (string.IsNullOrEmpty(text)) throw new InvalidOperationException("Confirmation evidence is empty.");
+                var text = Encoding.UTF8.GetString(payload);
+                if (string.IsNullOrEmpty(text))
+                    throw new InvalidOperationException("Confirmation evidence is empty.");
                 return text.Split(';').Select(value => { var parts = value.Split(':'); if (parts.Length != 2) throw new InvalidOperationException("Confirmation evidence is malformed."); var operations = string.IsNullOrEmpty(parts[1]) ? Array.Empty<OperationId>() : parts[1].Split(',').Select(item => new OperationId(Guid.Parse(item))).ToArray(); return new ProgressionConfirmationEvidence(long.Parse(parts[0]), operations); }).ToArray();
             }
         }
@@ -565,26 +691,43 @@ namespace GamePlatform.Tests.Features.Progression
         private sealed class FaultingConfirmationStore : IProgressionConfirmationEvidenceStore
         {
             private readonly IProgressionConfirmationEvidenceStore inner;
-            public FaultingConfirmationStore(IProgressionConfirmationEvidenceStore inner) { this.inner = inner; }
-            public bool FailAfterInsert { get; set; }
+            public FaultingConfirmationStore(IProgressionConfirmationEvidenceStore inner)
+            {
+                this.inner = inner;
+            }
+            public bool FailAfterInsert
+            {
+                get; set;
+            }
             public Task<IReadOnlyList<ProgressionConfirmationEvidence>> ReadAsync(ScopedOwnerContext owner, CancellationToken cancellationToken) => inner.ReadAsync(owner, cancellationToken);
             public void ValidateAndInsert(ILocalStorageTransaction transaction, ScopedOwnerContext owner, ProgressionConfirmationEvidence evidence, IProgressionStateCodec codec)
             {
                 inner.ValidateAndInsert(transaction, owner, evidence, codec);
-                if (FailAfterInsert) throw new InvalidOperationException("simulated failure after the evidence insert");
+                if (FailAfterInsert)
+                    throw new InvalidOperationException("simulated failure after the evidence insert");
             }
         }
 
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl108", Guid.NewGuid().ToString("N"));
-            public TemporaryDatabase() { Directory.CreateDirectory(directory); Path = System.IO.Path.Combine(directory, "platform.sqlite3"); }
-            public string Path { get; }
+            public TemporaryDatabase()
+            {
+                Directory.CreateDirectory(directory);
+                Path = System.IO.Path.Combine(directory, "platform.sqlite3");
+            }
+            public string Path
+            {
+                get;
+            }
             public void Dispose()
             {
                 for (var attempt = 0; attempt != 5 && Directory.Exists(directory); attempt++)
                 {
-                    try { Directory.Delete(directory, true); }
+                    try
+                    {
+                        Directory.Delete(directory, true);
+                    }
                     catch (IOException) when (attempt != 4) { Thread.Sleep(10); }
                     catch (IOException) { return; }
                 }

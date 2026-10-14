@@ -11,7 +11,13 @@ namespace GamePlatform.Wire.Contracts
             Quantity = quantity;
         }
 
-        public string CurrencyId { get; }
-        public long Quantity { get; }
+        public string CurrencyId
+        {
+            get;
+        }
+        public long Quantity
+        {
+            get;
+        }
     }
 }

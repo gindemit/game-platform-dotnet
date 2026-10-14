@@ -34,7 +34,8 @@ namespace GamePlatform.Tests.Storage.Recovery
                     captured = t;
                     calls++;
                     t.Execute("INSERT INTO pb_admission VALUES (?)", entry.StreamId.ToString());
-                    if (fail) throw new InvalidOperationException("injected crash");
+                    if (fail)
+                        throw new InvalidOperationException("injected crash");
                 });
                 await Assert.ThrowsAsync<StorageException>(() => directory.ReserveAsync(principal, app, installation, stream, CancellationToken.None));
                 Assert.Null(await directory.FindAsync(principal, app, CancellationToken.None));
@@ -58,7 +59,10 @@ namespace GamePlatform.Tests.Storage.Recovery
                     Exception? otherThreadFailure = null;
                     var otherThread = new Thread(() =>
                     {
-                        try { t.ExecuteScalar<int>("SELECT COUNT(*) FROM pb_admission"); }
+                        try
+                        {
+                            t.ExecuteScalar<int>("SELECT COUNT(*) FROM pb_admission");
+                        }
                         catch (Exception error) { otherThreadFailure = error; }
                     });
                     otherThread.Start();

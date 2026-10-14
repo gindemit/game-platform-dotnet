@@ -14,7 +14,12 @@ internal static class Program
     {
         try
         {
-            if (args.Length == 1 && args[0] == "--self-test") { SelfTest(); Console.WriteLine("preflight self-test passed"); return 0; }
+            if (args.Length == 1 && args[0] == "--self-test")
+            {
+                SelfTest();
+                Console.WriteLine("preflight self-test passed");
+                return 0;
+            }
             if (args.Length != 2 || (args[0] != "plan" && args[0] != "preflight"))
                 throw new InvalidOperationException("Usage: HostedDevSmoke plan|preflight <non-secret target.json> (no hosted writes)");
             var target = JsonSerializer.Deserialize<Target>(File.ReadAllText(args[1])) ?? throw new InvalidOperationException("Invalid target document");
@@ -71,7 +76,11 @@ internal static class Program
         var padded = value.Replace('-', '+').Replace('_', '/').PadRight((value.Length + 3) / 4 * 4, '=');
         return Convert.FromBase64String(padded);
     }
-    private static void Require(bool valid, string message) { if (!valid) throw new InvalidOperationException(message); }
+    private static void Require(bool valid, string message)
+    {
+        if (!valid)
+            throw new InvalidOperationException(message);
+    }
 
     private static void SelfTest()
     {
@@ -80,13 +89,21 @@ internal static class Program
         foreach (var bad in new[] { good with { ProjectRef = "other" }, good with { Endpoint = Endpoint + "/other" }, good with { Issuer = "https://other/auth/v1" }, good with { AppIdText = Guid.Empty.ToString("D") }, good with { FixtureOwnership = "existing" }, good with { SchemaRegistrySha256 = "" } })
         {
             var refused = false;
-            try { ValidateTarget(bad); } catch (InvalidOperationException) { refused = true; }
+            try
+            {
+                ValidateTarget(bad);
+            }
+            catch (InvalidOperationException) { refused = true; }
             Require(refused, "negative target guard failed");
         }
         var payload = Convert.ToBase64String(Encoding.UTF8.GetBytes("{\"iss\":\"https://other/auth/v1\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"sub\":\"018f1700-0000-7000-8000-000000000001\",\"exp\":9999999999}"));
         var header = Convert.ToBase64String(Encoding.UTF8.GetBytes("{\"alg\":\"ES256\"}"));
         var rejected = false;
-        try { ValidateToken(header + "." + payload + ".sig"); } catch (InvalidOperationException) { rejected = true; }
+        try
+        {
+            ValidateToken(header + "." + payload + ".sig");
+        }
+        catch (InvalidOperationException) { rejected = true; }
         Require(rejected, "wrong issuer token guard failed");
     }
 

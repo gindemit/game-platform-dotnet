@@ -61,7 +61,9 @@ namespace GamePlatform.Tests.Serialization
             Assert.Throws<QualificationCodecException>(() => codec.Encode(invalid));
         }
 
-        private sealed class UnsupportedPayload : IPushPayload { }
+        private sealed class UnsupportedPayload : IPushPayload
+        {
+        }
 
         [Fact]
         public void ArbitraryUnionImplementationsFailBeforeEncoding()
@@ -76,7 +78,8 @@ namespace GamePlatform.Tests.Serialization
         public void RecursiveExtensionsFailClosedAtMappingBoundary()
         {
             ExtensionValue value = ExtensionValue.Null;
-            for (int i = 0; i < 40; i++) value = ExtensionValue.FromArray(new[] { value });
+            for (int i = 0; i < 40; i++)
+                value = ExtensionValue.FromArray(new[] { value });
             var extension = new CommonExtension("test", 1, new Dictionary<string, ExtensionValue> { ["deep"] = value });
             Assert.Throws<QualificationCodecException>(() => new TypedQualificationCodec().ToDiagnostic(extension));
         }

@@ -1,13 +1,52 @@
-# SDK formatting coverage (2026-10-03)
+# SDK C# formatting coverage
 
-The repository pins .NET SDK `9.0.203` in `global.json`. CI on push to `main`, pull requests and manual dispatch restores the locked solution, then runs:
+The repository pins .NET SDK `9.0.203` in `global.json`. The root `.editorconfig`
+applies four-space indentation, Allman braces and expanded single-line statements
+and blocks to first-party C# throughout the repository, including the identity
+types and optional configuration libraries. Visual Studio reads these project
+settings; use **Edit > Advanced > Format Document** (`Ctrl+K`, `Ctrl+D`) to apply
+them to the current document.
+
+CI on push to `main`, pull requests and manual dispatch restores the locked
+solution, then checks its first-party runtime, test and acceptance projects:
 
 ```sh
+dotnet restore GamePlatform.sln --locked-mode
 dotnet format GamePlatform.sln whitespace --verify-no-changes --no-restore --exclude src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs
 ```
 
-This checks first-party C# in all solution projects, including runtime projects, test projects and acceptance harnesses. The vendored `SQLite.cs` is excluded. Package output under `upm/`, generated DLLs, acquisition inputs, build output and Unity imports are outside the solution's editable C# source. `.editorconfig` sets UTF-8/LF/final newline and four-space indentation. Its explicit Allman-brace, expanded single-line layout and `IDE0055` build diagnostic currently apply to `PrivateSyncCoordinator.cs` and `ProgressionService.cs` only. The rest of the repository retains the existing whitespace policy until a reviewed baseline is selected; enabling the same options globally produced 7,365 formatter diagnostics in an isolated checkout.
+To repair the solution layout, run the second command without
+`--verify-no-changes`. New solution projects receive the same rules. Standalone
+integration probes and tools also receive the EditorConfig rules, but are checked
+by their own builds or an explicitly selected formatter invocation; the solution
+command does not discover projects outside the solution.
 
-The pinned `dotnet format` whitespace mode is the whole-solution CI check. `EnforceCodeStyleInBuild` and warnings-as-errors now enforce selected `IDE0055` in the two baseline files: an indentation canary made the netstandard `GamePlatform.Sync` build fail with `IDE0055`, while the clean Release solution build passed with zero warnings or errors. The former global Style-category warning setting was removed because enabling build enforcement with it yielded 169 unrelated diagnostic errors. No new analyzer package was added. This scoped baseline leaves no known whitespace failure in the normal CI command.
+`EnforceCodeStyleInBuild`, `IDE0055` warning severity and warnings-as-errors enforce
+formatting in first-party builds. Other analyzer severities are unchanged. The
+vendored `SQLite.cs` remains excluded from the formatter; its IDE0055 diagnostic
+and those of generated `*.g.cs` contracts are disabled. Generated contracts retain
+their generator-owned bytes. Package output under `upm/`, generated DLLs, build
+output and Unity imports are outside the editable source baseline.
 
-In an isolated checkout, an indentation canary in `PrivateSyncCoordinator.cs` made the normal check exit 2. The fixer restored a passing check; a second fix pass made no changes. The excluded SQLite vendor file remained byte-identical. The canary was removed before source integration. This proves the covered C# check detects and repairs a representative violation; it does not prove Unity Editor or native platform behavior.
+The October 3 baseline covered only `PrivateSyncCoordinator.cs` and
+`ProgressionService.cs` with these explicit expanded-layout settings. The owner
+selected the broader baseline on October 14 after dense configuration and
+identity code was observed in Visual Studio. The cleanup changed whitespace in
+202 tracked first-party C# files; Roslyn confirmed unchanged token streams,
+directives and ordinary comments. The test validator stub-removal fixture now
+accepts both the compact and expanded class layout and asserts that it removes
+exactly one stub.
+
+In a disposable source copy, putting two UUID assignments on one line failed the
+normal CI formatting check and the Core build (`IDE0055`). The formatter repaired
+the canary to the exact original clean bytes. A subsequent pass changed zero
+files; vendor, generated-contract and UPM files remained byte-identical.
+
+The formatter does not automatically wrap every long signature or expression,
+and this SDK version preserves some compact `catch` blocks and adjacent member
+declarations. Wrap those for
+readability during review; the screenshot configuration activation file and
+adjacent configuration catch blocks were expanded with whitespace-only edits.
+No additional style analyzers, API rewrites or game integrations were introduced.
+Exact checks, review and limits are recorded in
+[the October 14 evidence](work/formatting-2026-10-14/RESULTS.md).

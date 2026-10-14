@@ -68,13 +68,15 @@ namespace GamePlatform.Tests.Serialization
             params (string Key, QualificationValue Value)[] replacements)
         {
             var values = new Dictionary<string, QualificationValue>(source, StringComparer.Ordinal);
-            foreach (var replacement in replacements) values[replacement.Key] = replacement.Value;
+            foreach (var replacement in replacements)
+                values[replacement.Key] = replacement.Value;
             return QualificationValue.Object(values);
         }
 
         private static IEnumerable<KeyValuePair<string, QualificationValue>> ToPairs((string Key, QualificationValue Value)[] fields)
         {
-            foreach (var field in fields) yield return new KeyValuePair<string, QualificationValue>(field.Key, field.Value);
+            foreach (var field in fields)
+                yield return new KeyValuePair<string, QualificationValue>(field.Key, field.Value);
         }
     }
 }

@@ -57,7 +57,11 @@ namespace GamePlatform.Tests.Transport
             using var refresh = new AuthRefreshCoordinator();
             var bytes = new MessagePackWireCodec().Encode(new ErrorResponse("leaderboards-test", new CommonError("leaderboards.rate_limited", "rate_limit", "private diagnostic text", true, default, default), 1_790_000_000_000));
             var executor = new Executor((_, __) => new HttpResponseData(429, new Dictionary<string, string>
-            { ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType, ["X-Correlation-Id"] = "leaderboards-test", ["Retry-After"] = "7" }, bytes));
+            {
+                ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType,
+                ["X-Correlation-Id"] = "leaderboards-test",
+                ["Retry-After"] = "7"
+            }, bytes));
             var error = await Assert.ThrowsAsync<LeaderboardsOperationException>(() => Provider(executor, new Auth(), refresh).QueryAsync(new LeaderboardsQuery("players-monthly"), CancellationToken.None));
             Assert.Equal("leaderboards.rate_limited", error.ResultCode);
             Assert.Equal(TimeSpan.FromSeconds(7), error.Failure.RetryAfter);
@@ -85,20 +89,31 @@ namespace GamePlatform.Tests.Transport
             new ProductionBackendHttpProviders(new BackendHttpConfiguration(new Uri("https://unit.invalid/"), new BackendNamespace("leaderboards-test")), executor, auth, refresh)
                 .ForAccount(new AppId(GamePlatform.Tests.Features.Teams.TeamsServiceTests.App), new PlatformUserId(GamePlatform.Tests.Features.Teams.TeamsServiceTests.Account), GamePlatform.Tests.Features.Teams.TeamsServiceTests.Player).Leaderboards;
         private static HttpResponseData Reply(LeaderboardsCountryResponse value) => new HttpResponseData(200, new Dictionary<string, string>
-        { ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType, ["X-Correlation-Id"] = "leaderboards-test" }, new LeaderboardsMessagePackCodec().EncodeCountryResponse(new GamePlatform.Wire.Contracts.Leaderboards.LeaderboardsCountryResponse(value.OperationId, value.BoardId, value.ParticipantKind, value.ParticipantId, value.CountryCode, value.EffectiveAt)));
+        {
+            ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType,
+            ["X-Correlation-Id"] = "leaderboards-test"
+        }, new LeaderboardsMessagePackCodec().EncodeCountryResponse(new GamePlatform.Wire.Contracts.Leaderboards.LeaderboardsCountryResponse(value.OperationId, value.BoardId, value.ParticipantKind, value.ParticipantId, value.CountryCode, value.EffectiveAt)));
         private sealed class Executor : IHttpExecutor
         {
             private readonly Func<HttpRequestData, int, HttpResponseData> response;
             public List<HttpRequestData> Requests = new List<HttpRequestData>();
             public Executor(Func<HttpRequestData, int, HttpResponseData> response) => this.response = response;
-            public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken token) { Requests.Add(request); return Task.FromResult(response(request, Requests.Count)); }
+            public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken token)
+            {
+                Requests.Add(request);
+                return Task.FromResult(response(request, Requests.Count));
+            }
         }
         private sealed class Auth : IAuthSession
         {
             public int Refreshes;
             public string SessionKey => "leaderboards-test";
             public Task<AccessTokenSnapshot> GetAsync(CancellationToken token) => Task.FromResult(new AccessTokenSnapshot("old-test-token", 1));
-            public Task<AccessTokenSnapshot> RefreshAsync(long generation, CancellationToken token) { Refreshes++; return Task.FromResult(new AccessTokenSnapshot("fresh-test-token", 2)); }
+            public Task<AccessTokenSnapshot> RefreshAsync(long generation, CancellationToken token)
+            {
+                Refreshes++;
+                return Task.FromResult(new AccessTokenSnapshot("fresh-test-token", 2));
+            }
         }
     }
 }

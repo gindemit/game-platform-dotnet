@@ -29,8 +29,10 @@ namespace GamePlatform.Features.Entitlements
         public EntitlementsService(ScopedOwnerContext owner, StorageScope scope, IDurableFeatureStateStore state,
             ISerializedStorageExecutor transactions, IEntitlementStateCodec codec)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!Matches(scope, owner.Owner)) throw new ArgumentException("The entitlement scope does not match the captured owner.", nameof(scope));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!Matches(scope, owner.Owner))
+                throw new ArgumentException("The entitlement scope does not match the captured owner.", nameof(scope));
             this.owner = owner;
             this.scope = scope;
             this.state = state ?? throw new ArgumentNullException(nameof(state));
@@ -47,16 +49,19 @@ namespace GamePlatform.Features.Entitlements
             CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
             ValidateCatalog(exactOwner, confirmed, catalog);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadConfirmedAsync(exactOwner, cancellationToken).ConfigureAwait(false);
-                if (current != null && confirmed.Revision < current.Revision) return;
+                if (current != null && confirmed.Revision < current.Revision)
+                    return;
                 if (current != null && confirmed.Revision == current.Revision)
                 {
-                    if (!Equivalent(current, confirmed)) throw new EntitlementProjectionConflictException("A confirmed entitlement revision changed meaning.");
+                    if (!Equivalent(current, confirmed))
+                        throw new EntitlementProjectionConflictException("A confirmed entitlement revision changed meaning.");
                     return;
                 }
 
@@ -77,24 +82,30 @@ namespace GamePlatform.Features.Entitlements
         public void ApplyConfirmedInTransaction(ILocalStorageTransaction transaction, ScopedOwnerContext requestedOwner,
             long? durablePriorRevision, EntitlementConfirmedSnapshot confirmed, CatalogSnapshot catalog)
         {
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
             var exactOwner = EnsureOwner(requestedOwner);
-            if (!transaction.Scope.Equals(scope)) throw new EntitlementOwnerMismatchException();
-            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (!transaction.Scope.Equals(scope))
+                throw new EntitlementOwnerMismatchException();
+            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0)
+                throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
             if (durablePriorRevision.HasValue && confirmed.Revision <= durablePriorRevision.Value)
                 throw new EntitlementProjectionConflictException("A borrowed entitlement projection must advance its durable prior revision.");
             ValidateCatalog(exactOwner, confirmed, catalog);
             var payload = codec.EncodeConfirmed(confirmed);
             // An empty byte payload is the valid canonical encoding of a server-confirmed empty app-visible projection.
-            if (payload == null || payload.Length > 262_144) throw new EntitlementProjectionConflictException("The entitlement codec produced an invalid projection payload.");
+            if (payload == null || payload.Length > 262_144)
+                throw new EntitlementProjectionConflictException("The entitlement codec produced an invalid projection payload.");
             state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmed.Revision,
                 confirmed.ConfirmedAtMilliseconds, payload, Array.Empty<byte>()));
         }
 
         public void Dispose()
         {
-            if (disposed) return;
+            if (disposed)
+                return;
             disposed = true;
             mutation.Dispose();
         }
@@ -112,7 +123,8 @@ namespace GamePlatform.Features.Entitlements
         private async Task<EntitlementConfirmedSnapshot?> ReadConfirmedAsync(ScopedOwnerContext exactOwner, CancellationToken cancellationToken)
         {
             var stored = await state.ReadAsync(exactOwner, Namespace, ConfirmedKey, cancellationToken).ConfigureAwait(false);
-            if (stored == null) return null;
+            if (stored == null)
+                return null;
             codec.ValidateSupportedExtensions(stored.CopyExtensions());
             var decoded = codec.DecodeConfirmed(stored.Revision, stored.ConfirmedAtMilliseconds, stored.CopyPayload(), stored.CopyExtensions());
             if (decoded == null || decoded.Revision != stored.Revision || decoded.ConfirmedAtMilliseconds != stored.ConfirmedAtMilliseconds)
@@ -122,8 +134,10 @@ namespace GamePlatform.Features.Entitlements
 
         private ScopedOwnerContext EnsureOwner(ScopedOwnerContext requested)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(EntitlementsService));
-            if (requested != owner) throw new EntitlementOwnerMismatchException();
+            if (disposed)
+                throw new ObjectDisposedException(nameof(EntitlementsService));
+            if (requested != owner)
+                throw new EntitlementOwnerMismatchException();
             return requested;
         }
 
@@ -148,7 +162,8 @@ namespace GamePlatform.Features.Entitlements
 
         private static void ValidateCatalog(ScopedOwnerContext owner, EntitlementConfirmedSnapshot confirmed, CatalogSnapshot catalog)
         {
-            if (catalog == null || catalog.Request.Owner != owner) throw new EntitlementOwnerMismatchException();
+            if (catalog == null || catalog.Request.Owner != owner)
+                throw new EntitlementOwnerMismatchException();
             foreach (var right in confirmed.Rights)
             {
                 var entry = catalog.Entries.SingleOrDefault(value => value.Definition.DefinitionId.Equals(right.EntitlementId));
@@ -159,22 +174,26 @@ namespace GamePlatform.Features.Entitlements
 
         private static bool Equivalent(EntitlementConfirmedSnapshot left, EntitlementConfirmedSnapshot right)
         {
-            if (left.ConfirmedAtMilliseconds != right.ConfirmedAtMilliseconds || left.Rights.Count != right.Rights.Count) return false;
+            if (left.ConfirmedAtMilliseconds != right.ConfirmedAtMilliseconds || left.Rights.Count != right.Rights.Count)
+                return false;
             var byId = right.Rights.ToDictionary(value => value.EntitlementId);
             foreach (var a in left.Rights)
             {
                 if (!byId.TryGetValue(a.EntitlementId, out var b) || a.Revision != b.Revision || a.State != b.State ||
                     a.ExpiresAtServerMilliseconds != b.ExpiresAtServerMilliseconds || !a.OriginReceipt.ReceiptId.Equals(b.OriginReceipt.ReceiptId) ||
-                    !string.Equals(a.OriginReceipt.BusinessSource, b.OriginReceipt.BusinessSource, StringComparison.Ordinal) || !EqualBytes(a.CopyPayload(), b.CopyPayload())) return false;
+                    !string.Equals(a.OriginReceipt.BusinessSource, b.OriginReceipt.BusinessSource, StringComparison.Ordinal) || !EqualBytes(a.CopyPayload(), b.CopyPayload()))
+                    return false;
             }
             return true;
         }
 
         private static bool EqualBytes(byte[] left, byte[] right)
         {
-            if (left.Length != right.Length) return false;
+            if (left.Length != right.Length)
+                return false;
             var difference = 0;
-            for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index];
+            for (var index = 0; index < left.Length; index++)
+                difference |= left[index] ^ right[index];
             return difference == 0;
         }
 

@@ -141,12 +141,17 @@ namespace GamePlatform.Tests.Transport
 
         public void Dispose()
         {
-            foreach (var coordinator in ownedRefresh) coordinator.Dispose();
+            foreach (var coordinator in ownedRefresh)
+                coordinator.Dispose();
         }
 
         private ProvisioningHttpProvider Provider(IHttpExecutor executor, StubCodec? codec = null, RefreshingAuth? auth = null, int maximumResponseBytes = 262_144, AuthRefreshCoordinator? refresh = null)
         {
-            if (refresh == null) { refresh = new AuthRefreshCoordinator(); ownedRefresh.Add(refresh); }
+            if (refresh == null)
+            {
+                refresh = new AuthRefreshCoordinator();
+                ownedRefresh.Add(refresh);
+            }
             return new ProvisioningHttpProvider(new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test"), maximumResponseBytes), executor, codec ?? new StubCodec(), auth ?? new RefreshingAuth(), refresh);
         }
 
@@ -163,14 +168,18 @@ namespace GamePlatform.Tests.Transport
         private static IReadOnlyDictionary<string, string> SuccessHeaders(string contentType = ProvisioningHttpProvider.MediaType, string? encoding = null)
         {
             var headers = new Dictionary<string, string> { ["Content-Type"] = contentType, ["X-Correlation-Id"] = "test-correlation" };
-            if (encoding != null) headers["Content-Encoding"] = encoding;
+            if (encoding != null)
+                headers["Content-Encoding"] = encoding;
             return headers;
         }
 
         private sealed class ScriptedExecutor : IHttpExecutor
         {
             private readonly Func<HttpRequestData, HttpResponseData> send;
-            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send) { this.send = send; }
+            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send)
+            {
+                this.send = send;
+            }
             public ConcurrentBag<HttpRequestData> Requests { get; } = new ConcurrentBag<HttpRequestData>();
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {
@@ -182,14 +191,24 @@ namespace GamePlatform.Tests.Transport
 
         private sealed class StubCodec : IWireCodec
         {
-            public bool ThrowOnDecode { get; set; }
-            public int DecodeCount { get; private set; }
-            public ProvisionResponse? DecodedResponse { get; set; }
+            public bool ThrowOnDecode
+            {
+                get; set;
+            }
+            public int DecodeCount
+            {
+                get; private set;
+            }
+            public ProvisionResponse? DecodedResponse
+            {
+                get; set;
+            }
             public byte[] Encode<T>(T value) => new byte[] { 1, 2, 3 };
             public T Decode<T>(byte[] payload)
             {
                 DecodeCount++;
-                if (ThrowOnDecode) throw new InvalidOperationException("truncated");
+                if (ThrowOnDecode)
+                    throw new InvalidOperationException("truncated");
                 return (T)(object)(DecodedResponse ?? Value());
             }
         }
@@ -202,8 +221,10 @@ namespace GamePlatform.Tests.Transport
             public async Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {
                 Requests.Add(request);
-                if (request.Headers["Authorization"] != "Bearer token-0") return SuccessResponse();
-                if (Interlocked.Increment(ref oldRequests) == 2) bothOldRequests.TrySetResult(true);
+                if (request.Headers["Authorization"] != "Bearer token-0")
+                    return SuccessResponse();
+                if (Interlocked.Increment(ref oldRequests) == 2)
+                    bothOldRequests.TrySetResult(true);
                 await bothOldRequests.Task.ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 return Response(401);

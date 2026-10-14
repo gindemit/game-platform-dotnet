@@ -29,7 +29,8 @@ namespace GamePlatform.Transport.Http
         public BoundedHttpClientExecutor(HttpClient client, BackendHttpConfiguration configuration)
         {
             this.client = client ?? throw new ArgumentNullException(nameof(client));
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
             baseUri = configuration.BaseUri;
             basePath = baseUri.AbsolutePath;
             maximumResponseBytes = configuration.MaximumResponseBytes;
@@ -37,7 +38,8 @@ namespace GamePlatform.Transport.Http
 
         public async Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             cancellationToken.ThrowIfCancellationRequested();
             ValidateRequest(request);
 
@@ -82,7 +84,8 @@ namespace GamePlatform.Transport.Http
 
         private void ValidateRequest(HttpRequestData request)
         {
-            if (request.BodyLength > MaximumRequestBytes) NotSent("The HTTP request body exceeds the frozen bound.");
+            if (request.BodyLength > MaximumRequestBytes)
+                NotSent("The HTTP request body exceeds the frozen bound.");
             if (!Uri.TryCreate(request.Uri, UriKind.Absolute, out var uri) ||
                 !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
                 !SameAuthority(baseUri, uri) || !uri.AbsolutePath.StartsWith(basePath, StringComparison.Ordinal))
@@ -120,7 +123,8 @@ namespace GamePlatform.Transport.Http
         {
             var segments = relativePath.Split('/');
             if (segments.Length < 4 || segments[0] != "v1" || segments[1] != "apps" ||
-                !Guid.TryParseExact(segments[2], "D", out _)) return false;
+                !Guid.TryParseExact(segments[2], "D", out _))
+                return false;
             if (isGet)
             {
                 return (segments.Length == 4 && segments[3] == "bootstrap" &&
@@ -129,7 +133,8 @@ namespace GamePlatform.Transport.Http
                     (query.Length == 0 && segments.Length == 6 && segments[3] == "gameplay" &&
                     segments[4] == "reward-receipts" && Guid.TryParseExact(segments[5], "D", out _));
             }
-            if (query.Length != 0) return false;
+            if (query.Length != 0)
+                return false;
             return (segments.Length == 4 && segments[3] == "provision") ||
                 (segments.Length == 5 && segments[3] == "bootstrap" && segments[4] == "pages") ||
                 (segments.Length == 5 && segments[3] == "sync" && segments[4] == "pull") ||
@@ -146,7 +151,8 @@ namespace GamePlatform.Transport.Http
         private static HttpRequestMessage CreateMessage(HttpRequestData request)
         {
             var message = new HttpRequestMessage(new HttpMethod(request.Method), request.Uri);
-            if (request.BodyLength != 0) message.Content = new ByteArrayContent(request.CopyBody());
+            if (request.BodyLength != 0)
+                message.Content = new ByteArrayContent(request.CopyBody());
             foreach (var header in request.Headers)
             {
                 if (string.Equals(header.Key, "Content-Type", StringComparison.OrdinalIgnoreCase))
@@ -159,7 +165,8 @@ namespace GamePlatform.Transport.Http
 
         private async Task<byte[]> ReadBoundedBodyAsync(HttpContent? content, CancellationToken cancellationToken)
         {
-            if (content == null) return Array.Empty<byte>();
+            if (content == null)
+                return Array.Empty<byte>();
             if (content.Headers.ContentLength.HasValue && content.Headers.ContentLength.Value > maximumResponseBytes)
                 throw new HttpExecutionException(HttpDeliveryCertainty.ResponseReceived, "The HTTP response body exceeds the configured bound.");
             using var stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -168,7 +175,8 @@ namespace GamePlatform.Transport.Http
             while (true)
             {
                 var read = await stream.ReadAsync(chunk, 0, chunk.Length, cancellationToken).ConfigureAwait(false);
-                if (read == 0) break;
+                if (read == 0)
+                    break;
                 if (buffer.Length + read > maximumResponseBytes)
                     throw new HttpExecutionException(HttpDeliveryCertainty.ResponseReceived, "The HTTP response body exceeds the configured bound.");
                 buffer.Write(chunk, 0, read);
@@ -180,7 +188,8 @@ namespace GamePlatform.Transport.Http
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             AddHeaders(result, response.Headers);
-            if (response.Content != null) AddHeaders(result, response.Content.Headers);
+            if (response.Content != null)
+                AddHeaders(result, response.Content.Headers);
             return result;
         }
 

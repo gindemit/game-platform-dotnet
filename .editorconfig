@@ -9,17 +9,16 @@ trim_trailing_whitespace = true
 [*.cs]
 indent_style = space
 indent_size = 4
-
-# Initial Allman baseline is limited to the two reviewed maintainability hotspots.
-# Expand after the remaining first-party whitespace debt has a reviewed baseline.
-[src/GamePlatform.Sync/Pull/PrivateSyncCoordinator.cs]
-dotnet_diagnostic.IDE0055.severity = warning
 csharp_new_line_before_open_brace = all
 csharp_preserve_single_line_statements = false
 csharp_preserve_single_line_blocks = false
-
-[src/GamePlatform.Features/Progression/ProgressionService.cs]
 dotnet_diagnostic.IDE0055.severity = warning
-csharp_new_line_before_open_brace = all
-csharp_preserve_single_line_statements = false
-csharp_preserve_single_line_blocks = false
+
+# Generated contracts and third-party source retain their owning layout.
+[*.g.cs]
+generated_code = true
+dotnet_diagnostic.IDE0055.severity = none
+
+[src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs]
+generated_code = true
+dotnet_diagnostic.IDE0055.severity = none

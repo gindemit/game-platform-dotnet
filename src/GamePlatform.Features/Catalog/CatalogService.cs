@@ -40,12 +40,14 @@ namespace GamePlatform.Features.Catalog
 
         public async Task<FeatureSnapshot<CatalogSnapshot>> ReadCachedAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 var snapshot = await store.ReadAsync(request, cancellationToken).ConfigureAwait(false);
-                if (snapshot == null) return new FeatureSnapshot<CatalogSnapshot>(request.Owner, 0, FeatureSnapshotState.Missing,
+                if (snapshot == null)
+                    return new FeatureSnapshot<CatalogSnapshot>(request.Owner, 0, FeatureSnapshotState.Missing,
                     SnapshotFreshness.Missing, null, null, null);
                 ValidateMatchesRequest(snapshot, request);
                 return new FeatureSnapshot<CatalogSnapshot>(request.Owner, snapshot.Revision, FeatureSnapshotState.Stale,
@@ -65,14 +67,16 @@ namespace GamePlatform.Features.Catalog
 
         public Task<FeatureSnapshot<CatalogSnapshot>> RefreshAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             var key = new ScopedQueryKey(request.Owner, FeatureNamespace, request.ToCanonicalQuery());
             return refreshCache.GetOrRefreshAsync(key, async lifetimeToken =>
             {
                 try
                 {
                     var snapshot = await provider.DownloadAsync(request, lifetimeToken).ConfigureAwait(false);
-                    if (snapshot == null) throw new CatalogSnapshotCorruptException("The catalog provider returned no snapshot.");
+                    if (snapshot == null)
+                        throw new CatalogSnapshotCorruptException("The catalog provider returned no snapshot.");
                     ValidateMatchesRequest(snapshot, request);
                     await store.InstallAsync(snapshot, lifetimeToken).ConfigureAwait(false);
                     return new FeatureSnapshot<CatalogSnapshot>(request.Owner, snapshot.Revision, FeatureSnapshotState.Available,

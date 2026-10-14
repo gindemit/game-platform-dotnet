@@ -132,9 +132,14 @@ namespace GamePlatform.Tests.Transport
             var player = Guid.Parse("019a17aa-1000-7000-8000-000000000001");
             var codec = Codec(new PullPage(new[] { new PullGroup(9, new IProjectionChange[] { new GamePlatform.Wire.Contracts.Friends.FriendsProjectionInvalidation(player, 4) }) }, TokenText(8), false, 9, 10));
             var result = await Provider(new ScriptedExecutor(_ => Success()), codec).PullAsync(Token(7), 131072, CancellationToken.None);
-            Assert.True(result.IsSuccess); var mutation = Assert.Single(Assert.Single(result.Value!.Groups).Changes);
-            Assert.Equal("friends", mutation.Collection); Assert.Equal(player.ToString("D"), mutation.EntityKey); Assert.Equal(4, mutation.EntityRevision);
-            Assert.Equal(ProjectionMutationKind.Invalidation, mutation.Kind); Assert.Empty(mutation.CopyPayload()); Assert.Equal(Token(8), result.Value.CopyNextCursor());
+            Assert.True(result.IsSuccess);
+            var mutation = Assert.Single(Assert.Single(result.Value!.Groups).Changes);
+            Assert.Equal("friends", mutation.Collection);
+            Assert.Equal(player.ToString("D"), mutation.EntityKey);
+            Assert.Equal(4, mutation.EntityRevision);
+            Assert.Equal(ProjectionMutationKind.Invalidation, mutation.Kind);
+            Assert.Empty(mutation.CopyPayload());
+            Assert.Equal(Token(8), result.Value.CopyNextCursor());
         }
 
         [Fact]
@@ -335,12 +340,17 @@ namespace GamePlatform.Tests.Transport
 
         public void Dispose()
         {
-            foreach (var coordinator in ownedRefresh) coordinator.Dispose();
+            foreach (var coordinator in ownedRefresh)
+                coordinator.Dispose();
         }
 
         private PrivateSyncHttpProvider Provider(IHttpExecutor executor, StubCodec codec, BackendWireRepresentation representation = BackendWireRepresentation.MessagePack, AuthSession? auth = null, int maximumResponseBytes = 262_144, AuthRefreshCoordinator? refresh = null)
         {
-            if (refresh == null) { refresh = new AuthRefreshCoordinator(); ownedRefresh.Add(refresh); }
+            if (refresh == null)
+            {
+                refresh = new AuthRefreshCoordinator();
+                ownedRefresh.Add(refresh);
+            }
             return new PrivateSyncHttpProvider(App, new PlatformUserId(Account), new BackendHttpConfiguration(new Uri("https://api.example.test/platform"), new BackendNamespace("test"), maximumResponseBytes), executor, codec, auth ?? new AuthSession(), refresh, representation);
         }
 
@@ -358,16 +368,26 @@ namespace GamePlatform.Tests.Transport
         private static Dictionary<string, string> Headers(string mediaType = PrivateSyncHttpProvider.MessagePackMediaType, string? encoding = null)
         {
             var headers = new Dictionary<string, string> { ["Content-Type"] = mediaType, ["X-Correlation-Id"] = "correlation" };
-            if (encoding != null) headers["Content-Encoding"] = encoding;
+            if (encoding != null)
+                headers["Content-Encoding"] = encoding;
             return headers;
         }
 
         private sealed class StubCodec : IWireCodec
         {
             private readonly object decoded;
-            public StubCodec(object decoded) { this.decoded = decoded; }
-            public bool ThrowOnDecode { get; set; }
-            public int DecodeCount { get; private set; }
+            public StubCodec(object decoded)
+            {
+                this.decoded = decoded;
+            }
+            public bool ThrowOnDecode
+            {
+                get; set;
+            }
+            public int DecodeCount
+            {
+                get; private set;
+            }
             public List<object> Encoded { get; } = new List<object>();
             public byte[] Encode<T>(T value)
             {
@@ -377,7 +397,8 @@ namespace GamePlatform.Tests.Transport
             public T Decode<T>(byte[] payload)
             {
                 DecodeCount++;
-                if (ThrowOnDecode) throw new InvalidOperationException("malformed");
+                if (ThrowOnDecode)
+                    throw new InvalidOperationException("malformed");
                 return (T)decoded;
             }
         }
@@ -385,7 +406,10 @@ namespace GamePlatform.Tests.Transport
         private sealed class ScriptedExecutor : IHttpExecutor
         {
             private readonly Func<HttpRequestData, HttpResponseData> send;
-            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send) { this.send = send; }
+            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send)
+            {
+                this.send = send;
+            }
             public List<HttpRequestData> Requests { get; } = new List<HttpRequestData>();
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {
@@ -403,8 +427,10 @@ namespace GamePlatform.Tests.Transport
             public async Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {
                 Requests.Add(request);
-                if (request.Headers["Authorization"] != "Bearer token-0") return Success();
-                if (Interlocked.Increment(ref oldRequests) == 2) bothOldRequests.TrySetResult(true);
+                if (request.Headers["Authorization"] != "Bearer token-0")
+                    return Success();
+                if (Interlocked.Increment(ref oldRequests) == 2)
+                    bothOldRequests.TrySetResult(true);
                 await bothOldRequests.Task.ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 return Response(401);

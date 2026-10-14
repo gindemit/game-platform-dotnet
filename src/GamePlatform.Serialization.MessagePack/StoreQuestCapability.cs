@@ -13,9 +13,15 @@ namespace GamePlatform.Serialization.MessagePack
             Codec = enabled ? new StoreQuestMessagePackCodec() : null;
         }
 
-        public bool Enabled { get; }
+        public bool Enabled
+        {
+            get;
+        }
 
-        public StoreQuestMessagePackCodec? Codec { get; }
+        public StoreQuestMessagePackCodec? Codec
+        {
+            get;
+        }
 
         public CanonicalCommandFingerprint CreateFingerprint() => new CanonicalCommandFingerprint(Enabled);
     }

@@ -18,13 +18,18 @@ namespace GamePlatform.Storage.Abstractions.Outbox
             int fingerprintVersion,
             ReadOnlySpan<byte> semanticBody)
         {
-            if (!owner.IsValid) throw new ArgumentException("A valid owner is required.", nameof(owner));
-            if (!operationId.IsValid) throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
-            if (!streamId.IsValid) throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
+            if (!owner.IsValid)
+                throw new ArgumentException("A valid owner is required.", nameof(owner));
+            if (!operationId.IsValid)
+                throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
+            if (!streamId.IsValid)
+                throw new ArgumentException("A valid stream ID is required.", nameof(streamId));
             if (string.IsNullOrWhiteSpace(operationKind) || operationKind.Length > 128)
                 throw new ArgumentOutOfRangeException(nameof(operationKind));
-            if (schemaVersion <= 0) throw new ArgumentOutOfRangeException(nameof(schemaVersion));
-            if (fingerprintVersion <= 0) throw new ArgumentOutOfRangeException(nameof(fingerprintVersion));
+            if (schemaVersion <= 0)
+                throw new ArgumentOutOfRangeException(nameof(schemaVersion));
+            if (fingerprintVersion <= 0)
+                throw new ArgumentOutOfRangeException(nameof(fingerprintVersion));
             if (semanticBody.Length == 0 || semanticBody.Length > 262_144)
                 throw new ArgumentOutOfRangeException(nameof(semanticBody));
             Owner = owner;
@@ -36,17 +41,36 @@ namespace GamePlatform.Storage.Abstractions.Outbox
             this.semanticBody = semanticBody.ToArray();
         }
 
-        public OwnerScope Owner { get; }
-        public OperationId OperationId { get; }
-        public ClientStreamId StreamId { get; }
-        public string OperationKind { get; }
-        public int SchemaVersion { get; }
-        public int FingerprintVersion { get; }
+        public OwnerScope Owner
+        {
+            get;
+        }
+        public OperationId OperationId
+        {
+            get;
+        }
+        public ClientStreamId StreamId
+        {
+            get;
+        }
+        public string OperationKind
+        {
+            get;
+        }
+        public int SchemaVersion
+        {
+            get;
+        }
+        public int FingerprintVersion
+        {
+            get;
+        }
         public int SemanticBodyLength => semanticBody.Length;
 
         public void CopySemanticBodyTo(Span<byte> destination)
         {
-            if (destination.Length < semanticBody.Length) throw new ArgumentException("The destination is too small.", nameof(destination));
+            if (destination.Length < semanticBody.Length)
+                throw new ArgumentException("The destination is too small.", nameof(destination));
             semanticBody.AsSpan().CopyTo(destination);
         }
     }
@@ -55,11 +79,15 @@ namespace GamePlatform.Storage.Abstractions.Outbox
     {
         public CommandAdmission(OperationId operationId, ClientStreamId streamId, Guid installationId, long clientCreatedAt, long sequence, long localRevision)
         {
-            if (!operationId.IsValid || !streamId.IsValid) throw new ArgumentException("Valid command identities are required.");
-            if (!UuidIdentity.IsValid(installationId)) throw new ArgumentException("A valid installation identity is required.", nameof(installationId));
+            if (!operationId.IsValid || !streamId.IsValid)
+                throw new ArgumentException("Valid command identities are required.");
+            if (!UuidIdentity.IsValid(installationId))
+                throw new ArgumentException("A valid installation identity is required.", nameof(installationId));
             PlatformNumbers.UnixMilliseconds(clientCreatedAt);
-            if (sequence <= 0) throw new ArgumentOutOfRangeException(nameof(sequence));
-            if (localRevision <= 0) throw new ArgumentOutOfRangeException(nameof(localRevision));
+            if (sequence <= 0)
+                throw new ArgumentOutOfRangeException(nameof(sequence));
+            if (localRevision <= 0)
+                throw new ArgumentOutOfRangeException(nameof(localRevision));
             OperationId = operationId;
             StreamId = streamId;
             InstallationId = installationId;
@@ -68,12 +96,30 @@ namespace GamePlatform.Storage.Abstractions.Outbox
             LocalRevision = localRevision;
         }
 
-        public OperationId OperationId { get; }
-        public ClientStreamId StreamId { get; }
-        public Guid InstallationId { get; }
-        public long ClientCreatedAt { get; }
-        public long Sequence { get; }
-        public long LocalRevision { get; }
+        public OperationId OperationId
+        {
+            get;
+        }
+        public ClientStreamId StreamId
+        {
+            get;
+        }
+        public Guid InstallationId
+        {
+            get;
+        }
+        public long ClientCreatedAt
+        {
+            get;
+        }
+        public long Sequence
+        {
+            get;
+        }
+        public long LocalRevision
+        {
+            get;
+        }
     }
 
     public interface ICommandFingerprint

@@ -33,9 +33,12 @@ namespace GamePlatform.Features.Profiles
             ISerializedStorageExecutor transactions, IAtomicCommandStore commands, IProfileStateCodec codec,
             IProfileRemote remote, int refreshCacheCapacity, TimeSpan refreshCacheLifetime, Func<long> nowMilliseconds)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!Matches(storageScope, owner.Owner)) throw new ArgumentException("The profile storage scope does not match the captured owner.", nameof(storageScope));
-            this.owner = owner; this.storageScope = storageScope;
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!Matches(storageScope, owner.Owner))
+                throw new ArgumentException("The profile storage scope does not match the captured owner.", nameof(storageScope));
+            this.owner = owner;
+            this.storageScope = storageScope;
             this.state = state ?? throw new ArgumentNullException(nameof(state));
             this.transactions = transactions ?? throw new ArgumentNullException(nameof(transactions));
             this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
@@ -57,7 +60,8 @@ namespace GamePlatform.Features.Profiles
             var read = await reads.GetOrRefreshAsync(key, async token =>
             {
                 var result = await remote.ReadAsync(exactOwner, token).ConfigureAwait(false);
-                if (result == null || result.Owner != exactOwner) throw new ProfileOwnerMismatchException();
+                if (result == null || result.Owner != exactOwner)
+                    throw new ProfileOwnerMismatchException();
                 codec.ValidateExtensions(result.Profile.CopyExtensions());
                 return new FeatureSnapshot<ProfileRemoteRead>(exactOwner, result.Profile.Revision,
                     FeatureSnapshotState.Available, SnapshotFreshness.Current, result, result.Profile.UpdatedAtMilliseconds, null);
@@ -69,7 +73,8 @@ namespace GamePlatform.Features.Profiles
         /// <summary>Stores one exact-revision local intent and its immutable outbox command in the same caller-provided transaction seam.</summary>
         public async Task<FeatureSnapshot<ProfileSnapshot>> EditAsync(ProfileUpdateRequest request, CancellationToken cancellationToken)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             var exactOwner = EnsureOwner(request.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -84,9 +89,11 @@ namespace GamePlatform.Features.Profiles
                     throw new ProfileConflictException("A profile edit is already pending for this account/view generation.");
                 }
                 var expected = current.Confirmed == null ? 0 : current.Confirmed.Revision;
-                if (request.Patch.ExpectedRevision != expected) throw new ProfileConflictException("The profile edit expected revision is not the durable confirmed revision.");
+                if (request.Patch.ExpectedRevision != expected)
+                    throw new ProfileConflictException("The profile edit expected revision is not the durable confirmed revision.");
                 var body = codec.EncodePatchCommand(request.Patch);
-                if (body == null || body.Length == 0 || body.Length > 262_144) throw new InvalidOperationException("The profile command codec returned an invalid semantic body.");
+                if (body == null || body.Length == 0 || body.Length > 262_144)
+                    throw new InvalidOperationException("The profile command codec returned an invalid semantic body.");
                 var draft = new CommandDraft(exactOwner.Owner, request.OperationId, request.StreamId, "profile.patch", 1, 1, body);
                 await commands.CommitAsync(request.BusinessSource, draft, (transaction, localRevision) =>
                 {
@@ -105,7 +112,8 @@ namespace GamePlatform.Features.Profiles
         /// <summary>Applies a retained command receipt without treating it as a profile projection. Pull must still confirm the fields.</summary>
         public async Task<FeatureSnapshot<ProfileSnapshot>> MarkAcceptedAwaitingPullAsync(ProfileUpdateAcceptance acceptance, CancellationToken cancellationToken)
         {
-            if (acceptance == null) throw new ArgumentNullException(nameof(acceptance));
+            if (acceptance == null)
+                throw new ArgumentNullException(nameof(acceptance));
             var exactOwner = EnsureOwner(acceptance.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -132,13 +140,15 @@ namespace GamePlatform.Features.Profiles
         public async Task ApplyConfirmedAsync(ScopedOwnerContext requestedOwner, ProfileConfirmed confirmed, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
             codec.ValidateExtensions(confirmed.CopyExtensions());
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
-                if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision) return;
+                if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision)
+                    return;
                 if (current.Confirmed != null && confirmed.Revision == current.Confirmed.Revision)
                 {
                     if (!Equivalent(current.Confirmed, confirmed))
@@ -164,10 +174,14 @@ namespace GamePlatform.Features.Profiles
             long? durablePriorRevision, ProfileConfirmed confirmed)
         {
             var exactOwner = EnsureOwner(requestedOwner);
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (!transaction.Scope.Equals(storageScope)) throw new StorageException(StorageFailure.InvalidOwner, "The profile transaction belongs to another scope.");
-            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+            if (!transaction.Scope.Equals(storageScope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The profile transaction belongs to another scope.");
+            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0)
+                throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
             if (durablePriorRevision.HasValue && confirmed.Revision <= durablePriorRevision.Value)
                 throw new ProfileConflictException("A borrowed confirmed profile projection must advance its durable revision.");
             var extensions = confirmed.CopyExtensions();
@@ -180,8 +194,11 @@ namespace GamePlatform.Features.Profiles
 
         public void Dispose()
         {
-            if (disposed) return;
-            disposed = true; reads.Dispose(); mutation.Dispose();
+            if (disposed)
+                return;
+            disposed = true;
+            reads.Dispose();
+            mutation.Dispose();
         }
 
         private async Task<FeatureSnapshot<ProfileSnapshot>> ReadSnapshotAsync(ScopedOwnerContext exactOwner, SnapshotFreshness freshness, CancellationToken cancellationToken)
@@ -206,17 +223,20 @@ namespace GamePlatform.Features.Profiles
         {
             var confirmed = await state.ReadAsync(exactOwner, FeatureNamespace, ConfirmedKey, cancellationToken).ConfigureAwait(false);
             var pending = await state.ReadAsync(exactOwner, FeatureNamespace, PendingKey, cancellationToken).ConfigureAwait(false);
-            ProfileConfirmed? decodedConfirmed = null; PendingProfileEdit? decodedPending = null;
+            ProfileConfirmed? decodedConfirmed = null;
+            PendingProfileEdit? decodedPending = null;
             if (confirmed != null)
             {
                 codec.ValidateExtensions(confirmed.CopyExtensions());
                 decodedConfirmed = codec.DecodeConfirmed(confirmed.Revision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
-                if (decodedConfirmed == null || decodedConfirmed.Revision != confirmed.Revision) throw new InvalidOperationException("The profile state codec returned an invalid confirmed record.");
+                if (decodedConfirmed == null || decodedConfirmed.Revision != confirmed.Revision)
+                    throw new InvalidOperationException("The profile state codec returned an invalid confirmed record.");
             }
             if (pending != null && pending.PayloadLength != 0)
             {
                 decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
-                if (decodedPending == null || decodedPending.LocalRevision != pending.Revision) throw new InvalidOperationException("The profile state codec returned an invalid pending record.");
+                if (decodedPending == null || decodedPending.LocalRevision != pending.Revision)
+                    throw new InvalidOperationException("The profile state codec returned an invalid pending record.");
                 // A private-feed caller may commit the confirmed profile and cursor atomically without owning this
                 // pending row. On every reopen/read, confirmed state suppresses only the matching accepted receipt;
                 // an unreceipted local edit displaced by a newer server revision remains an explicit conflict.
@@ -243,14 +263,22 @@ namespace GamePlatform.Features.Profiles
 
         private ScopedOwnerContext EnsureOwner(ScopedOwnerContext requestedOwner)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(ProfileService));
-            if (requestedOwner != owner) throw new ProfileOwnerMismatchException();
+            if (disposed)
+                throw new ObjectDisposedException(nameof(ProfileService));
+            if (requestedOwner != owner)
+                throw new ProfileOwnerMismatchException();
             return requestedOwner;
         }
-        private long Now() { var value = nowMilliseconds(); ProfileValidation.Timestamp(value, "nowMilliseconds"); return value; }
+        private long Now()
+        {
+            var value = nowMilliseconds();
+            ProfileValidation.Timestamp(value, "nowMilliseconds");
+            return value;
+        }
         private static void ValidatePayload(byte[]? payload, string label)
         {
-            if (payload == null || payload.Length == 0 || payload.Length > 262_144) throw new InvalidOperationException("The " + label + " codec payload is invalid.");
+            if (payload == null || payload.Length == 0 || payload.Length > 262_144)
+                throw new InvalidOperationException("The " + label + " codec payload is invalid.");
         }
         private static bool Matches(StorageScope scope, OwnerScope owner) => string.Equals(scope.BackendNamespace, owner.Backend.Value, StringComparison.Ordinal) &&
             string.Equals(scope.AppId.Value, owner.AppId.ToString(), StringComparison.Ordinal) && string.Equals(scope.AccountId.Value, owner.UserId.ToString(), StringComparison.Ordinal);
@@ -263,8 +291,12 @@ namespace GamePlatform.Features.Profiles
             string.Equals(left.Locale, right.Locale, StringComparison.Ordinal);
         private static bool Equal(byte[] left, byte[] right)
         {
-            if (left.Length != right.Length) return false;
-            var difference = 0; for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index]; return difference == 0;
+            if (left.Length != right.Length)
+                return false;
+            var difference = 0;
+            for (var index = 0; index < left.Length; index++)
+                difference |= left[index] ^ right[index];
+            return difference == 0;
         }
     }
 }

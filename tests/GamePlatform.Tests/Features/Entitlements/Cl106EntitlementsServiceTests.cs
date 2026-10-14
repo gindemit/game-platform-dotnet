@@ -43,7 +43,8 @@ namespace GamePlatform.Tests.Features.Entitlements
             await service.ApplyConfirmedAsync(Context, active, Catalog(Context, true), CancellationToken.None);
             var count = await database.ExecuteAsync(Scope, tx => ((SqliteTransactionSession)tx).ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE feature_namespace='entitlements'"), CancellationToken.None);
             Assert.Equal(1, count);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
 
             database = await OpenAsync(files.Path);
             service = Create(database);
@@ -54,30 +55,37 @@ namespace GamePlatform.Tests.Features.Entitlements
             Assert.Equal(ReceiptId, right.Right.OriginReceipt.ReceiptId);
             Assert.Equal("purchase.receipt-1", right.Right.OriginReceipt.BusinessSource);
             Assert.Equal(new byte[] { 7 }, right.Right.CopyPayload());
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task SemanticRevisionZeroIsDistinctFromAbsenceReplaysExactlyRejectsConflictAndAdvancesToOne()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             Assert.Equal(FeatureSnapshotState.Missing, (await service.ReadCachedAsync(Context, CancellationToken.None)).State);
             var zero = Snapshot(0, EntitlementRightState.Active, null, new byte[] { 1 });
             await service.ApplyConfirmedAsync(Context, zero, Catalog(Context, true), CancellationToken.None);
             Assert.Equal(0L, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='entitlements' AND entity_key='confirmed'"), CancellationToken.None));
             var installed = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(0, installed.Revision); Assert.Equal(0, installed.Value!.Confirmed!.Revision);
+            Assert.Equal(0, installed.Revision);
+            Assert.Equal(0, installed.Value!.Confirmed!.Revision);
             await service.ApplyConfirmedAsync(Context, zero, Catalog(Context, true), CancellationToken.None);
             await Assert.ThrowsAsync<EntitlementProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, Snapshot(0, EntitlementRightState.Active, null, new byte[] { 9 }), Catalog(Context, true), CancellationToken.None));
             await service.ApplyConfirmedAsync(Context, Snapshot(1, EntitlementRightState.Revoked, null, Array.Empty<byte>()), Catalog(Context, true), CancellationToken.None);
             Assert.Equal(1, (await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.Confirmed!.Revision);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task RevocationIsMonotonicAndStaleActivationCannotRestoreRight()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             await service.ApplyConfirmedAsync(Context, Snapshot(2, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true), CancellationToken.None);
             await service.ApplyConfirmedAsync(Context, Snapshot(3, EntitlementRightState.Revoked, null, Array.Empty<byte>()), Catalog(Context, true), CancellationToken.None);
             await service.ApplyConfirmedAsync(Context, Snapshot(2, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true), CancellationToken.None);
@@ -86,13 +94,16 @@ namespace GamePlatform.Tests.Features.Entitlements
             Assert.Equal(3, cached.Revision);
             Assert.Equal(EntitlementRightState.Revoked, right.Right.State);
             Assert.Equal(EntitlementOfflineEligibility.Ineligible, right.OfflineEligibility);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task SameRevisionComparisonIsOrderIndependentButRejectsChangedRightContent()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             var first = new EntitlementConfirmedSnapshot(5, 105, new[]
             {
                 Right(RightId, ReceiptId, 5, EntitlementRightState.Active, null, new byte[] { 1 }),
@@ -111,13 +122,16 @@ namespace GamePlatform.Tests.Features.Entitlements
                 Right(SecondRightId, SecondReceiptId, 5, EntitlementRightState.Unknown, null, new byte[] { 2 })
             });
             await Assert.ThrowsAsync<EntitlementProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, changed, Catalog(Context, true, RightId, SecondRightId), CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task BorrowedSemanticRevisionZeroProjectionRollsBackCommitsAndReopensWithCursorSideEffect()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             await database.ExecuteAsync(Scope, transaction => { ((SqliteTransactionSession)transaction).Execute("CREATE TABLE cl106_cursor_sentinel (value INTEGER NOT NULL)"); return true; }, CancellationToken.None);
             await Assert.ThrowsAsync<InjectedFailure>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
@@ -138,49 +152,64 @@ namespace GamePlatform.Tests.Features.Entitlements
             Assert.Equal(0L, (await new SqliteDurableFeatureStateStore(database, Scope).ReadAsync(Context, "entitlements", "confirmed", CancellationToken.None))!.Revision);
             var afterCommit = await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl106_cursor_sentinel"), CancellationToken.None);
             Assert.Equal(1, afterCommit);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
-            database = await OpenAsync(files.Path); service = Create(database);
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            database = await OpenAsync(files.Path);
+            service = Create(database);
             var reopened = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(0, reopened.Revision); Assert.Equal(0, reopened.Value!.Confirmed!.Revision);
+            Assert.Equal(0, reopened.Revision);
+            Assert.Equal(0, reopened.Value!.Confirmed!.Revision);
             Assert.Equal(1, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<int>("SELECT COUNT(*) FROM cl106_cursor_sentinel"), CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task SemanticRevisionMaximumPersistsExactly()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             var exhausted = new EntitlementConfirmedSnapshot(long.MaxValue, 100,
                 new[] { Right(RightId, ReceiptId, long.MaxValue, EntitlementRightState.Active, null, new byte[] { 1 }) });
             await service.ApplyConfirmedAsync(Context, exhausted, Catalog(Context, true), CancellationToken.None);
             var cached = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(long.MaxValue, cached.Revision); Assert.Equal(long.MaxValue, cached.Value!.Confirmed!.Revision);
+            Assert.Equal(long.MaxValue, cached.Revision);
+            Assert.Equal(long.MaxValue, cached.Value!.Confirmed!.Revision);
             Assert.Equal(long.MaxValue, await database.ExecuteAsync(Scope, transaction => ((SqliteTransactionSession)transaction).ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE feature_namespace='entitlements' AND entity_key='confirmed'"), CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task ActiveRightWithServerExpiryIsExplicitlyUncertainOfflineWithoutUsingDeviceTime()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             await service.ApplyConfirmedAsync(Context, Snapshot(1, EntitlementRightState.Active, 1, new byte[] { 1 }), Catalog(Context, true), CancellationToken.None);
             var cached = await service.ReadCachedAsync(Context, CancellationToken.None);
             Assert.Equal(EntitlementOfflineEligibility.ExpiryUncertain, Assert.Single(cached.Value!.Rights).OfflineEligibility);
             await service.ApplyConfirmedAsync(Context, Snapshot(2, EntitlementRightState.Expired, 1, Array.Empty<byte>()), Catalog(Context, true), CancellationToken.None);
             Assert.Equal(EntitlementOfflineEligibility.Ineligible, Assert.Single((await service.ReadCachedAsync(Context, CancellationToken.None)).Value!.Rights).OfflineEligibility);
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
         public async Task AppVisibilityRemovalDropsTheRightOnlyWhenServerProjectionRemovesIt()
         {
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             await service.ApplyConfirmedAsync(Context, Snapshot(1, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true), CancellationToken.None);
             await service.ApplyConfirmedAsync(Context, new EntitlementConfirmedSnapshot(2, 101, Array.Empty<EntitlementRight>()), Catalog(Context, false), CancellationToken.None);
             var cached = await service.ReadCachedAsync(Context, CancellationToken.None);
-            Assert.Equal(2, cached.Revision); Assert.Empty(cached.Value!.Rights);
+            Assert.Equal(2, cached.Revision);
+            Assert.Empty(cached.Value!.Rights);
             await Assert.ThrowsAsync<EntitlementProjectionConflictException>(() => service.ApplyConfirmedAsync(Context, Snapshot(3, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, false), CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
@@ -188,12 +217,15 @@ namespace GamePlatform.Tests.Features.Entitlements
         {
             Assert.Throws<ArgumentException>(() => new EntitlementOriginReceipt(default, "purchase.receipt-1"));
             Assert.Throws<ArgumentOutOfRangeException>(() => new EntitlementOriginReceipt(ReceiptId, "invalid receipt source"));
-            using var files = new TemporaryDatabase(); var database = await OpenAsync(files.Path); var service = Create(database);
+            using var files = new TemporaryDatabase();
+            var database = await OpenAsync(files.Path);
+            var service = Create(database);
             await service.ApplyConfirmedAsync(Context, Snapshot(1, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(Context, true), CancellationToken.None);
             var switched = new ScopedOwnerContext(new OwnerScope(Owner.Backend, App, new PlatformUserId(Guid.Parse("0199f9a0-0600-7000-8000-000000000099"))), new SemanticId("private"), 1);
             await Assert.ThrowsAsync<EntitlementOwnerMismatchException>(() => service.ReadCachedAsync(switched, CancellationToken.None));
             await Assert.ThrowsAsync<EntitlementOwnerMismatchException>(() => service.ApplyConfirmedAsync(switched, Snapshot(2, EntitlementRightState.Active, null, new byte[] { 1 }), Catalog(switched, true), CancellationToken.None));
-            service.Dispose(); Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
+            service.Dispose();
+            Assert.True(await database.DisposeAsync(TimeSpan.FromSeconds(5)));
         }
 
         private static EntitlementsService Create(SqliteDatabase database) => new EntitlementsService(Context, Scope,
@@ -227,7 +259,8 @@ namespace GamePlatform.Tests.Features.Entitlements
                 var rights = string.IsNullOrEmpty(text) ? Array.Empty<EntitlementRight>() : text.Split('|').Select(encoded =>
                 {
                     var fields = Encoding.UTF8.GetString(Convert.FromBase64String(encoded)).Split(';');
-                    if (fields.Length != 7) throw new InvalidOperationException("Invalid entitlement test state.");
+                    if (fields.Length != 7)
+                        throw new InvalidOperationException("Invalid entitlement test state.");
                     long? expiry = string.IsNullOrEmpty(fields[5]) ? null : long.Parse(fields[5], System.Globalization.CultureInfo.InvariantCulture);
                     return new EntitlementRight(new PlatformId(fields[0]), long.Parse(fields[1], System.Globalization.CultureInfo.InvariantCulture),
                         (EntitlementRightState)int.Parse(fields[2], System.Globalization.CultureInfo.InvariantCulture),
@@ -238,18 +271,32 @@ namespace GamePlatform.Tests.Features.Entitlements
 
             public void ValidateSupportedExtensions(ReadOnlySpan<byte> extensions)
             {
-                if (extensions.Length != 0) throw new InvalidOperationException("Unsupported entitlement extension.");
+                if (extensions.Length != 0)
+                    throw new InvalidOperationException("Unsupported entitlement extension.");
             }
         }
 
-        private sealed class InjectedFailure : Exception { }
+        private sealed class InjectedFailure : Exception
+        {
+        }
 
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl106", Guid.NewGuid().ToString("N"));
-            public TemporaryDatabase() { Directory.CreateDirectory(directory); Path = System.IO.Path.Combine(directory, "platform.sqlite3"); }
-            public string Path { get; }
-            public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+            public TemporaryDatabase()
+            {
+                Directory.CreateDirectory(directory);
+                Path = System.IO.Path.Combine(directory, "platform.sqlite3");
+            }
+            public string Path
+            {
+                get;
+            }
+            public void Dispose()
+            {
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, true);
+            }
         }
     }
 }

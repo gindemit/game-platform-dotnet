@@ -202,7 +202,8 @@ namespace GamePlatform.Tests.Sqlite
                 SqliteDatabaseOptions.Default,
                 (checkpoint, migration) =>
                 {
-                    if (migration.Version == 2 && checkpoint == MigrationCheckpoint.EffectsApplied) throw new InjectedFailure();
+                    if (migration.Version == 2 && checkpoint == MigrationCheckpoint.EffectsApplied)
+                        throw new InjectedFailure();
                 },
                 CancellationToken.None));
             Assert.IsType<InjectedFailure>(failure.InnerException);
@@ -284,7 +285,8 @@ namespace GamePlatform.Tests.Sqlite
                     SqliteDatabaseOptions.Default,
                     (checkpoint, migration) =>
                     {
-                        if (migration.Version == 7 && checkpoint == failedCheckpoint) throw new InjectedFailure();
+                        if (migration.Version == 7 && checkpoint == failedCheckpoint)
+                            throw new InjectedFailure();
                     },
                     CancellationToken.None));
                 Assert.IsType<InjectedFailure>(failure.InnerException);
@@ -306,14 +308,27 @@ namespace GamePlatform.Tests.Sqlite
         private static int TableExists(SqliteTransactionSession session, string table) =>
             session.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", table);
 
-        private sealed class InjectedFailure : Exception { }
+        private sealed class InjectedFailure : Exception
+        {
+        }
 
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl010-migrations", Guid.NewGuid().ToString("N"));
-            public TemporaryDatabase() { Directory.CreateDirectory(directory); Path = System.IO.Path.Combine(directory, "platform.sqlite3"); }
-            public string Path { get; }
-            public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
+            public TemporaryDatabase()
+            {
+                Directory.CreateDirectory(directory);
+                Path = System.IO.Path.Combine(directory, "platform.sqlite3");
+            }
+            public string Path
+            {
+                get;
+            }
+            public void Dispose()
+            {
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
         }
     }
 }

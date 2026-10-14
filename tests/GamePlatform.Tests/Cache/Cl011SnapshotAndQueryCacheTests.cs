@@ -100,6 +100,16 @@ namespace GamePlatform.Tests.Cache
         private static ScopedOwnerContext Owner(int discriminator, string view, long generation) => new ScopedOwnerContext(
             new OwnerScope(new BackendNamespace("backend"), new AppId(Guid.Parse($"0199f9a0-000{discriminator}-7000-8000-000000000001")),
                 new PlatformUserId(Guid.Parse($"0199f9a0-000{discriminator}-7000-8000-000000000002"))), new SemanticId(view), generation);
-        private sealed class Model { public Model(string value) { Value = value; } public string Value { get; } }
+        private sealed class Model
+        {
+            public Model(string value)
+            {
+                Value = value;
+            }
+            public string Value
+            {
+                get;
+            }
+        }
     }
 }

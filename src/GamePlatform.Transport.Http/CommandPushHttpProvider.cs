@@ -50,8 +50,10 @@ namespace GamePlatform.Transport.Http
             AuthRefreshCoordinator refresh,
             StoreQuestCapability storeQuest)
         {
-            if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
-            if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app ID is required.", nameof(appId));
+            if (!accountId.IsValid)
+                throw new ArgumentException("A valid account ID is required.", nameof(accountId));
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.executor = executor ?? throw new ArgumentNullException(nameof(executor));
             this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
@@ -66,30 +68,45 @@ namespace GamePlatform.Transport.Http
 
         public async Task<RemoteResult<RemoteCommandOutcome>> SendAsync(RemoteCommand command, CancellationToken cancellationToken)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            if (!TryCreateRequest(command, out var request)) return ProtocolFailure();
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+            if (!TryCreateRequest(command, out var request))
+                return ProtocolFailure();
             var storeQuestKind = IsStoreQuestKind(command.OperationKind);
 
             byte[] body;
-            try { body = storeQuestKind ? storeQuest!.EncodePushRequest(request) : codec.Encode(request); }
+            try
+            {
+                body = storeQuestKind ? storeQuest!.EncodePushRequest(request) : codec.Encode(request);
+            }
             catch { return ProtocolFailure(); }
-            if (body.Length == 0 || body.Length > 262_144) return ProtocolFailure();
+            if (body.Length == 0 || body.Length > 262_144)
+                return ProtocolFailure();
 
             var attempt = await SendAuthenticatedAsync(body, cancellationToken).ConfigureAwait(false);
-            if (attempt.Failure.HasValue) return RemoteResult<RemoteCommandOutcome>.Failed(attempt.Failure.Value);
+            if (attempt.Failure.HasValue)
+                return RemoteResult<RemoteCommandOutcome>.Failed(attempt.Failure.Value);
             var response = attempt.Response!;
-            if (response.StatusCode != 200) return RemoteResult<RemoteCommandOutcome>.Failed(DecodeFailure(response));
-            if (!ValidProtocolResponse(response)) return ProtocolFailure(response.StatusCode);
+            if (response.StatusCode != 200)
+                return RemoteResult<RemoteCommandOutcome>.Failed(DecodeFailure(response));
+            if (!ValidProtocolResponse(response))
+                return ProtocolFailure(response.StatusCode);
 
             PushResponse value;
-            try { value = storeQuestKind ? storeQuest!.DecodePushResponse(response.CopyBody()) : codec.Decode<PushResponse>(response.CopyBody()); }
+            try
+            {
+                value = storeQuestKind ? storeQuest!.DecodePushResponse(response.CopyBody()) : codec.Decode<PushResponse>(response.CopyBody());
+            }
             catch { return ProtocolFailure(response.StatusCode); }
             if (value == null || value.ProtocolVersion != 1 || value.ClientStreamId != command.StreamId.Value ||
                 value.OperationResults == null || value.OperationResults.Count != 1 || value.FinalizedThrough < 0 ||
                 value.ServerTime < 0 || value.ServerTime > 253_402_300_799_999L)
                 return ProtocolFailure(response.StatusCode);
 
-            try { return MapResult(command, value, response); }
+            try
+            {
+                return MapResult(command, value, response);
+            }
             catch { return ProtocolFailure(response.StatusCode); }
         }
 
@@ -99,7 +116,8 @@ namespace GamePlatform.Transport.Http
             if (command.SchemaVersion != 1 || command.FingerprintVersion != 1 || command.Fingerprint.Length != 32)
                 return false;
             var semanticBody = command.SemanticBody;
-            if (semanticBody.Length == 0 || semanticBody.Length > 262_144) return false;
+            if (semanticBody.Length == 0 || semanticBody.Length > 262_144)
+                return false;
 
             IPushPayload payload;
             try
@@ -121,7 +139,8 @@ namespace GamePlatform.Transport.Http
                     default:
                         return false;
                 }
-                if (payload == null) return false;
+                if (payload == null)
+                    return false;
                 request = new PushRequest(command.StreamId.Value, new[]
                 {
                     new PushOperation(command.OperationId.Value, command.InstallationId, command.Sequence,
@@ -135,7 +154,8 @@ namespace GamePlatform.Transport.Http
         private RemoteResult<RemoteCommandOutcome> MapResult(RemoteCommand command, PushResponse response, HttpResponseData httpResponse)
         {
             var result = response.OperationResults[0];
-            if (result == null) return ProtocolFailure(httpResponse.StatusCode);
+            if (result == null)
+                return ProtocolFailure(httpResponse.StatusCode);
             switch (result)
             {
                 case PushAccepted accepted when Matches(command, accepted.OperationId, accepted.Sequence) &&
@@ -168,28 +188,40 @@ namespace GamePlatform.Transport.Http
         private RemoteResult<RemoteCommandOutcome> Terminal(RemoteCommand command, RemoteCommandStatus status, IPushResult result, int statusCode)
         {
             byte[] terminal;
-            try { terminal = IsStoreQuestKind(command.OperationKind) ? storeQuest!.EncodeResult(result) : codec.Encode(result); }
+            try
+            {
+                terminal = IsStoreQuestKind(command.OperationKind) ? storeQuest!.EncodeResult(result) : codec.Encode(result);
+            }
             catch { return ProtocolFailure(statusCode); }
-            if (terminal.Length == 0 || terminal.Length > 65_536) return ProtocolFailure(statusCode);
+            if (terminal.Length == 0 || terminal.Length > 65_536)
+                return ProtocolFailure(statusCode);
             return RemoteResult<RemoteCommandOutcome>.Success(new RemoteCommandOutcome(status, terminal));
         }
 
         private RemoteResult<RemoteCommandOutcome> Retryable(CommonError error, HttpResponseData response)
         {
-            if (!TryRetryAfter(error, response, out var retryAfter)) return ProtocolFailure(response.StatusCode);
+            if (!TryRetryAfter(error, response, out var retryAfter))
+                return ProtocolFailure(response.StatusCode);
             return RemoteResult<RemoteCommandOutcome>.Failed(new RemoteFailure(MapCategory(error.Category), response.StatusCode, retryAfter));
         }
 
         private async Task<Attempt> SendAuthenticatedAsync(byte[] body, CancellationToken cancellationToken)
         {
             AccessTokenSnapshot token;
-            try { token = await auth.GetAsync(cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                token = await auth.GetAsync(cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.Cancelled)); }
             catch { return new Attempt(new RemoteFailure(RemoteFailureKind.Authentication)); }
 
             var response = await SendOnce(body, token, cancellationToken).ConfigureAwait(false);
-            if (response.Failure.HasValue || response.Response!.StatusCode != 401) return response;
-            try { token = await refresh.RefreshAsync(auth, accountId, token.Generation, cancellationToken).ConfigureAwait(false); }
+            if (response.Failure.HasValue || response.Response!.StatusCode != 401)
+                return response;
+            try
+            {
+                token = await refresh.RefreshAsync(auth, accountId, token.Generation, cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.Cancelled)); }
             catch { return new Attempt(new RemoteFailure(RemoteFailureKind.Authentication, 401)); }
             return await SendOnce(body, token, cancellationToken).ConfigureAwait(false);
@@ -204,7 +236,10 @@ namespace GamePlatform.Transport.Http
                 ["Content-Type"] = PrivateSyncHttpProvider.MessagePackMediaType
             };
             var request = new HttpRequestData("POST", configuration.Resolve("v1/apps/" + appId + "/sync/push").AbsoluteUri, headers, body);
-            try { return new Attempt(await executor.SendAsync(request, cancellationToken).ConfigureAwait(false)); }
+            try
+            {
+                return new Attempt(await executor.SendAsync(request, cancellationToken).ConfigureAwait(false));
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return new Attempt(new RemoteFailure(RemoteFailureKind.OutcomeUncertain)); }
             catch (HttpExecutionException error)
             {
@@ -216,10 +251,13 @@ namespace GamePlatform.Transport.Http
 
         private RemoteFailure DecodeFailure(HttpResponseData response)
         {
-            if (response.BodyLength > configuration.MaximumResponseBytes) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
+            if (response.BodyLength > configuration.MaximumResponseBytes)
+                return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
             var mapped = MapStatus(response);
-            if (!HasProtocolMediaType(response)) return mapped;
-            if (!ValidProtocolResponse(response)) return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
+            if (!HasProtocolMediaType(response))
+                return mapped;
+            if (!ValidProtocolResponse(response))
+                return new RemoteFailure(RemoteFailureKind.Protocol, response.StatusCode);
             try
             {
                 var error = codec.Decode<ErrorResponse>(response.CopyBody());
@@ -244,7 +282,8 @@ namespace GamePlatform.Transport.Http
         private bool IsExpectedAcceptedResult(RemoteCommand command, IPushAcceptedResult result)
         {
             var operationKind = command.OperationKind;
-            if (IsStoreQuestKind(operationKind)) return StoreQuestResultBinding.Matches(storeQuest!, command, result);
+            if (IsStoreQuestKind(operationKind))
+                return StoreQuestResultBinding.Matches(storeQuest!, command, result);
             return (operationKind == "profile.patch" && result is PushProfileUpdatedResult profile && profile.ProfileRevision >= 0) ||
                 (operationKind == "gameplay.session.completed" && result is PushGameplayCompletionRecordedResult);
         }
@@ -267,7 +306,8 @@ namespace GamePlatform.Transport.Http
             if (error.RetryAfterMilliseconds.IsPresent)
             {
                 var milliseconds = error.RetryAfterMilliseconds.Value;
-                if (milliseconds < 0 || milliseconds > 86_400_000) return false;
+                if (milliseconds < 0 || milliseconds > 86_400_000)
+                    return false;
                 if (headerMilliseconds.HasValue && headerMilliseconds.Value != checked(((long)milliseconds + 999) / 1000 * 1000))
                     return false;
                 retryAfter = TimeSpan.FromMilliseconds(milliseconds);
@@ -311,10 +351,24 @@ namespace GamePlatform.Transport.Http
 
         private readonly struct Attempt
         {
-            public Attempt(HttpResponseData response) { Response = response; Failure = null; }
-            public Attempt(RemoteFailure failure) { Response = null; Failure = failure; }
-            public HttpResponseData? Response { get; }
-            public RemoteFailure? Failure { get; }
+            public Attempt(HttpResponseData response)
+            {
+                Response = response;
+                Failure = null;
+            }
+            public Attempt(RemoteFailure failure)
+            {
+                Response = null;
+                Failure = failure;
+            }
+            public HttpResponseData? Response
+            {
+                get;
+            }
+            public RemoteFailure? Failure
+            {
+                get;
+            }
         }
     }
 }

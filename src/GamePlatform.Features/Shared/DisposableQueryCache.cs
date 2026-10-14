@@ -20,8 +20,10 @@ namespace GamePlatform.Features.Shared
 
         public DisposableQueryCache(int capacity, TimeSpan lifetime, Func<long> nowMilliseconds)
         {
-            if (capacity <= 0 || capacity > 4096) throw new ArgumentOutOfRangeException(nameof(capacity));
-            if (lifetime <= TimeSpan.Zero || lifetime > TimeSpan.FromDays(1)) throw new ArgumentOutOfRangeException(nameof(lifetime));
+            if (capacity <= 0 || capacity > 4096)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
+            if (lifetime <= TimeSpan.Zero || lifetime > TimeSpan.FromDays(1))
+                throw new ArgumentOutOfRangeException(nameof(lifetime));
             this.nowMilliseconds = nowMilliseconds ?? throw new ArgumentNullException(nameof(nowMilliseconds));
             this.capacity = capacity;
             lifetimeMilliseconds = checked((long)lifetime.TotalMilliseconds);
@@ -30,7 +32,8 @@ namespace GamePlatform.Features.Shared
         public Task<FeatureSnapshot<T>> GetOrRefreshAsync(ScopedQueryKey key,
             Func<CancellationToken, Task<FeatureSnapshot<T>>> refresh, CancellationToken cancellationToken)
         {
-            if (refresh == null) throw new ArgumentNullException(nameof(refresh));
+            if (refresh == null)
+                throw new ArgumentNullException(nameof(refresh));
             cancellationToken.ThrowIfCancellationRequested();
             Task<FeatureSnapshot<T>> shared;
             lock (gate)
@@ -38,7 +41,8 @@ namespace GamePlatform.Features.Shared
                 ThrowIfDisposed();
                 var now = GetNow();
                 RemoveExpired(now);
-                if (entries.TryGetValue(key, out var existing)) shared = existing.Task;
+                if (entries.TryGetValue(key, out var existing))
+                    shared = existing.Task;
                 else
                 {
                     EnsureCapacity();
@@ -54,14 +58,19 @@ namespace GamePlatform.Features.Shared
 
         public bool Invalidate(ScopedQueryKey key)
         {
-            lock (gate) { ThrowIfDisposed(); return entries.Remove(key); }
+            lock (gate)
+            {
+                ThrowIfDisposed();
+                return entries.Remove(key);
+            }
         }
 
         public void Dispose()
         {
             lock (gate)
             {
-                if (disposed) return;
+                if (disposed)
+                    return;
                 disposed = true;
                 entries.Clear();
                 lifetime.Cancel();
@@ -76,8 +85,10 @@ namespace GamePlatform.Features.Shared
             try
             {
                 var result = await refresh(lifetime.Token).ConfigureAwait(false);
-                if (result == null) throw new InvalidOperationException("A refresh returned no snapshot.");
-                if (result.Owner != key.Owner) throw new InvalidOperationException("A refresh returned a foreign owner or generation.");
+                if (result == null)
+                    throw new InvalidOperationException("A refresh returned no snapshot.");
+                if (result.Owner != key.Owner)
+                    throw new InvalidOperationException("A refresh returned a foreign owner or generation.");
                 lock (gate)
                 {
                     if (disposed || !entries.TryGetValue(key, out var current) || !ReferenceEquals(current, entry))
@@ -92,14 +103,17 @@ namespace GamePlatform.Features.Shared
                     if (!disposed && entries.TryGetValue(key, out var current) && ReferenceEquals(current, entry))
                         entries.Remove(key);
                 }
-                if (error is OperationCanceledException cancelled) completion.TrySetCanceled(cancelled.CancellationToken);
-                else completion.TrySetException(error);
+                if (error is OperationCanceledException cancelled)
+                    completion.TrySetCanceled(cancelled.CancellationToken);
+                else
+                    completion.TrySetException(error);
             }
         }
 
         private static async Task<FeatureSnapshot<T>> AwaitWaiterAsync(Task<FeatureSnapshot<T>> shared, CancellationToken cancellationToken)
         {
-            if (!cancellationToken.CanBeCanceled) return await shared.ConfigureAwait(false);
+            if (!cancellationToken.CanBeCanceled)
+                return await shared.ConfigureAwait(false);
             var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (cancellationToken.Register(() => cancelled.TrySetResult(true)))
             {
@@ -112,34 +126,59 @@ namespace GamePlatform.Features.Shared
         private long GetNow()
         {
             var now = nowMilliseconds();
-            if (now < 0 || now > 253_402_300_799_999L) throw new InvalidOperationException("The cache clock returned an invalid timestamp.");
+            if (now < 0 || now > 253_402_300_799_999L)
+                throw new InvalidOperationException("The cache clock returned an invalid timestamp.");
             return now;
         }
 
         private void RemoveExpired(long now)
         {
             var expired = new List<ScopedQueryKey>();
-            foreach (var pair in entries) if (pair.Value.ExpiresAt <= now && pair.Value.Task.IsCompleted) expired.Add(pair.Key);
-            foreach (var key in expired) entries.Remove(key);
+            foreach (var pair in entries)
+                if (pair.Value.ExpiresAt <= now && pair.Value.Task.IsCompleted)
+                    expired.Add(pair.Key);
+            foreach (var key in expired)
+                entries.Remove(key);
         }
 
         private void EnsureCapacity()
         {
-            if (entries.Count < capacity) return;
-            ScopedQueryKey? oldestKey = null; long oldest = long.MaxValue;
+            if (entries.Count < capacity)
+                return;
+            ScopedQueryKey? oldestKey = null;
+            long oldest = long.MaxValue;
             foreach (var pair in entries)
-                if (pair.Value.Task.IsCompleted && pair.Value.ExpiresAt < oldest) { oldest = pair.Value.ExpiresAt; oldestKey = pair.Key; }
-            if (!oldestKey.HasValue) throw new InvalidOperationException("The query cache is at capacity with refreshes in flight.");
+                if (pair.Value.Task.IsCompleted && pair.Value.ExpiresAt < oldest)
+                {
+                    oldest = pair.Value.ExpiresAt;
+                    oldestKey = pair.Key;
+                }
+            if (!oldestKey.HasValue)
+                throw new InvalidOperationException("The query cache is at capacity with refreshes in flight.");
             entries.Remove(oldestKey.Value);
         }
 
-        private void ThrowIfDisposed() { if (disposed) throw new ObjectDisposedException(nameof(DisposableQueryCache<T>)); }
+        private void ThrowIfDisposed()
+        {
+            if (disposed)
+                throw new ObjectDisposedException(nameof(DisposableQueryCache<T>));
+        }
 
         private sealed class Entry
         {
-            public Entry(Task<FeatureSnapshot<T>> task, long expiresAt) { Task = task; ExpiresAt = expiresAt; }
-            public Task<FeatureSnapshot<T>> Task { get; }
-            public long ExpiresAt { get; }
+            public Entry(Task<FeatureSnapshot<T>> task, long expiresAt)
+            {
+                Task = task;
+                ExpiresAt = expiresAt;
+            }
+            public Task<FeatureSnapshot<T>> Task
+            {
+                get;
+            }
+            public long ExpiresAt
+            {
+                get;
+            }
         }
     }
 }

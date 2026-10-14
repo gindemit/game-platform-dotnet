@@ -35,11 +35,17 @@ namespace GamePlatform.Features.Inventory
             ISerializedStorageExecutor transactions, IAtomicCommandStore commands, IInventoryStateCodec codec,
             IInventoryIntentAuthority authority, Func<long> nowMilliseconds)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!Matches(scope, owner.Owner)) throw new ArgumentException("The inventory scope does not match the captured owner.", nameof(scope));
-            this.owner = owner; this.scope = scope; this.state = state ?? throw new ArgumentNullException(nameof(state));
-            this.transactions = transactions ?? throw new ArgumentNullException(nameof(transactions)); this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
-            this.codec = codec ?? throw new ArgumentNullException(nameof(codec)); this.authority = authority ?? throw new ArgumentNullException(nameof(authority));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!Matches(scope, owner.Owner))
+                throw new ArgumentException("The inventory scope does not match the captured owner.", nameof(scope));
+            this.owner = owner;
+            this.scope = scope;
+            this.state = state ?? throw new ArgumentNullException(nameof(state));
+            this.transactions = transactions ?? throw new ArgumentNullException(nameof(transactions));
+            this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
+            this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
+            this.authority = authority ?? throw new ArgumentNullException(nameof(authority));
             this.nowMilliseconds = nowMilliseconds ?? throw new ArgumentNullException(nameof(nowMilliseconds));
         }
 
@@ -51,16 +57,19 @@ namespace GamePlatform.Features.Inventory
             CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
             ValidateCatalog(exactOwner, confirmed, catalog);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
-                if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision) return;
+                if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision)
+                    return;
                 if (current.Confirmed != null && confirmed.Revision == current.Confirmed.Revision)
                 {
-                    if (!Equivalent(current.Confirmed, confirmed)) throw new InventoryProjectionConflictException("A confirmed inventory revision changed meaning.");
+                    if (!Equivalent(current.Confirmed, confirmed))
+                        throw new InventoryProjectionConflictException("A confirmed inventory revision changed meaning.");
                     return;
                 }
                 var retained = current.Pending.Where(value => value.Status != InventoryIntentStatus.AcceptedAwaitingPull ||
@@ -85,13 +94,19 @@ namespace GamePlatform.Features.Inventory
             long? durablePriorRevision, InventoryConfirmedSnapshot confirmed, CatalogSnapshot catalog)
         {
             var exactOwner = EnsureOwner(requestedOwner);
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (!transaction.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The inventory transaction belongs to another scope.");
-            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
-            if (durablePriorRevision.HasValue && confirmed.Revision <= durablePriorRevision.Value) throw new InventoryProjectionConflictException("A borrowed inventory projection must advance its durable revision.");
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+            if (!transaction.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The inventory transaction belongs to another scope.");
+            if (durablePriorRevision.HasValue && durablePriorRevision.Value < 0)
+                throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
+            if (durablePriorRevision.HasValue && confirmed.Revision <= durablePriorRevision.Value)
+                throw new InventoryProjectionConflictException("A borrowed inventory projection must advance its durable revision.");
             ValidateCatalog(exactOwner, confirmed, catalog);
-            var payload = codec.EncodeConfirmed(confirmed); ValidatePayload(payload, "confirmed inventory");
+            var payload = codec.EncodeConfirmed(confirmed);
+            ValidatePayload(payload, "confirmed inventory");
             state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, ConfirmedKey, confirmed.Revision,
                 confirmed.ConfirmedAtMilliseconds, payload, Array.Empty<byte>()));
         }
@@ -100,34 +115,41 @@ namespace GamePlatform.Features.Inventory
         public async Task<FeatureSnapshot<InventorySnapshot>> SubmitIntentAsync(InventoryIntentRequest request,
             CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             var exactOwner = EnsureOwner(request.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
-                if (current.Confirmed == null) throw new InventoryIntentRejectedException("inventory_missing_confirmed_state");
+                if (current.Confirmed == null)
+                    throw new InventoryIntentRejectedException("inventory_missing_confirmed_state");
                 EnsureTargetIsConfirmed(current.Confirmed, request);
                 ValidateCatalog(exactOwner, current.Confirmed, catalog);
-                if (!AllowsUse(catalog, request, current.Confirmed)) throw new InventoryIntentRejectedException("inventory_target_not_usable");
+                if (!AllowsUse(catalog, request, current.Confirmed))
+                    throw new InventoryIntentRejectedException("inventory_target_not_usable");
                 var existing = current.Pending.FirstOrDefault(value => value.OperationId == request.OperationId);
                 if (existing != null)
                 {
-                    if (Equivalent(existing, request)) return await ReadSnapshotAsync(exactOwner, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+                    if (Equivalent(existing, request))
+                        return await ReadSnapshotAsync(exactOwner, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
                     throw new InventoryIntentRejectedException("inventory_operation_identity_conflict");
                 }
                 var authorization = authority.Authorize(request);
-                if (authorization == null || !authorization.Permitted) throw new InventoryIntentRejectedException(authorization == null ? "inventory_authority_unavailable" : authorization.Reason);
+                if (authorization == null || !authorization.Permitted)
+                    throw new InventoryIntentRejectedException(authorization == null ? "inventory_authority_unavailable" : authorization.Reason);
                 var draftIntent = new InventoryIntent(request.OperationId, request.StreamId, request.BusinessSource, request.Kind,
                     request.TargetKind, request.TargetId, current.Confirmed.Revision, 1);
-                var commandBody = codec.EncodeIntentCommand(draftIntent); ValidatePayload(commandBody, "inventory intent command");
+                var commandBody = codec.EncodeIntentCommand(draftIntent);
+                ValidatePayload(commandBody, "inventory intent command");
                 var draft = new CommandDraft(exactOwner.Owner, request.OperationId, request.StreamId, authorization.OperationKind!, 1, 1, commandBody);
                 await commands.CommitAsync(request.BusinessSource, draft, (transaction, localRevision) =>
                 {
                     var intent = new InventoryIntent(request.OperationId, request.StreamId, request.BusinessSource, request.Kind,
                         request.TargetKind, request.TargetId, current.Confirmed.Revision, localRevision);
                     var pending = current.Pending.Concat(new[] { intent }).ToArray();
-                    var payload = codec.EncodePending(pending); ValidatePayload(payload, "pending inventory");
+                    var payload = codec.EncodePending(pending);
+                    ValidatePayload(payload, "pending inventory");
                     state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, PendingKey, localRevision, Now(), payload, Array.Empty<byte>()));
                 }, cancellationToken).ConfigureAwait(false);
             }
@@ -139,7 +161,8 @@ namespace GamePlatform.Features.Inventory
         public async Task<FeatureSnapshot<InventorySnapshot>> RejectIntentAsync(ScopedOwnerContext requestedOwner, OperationId operationId, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
-            if (!operationId.IsValid) throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
+            if (!operationId.IsValid)
+                throw new ArgumentException("A valid operation ID is required.", nameof(operationId));
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -155,14 +178,16 @@ namespace GamePlatform.Features.Inventory
         /// <summary>Stores a receipt-derived accepted-awaiting-pull marker without changing confirmed holdings.</summary>
         public async Task<FeatureSnapshot<InventorySnapshot>> MarkAcceptedAwaitingPullAsync(InventoryIntentAcceptance acceptance, CancellationToken cancellationToken)
         {
-            if (acceptance == null) throw new ArgumentNullException(nameof(acceptance));
+            if (acceptance == null)
+                throw new ArgumentNullException(nameof(acceptance));
             var exactOwner = EnsureOwner(acceptance.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, cancellationToken).ConfigureAwait(false);
                 var found = current.Pending.FirstOrDefault(value => value.OperationId == acceptance.OperationId);
-                if (found == null) throw new InventoryIntentRejectedException("inventory_pending_intent_missing");
+                if (found == null)
+                    throw new InventoryIntentRejectedException("inventory_pending_intent_missing");
                 if (acceptance.ResultingInventoryRevision <= found.ExpectedInventoryRevision)
                     throw new InventoryProjectionConflictException("The accepted inventory receipt did not advance the expected revision.");
                 if (current.Confirmed != null && current.Confirmed.Revision >= acceptance.ResultingInventoryRevision)
@@ -186,7 +211,13 @@ namespace GamePlatform.Features.Inventory
             return await ReadSnapshotAsync(exactOwner, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
         }
 
-        public void Dispose() { if (disposed) return; disposed = true; mutation.Dispose(); }
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+            disposed = true;
+            mutation.Dispose();
+        }
 
         private async Task<FeatureSnapshot<InventorySnapshot>> ReadSnapshotAsync(ScopedOwnerContext exactOwner, SnapshotFreshness freshness, CancellationToken cancellationToken)
         {
@@ -210,11 +241,14 @@ namespace GamePlatform.Features.Inventory
             {
                 codec.ValidateInstanceExtensions(confirmed.CopyExtensions());
                 decoded = codec.DecodeConfirmed(confirmed.Revision, confirmed.ConfirmedAtMilliseconds, confirmed.CopyPayload(), confirmed.CopyExtensions());
-                if (decoded == null || decoded.Revision != confirmed.Revision) throw new InventoryProjectionConflictException("The inventory codec returned an invalid confirmed state.");
+                if (decoded == null || decoded.Revision != confirmed.Revision)
+                    throw new InventoryProjectionConflictException("The inventory codec returned an invalid confirmed state.");
             }
-            if (pending == null || pending.PayloadLength == 0) return (decoded, Array.Empty<InventoryIntent>(), pending?.Revision ?? 0);
+            if (pending == null || pending.PayloadLength == 0)
+                return (decoded, Array.Empty<InventoryIntent>(), pending?.Revision ?? 0);
             var decodedPending = codec.DecodePending(pending.Revision, pending.CopyPayload());
-            if (decodedPending == null || decodedPending.Any(value => value == null)) throw new InventoryProjectionConflictException("The inventory codec returned invalid pending state.");
+            if (decodedPending == null || decodedPending.Any(value => value == null))
+                throw new InventoryProjectionConflictException("The inventory codec returned invalid pending state.");
             // A borrowed private-feed transaction can commit the projection and cursor without taking ownership of this
             // feature's pending record. Its authoritative revision suppresses only matching accepted receipts on every
             // durable read; awaiting-receipt intents remain pending and no holding is inferred from a receipt.
@@ -234,21 +268,42 @@ namespace GamePlatform.Features.Inventory
         {
             var revision = Math.Max(currentRevision, pending.Count == 0 ? 1L : pending.Max(value => value.LocalRevision));
             var payload = pending.Count == 0 ? Array.Empty<byte>() : codec.EncodePending(pending);
-            if (payload.Length != 0) ValidatePayload(payload, "pending inventory");
+            if (payload.Length != 0)
+                ValidatePayload(payload, "pending inventory");
             state.Upsert(transaction, new DurableFeatureMutation(exactOwner, Namespace, PendingKey, revision, Now(), payload, Array.Empty<byte>()));
         }
 
-        private ScopedOwnerContext EnsureOwner(ScopedOwnerContext requested) { if (disposed) throw new ObjectDisposedException(nameof(InventoryService)); if (requested != owner) throw new InventoryOwnerMismatchException(); return requested; }
-        private long Now() { var value = nowMilliseconds(); if (value < 0 || value > 253_402_300_799_999L) throw new InvalidOperationException("Inventory clock is out of bounds."); return value; }
+        private ScopedOwnerContext EnsureOwner(ScopedOwnerContext requested)
+        {
+            if (disposed)
+                throw new ObjectDisposedException(nameof(InventoryService));
+            if (requested != owner)
+                throw new InventoryOwnerMismatchException();
+            return requested;
+        }
+        private long Now()
+        {
+            var value = nowMilliseconds();
+            if (value < 0 || value > 253_402_300_799_999L)
+                throw new InvalidOperationException("Inventory clock is out of bounds.");
+            return value;
+        }
         private static bool Matches(StorageScope scope, OwnerScope owner) => string.Equals(scope.BackendNamespace, owner.Backend.Value, StringComparison.Ordinal) && string.Equals(scope.AppId.Value, owner.AppId.ToString(), StringComparison.Ordinal) && string.Equals(scope.AccountId.Value, owner.UserId.ToString(), StringComparison.Ordinal);
-        private static void ValidatePayload(byte[]? payload, string label) { if (payload == null || payload.Length == 0 || payload.Length > 262_144) throw new InvalidOperationException("The " + label + " payload is invalid."); }
+        private static void ValidatePayload(byte[]? payload, string label)
+        {
+            if (payload == null || payload.Length == 0 || payload.Length > 262_144)
+                throw new InvalidOperationException("The " + label + " payload is invalid.");
+        }
         private void ValidateCatalog(ScopedOwnerContext exactOwner, InventoryConfirmedSnapshot confirmed, CatalogSnapshot catalog)
         {
-            if (catalog == null || catalog.Request.Owner != exactOwner) throw new InventoryOwnerMismatchException();
-            foreach (var stack in confirmed.Stacks) EnsureVisibleItem(catalog, stack.DefinitionId);
+            if (catalog == null || catalog.Request.Owner != exactOwner)
+                throw new InventoryOwnerMismatchException();
+            foreach (var stack in confirmed.Stacks)
+                EnsureVisibleItem(catalog, stack.DefinitionId);
             foreach (var instance in confirmed.Instances.Where(value => value.State == InventoryInstanceState.Active))
             {
-                codec.ValidateInstanceExtensions(instance.CopyAuditExtensions()); EnsureVisibleItem(catalog, instance.DefinitionId);
+                codec.ValidateInstanceExtensions(instance.CopyAuditExtensions());
+                EnsureVisibleItem(catalog, instance.DefinitionId);
             }
         }
         private static void EnsureVisibleItem(CatalogSnapshot catalog, PlatformId definitionId)
@@ -268,33 +323,40 @@ namespace GamePlatform.Features.Inventory
             var found = request.TargetKind == InventoryEntryKind.Stack
                 ? confirmed.Stacks.Any(value => value.DefinitionId.Equals(request.TargetId))
                 : confirmed.Instances.Any(value => value.InstanceId.Equals(request.TargetId) && value.State == InventoryInstanceState.Active);
-            if (!found) throw new InventoryIntentRejectedException("inventory_target_not_confirmed");
+            if (!found)
+                throw new InventoryIntentRejectedException("inventory_target_not_confirmed");
         }
         private static bool Equivalent(InventoryIntent existing, InventoryIntentRequest request) => existing.StreamId == request.StreamId && string.Equals(existing.BusinessSource, request.BusinessSource, StringComparison.Ordinal) && existing.Kind == request.Kind && existing.TargetKind == request.TargetKind && existing.TargetId.Equals(request.TargetId);
         private static bool Equivalent(InventoryConfirmedSnapshot left, InventoryConfirmedSnapshot right)
         {
-            if (left.ConfirmedAtMilliseconds != right.ConfirmedAtMilliseconds || left.Stacks.Count != right.Stacks.Count || left.Instances.Count != right.Instances.Count) return false;
+            if (left.ConfirmedAtMilliseconds != right.ConfirmedAtMilliseconds || left.Stacks.Count != right.Stacks.Count || left.Instances.Count != right.Instances.Count)
+                return false;
             var rightStacks = right.Stacks.ToDictionary(value => value.DefinitionId);
             foreach (var leftStack in left.Stacks)
             {
-                if (!rightStacks.TryGetValue(leftStack.DefinitionId, out var rightStack) || leftStack.Quantity != rightStack.Quantity || leftStack.Revision != rightStack.Revision) return false;
+                if (!rightStacks.TryGetValue(leftStack.DefinitionId, out var rightStack) || leftStack.Quantity != rightStack.Quantity || leftStack.Revision != rightStack.Revision)
+                    return false;
             }
             var rightInstances = right.Instances.ToDictionary(value => value.InstanceId);
             foreach (var leftInstance in left.Instances)
             {
-                if (!rightInstances.TryGetValue(leftInstance.InstanceId, out var rightInstance)) return false;
+                if (!rightInstances.TryGetValue(leftInstance.InstanceId, out var rightInstance))
+                    return false;
                 if (!leftInstance.InstanceId.Equals(rightInstance.InstanceId) || !leftInstance.DefinitionId.Equals(rightInstance.DefinitionId) ||
                     leftInstance.Revision != rightInstance.Revision || leftInstance.State != rightInstance.State ||
                     !EqualBytes(leftInstance.CopyPayload(), rightInstance.CopyPayload()) ||
-                    !EqualBytes(leftInstance.CopyAuditExtensions(), rightInstance.CopyAuditExtensions())) return false;
+                    !EqualBytes(leftInstance.CopyAuditExtensions(), rightInstance.CopyAuditExtensions()))
+                    return false;
             }
             return true;
         }
         private static bool EqualBytes(byte[] left, byte[] right)
         {
-            if (left.Length != right.Length) return false;
+            if (left.Length != right.Length)
+                return false;
             var difference = 0;
-            for (var index = 0; index < left.Length; index++) difference |= left[index] ^ right[index];
+            for (var index = 0; index < left.Length; index++)
+                difference |= left[index] ^ right[index];
             return difference == 0;
         }
     }

@@ -18,8 +18,10 @@ namespace GamePlatform.Tests.Serialization
         {
             var codec = new LeaderboardsStateCodec();
             var value = LeaderboardsServiceTests.Response(score: long.MaxValue);
-            var bytes = codec.EncodeResponse(value); var decoded = codec.DecodeResponse(bytes);
-            Assert.Equal(long.MaxValue, decoded.Entries[0].Score); Assert.Null(decoded.Self);
+            var bytes = codec.EncodeResponse(value);
+            var decoded = codec.DecodeResponse(bytes);
+            Assert.Equal(long.MaxValue, decoded.Entries[0].Score);
+            Assert.Null(decoded.Self);
             Assert.Equal(bytes, codec.EncodeResponse(decoded));
             Assert.Throws<QualificationCodecException>(() => codec.DecodeResponse(bytes.Concat(new byte[] { 0 }).ToArray()));
         }
@@ -27,10 +29,12 @@ namespace GamePlatform.Tests.Serialization
         public void SeparateBackendLogicalFixturesEmitSdkMessagePackForPeerExchange()
         {
             var root = new DirectoryInfo(AppContext.BaseDirectory);
-            while (root != null && !File.Exists(Path.Combine(root.FullName, "GamePlatform.sln"))) root = root.Parent;
+            while (root != null && !File.Exists(Path.Combine(root.FullName, "GamePlatform.sln")))
+                root = root.Parent;
             Assert.NotNull(root);
             using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(root!.FullName, "contracts/leaderboards/fixtures.json")));
-            var codec = new QualificationMessagePackCodec(); var rows = new List<object>();
+            var codec = new QualificationMessagePackCodec();
+            var rows = new List<object>();
             foreach (var fixture in document.RootElement.GetProperty("fixtures").EnumerateArray())
             {
                 string schema = "leaderboards.schema.json#/$defs/" + fixture.GetProperty("schema").GetString();
@@ -38,10 +42,20 @@ namespace GamePlatform.Tests.Serialization
                 Assert.Equal(bytes, codec.Encode(schema, codec.Decode(schema, bytes)));
                 if (fixture.TryGetProperty("messagePackHex", out var foreign))
                     Assert.Equal(bytes, codec.Encode(schema, codec.Decode(schema, Convert.FromHexString(foreign.GetString()!))));
-                rows.Add(new { name = fixture.GetProperty("name").GetString(), schema, messagePackHex = Convert.ToHexString(bytes).ToLowerInvariant() });
+                rows.Add(new
+                {
+                    name = fixture.GetProperty("name").GetString(),
+                    schema,
+                    messagePackHex = Convert.ToHexString(bytes).ToLowerInvariant()
+                });
             }
-            string output = Path.Combine(root.FullName, "artifacts/leaderboards"); Directory.CreateDirectory(output);
-            File.WriteAllText(Path.Combine(output, "sdk-fixtures.json"), JsonSerializer.Serialize(new { protocol = "leaderboards-1.0.0", fixtures = rows }));
+            string output = Path.Combine(root.FullName, "artifacts/leaderboards");
+            Directory.CreateDirectory(output);
+            File.WriteAllText(Path.Combine(output, "sdk-fixtures.json"), JsonSerializer.Serialize(new
+            {
+                protocol = "leaderboards-1.0.0",
+                fixtures = rows
+            }));
         }
         [Fact]
         public void ClosedSchemaRejectsUnknownFieldAndIllegalCountryScope()

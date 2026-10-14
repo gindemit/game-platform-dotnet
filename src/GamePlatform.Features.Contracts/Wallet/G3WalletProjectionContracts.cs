@@ -12,16 +12,27 @@ namespace GamePlatform.Features.Contracts.Wallet
     {
         public G3ConfirmedWalletProjection(SemanticId currencyId, long balance, long revision)
         {
-            if (!currencyId.IsValid) throw new ArgumentException("A semantic currency ID is required.", nameof(currencyId));
-            if (revision < 0) throw new ArgumentOutOfRangeException(nameof(revision));
+            if (!currencyId.IsValid)
+                throw new ArgumentException("A semantic currency ID is required.", nameof(currencyId));
+            if (revision < 0)
+                throw new ArgumentOutOfRangeException(nameof(revision));
             CurrencyId = currencyId;
             Balance = balance;
             Revision = revision;
         }
 
-        public SemanticId CurrencyId { get; }
-        public long Balance { get; }
-        public long Revision { get; }
+        public SemanticId CurrencyId
+        {
+            get;
+        }
+        public long Balance
+        {
+            get;
+        }
+        public long Revision
+        {
+            get;
+        }
     }
 
     /// <summary>Exact owner/view/generation fenced cached-wallet read key for the G3 projection.</summary>
@@ -29,14 +40,22 @@ namespace GamePlatform.Features.Contracts.Wallet
     {
         public G3WalletProjectionRequest(ScopedOwnerContext owner, SemanticId currencyId)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!currencyId.IsValid) throw new ArgumentException("A semantic currency ID is required.", nameof(currencyId));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!currencyId.IsValid)
+                throw new ArgumentException("A semantic currency ID is required.", nameof(currencyId));
             Owner = owner;
             CurrencyId = currencyId;
         }
 
-        public ScopedOwnerContext Owner { get; }
-        public SemanticId CurrencyId { get; }
+        public ScopedOwnerContext Owner
+        {
+            get;
+        }
+        public SemanticId CurrencyId
+        {
+            get;
+        }
     }
 
     /// <summary>Explicit private-feed removal semantics. Both kinds read as Missing and never synthesize a zero balance.</summary>
@@ -52,7 +71,10 @@ namespace GamePlatform.Features.Contracts.Wallet
     /// </summary>
     public interface IG3WalletProjectionCodec
     {
-        int SchemaVersion { get; }
+        int SchemaVersion
+        {
+            get;
+        }
         byte[] Encode(G3ConfirmedWalletProjection projection);
         G3ConfirmedWalletProjection Decode(int schemaVersion, ReadOnlySpan<byte> payload);
     }

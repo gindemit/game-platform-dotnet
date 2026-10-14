@@ -15,17 +15,21 @@ namespace GamePlatform.Transport.Http.Supabase
             BackendNamespace backendNamespace, string publishableApiKey,
             string sessionStorageKey, int maximumResponseBytes = 65_536, TimeSpan? recoveryTimeout = null)
         {
-            if (authBaseUri == null) throw new ArgumentNullException(nameof(authBaseUri));
+            if (authBaseUri == null)
+                throw new ArgumentNullException(nameof(authBaseUri));
             if (!authBaseUri.IsAbsoluteUri || !string.Equals(authBaseUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
                 !string.IsNullOrEmpty(authBaseUri.Query) || !string.IsNullOrEmpty(authBaseUri.Fragment) || !string.IsNullOrEmpty(authBaseUri.UserInfo))
                 throw new ArgumentException("The Supabase Auth base URI must be absolute HTTPS without credentials, query or fragment.", nameof(authBaseUri));
             ValidateText(principalIssuer, 256, nameof(principalIssuer));
-            if (!backendNamespace.IsValid) throw new ArgumentException("A backend namespace is required.", nameof(backendNamespace));
+            if (!backendNamespace.IsValid)
+                throw new ArgumentException("A backend namespace is required.", nameof(backendNamespace));
             ValidateText(publishableApiKey, 4_096, nameof(publishableApiKey));
             ValidateStorageKey(sessionStorageKey);
-            if (maximumResponseBytes < 1_024 || maximumResponseBytes > 65_536) throw new ArgumentOutOfRangeException(nameof(maximumResponseBytes));
+            if (maximumResponseBytes < 1_024 || maximumResponseBytes > 65_536)
+                throw new ArgumentOutOfRangeException(nameof(maximumResponseBytes));
             var recoveryBound = recoveryTimeout ?? TimeSpan.FromSeconds(30);
-            if (recoveryBound < TimeSpan.FromMilliseconds(1) || recoveryBound > TimeSpan.FromMinutes(5)) throw new ArgumentOutOfRangeException(nameof(recoveryTimeout));
+            if (recoveryBound < TimeSpan.FromMilliseconds(1) || recoveryBound > TimeSpan.FromMinutes(5))
+                throw new ArgumentOutOfRangeException(nameof(recoveryTimeout));
 
             AuthBaseUri = new Uri(authBaseUri.AbsoluteUri.TrimEnd('/') + "/", UriKind.Absolute);
             if (!AuthBaseUri.AbsolutePath.EndsWith("/auth/v1/", StringComparison.Ordinal))
@@ -38,13 +42,34 @@ namespace GamePlatform.Transport.Http.Supabase
             RecoveryTimeout = recoveryBound;
         }
 
-        public Uri AuthBaseUri { get; }
-        public string PrincipalIssuer { get; }
-        public BackendNamespace BackendNamespace { get; }
-        public string PublishableApiKey { get; }
-        public string SessionStorageKey { get; }
-        public int MaximumResponseBytes { get; }
-        public TimeSpan RecoveryTimeout { get; }
+        public Uri AuthBaseUri
+        {
+            get;
+        }
+        public string PrincipalIssuer
+        {
+            get;
+        }
+        public BackendNamespace BackendNamespace
+        {
+            get;
+        }
+        public string PublishableApiKey
+        {
+            get;
+        }
+        public string SessionStorageKey
+        {
+            get;
+        }
+        public int MaximumResponseBytes
+        {
+            get;
+        }
+        public TimeSpan RecoveryTimeout
+        {
+            get;
+        }
 
         public Uri Resolve(string relativePath)
         {
@@ -65,31 +90,48 @@ namespace GamePlatform.Transport.Http.Supabase
 
         private static void ValidateStorageKey(string value)
         {
-            if (string.IsNullOrWhiteSpace(value) || value.Length > 128) throw new ArgumentOutOfRangeException(nameof(value));
+            if (string.IsNullOrWhiteSpace(value) || value.Length > 128)
+                throw new ArgumentOutOfRangeException(nameof(value));
             foreach (var character in value)
                 if (!(char.IsLetterOrDigit(character) || character == '.' || character == '_' || character == '-'))
                     throw new ArgumentOutOfRangeException(nameof(value));
         }
     }
 
-    public enum SupabaseAnonymousSessionState { FreshAuthorized, SignupPending, Known, RefreshPending, RecoveryRequired }
+    public enum SupabaseAnonymousSessionState
+    {
+        FreshAuthorized, SignupPending, Known, RefreshPending, RecoveryRequired
+    }
 
     /// <summary>Non-secret public marker. It intentionally contains neither access nor refresh credentials.</summary>
     public sealed class SupabaseAnonymousSessionPublicRecord
     {
         public SupabaseAnonymousSessionPublicRecord(long version, SupabaseAnonymousSessionState state, string? subject)
         {
-            if (version < 0 || !Enum.IsDefined(typeof(SupabaseAnonymousSessionState), state)) throw new ArgumentOutOfRangeException(nameof(version));
+            if (version < 0 || !Enum.IsDefined(typeof(SupabaseAnonymousSessionState), state))
+                throw new ArgumentOutOfRangeException(nameof(version));
             bool subjectRequired = state == SupabaseAnonymousSessionState.Known || state == SupabaseAnonymousSessionState.RefreshPending;
             bool subjectAllowed = subjectRequired || state == SupabaseAnonymousSessionState.RecoveryRequired;
             if ((subjectRequired && string.IsNullOrWhiteSpace(subject)) || (!subjectAllowed && !string.IsNullOrWhiteSpace(subject)))
                 throw new ArgumentException("Session state and subject do not match.", nameof(subject));
-            if (subject != null && (!Guid.TryParseExact(subject, "D", out var id) || id == Guid.Empty)) throw new ArgumentOutOfRangeException(nameof(subject));
-            Version = version; State = state; Subject = subject == null ? null : Guid.ParseExact(subject, "D").ToString("D");
+            if (subject != null && (!Guid.TryParseExact(subject, "D", out var id) || id == Guid.Empty))
+                throw new ArgumentOutOfRangeException(nameof(subject));
+            Version = version;
+            State = state;
+            Subject = subject == null ? null : Guid.ParseExact(subject, "D").ToString("D");
         }
-        public long Version { get; }
-        public SupabaseAnonymousSessionState State { get; }
-        public string? Subject { get; }
+        public long Version
+        {
+            get;
+        }
+        public SupabaseAnonymousSessionState State
+        {
+            get;
+        }
+        public string? Subject
+        {
+            get;
+        }
     }
 
     /// <summary>Defensively copied logical public/secret record. The public portion has no secret.</summary>
@@ -97,12 +139,18 @@ namespace GamePlatform.Transport.Http.Supabase
     {
         public SupabaseAnonymousSessionSnapshot(SupabaseAnonymousSessionPublicRecord? @public, byte[]? secret)
         {
-            if (@public == null && secret != null) throw new ArgumentException("An absent marker cannot carry a secret.", nameof(secret));
-            if (@public != null && @public.Version <= 0) throw new ArgumentOutOfRangeException(nameof(@public));
-            Public = @public; this.secret = secret == null ? null : (byte[])secret.Clone();
+            if (@public == null && secret != null)
+                throw new ArgumentException("An absent marker cannot carry a secret.", nameof(secret));
+            if (@public != null && @public.Version <= 0)
+                throw new ArgumentOutOfRangeException(nameof(@public));
+            Public = @public;
+            this.secret = secret == null ? null : (byte[])secret.Clone();
         }
         private readonly byte[]? secret;
-        public SupabaseAnonymousSessionPublicRecord? Public { get; }
+        public SupabaseAnonymousSessionPublicRecord? Public
+        {
+            get;
+        }
         public bool Exists => Public != null;
         public byte[]? CopySecret() => secret == null ? null : (byte[])secret.Clone();
         public static SupabaseAnonymousSessionSnapshot Absent() => new SupabaseAnonymousSessionSnapshot(null, null);
@@ -112,18 +160,35 @@ namespace GamePlatform.Transport.Http.Supabase
     {
         public SupabaseAnonymousSessionTransition(SupabaseAnonymousSessionState state, string? subject)
         {
-            State = state; Subject = subject;
+            State = state;
+            Subject = subject;
             _ = new SupabaseAnonymousSessionPublicRecord(0, state, subject);
         }
-        public SupabaseAnonymousSessionState State { get; }
-        public string? Subject { get; }
+        public SupabaseAnonymousSessionState State
+        {
+            get;
+        }
+        public string? Subject
+        {
+            get;
+        }
     }
 
     public sealed class SupabaseAnonymousSessionCompareExchangeResult
     {
-        public SupabaseAnonymousSessionCompareExchangeResult(bool applied, SupabaseAnonymousSessionSnapshot current) { Applied = applied; Current = current ?? throw new ArgumentNullException(nameof(current)); }
-        public bool Applied { get; }
-        public SupabaseAnonymousSessionSnapshot Current { get; }
+        public SupabaseAnonymousSessionCompareExchangeResult(bool applied, SupabaseAnonymousSessionSnapshot current)
+        {
+            Applied = applied;
+            Current = current ?? throw new ArgumentNullException(nameof(current));
+        }
+        public bool Applied
+        {
+            get;
+        }
+        public SupabaseAnonymousSessionSnapshot Current
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -133,7 +198,10 @@ namespace GamePlatform.Transport.Http.Supabase
     /// </summary>
     public interface ISupabaseAnonymousSessionStore
     {
-        bool IsAvailable { get; }
+        bool IsAvailable
+        {
+            get;
+        }
         System.Threading.Tasks.Task<SupabaseAnonymousSessionSnapshot> ReadAsync(string key, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task<SupabaseAnonymousSessionCompareExchangeResult> CompareExchangeAsync(string key,
             SupabaseAnonymousSessionSnapshot expected, SupabaseAnonymousSessionTransition next, byte[]? secret,

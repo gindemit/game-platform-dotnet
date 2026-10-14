@@ -13,16 +13,27 @@ namespace GamePlatform.Storage.Abstractions
                 throw new ArgumentOutOfRangeException(nameof(backendNamespace));
             if (backendNamespace.IndexOfAny(new[] { '\r', '\n', '\0' }) >= 0)
                 throw new ArgumentException("Backend namespace contains a forbidden character.", nameof(backendNamespace));
-            if (!appId.IsValid) throw new ArgumentException("A valid app ID is required.", nameof(appId));
-            if (!accountId.IsValid) throw new ArgumentException("A valid account ID is required.", nameof(accountId));
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app ID is required.", nameof(appId));
+            if (!accountId.IsValid)
+                throw new ArgumentException("A valid account ID is required.", nameof(accountId));
             BackendNamespace = backendNamespace;
             AppId = appId;
             AccountId = accountId;
         }
 
-        public string BackendNamespace { get; }
-        public PlatformId AppId { get; }
-        public PlatformId AccountId { get; }
+        public string BackendNamespace
+        {
+            get;
+        }
+        public PlatformId AppId
+        {
+            get;
+        }
+        public PlatformId AccountId
+        {
+            get;
+        }
 
         public bool Equals(StorageScope other) =>
             string.Equals(BackendNamespace, other.BackendNamespace, StringComparison.Ordinal) &&
@@ -42,7 +53,10 @@ namespace GamePlatform.Storage.Abstractions
 
     public interface ILocalStorageTransaction
     {
-        StorageScope Scope { get; }
+        StorageScope Scope
+        {
+            get;
+        }
     }
 
     public interface ISerializedStorageExecutor
@@ -78,6 +92,9 @@ namespace GamePlatform.Storage.Abstractions
             Failure = failure;
         }
 
-        public StorageFailure Failure { get; }
+        public StorageFailure Failure
+        {
+            get;
+        }
     }
 }

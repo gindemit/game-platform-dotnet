@@ -16,12 +16,17 @@ namespace GamePlatform.Features.Progression
         private readonly ReadOnlyCollection<OperationId> operationIds;
         public ProgressionConfirmationEvidence(long projectionRevision, IReadOnlyList<OperationId> operationIds)
         {
-            if (projectionRevision < 0) throw new ArgumentOutOfRangeException(nameof(projectionRevision));
+            if (projectionRevision < 0)
+                throw new ArgumentOutOfRangeException(nameof(projectionRevision));
             if (operationIds == null || operationIds.Count > 256 || operationIds.Any(value => !value.IsValid) || operationIds.Distinct().Count() != operationIds.Count)
                 throw new ArgumentException("Confirmation operation identities must be valid, unique, and bounded.", nameof(operationIds));
-            ProjectionRevision = projectionRevision; this.operationIds = new ReadOnlyCollection<OperationId>(operationIds.ToArray());
+            ProjectionRevision = projectionRevision;
+            this.operationIds = new ReadOnlyCollection<OperationId>(operationIds.ToArray());
         }
-        public long ProjectionRevision { get; }
+        public long ProjectionRevision
+        {
+            get;
+        }
         public IReadOnlyList<OperationId> OperationIds => operationIds;
     }
 
@@ -53,11 +58,18 @@ namespace GamePlatform.Features.Progression
         public ProgressionConfirmationEvidenceHead(long? latestRevision,
             IReadOnlyList<ProgressionConfirmationEvidence> activeGroups)
         {
-            if (latestRevision < 0) throw new ArgumentOutOfRangeException(nameof(latestRevision));
+            if (latestRevision < 0)
+                throw new ArgumentOutOfRangeException(nameof(latestRevision));
             LatestRevision = latestRevision;
             ActiveGroups = activeGroups ?? throw new ArgumentNullException(nameof(activeGroups));
         }
-        public long? LatestRevision { get; }
-        public IReadOnlyList<ProgressionConfirmationEvidence> ActiveGroups { get; }
+        public long? LatestRevision
+        {
+            get;
+        }
+        public IReadOnlyList<ProgressionConfirmationEvidence> ActiveGroups
+        {
+            get;
+        }
     }
 }

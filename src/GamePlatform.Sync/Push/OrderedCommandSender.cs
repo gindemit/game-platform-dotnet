@@ -6,7 +6,10 @@ using GamePlatform.Storage.Abstractions.Outbox;
 
 namespace GamePlatform.Sync.Push
 {
-    public enum SendCycleResult { Idle, Finalized, Retryable, OutcomeUncertain }
+    public enum SendCycleResult
+    {
+        Idle, Finalized, Retryable, OutcomeUncertain
+    }
     public sealed class OrderedCommandSender
     {
         private readonly ICommandDeliveryStore store;
@@ -25,7 +28,8 @@ namespace GamePlatform.Sync.Push
             try
             {
                 var leased = await store.LeaseNextAsync(now(), 30_000, cancellationToken).ConfigureAwait(false);
-                if (leased == null) return SendCycleResult.Idle;
+                if (leased == null)
+                    return SendCycleResult.Idle;
                 var command = new RemoteCommand(
                     leased.OperationId,
                     leased.StreamId,

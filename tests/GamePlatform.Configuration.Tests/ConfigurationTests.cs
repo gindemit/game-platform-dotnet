@@ -25,7 +25,8 @@ namespace GamePlatform.Configuration.Tests
         public void HashPinnedMirrorAndSharedCorpus()
         {
             using var pins = JsonDocument.Parse(File.ReadAllBytes(CorpusFile("contract-pins.json")));
-            foreach (var pin in pins.RootElement.GetProperty("files").EnumerateObject()) Assert.Equal(pin.Value.GetString(), CanonicalJson.Sha256(File.ReadAllBytes(CorpusFile(pin.Name))));
+            foreach (var pin in pins.RootElement.GetProperty("files").EnumerateObject())
+                Assert.Equal(pin.Value.GetString(), CanonicalJson.Sha256(File.ReadAllBytes(CorpusFile(pin.Name))));
             Assert.Equal("passed:73", ConfigurationProbe.RunCorpus(File.ReadAllBytes(CorpusFile("corpus-v1.json"))));
             Assert.Equal("A:B", ConfigurationProbe.RunSmoke());
             Assert.Equal("A:B", ConfigurationProbe.RunTypedSmoke());
@@ -38,7 +39,11 @@ namespace GamePlatform.Configuration.Tests
         public void InvariantCultureCorpus(string culture)
         {
             var original = CultureInfo.CurrentCulture;
-            try { CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture); Assert.Equal("passed:73", ConfigurationProbe.RunCorpus(File.ReadAllBytes(CorpusFile("corpus-v1.json")))); }
+            try
+            {
+                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+                Assert.Equal("passed:73", ConfigurationProbe.RunCorpus(File.ReadAllBytes(CorpusFile("corpus-v1.json"))));
+            }
             finally { CultureInfo.CurrentCulture = original; }
         }
 
@@ -164,8 +169,10 @@ namespace GamePlatform.Configuration.Tests
         [Fact]
         public void WeightsBucketEdgesRestartUnrelatedReleaseAndZeroWeight()
         {
-            var a = Choice("A"); var b = Choice("B");
-            foreach (int sum in new[] { 99, 101 }) Assert.Throws<InvalidConfigurationException>(() => Outcome.Percentage(new ExperimentReference("flag", "1"), new[] { new Allocation(50, a), new Allocation(sum - 50, b) }));
+            var a = Choice("A");
+            var b = Choice("B");
+            foreach (int sum in new[] { 99, 101 })
+                Assert.Throws<InvalidConfigurationException>(() => Outcome.Percentage(new ExperimentReference("flag", "1"), new[] { new Allocation(50, a), new Allocation(sum - 50, b) }));
             Assert.Throws<InvalidConfigurationException>(() => new Allocation(101, a));
             Assert.Throws<InvalidConfigurationException>(() => new Allocation(-1, a));
             Assert.Throws<InvalidConfigurationException>(() => Outcome.Percentage(new ExperimentReference("flag", "1"), Array.Empty<Allocation>()));

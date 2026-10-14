@@ -59,7 +59,8 @@ namespace GamePlatform.Tests.Storage.Recovery
                 await Assert.ThrowsAsync<StorageException>(() => journal.AdoptAsync(recoveryId, CancellationToken.None));
                 Assert.Equal(InitialStream, (await FindIssued(db, scope)).StreamId);
                 Assert.Equal(CommandStreamRecoveryPhase.RemoteCommitted, (await journal.LoadAsync(CancellationToken.None))!.Phase);
-                using (var injection = new SQLiteConnection(path)) injection.Execute("DROP TRIGGER fail_recovery_adoption");
+                using (var injection = new SQLiteConnection(path))
+                    injection.Execute("DROP TRIGGER fail_recovery_adoption");
 
                 Assert.Equal(CommandStreamRecoveryPhase.Adopted, (await journal.AdoptAsync(recoveryId, CancellationToken.None)).Phase);
                 Assert.Equal(successor, (await FindIssued(db, scope)).StreamId);
@@ -97,7 +98,8 @@ namespace GamePlatform.Tests.Storage.Recovery
                     new CommandStreamRecoveryRequest(Principal, App, forged.AccountId!.Value, Installation, InitialStream,
                         new ClientStreamId(Guid.Parse("0199f9a1-4444-7777-8888-999999999999")),
                         Guid.Parse("0199f9a1-5555-7777-8888-999999999999"), "backup_restored", Token, 0), CancellationToken.None));
-                using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+                using var cancelled = new CancellationTokenSource();
+                cancelled.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => journal.PrepareAsync(
                     MakeRequest(InitialStream, new ClientStreamId(Guid.Parse("0199f9a1-1111-7777-8888-999999999999")),
                         Guid.Parse("0199f9a1-2222-7777-8888-999999999999"), 0), cancelled.Token));

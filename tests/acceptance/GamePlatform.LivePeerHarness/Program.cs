@@ -47,7 +47,8 @@ internal static class Program
             using var handler = new HttpClientHandler { AllowAutoRedirect = false };
             handler.ServerCertificateCustomValidationCallback = (_, certificate, chain, errors) =>
             {
-                if (certificate == null || chain == null) return false;
+                if (certificate == null || chain == null)
+                    return false;
                 chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
                 chain.ChainPolicy.CustomTrustStore.Add(ca);
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
@@ -144,7 +145,8 @@ internal static class Program
                     Require(receipt.IsSuccess && receipt.Value!.Found && receipt.Value.Outcome!.Status == RemoteCommandStatus.Accepted,
                         "committed_receipt_not_found_after_lost_response");
                 }
-                else Require(accepted.IsSuccess && accepted.Value!.Status == RemoteCommandStatus.Accepted,
+                else
+                    Require(accepted.IsSuccess && accepted.Value!.Status == RemoteCommandStatus.Accepted,
                     "completion_not_accepted_" + accepted.Failure.Kind + "_" + accepted.Failure.StatusCode);
                 var replay = await push.SendAsync(command, CancellationToken.None);
                 Require(replay.IsSuccess && replay.Value!.Status == RemoteCommandStatus.Accepted, "repeat_operation_not_idempotent");
@@ -181,7 +183,25 @@ internal static class Program
                 Require(readyState == 1 && confirmed > 0, "seed_or_ready_absent");
                 var checkpoint = await store.GetPullCheckpointAsync(CancellationToken.None);
                 Require(checkpoint.CopyCursor() is { Length: > 0 }, "pull_cursor_absent");
-                Console.WriteLine(JsonSerializer.Serialize(new { status = "passed", mode = "probe", sdkRevision = options["--sdk-revision"], backendRevision = options["--backend-revision"], unityRevision = options["--unity-revision"], provider = "CSharp production HTTP/MessagePack/SQLite", confirmed, ready = readyState, operation = operation.Value, rewardSeedVerified = true, ownerMismatchDenied = true, lostResponseRecovered = expectLost, repeatedOperationAccepted = true, duplicateSourceAccepted = true, stream = stream.Value, installation }));
+                Console.WriteLine(JsonSerializer.Serialize(new
+                {
+                    status = "passed",
+                    mode = "probe",
+                    sdkRevision = options["--sdk-revision"],
+                    backendRevision = options["--backend-revision"],
+                    unityRevision = options["--unity-revision"],
+                    provider = "CSharp production HTTP/MessagePack/SQLite",
+                    confirmed,
+                    ready = readyState,
+                    operation = operation.Value,
+                    rewardSeedVerified = true,
+                    ownerMismatchDenied = true,
+                    lostResponseRecovered = expectLost,
+                    repeatedOperationAccepted = true,
+                    duplicateSourceAccepted = true,
+                    stream = stream.Value,
+                    installation
+                }));
             }
             finally { Require(await db.DisposeAsync(TimeSpan.FromSeconds(5)), "sqlite_close_failed"); }
             return 0;
@@ -195,26 +215,38 @@ internal static class Program
 
     private static Dictionary<string, string> Parse(string[] args)
     {
-        if ((args.Length != 11 && args.Length != 13) || args[0] != "probe") throw new ArgumentException("nonempty_probe_selection_and_five_options_required");
+        if ((args.Length != 11 && args.Length != 13) || args[0] != "probe")
+            throw new ArgumentException("nonempty_probe_selection_and_five_options_required");
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
         for (var i = 1; i < args.Length; i += 2)
         {
-            if (!values.TryAdd(args[i], args[i + 1]) || string.IsNullOrWhiteSpace(args[i + 1])) throw new ArgumentException("invalid_cli_option");
+            if (!values.TryAdd(args[i], args[i + 1]) || string.IsNullOrWhiteSpace(args[i + 1]))
+                throw new ArgumentException("invalid_cli_option");
         }
         foreach (var key in new[] { "--live-file", "--sqlite", "--sdk-revision", "--backend-revision", "--unity-revision" })
-            if (!values.ContainsKey(key)) throw new ArgumentException("missing_" + key);
+            if (!values.ContainsKey(key))
+                throw new ArgumentException("missing_" + key);
         if (values.Count != 5 && !(values.Count == 6 && values.TryGetValue("--expect-lost-response", out var lost) && lost == "true"))
             throw new ArgumentException("unknown_cli_option");
         foreach (var key in new[] { "--sdk-revision", "--backend-revision", "--unity-revision" })
-            if (values[key].Length != 40 || !values[key].All(Uri.IsHexDigit)) throw new ArgumentException("revision_must_be_full_sha_" + key);
-        if (File.Exists(values["--sqlite"])) throw new ArgumentException("fresh_sqlite_path_required");
+            if (values[key].Length != 40 || !values[key].All(Uri.IsHexDigit))
+                throw new ArgumentException("revision_must_be_full_sha_" + key);
+        if (File.Exists(values["--sqlite"]))
+            throw new ArgumentException("fresh_sqlite_path_required");
         return values;
     }
-    private static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
+    private static void Require(bool condition, string message)
+    {
+        if (!condition)
+            throw new InvalidOperationException(message);
+    }
     private sealed class StaticAuth : IAuthSession
     {
         private readonly AccessTokenSnapshot token;
-        public StaticAuth(string value) { token = new AccessTokenSnapshot(value, 0); }
+        public StaticAuth(string value)
+        {
+            token = new AccessTokenSnapshot(value, 0);
+        }
         public string SessionKey => "live-peer-disposable";
         public Task<AccessTokenSnapshot> GetAsync(CancellationToken cancellationToken) => Task.FromResult(token);
         public Task<AccessTokenSnapshot> RefreshAsync(long rejectedGeneration, CancellationToken cancellationToken) => throw new InvalidOperationException("live_peer_auth_refresh_not_configured");
@@ -222,7 +254,11 @@ internal static class Program
     private sealed class NoopProjector : IPrivateSyncProjectionProjector
     {
         public static readonly NoopProjector Instance = new();
-        public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group) { }
-        public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot) { }
+        public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group)
+        {
+        }
+        public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot)
+        {
+        }
     }
 }

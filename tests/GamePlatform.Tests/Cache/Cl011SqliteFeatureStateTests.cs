@@ -83,7 +83,8 @@ namespace GamePlatform.Tests.Cache
         {
             using var files = new TemporaryDatabase();
             var database = await SqliteDatabase.OpenAsync(files.Path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
-            var store = new SqliteDurableFeatureStateStore(database, Scope); var owner = Owner("view", 1);
+            var store = new SqliteDurableFeatureStateStore(database, Scope);
+            var owner = Owner("view", 1);
             await database.ExecuteAsync(Scope, transaction => { store.Upsert(transaction, Mutation(owner, 5)); return true; }, CancellationToken.None);
             await Assert.ThrowsAsync<InjectedFailure>(() => database.ExecuteAsync<bool>(Scope, transaction =>
             {
@@ -101,9 +102,11 @@ namespace GamePlatform.Tests.Cache
         [Fact]
         public void PayloadsAreDefensivelyCopiedAndBounded()
         {
-            var payload = new byte[] { 1 }; var extensions = new byte[] { 2 };
+            var payload = new byte[] { 1 };
+            var extensions = new byte[] { 2 };
             var mutation = new DurableFeatureMutation(Owner("view", 1), "profile", "self", 1, 1, payload, extensions);
-            payload[0] = 9; extensions[0] = 9;
+            payload[0] = 9;
+            extensions[0] = 9;
             Assert.Equal(new byte[] { 1 }, mutation.CopyPayload());
             Assert.Equal(new byte[] { 2 }, mutation.CopyExtensions());
             Assert.Throws<ArgumentOutOfRangeException>(() => new DurableFeatureMutation(Owner("view", 1), "profile", "self", 1, 1, Array.Empty<byte>(), new byte[65_537]));
@@ -111,13 +114,26 @@ namespace GamePlatform.Tests.Cache
 
         private static DurableFeatureMutation Mutation(ScopedOwnerContext owner, long revision) => new DurableFeatureMutation(owner, "progression", "level:1", revision, 100, new byte[] { (byte)revision }, Array.Empty<byte>());
         private static ScopedOwnerContext Owner(string view, long generation) => new ScopedOwnerContext(new OwnerScope(new BackendNamespace("backend"), new AppId(App), new PlatformUserId(User)), new SemanticId(view), generation);
-        private sealed class InjectedFailure : Exception { }
+        private sealed class InjectedFailure : Exception
+        {
+        }
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl011", Guid.NewGuid().ToString("N"));
-            public TemporaryDatabase() { Directory.CreateDirectory(directory); Path = System.IO.Path.Combine(directory, "platform.sqlite3"); }
-            public string Path { get; }
-            public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+            public TemporaryDatabase()
+            {
+                Directory.CreateDirectory(directory);
+                Path = System.IO.Path.Combine(directory, "platform.sqlite3");
+            }
+            public string Path
+            {
+                get;
+            }
+            public void Dispose()
+            {
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, true);
+            }
         }
     }
 }

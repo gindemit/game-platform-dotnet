@@ -29,9 +29,18 @@ namespace GamePlatform.Features.Teams
     {
         public TeamsOperationException(RemoteFailure failure, string resultCode)
             : base("The Teams operation could not be confirmed: " + SafeCode(resultCode))
-        { Failure = failure; ResultCode = SafeCode(resultCode); }
-        public RemoteFailure Failure { get; }
-        public string ResultCode { get; }
+        {
+            Failure = failure;
+            ResultCode = SafeCode(resultCode);
+        }
+        public RemoteFailure Failure
+        {
+            get;
+        }
+        public string ResultCode
+        {
+            get;
+        }
         private static string SafeCode(string value) => !string.IsNullOrEmpty(value) && value.Length <= 96 &&
             value.All(c => c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' || c == '.') ? value : "teams_unavailable";
     }
@@ -57,7 +66,8 @@ namespace GamePlatform.Features.Teams
         public TeamsService(ScopedOwnerContext owner, ITeamsRemote? remote, ITeamsStateCodec codec,
             IDurableFeatureStateStore state, ISerializedStorageExecutor transactions, Func<long> nowMilliseconds)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
             this.owner = owner;
             storageScope = new StorageScope(owner.Owner.Backend.Value, new PlatformId(owner.Owner.AppId.ToString()), new PlatformId(owner.Owner.UserId.ToString()));
             this.remote = remote;
@@ -70,16 +80,20 @@ namespace GamePlatform.Features.Teams
         public async Task<FeatureSnapshot<TeamsResponse>> ReadCachedAsync(ScopedOwnerContext requestedOwner, TeamsQuery query, CancellationToken cancellationToken)
         {
             EnsureOwner(requestedOwner);
-            if (query == null) throw new ArgumentNullException(nameof(query));
+            if (query == null)
+                throw new ArgumentNullException(nameof(query));
             string? key = CacheKey(query);
-            if (key == null) return Missing();
+            if (key == null)
+                return Missing();
             var cached = await state.ReadAsync(owner, Namespace, key, cancellationToken).ConfigureAwait(false);
             EnsureOwner(requestedOwner);
-            if (cached == null) return Missing();
+            if (cached == null)
+                return Missing();
             var value = codec.DecodeResponse(cached.CopyPayload());
             Validate(value, null);
             // Cache slots are bounded by view. A different team never inherits the previous team's data.
-            if (query.TeamId.HasValue && value.Team?.TeamId != query.TeamId.Value) return Missing();
+            if (query.TeamId.HasValue && value.Team?.TeamId != query.TeamId.Value)
+                return Missing();
             return Snapshot(value, SnapshotFreshness.Stale);
         }
 
@@ -95,25 +109,32 @@ namespace GamePlatform.Features.Teams
         public async Task<FeatureSnapshot<TeamsResponse>> QueryAsync(ScopedOwnerContext requestedOwner, TeamsQuery query, CancellationToken cancellationToken)
         {
             EnsureOwner(requestedOwner);
-            if (query == null) throw new ArgumentNullException(nameof(query));
+            if (query == null)
+                throw new ArgumentNullException(nameof(query));
             using var linked = Link(cancellationToken);
             await serial.WaitAsync(linked.Token).ConfigureAwait(false);
             try
             {
                 EnsureOwner(requestedOwner);
-                if (remote == null) throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Unavailable), "teams_offline");
+                if (remote == null)
+                    throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Unavailable), "teams_offline");
                 var epoch = await state.ReadAsync(owner, Namespace, Epoch, linked.Token).ConfigureAwait(false);
                 RemoteResult<TeamsResponse> result;
-                try { result = await remote.QueryAsync(query, linked.Token).ConfigureAwait(false); }
+                try
+                {
+                    result = await remote.QueryAsync(query, linked.Token).ConfigureAwait(false);
+                }
                 catch (TeamsOperationException error)
                 {
-                    if (error.Failure.Kind == RemoteFailureKind.Authorization) await InvalidateAsync(linked.Token).ConfigureAwait(false);
+                    if (error.Failure.Kind == RemoteFailureKind.Authorization)
+                        await InvalidateAsync(linked.Token).ConfigureAwait(false);
                     throw;
                 }
                 EnsureOwner(requestedOwner);
                 if (!result.IsSuccess)
                 {
-                    if (result.Failure.Kind == RemoteFailureKind.Authorization) await InvalidateAsync(linked.Token).ConfigureAwait(false);
+                    if (result.Failure.Kind == RemoteFailureKind.Authorization)
+                        await InvalidateAsync(linked.Token).ConfigureAwait(false);
                     throw new TeamsOperationException(result.Failure, "teams_" + result.Failure.Kind.ToString().ToLowerInvariant());
                 }
                 var value = result.Value!;
@@ -131,8 +152,10 @@ namespace GamePlatform.Features.Teams
         public async Task<FeatureSnapshot<TeamsResponse>> ExecuteAsync(ScopedOwnerContext requestedOwner, TeamsCommand command, CancellationToken cancellationToken)
         {
             EnsureOwner(requestedOwner);
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            if (remote == null) throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Unavailable), "teams_offline");
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+            if (remote == null)
+                throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Unavailable), "teams_offline");
             var bytes = codec.EncodeCommand(command); // Closed validation before durable admission or network IO.
             using var linked = Link(cancellationToken);
             await serial.WaitAsync(linked.Token).ConfigureAwait(false);
@@ -147,25 +170,31 @@ namespace GamePlatform.Features.Teams
                         var existing = state.Read(transaction, owner, Namespace, Pending);
                         if (existing != null && !existing.CopyPayload().SequenceEqual(bytes))
                             throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Conflict), "teams_pending_command");
-                        if (existing == null) state.Upsert(transaction, new DurableFeatureMutation(owner, Namespace, Pending, 0, Now(), bytes, Array.Empty<byte>()));
+                        if (existing == null)
+                            state.Upsert(transaction, new DurableFeatureMutation(owner, Namespace, Pending, 0, Now(), bytes, Array.Empty<byte>()));
                         return true;
                     }
                 }, linked.Token).ConfigureAwait(false);
                 RemoteResult<TeamsResponse> result;
-                try { result = await remote.ExecuteAsync(command, linked.Token).ConfigureAwait(false); }
+                try
+                {
+                    result = await remote.ExecuteAsync(command, linked.Token).ConfigureAwait(false);
+                }
                 catch (TeamsOperationException error)
                 {
                     // Disabled app/account ownership is checked before retained receipts. A prior
                     // uncertain attempt may have committed, so keep its identity until access returns.
                     if (error.Failure.Kind == RemoteFailureKind.Authorization && error.ResultCode == "teams.owner_unavailable")
                         await InvalidateAsync(linked.Token).ConfigureAwait(false);
-                    else if (IsTerminal(error.Failure.Kind)) await ClearPendingAsync(error.Failure.Kind, linked.Token).ConfigureAwait(false);
+                    else if (IsTerminal(error.Failure.Kind))
+                        await ClearPendingAsync(error.Failure.Kind, linked.Token).ConfigureAwait(false);
                     throw;
                 }
                 EnsureOwner(requestedOwner);
                 if (!result.IsSuccess)
                 {
-                    if (IsTerminal(result.Failure.Kind)) await ClearPendingAsync(result.Failure.Kind, linked.Token).ConfigureAwait(false);
+                    if (IsTerminal(result.Failure.Kind))
+                        await ClearPendingAsync(result.Failure.Kind, linked.Token).ConfigureAwait(false);
                     throw new TeamsOperationException(result.Failure, "teams_" + result.Failure.Kind.ToString().ToLowerInvariant());
                 }
                 var value = result.Value!;
@@ -193,13 +222,21 @@ namespace GamePlatform.Features.Teams
             {
                 EnsureOwner(owner);
                 state.Delete(transaction, owner, Namespace, Pending);
-                if (failure == RemoteFailureKind.Authorization) InvalidateCache(transaction, state, owner);
+                if (failure == RemoteFailureKind.Authorization)
+                    InvalidateCache(transaction, state, owner);
                 return true;
             }
         }, token);
 
         private Task<bool> InvalidateAsync(CancellationToken token) => transactions.ExecuteAsync(storageScope, transaction =>
-        { lock (gate) { EnsureOwner(owner); InvalidateCache(transaction, state, owner); return true; } }, token);
+        {
+            lock (gate)
+            {
+                EnsureOwner(owner);
+                InvalidateCache(transaction, state, owner);
+                return true;
+            }
+        }, token);
 
         private Task<bool> SaveCacheAsync(string? key, TeamsResponse value, long expectedEpoch, CancellationToken token)
         {
@@ -211,7 +248,8 @@ namespace GamePlatform.Features.Teams
                     EnsureOwner(owner);
                     if ((state.Read(transaction, owner, Namespace, Epoch)?.Revision ?? 0) != expectedEpoch)
                         throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Conflict), "teams_refresh_required");
-                    if (key == null) return true;
+                    if (key == null)
+                        return true;
                     if (key == "mine")
                     {
                         var prior = state.Read(transaction, owner, Namespace, key);
@@ -237,28 +275,54 @@ namespace GamePlatform.Features.Teams
         private static readonly string[] Views = { "discover", "mine", "team", "members", "messages", "requests", "invites", "help" };
         public static void InvalidateCache(ILocalStorageTransaction transaction, IDurableFeatureStateStore state, ScopedOwnerContext owner)
         {
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (state == null) throw new ArgumentNullException(nameof(state));
-            foreach (string key in Views) state.Delete(transaction, owner, Namespace, key);
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
+            foreach (string key in Views)
+                state.Delete(transaction, owner, Namespace, key);
             var previous = state.Read(transaction, owner, Namespace, Epoch);
             state.Upsert(transaction, new DurableFeatureMutation(owner, Namespace, Epoch, checked((previous?.Revision ?? 0) + 1), 0, Array.Empty<byte>(), Array.Empty<byte>()));
         }
         private static string? CacheKey(TeamsQuery query) => query.Cursor == null && string.IsNullOrEmpty(query.Search) && query.PageSize == 30 ? query.View : null;
         private static bool IsTerminal(RemoteFailureKind kind) => kind == RemoteFailureKind.Validation || kind == RemoteFailureKind.Authorization ||
             kind == RemoteFailureKind.Conflict || kind == RemoteFailureKind.RateLimited;
-        private long Now() { long value = nowMilliseconds(); PlatformNumbers.UnixMilliseconds(value); return value; }
+        private long Now()
+        {
+            long value = nowMilliseconds();
+            PlatformNumbers.UnixMilliseconds(value);
+            return value;
+        }
         private FeatureSnapshot<TeamsResponse> Missing() => new FeatureSnapshot<TeamsResponse>(owner, 0, SnapshotFreshness.Missing, null);
         private FeatureSnapshot<TeamsResponse> Snapshot(TeamsResponse value, SnapshotFreshness freshness) => new FeatureSnapshot<TeamsResponse>(owner, value.Revision,
             freshness == SnapshotFreshness.Current ? FeatureSnapshotState.Available : FeatureSnapshotState.Stale, freshness, value, value.ServerTimeMilliseconds, null);
-        private CancellationTokenSource Link(CancellationToken token) { lock (gate) { EnsureOwner(owner); return CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.Token); } }
+        private CancellationTokenSource Link(CancellationToken token)
+        {
+            lock (gate)
+            {
+                EnsureOwner(owner);
+                return CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.Token);
+            }
+        }
         private void EnsureOwner(ScopedOwnerContext value)
         {
             lock (gate)
             {
-                if (disposed) throw new ObjectDisposedException(nameof(TeamsService));
-                if (value != owner) throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Authorization), "teams_owner_mismatch");
+                if (disposed)
+                    throw new ObjectDisposedException(nameof(TeamsService));
+                if (value != owner)
+                    throw new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Authorization), "teams_owner_mismatch");
             }
         }
-        public void Dispose() { lock (gate) { if (disposed) return; disposed = true; } lifetime.Cancel(); }
+        public void Dispose()
+        {
+            lock (gate)
+            {
+                if (disposed)
+                    return;
+                disposed = true;
+            }
+            lifetime.Cancel();
+        }
     }
 }

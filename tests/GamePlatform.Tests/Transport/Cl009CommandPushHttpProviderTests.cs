@@ -231,7 +231,8 @@ namespace GamePlatform.Tests.Transport
 
         public void Dispose()
         {
-            foreach (var refresh in ownedRefresh) refresh.Dispose();
+            foreach (var refresh in ownedRefresh)
+                refresh.Dispose();
         }
 
         private CommandPushHttpProvider Provider(IHttpExecutor executor, AuthSession? auth = null)
@@ -264,7 +265,10 @@ namespace GamePlatform.Tests.Transport
         private sealed class ScriptedExecutor : IHttpExecutor
         {
             private readonly Func<ScriptedExecutor, HttpResponseData> send;
-            public ScriptedExecutor(Func<ScriptedExecutor, HttpResponseData> send) { this.send = send; }
+            public ScriptedExecutor(Func<ScriptedExecutor, HttpResponseData> send)
+            {
+                this.send = send;
+            }
             public List<HttpRequestData> Requests { get; } = new List<HttpRequestData>();
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {
@@ -278,7 +282,10 @@ namespace GamePlatform.Tests.Transport
         private sealed class ThrowingExecutor : IHttpExecutor
         {
             private readonly HttpDeliveryCertainty certainty;
-            public ThrowingExecutor(HttpDeliveryCertainty certainty) { this.certainty = certainty; }
+            public ThrowingExecutor(HttpDeliveryCertainty certainty)
+            {
+                this.certainty = certainty;
+            }
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken) =>
                 throw new HttpExecutionException(certainty, "test");
         }

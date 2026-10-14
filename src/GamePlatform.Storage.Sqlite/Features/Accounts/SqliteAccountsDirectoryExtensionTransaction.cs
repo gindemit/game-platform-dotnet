@@ -17,8 +17,16 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         private static readonly AsyncLocal<int> borrowedDepth = new AsyncLocal<int>();
         internal static bool IsBorrowedCallback => borrowedDepth.Value != 0;
         private readonly int threadId = Thread.CurrentThread.ManagedThreadId;
-        internal SqliteAccountsDirectoryExtensionTransaction(SQLiteConnection connection) { this.connection = connection; borrowedDepth.Value++; }
-        internal void Invalidate() { connection = null; borrowedDepth.Value--; }
+        internal SqliteAccountsDirectoryExtensionTransaction(SQLiteConnection connection)
+        {
+            this.connection = connection;
+            borrowedDepth.Value++;
+        }
+        internal void Invalidate()
+        {
+            connection = null;
+            borrowedDepth.Value--;
+        }
         public int Execute(string sql, params object[] args) => Require(sql, false, args).Execute(sql, args);
         public T ExecuteScalar<T>(string sql, params object[] args) => Require(sql, true, args).ExecuteScalar<T>(sql, args);
         private SQLiteConnection Require(string sql, bool scalar, object[] args)

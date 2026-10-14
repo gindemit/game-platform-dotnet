@@ -16,7 +16,8 @@ namespace GamePlatform.Storage.Sqlite.Cache
         public SqliteDurableFeatureStateStore(SqliteDatabase database, StorageScope scope)
         {
             this.database = database ?? throw new ArgumentNullException(nameof(database));
-            if (!database.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The feature-state scope does not match the database.");
+            if (!database.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The feature-state scope does not match the database.");
             this.scope = scope;
         }
 
@@ -28,7 +29,8 @@ namespace GamePlatform.Storage.Sqlite.Cache
             {
                 var session = RequireSession(transaction);
                 var args = new object[] { owner.ViewKey.Value, featureNamespace, entityKey };
-                if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0) return null;
+                if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0)
+                    return null;
                 var row = new SqliteFeatureStateRow(
                     session.ExecuteScalar<string>("SELECT view_key FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args),
                     session.ExecuteScalar<string>("SELECT feature_namespace FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args),
@@ -43,17 +45,21 @@ namespace GamePlatform.Storage.Sqlite.Cache
 
         public DurableFeatureState? Read(ILocalStorageTransaction transaction, ScopedOwnerContext owner, string featureNamespace, string entityKey)
         {
-            ValidateIdentity(owner, featureNamespace, entityKey); EnsureOwner(owner.Owner);
-            if (!transaction.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
+            ValidateIdentity(owner, featureNamespace, entityKey);
+            EnsureOwner(owner.Owner);
+            if (!transaction.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
             return ReadCore(RequireSession(transaction), owner, featureNamespace, entityKey);
         }
 
         public void Upsert(ILocalStorageTransaction transaction, DurableFeatureMutation mutation)
         {
-            if (mutation == null) throw new ArgumentNullException(nameof(mutation));
+            if (mutation == null)
+                throw new ArgumentNullException(nameof(mutation));
             var session = RequireSession(transaction);
             EnsureOwner(mutation.Owner.Owner);
-            if (!transaction.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
+            if (!transaction.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
             var args = new object[] { mutation.Owner.ViewKey.Value, mutation.FeatureNamespace, mutation.EntityKey };
             if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0)
             {
@@ -61,22 +67,26 @@ namespace GamePlatform.Storage.Sqlite.Cache
                 return;
             }
             var currentRevision = session.ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args);
-            if (mutation.Revision < currentRevision) throw new StorageException(StorageFailure.IdentityConflict, "A feature-state revision would regress.");
+            if (mutation.Revision < currentRevision)
+                throw new StorageException(StorageFailure.IdentityConflict, "A feature-state revision would regress.");
             var extensions = mutation.CopyExtensions() ?? session.ExecuteScalar<byte[]>("SELECT extensions FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args);
             session.Execute("UPDATE gp_feature_state SET revision=?,confirmed_at=?,payload=?,extensions=? WHERE view_key=? AND feature_namespace=? AND entity_key=?", mutation.Revision, mutation.ConfirmedAtMilliseconds, mutation.CopyPayload(), extensions, mutation.Owner.ViewKey.Value, mutation.FeatureNamespace, mutation.EntityKey);
         }
 
         public void Delete(ILocalStorageTransaction transaction, ScopedOwnerContext owner, string featureNamespace, string entityKey)
         {
-            ValidateIdentity(owner, featureNamespace, entityKey); EnsureOwner(owner.Owner);
-            if (!transaction.Scope.Equals(scope)) throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
+            ValidateIdentity(owner, featureNamespace, entityKey);
+            EnsureOwner(owner.Owner);
+            if (!transaction.Scope.Equals(scope))
+                throw new StorageException(StorageFailure.InvalidOwner, "The transaction belongs to another owner.");
             RequireSession(transaction).Execute("DELETE FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", owner.ViewKey.Value, featureNamespace, entityKey);
         }
 
         private static DurableFeatureState? ReadCore(SqliteTransactionSession session, ScopedOwnerContext owner, string featureNamespace, string entityKey)
         {
             var args = new object[] { owner.ViewKey.Value, featureNamespace, entityKey };
-            if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0) return null;
+            if (session.ExecuteScalar<int>("SELECT COUNT(*) FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args) == 0)
+                return null;
             return new SqliteFeatureStateRow(
                 session.ExecuteScalar<string>("SELECT view_key FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args), featureNamespace, entityKey,
                 session.ExecuteScalar<long>("SELECT revision FROM gp_feature_state WHERE view_key=? AND feature_namespace=? AND entity_key=?", args),
@@ -87,8 +97,10 @@ namespace GamePlatform.Storage.Sqlite.Cache
 
         private static SqliteTransactionSession RequireSession(ILocalStorageTransaction transaction)
         {
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (!(transaction is SqliteTransactionSession session)) throw new StorageException(StorageFailure.InvalidOwner, "A foreign transaction was supplied.");
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+            if (!(transaction is SqliteTransactionSession session))
+                throw new StorageException(StorageFailure.InvalidOwner, "A foreign transaction was supplied.");
             return session;
         }
         private void EnsureOwner(OwnerScope owner)
@@ -100,7 +112,8 @@ namespace GamePlatform.Storage.Sqlite.Cache
 
         private static void ValidateIdentity(ScopedOwnerContext owner, string featureNamespace, string entityKey)
         {
-            if (!owner.IsValid) throw new ArgumentException("A valid owner is required.", nameof(owner));
+            if (!owner.IsValid)
+                throw new ArgumentException("A valid owner is required.", nameof(owner));
             ValidateText(featureNamespace, 128, nameof(featureNamespace));
             ValidateText(entityKey, 256, nameof(entityKey));
         }
@@ -118,18 +131,38 @@ namespace GamePlatform.Storage.Sqlite.Cache
         private readonly byte[] extensions;
         public SqliteFeatureStateRow(string viewKey, string featureNamespace, string entityKey, long revision, long confirmedAt, byte[] payload, byte[] extensions)
         {
-            ViewKey = viewKey; FeatureNamespace = featureNamespace; EntityKey = entityKey; Revision = revision; ConfirmedAt = confirmedAt;
+            ViewKey = viewKey;
+            FeatureNamespace = featureNamespace;
+            EntityKey = entityKey;
+            Revision = revision;
+            ConfirmedAt = confirmedAt;
             this.payload = payload ?? throw new StorageException(StorageFailure.Corrupt, "A feature-state payload is missing.");
             this.extensions = extensions ?? throw new StorageException(StorageFailure.Corrupt, "Feature-state extensions are missing.");
         }
-        public string ViewKey { get; }
-        public string FeatureNamespace { get; }
-        public string EntityKey { get; }
-        public long Revision { get; }
-        public long ConfirmedAt { get; }
+        public string ViewKey
+        {
+            get;
+        }
+        public string FeatureNamespace
+        {
+            get;
+        }
+        public string EntityKey
+        {
+            get;
+        }
+        public long Revision
+        {
+            get;
+        }
+        public long ConfirmedAt
+        {
+            get;
+        }
         public DurableFeatureState ToState(ScopedOwnerContext owner)
         {
-            if (!string.Equals(ViewKey, owner.ViewKey.Value, StringComparison.Ordinal)) throw new StorageException(StorageFailure.Corrupt, "A feature-state row escaped its view.");
+            if (!string.Equals(ViewKey, owner.ViewKey.Value, StringComparison.Ordinal))
+                throw new StorageException(StorageFailure.Corrupt, "A feature-state row escaped its view.");
             return new DurableFeatureState(owner, FeatureNamespace, EntityKey, Revision, ConfirmedAt, payload, extensions);
         }
     }

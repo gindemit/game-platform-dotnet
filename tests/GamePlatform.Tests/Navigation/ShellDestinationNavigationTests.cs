@@ -173,8 +173,14 @@ namespace GamePlatform.Tests.Navigation
         private sealed class BackingLoader : IRouteLoader
         {
             private readonly NavigationCoordinator navigation;
-            public BackingLoader(NavigationCoordinator navigation) { this.navigation = navigation; }
-            public bool BackResult { get; private set; }
+            public BackingLoader(NavigationCoordinator navigation)
+            {
+                this.navigation = navigation;
+            }
+            public bool BackResult
+            {
+                get; private set;
+            }
             public Task<RouteLoadResult> LoadAsync(NavigationRoute route, CancellationToken cancellationToken)
             {
                 BackResult = navigation.Back();
@@ -195,12 +201,16 @@ namespace GamePlatform.Tests.Navigation
         {
             private readonly bool ignoreCancellation;
             private readonly TaskCompletionSource<RouteLoadResult> completion = new TaskCompletionSource<RouteLoadResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            public DeferredLoader(bool ignoreCancellation) { this.ignoreCancellation = ignoreCancellation; }
+            public DeferredLoader(bool ignoreCancellation)
+            {
+                this.ignoreCancellation = ignoreCancellation;
+            }
             public TaskCompletionSource<bool> Entered { get; } = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             public async Task<RouteLoadResult> LoadAsync(NavigationRoute route, CancellationToken cancellationToken)
             {
                 Entered.TrySetResult(true);
-                if (ignoreCancellation) return await completion.Task.ConfigureAwait(false);
+                if (ignoreCancellation)
+                    return await completion.Task.ConfigureAwait(false);
                 var cancelled = new TaskCompletionSource<RouteLoadResult>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using (cancellationToken.Register(() => cancelled.TrySetCanceled(cancellationToken)))
                     return await await Task.WhenAny(completion.Task, cancelled.Task).ConfigureAwait(false);

@@ -62,7 +62,8 @@ namespace GamePlatform.Tests.Transport
                 Assert.Equal(Token, body.InspectionToken);
                 Assert.Equal(154, body.ExpectedFinalizedThrough);
                 Assert.Equal(RecoveryId, body.RecoveryId);
-                if (calls == 1) throw new HttpExecutionException(HttpDeliveryCertainty.Uncertain, "response lost");
+                if (calls == 1)
+                    throw new HttpExecutionException(HttpDeliveryCertainty.Uncertain, "response lost");
                 return Success(codec.Encode(response));
             });
             using var refresh = new AuthRefreshCoordinator();
@@ -149,8 +150,14 @@ namespace GamePlatform.Tests.Transport
 
         private sealed class ScriptedExecutor : IHttpExecutor
         {
-            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send) { Send = send; }
-            public Func<HttpRequestData, HttpResponseData> Send { get; set; }
+            public ScriptedExecutor(Func<HttpRequestData, HttpResponseData> send)
+            {
+                Send = send;
+            }
+            public Func<HttpRequestData, HttpResponseData> Send
+            {
+                get; set;
+            }
             public List<HttpRequestData> Requests { get; } = new List<HttpRequestData>();
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {

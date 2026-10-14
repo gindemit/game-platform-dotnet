@@ -8,35 +8,64 @@ using GamePlatform.Storage.Abstractions.Accounts;
 
 namespace GamePlatform.Features.Accounts
 {
-    public enum AccountAuthLifecycleKind { Authenticated, UnavailableOffline, Cancelled, RecoveryRequired }
-    public enum AccountsReadiness { NeverProvisioned, Authenticating, Provisioning, Bootstrapping, Ready, UnavailableOffline, RecoveryRequired, Cancelled, Unavailable, LateResultRejected }
-    public enum AccountBootstrapResult { Complete, Incomplete, RemoteFailure }
+    public enum AccountAuthLifecycleKind
+    {
+        Authenticated, UnavailableOffline, Cancelled, RecoveryRequired
+    }
+    public enum AccountsReadiness
+    {
+        NeverProvisioned, Authenticating, Provisioning, Bootstrapping, Ready, UnavailableOffline, RecoveryRequired, Cancelled, Unavailable, LateResultRejected
+    }
+    public enum AccountBootstrapResult
+    {
+        Complete, Incomplete, RemoteFailure
+    }
 
     /// <summary>Host-owned credential result. The descriptor is non-secret; the session is retained only in memory.</summary>
     public sealed class AccountAuthLifecycleResult
     {
         private AccountAuthLifecycleResult(AccountAuthLifecycleKind kind, AccountPrincipalDescriptor? principal, IAuthSession? session)
         {
-            if (!Enum.IsDefined(typeof(AccountAuthLifecycleKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind));
-            if (kind == AccountAuthLifecycleKind.Authenticated && (principal == null || session == null)) throw new ArgumentException("Authenticated requires a principal-specific session.");
-            if (kind != AccountAuthLifecycleKind.Authenticated && session != null) throw new ArgumentException("Only authenticated results carry a session.");
-            Kind = kind; Principal = principal; Session = session;
+            if (!Enum.IsDefined(typeof(AccountAuthLifecycleKind), kind))
+                throw new ArgumentOutOfRangeException(nameof(kind));
+            if (kind == AccountAuthLifecycleKind.Authenticated && (principal == null || session == null))
+                throw new ArgumentException("Authenticated requires a principal-specific session.");
+            if (kind != AccountAuthLifecycleKind.Authenticated && session != null)
+                throw new ArgumentException("Only authenticated results carry a session.");
+            Kind = kind;
+            Principal = principal;
+            Session = session;
         }
-        public AccountAuthLifecycleKind Kind { get; }
-        public AccountPrincipalDescriptor? Principal { get; }
-        internal IAuthSession? Session { get; }
+        public AccountAuthLifecycleKind Kind
+        {
+            get;
+        }
+        public AccountPrincipalDescriptor? Principal
+        {
+            get;
+        }
+        internal IAuthSession? Session
+        {
+            get;
+        }
         public static AccountAuthLifecycleResult Authenticated(AccountPrincipalDescriptor principal, IAuthSession session) => new AccountAuthLifecycleResult(AccountAuthLifecycleKind.Authenticated, principal, session);
         public static AccountAuthLifecycleResult UnavailableOffline(AccountPrincipalDescriptor? knownPrincipal) => new AccountAuthLifecycleResult(AccountAuthLifecycleKind.UnavailableOffline, knownPrincipal, null);
         public static AccountAuthLifecycleResult Cancelled() => new AccountAuthLifecycleResult(AccountAuthLifecycleKind.Cancelled, null, null);
         public static AccountAuthLifecycleResult RecoveryRequired(AccountPrincipalDescriptor? knownPrincipal) => new AccountAuthLifecycleResult(AccountAuthLifecycleKind.RecoveryRequired, knownPrincipal, null);
     }
 
-    public interface IAccountsAuthLifecycle { Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken cancellationToken); }
+    public interface IAccountsAuthLifecycle
+    {
+        Task<AccountAuthLifecycleResult> AuthenticateAsync(CancellationToken cancellationToken);
+    }
 
     /// <summary>
     /// Explicit same-account credential recovery requested by the host.
     /// </summary>
-    public interface IAccountsAuthRecovery { Task<AccountAuthLifecycleResult> RecoverAsync(CancellationToken cancellationToken); }
+    public interface IAccountsAuthRecovery
+    {
+        Task<AccountAuthLifecycleResult> RecoverAsync(CancellationToken cancellationToken);
+    }
 
     /// <summary>Consumer-owned construction boundary for authenticated provisioning remotes.</summary>
     public interface IProvisioningRemoteFactory
@@ -47,8 +76,14 @@ namespace GamePlatform.Features.Accounts
     /// <summary>One account-private scope; its implementation reads actual private-sync readiness and owns admission draining.</summary>
     public interface IAccountScopeLease
     {
-        AccountDirectoryEntry Entry { get; }
-        long Generation { get; }
+        AccountDirectoryEntry Entry
+        {
+            get;
+        }
+        long Generation
+        {
+            get;
+        }
         Task<bool> IsBootstrapReadyAsync(CancellationToken cancellationToken);
         Task<AccountBootstrapResult> BootstrapAsync(CancellationToken cancellationToken);
         Task StopAdmissionsAsync(CancellationToken cancellationToken);
@@ -63,10 +98,24 @@ namespace GamePlatform.Features.Accounts
 
     public sealed class AccountsLifecycleSnapshot
     {
-        internal AccountsLifecycleSnapshot(AccountsReadiness readiness, AccountDirectoryEntry? entry, long generation) { Readiness = readiness; Entry = entry; Generation = generation; }
-        public AccountsReadiness Readiness { get; }
-        public AccountDirectoryEntry? Entry { get; }
-        public long Generation { get; }
+        internal AccountsLifecycleSnapshot(AccountsReadiness readiness, AccountDirectoryEntry? entry, long generation)
+        {
+            Readiness = readiness;
+            Entry = entry;
+            Generation = generation;
+        }
+        public AccountsReadiness Readiness
+        {
+            get;
+        }
+        public AccountDirectoryEntry? Entry
+        {
+            get;
+        }
+        public long Generation
+        {
+            get;
+        }
     }
 
     /// <summary>Portable account lifecycle. It persists reservation before provisioning and never derives a principal from a session key.</summary>
@@ -81,12 +130,24 @@ namespace GamePlatform.Features.Accounts
         public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemoteFactory provisioningFactory, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null, IAccountsAuthRecovery? recovery = null)
         {
             this.recovery = recovery;
-            this.auth = auth ?? throw new ArgumentNullException(nameof(auth)); this.provisioningFactory = provisioningFactory ?? throw new ArgumentNullException(nameof(provisioningFactory)); this.directory = directory ?? throw new ArgumentNullException(nameof(directory)); this.scopes = scopes ?? throw new ArgumentNullException(nameof(scopes)); this.ids = ids ?? throw new ArgumentNullException(nameof(ids));
+            this.auth = auth ?? throw new ArgumentNullException(nameof(auth));
+            this.provisioningFactory = provisioningFactory ?? throw new ArgumentNullException(nameof(provisioningFactory));
+            this.directory = directory ?? throw new ArgumentNullException(nameof(directory));
+            this.scopes = scopes ?? throw new ArgumentNullException(nameof(scopes));
+            this.ids = ids ?? throw new ArgumentNullException(nameof(ids));
             this.lateLeaseDrainTimeout = lateLeaseDrainTimeout ?? TimeSpan.FromSeconds(5);
-            if (this.lateLeaseDrainTimeout < TimeSpan.FromMilliseconds(1) || this.lateLeaseDrainTimeout > TimeSpan.FromSeconds(30)) throw new ArgumentOutOfRangeException(nameof(lateLeaseDrainTimeout));
+            if (this.lateLeaseDrainTimeout < TimeSpan.FromMilliseconds(1) || this.lateLeaseDrainTimeout > TimeSpan.FromSeconds(30))
+                throw new ArgumentOutOfRangeException(nameof(lateLeaseDrainTimeout));
         }
 
-        public AccountsLifecycleSnapshot Snapshot { get { lock (gate) return new AccountsLifecycleSnapshot(readiness, current, generation); } }
+        public AccountsLifecycleSnapshot Snapshot
+        {
+            get
+            {
+                lock (gate)
+                    return new AccountsLifecycleSnapshot(readiness, current, generation);
+            }
+        }
 
         /// <summary>
         /// Permanently fences the current generation and synchronously retires any
@@ -102,18 +163,39 @@ namespace GamePlatform.Features.Accounts
             TaskCompletionSource<AccountsLifecycleSnapshot>? completion;
             lock (gate)
             {
-                if (stoppedCompletion != null) { existing = stoppedCompletion.Task; retiring = null; entry = null; request = generation; completion = null; }
+                if (stoppedCompletion != null)
+                {
+                    existing = stoppedCompletion.Task;
+                    retiring = null;
+                    entry = null;
+                    request = generation;
+                    completion = null;
+                }
                 else
                 {
-                    existing = null; completion = stoppedCompletion = new TaskCompletionSource<AccountsLifecycleSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    stopped = true; generation = checked(generation + 1); request = generation; entry = current;
+                    existing = null;
+                    completion = stoppedCompletion = new TaskCompletionSource<AccountsLifecycleSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    stopped = true;
+                    generation = checked(generation + 1);
+                    request = generation;
+                    entry = current;
                     retiring = active ?? failedRetirement;
                     active = null;
-                    if (retiring != null) { failedRetirement = retiring; scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; }
-                    else { current = null; readiness = AccountsReadiness.Unavailable; }
+                    if (retiring != null)
+                    {
+                        failedRetirement = retiring;
+                        scopeRecoveryRequired = true;
+                        readiness = AccountsReadiness.RecoveryRequired;
+                    }
+                    else
+                    {
+                        current = null;
+                        readiness = AccountsReadiness.Unavailable;
+                    }
                 }
             }
-            if (existing != null) return await existing.ConfigureAwait(false);
+            if (existing != null)
+                return await existing.ConfigureAwait(false);
             AccountsLifecycleSnapshot outcome;
             // Do not use the caller token here. Once stop is accepted, it must quiesce
             // an admitted writer even when the caller has already been cancelled.
@@ -121,19 +203,31 @@ namespace GamePlatform.Features.Accounts
             try
             {
                 using var timeout = new CancellationTokenSource(lateLeaseDrainTimeout);
-                try { await activation.WaitAsync(timeout.Token).ConfigureAwait(false); activationHeld = true; }
+                try
+                {
+                    await activation.WaitAsync(timeout.Token).ConfigureAwait(false);
+                    activationHeld = true;
+                }
                 catch (OperationCanceledException) when (timeout.IsCancellationRequested)
                 {
-                    lock (gate) { scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; outcome = new AccountsLifecycleSnapshot(readiness, current, request); }
-                    completion!.TrySetResult(outcome); return outcome;
+                    lock (gate)
+                    {
+                        scopeRecoveryRequired = true;
+                        readiness = AccountsReadiness.RecoveryRequired;
+                        outcome = new AccountsLifecycleSnapshot(readiness, current, request);
+                    }
+                    completion!.TrySetResult(outcome);
+                    return outcome;
                 }
-                if (retiring == null) outcome = ScopeRecoveryRequired() ? Capture(request, AccountsReadiness.RecoveryRequired, current) : Capture(request, AccountsReadiness.Unavailable, null);
+                if (retiring == null)
+                    outcome = ScopeRecoveryRequired() ? Capture(request, AccountsReadiness.RecoveryRequired, current) : Capture(request, AccountsReadiness.Unavailable, null);
                 else
                 {
                     var retired = await RetireLeaseAsync(retiring).ConfigureAwait(false);
                     lock (gate)
                     {
-                        if (ReferenceEquals(failedRetirement, retiring)) failedRetirement = retired ? null : retiring;
+                        if (ReferenceEquals(failedRetirement, retiring))
+                            failedRetirement = retired ? null : retiring;
                         scopeRecoveryRequired = !retired;
                         current = retired ? null : entry;
                         readiness = retired ? AccountsReadiness.Unavailable : AccountsReadiness.RecoveryRequired;
@@ -143,15 +237,24 @@ namespace GamePlatform.Features.Accounts
             }
             catch { lock (gate) { readiness = AccountsReadiness.RecoveryRequired; outcome = new AccountsLifecycleSnapshot(readiness, current, request); } }
             finally { if (activationHeld) activation.Release(); }
-            completion!.TrySetResult(outcome); return outcome;
+            completion!.TrySetResult(outcome);
+            return outcome;
         }
 
         public async Task<AccountsLifecycleSnapshot> StartAsync(AppId appId, CancellationToken cancellationToken)
         {
-            if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
-            lock (gate) if (stopped) return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app is required.", nameof(appId));
+            lock (gate)
+                if (stopped)
+                    return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
             var request = Begin(AccountsReadiness.Authenticating);
-            lock (gate) if (generation == request) { recoveryPrincipal = null; recoveryApp = default; }
+            lock (gate)
+                if (generation == request)
+                {
+                    recoveryPrincipal = null;
+                    recoveryApp = default;
+                }
             return await AuthenticateAndActivateAsync(request, appId, auth.AuthenticateAsync, true, false, null, null, cancellationToken).ConfigureAwait(false);
         }
 
@@ -160,15 +263,19 @@ namespace GamePlatform.Features.Accounts
         /// </summary>
         public async Task<AccountsLifecycleSnapshot> RecoverAsync(AppId appId, CancellationToken cancellationToken)
         {
-            if (!appId.IsValid) throw new ArgumentException("A valid app is required.", nameof(appId));
-            if (recovery == null) throw new InvalidOperationException("No account auth recovery is configured.");
+            if (!appId.IsValid)
+                throw new ArgumentException("A valid app is required.", nameof(appId));
+            if (recovery == null)
+                throw new InvalidOperationException("No account auth recovery is configured.");
             long request;
             AccountDirectoryEntry? retainedEntry;
             AccountPrincipalDescriptor? retainedPrincipal;
             lock (gate)
             {
-                if (stopped) return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
-                if (scopeRecoveryRequired || (readiness != AccountsReadiness.RecoveryRequired && readiness != AccountsReadiness.Unavailable)) return new AccountsLifecycleSnapshot(readiness, current, generation);
+                if (stopped)
+                    return new AccountsLifecycleSnapshot(AccountsReadiness.Unavailable, null, generation);
+                if (scopeRecoveryRequired || (readiness != AccountsReadiness.RecoveryRequired && readiness != AccountsReadiness.Unavailable))
+                    return new AccountsLifecycleSnapshot(readiness, current, generation);
                 if ((recoveryApp.IsValid && recoveryApp != appId) || current != null && current.AppId != appId)
                     return new AccountsLifecycleSnapshot(AccountsReadiness.RecoveryRequired, current, generation);
                 retainedEntry = current;
@@ -181,17 +288,30 @@ namespace GamePlatform.Features.Accounts
         private async Task<AccountsLifecycleSnapshot> AuthenticateAndActivateAsync(long request, AppId appId, Func<CancellationToken, Task<AccountAuthLifecycleResult>> authenticate, bool reopenOffline, bool explicitRecovery, AccountDirectoryEntry? retainedEntry, AccountPrincipalDescriptor? retainedPrincipal, CancellationToken cancellationToken)
         {
             AccountAuthLifecycleResult result;
-            try { result = await authenticate(cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                result = await authenticate(cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { return Finish(request, AccountsReadiness.Cancelled, null); }
-            if (!Current(request)) return Late(request);
-            if (cancellationToken.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, null);
-            if (result.Kind == AccountAuthLifecycleKind.Cancelled) return Finish(request, AccountsReadiness.Cancelled, null);
+            if (!Current(request))
+                return Late(request);
+            if (cancellationToken.IsCancellationRequested)
+                return Finish(request, AccountsReadiness.Cancelled, null);
+            if (result.Kind == AccountAuthLifecycleKind.Cancelled)
+                return Finish(request, AccountsReadiness.Cancelled, null);
             if (result.Kind == AccountAuthLifecycleKind.RecoveryRequired)
             {
-                if (!explicitRecovery) lock (gate) if (generation == request) { recoveryPrincipal = result.Principal; recoveryApp = appId; }
+                if (!explicitRecovery)
+                    lock (gate)
+                        if (generation == request)
+                        {
+                            recoveryPrincipal = result.Principal;
+                            recoveryApp = appId;
+                        }
                 return Finish(request, AccountsReadiness.RecoveryRequired, null);
             }
-            if (result.Kind == AccountAuthLifecycleKind.UnavailableOffline) return reopenOffline ? await ReopenOfflineAsync(request, appId, result.Principal, cancellationToken).ConfigureAwait(false) : Finish(request, AccountsReadiness.UnavailableOffline, null);
+            if (result.Kind == AccountAuthLifecycleKind.UnavailableOffline)
+                return reopenOffline ? await ReopenOfflineAsync(request, appId, result.Principal, cancellationToken).ConfigureAwait(false) : Finish(request, AccountsReadiness.UnavailableOffline, null);
             if (explicitRecovery && (retainedPrincipal != null && !retainedPrincipal.Equals(result.Principal) ||
                 retainedEntry != null && (retainedEntry.AppId != appId || !retainedEntry.Principal.Equals(result.Principal))))
                 return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
@@ -200,11 +320,15 @@ namespace GamePlatform.Features.Accounts
 
         private async Task<AccountsLifecycleSnapshot> ReopenOfflineAsync(long request, AppId appId, AccountPrincipalDescriptor? principal, CancellationToken token)
         {
-            if (principal == null) return Finish(request, AccountsReadiness.UnavailableOffline, null);
+            if (principal == null)
+                return Finish(request, AccountsReadiness.UnavailableOffline, null);
             var entry = await directory.FindAsync(principal, appId, token).ConfigureAwait(false);
-            if (!Current(request)) return Late(request);
-            if (entry == null) return Finish(request, AccountsReadiness.NeverProvisioned, null);
-            if (!entry.HasIssuedAccount) return Finish(request, AccountsReadiness.UnavailableOffline, entry);
+            if (!Current(request))
+                return Late(request);
+            if (entry == null)
+                return Finish(request, AccountsReadiness.NeverProvisioned, null);
+            if (!entry.HasIssuedAccount)
+                return Finish(request, AccountsReadiness.UnavailableOffline, entry);
             return await ActivateOfflineAsync(request, entry, token).ConfigureAwait(false);
         }
 
@@ -213,14 +337,28 @@ namespace GamePlatform.Features.Accounts
             await activation.WaitAsync(token).ConfigureAwait(false);
             try
             {
-                if (!Current(request)) return Late(request);
-                if (ScopeRecoveryRequired()) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-                if (!await RetireActiveAsync(request).ConfigureAwait(false)) return Quarantine(request, entry);
+                if (!Current(request))
+                    return Late(request);
+                if (ScopeRecoveryRequired())
+                    return Finish(request, AccountsReadiness.RecoveryRequired, entry);
+                if (!await RetireActiveAsync(request).ConfigureAwait(false))
+                    return Quarantine(request, entry);
                 token.ThrowIfCancellationRequested();
                 var lease = await scopes.ReopenOfflineAsync(entry, request, token).ConfigureAwait(false);
-                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(lease); return Late(request); }
-                if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry, lease); return Finish(request, AccountsReadiness.UnavailableOffline, entry); }
-                SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
+                if (!Current(request))
+                {
+                    if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false))
+                        Quarantine(lease);
+                    return Late(request);
+                }
+                if (!await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false))
+                {
+                    if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false))
+                        return Quarantine(request, entry, lease);
+                    return Finish(request, AccountsReadiness.UnavailableOffline, entry);
+                }
+                SetActive(request, lease, entry, AccountsReadiness.Ready);
+                return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
             finally { activation.Release(); }
@@ -231,55 +369,83 @@ namespace GamePlatform.Features.Accounts
             AccountDirectoryEntry? entry = null;
             try
             {
-                try { entry = await directory.FindAsync(principal, appId, token).ConfigureAwait(false); }
+                try
+                {
+                    entry = await directory.FindAsync(principal, appId, token).ConfigureAwait(false);
+                }
                 catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
                 catch when (explicitRecovery)
                 {
-                    if (!Current(request)) return Late(request);
+                    if (!Current(request))
+                        return Late(request);
                     return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
                 }
-                if (!Current(request)) return Late(request);
-                if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                if (!Current(request))
+                    return Late(request);
+                if (token.IsCancellationRequested)
+                    return Finish(request, AccountsReadiness.Cancelled, entry);
                 if (explicitRecovery && (entry == null || !entry.Principal.Equals(principal) || entry.AppId != appId ||
                     retainedEntry != null && (entry.InstallationId != retainedEntry.InstallationId || entry.StreamId != retainedEntry.StreamId ||
                         retainedEntry.HasIssuedAccount && entry.AccountId != retainedEntry.AccountId)))
                     return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
                 if (entry == null)
                 {
-                    var installation = ids.NewId(); var stream = new ClientStreamId(ids.NewId());
+                    var installation = ids.NewId();
+                    var stream = new ClientStreamId(ids.NewId());
                     entry = await directory.ReserveAsync(principal, appId, installation, stream, token).ConfigureAwait(false);
-                    if (!Current(request)) return Late(request);
-                    if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                    if (!Current(request))
+                        return Late(request);
+                    if (token.IsCancellationRequested)
+                        return Finish(request, AccountsReadiness.Cancelled, entry);
                 }
                 Set(request, AccountsReadiness.Provisioning, entry);
-                if (!Current(request)) return Late(request);
-                if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                if (!Current(request))
+                    return Late(request);
+                if (token.IsCancellationRequested)
+                    return Finish(request, AccountsReadiness.Cancelled, entry);
                 IProvisioningRemote? remote;
-                try { remote = provisioningFactory.Create(session); }
+                try
+                {
+                    remote = provisioningFactory.Create(session);
+                }
                 catch
                 {
-                    if (!Current(request)) return Late(request);
-                    if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
+                    if (!Current(request))
+                        return Late(request);
+                    if (token.IsCancellationRequested)
+                        return Finish(request, AccountsReadiness.Cancelled, entry);
                     return Finish(request, AccountsReadiness.Unavailable, entry);
                 }
-                if (!Current(request)) return Late(request);
-                if (token.IsCancellationRequested) return Finish(request, AccountsReadiness.Cancelled, entry);
-                if (remote == null) return Finish(request, AccountsReadiness.Unavailable, entry);
+                if (!Current(request))
+                    return Late(request);
+                if (token.IsCancellationRequested)
+                    return Finish(request, AccountsReadiness.Cancelled, entry);
+                if (remote == null)
+                    return Finish(request, AccountsReadiness.Unavailable, entry);
                 var provisioned = await remote.ProvisionAsync(appId, entry.InstallationId, entry.StreamId, token).ConfigureAwait(false);
-                if (!Current(request)) return Late(request);
-                if (!provisioned.IsSuccess) return Finish(request, provisioned.Failure.Kind == RemoteFailureKind.Authentication ? AccountsReadiness.RecoveryRequired : AccountsReadiness.Unavailable, entry);
+                if (!Current(request))
+                    return Late(request);
+                if (!provisioned.IsSuccess)
+                    return Finish(request, provisioned.Failure.Kind == RemoteFailureKind.Authentication ? AccountsReadiness.RecoveryRequired : AccountsReadiness.Unavailable, entry);
                 var value = provisioned.Value!;
-                if (value.AppId != appId || value.StreamId != entry.StreamId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-                if (entry.HasIssuedAccount && entry.AccountId != value.AccountId) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
+                if (value.AppId != appId || value.StreamId != entry.StreamId)
+                    return Finish(request, AccountsReadiness.RecoveryRequired, entry);
+                if (entry.HasIssuedAccount && entry.AccountId != value.AccountId)
+                    return Finish(request, AccountsReadiness.RecoveryRequired, entry);
                 var reservation = entry;
-                try { entry = await directory.BindIssuedAccountAsync(reservation, value.AccountId, value.MembershipStatus, token).ConfigureAwait(false); }
+                try
+                {
+                    entry = await directory.BindIssuedAccountAsync(reservation, value.AccountId, value.MembershipStatus, token).ConfigureAwait(false);
+                }
                 catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
                 catch when (explicitRecovery)
                 {
-                    if (!Current(request)) return Late(request);
+                    if (!Current(request))
+                        return Late(request);
                     return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry ?? reservation);
                 }
-                if (!Current(request)) return Late(request);
+                if (!Current(request))
+                    return Late(request);
                 if (explicitRecovery && (entry == null || !entry.Principal.Equals(principal) || entry.AppId != appId ||
                     entry.InstallationId != reservation.InstallationId || entry.StreamId != reservation.StreamId || entry.AccountId != value.AccountId))
                     return Finish(request, AccountsReadiness.RecoveryRequired, retainedEntry);
@@ -296,17 +462,36 @@ namespace GamePlatform.Features.Accounts
             await activation.WaitAsync(token).ConfigureAwait(false);
             try
             {
-                if (!Current(request)) return Late(request);
-                if (ScopeRecoveryRequired()) return Finish(request, AccountsReadiness.RecoveryRequired, entry);
-                if (!await RetireActiveAsync(request).ConfigureAwait(false)) return Quarantine(request, entry);
+                if (!Current(request))
+                    return Late(request);
+                if (ScopeRecoveryRequired())
+                    return Finish(request, AccountsReadiness.RecoveryRequired, entry);
+                if (!await RetireActiveAsync(request).ConfigureAwait(false))
+                    return Quarantine(request, entry);
                 token.ThrowIfCancellationRequested();
                 Set(request, AccountsReadiness.Bootstrapping, entry);
                 var lease = await scopes.OpenAuthenticatedAsync(entry, session, request, token).ConfigureAwait(false);
-                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(lease); return Late(request); }
+                if (!Current(request))
+                {
+                    if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false))
+                        Quarantine(lease);
+                    return Late(request);
+                }
                 var bootstrap = await lease.BootstrapAsync(token).ConfigureAwait(false);
-                if (!Current(request)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) Quarantine(lease); return Late(request); }
-                if (bootstrap != AccountBootstrapResult.Complete || !await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false)) { if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false)) return Quarantine(request, entry, lease); return Finish(request, AccountsReadiness.Bootstrapping, entry); }
-                SetActive(request, lease, entry, AccountsReadiness.Ready); return Capture(request, AccountsReadiness.Ready, entry);
+                if (!Current(request))
+                {
+                    if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false))
+                        Quarantine(lease);
+                    return Late(request);
+                }
+                if (bootstrap != AccountBootstrapResult.Complete || !await lease.IsBootstrapReadyAsync(token).ConfigureAwait(false))
+                {
+                    if (!await RetireLateLeaseAsync(lease).ConfigureAwait(false))
+                        return Quarantine(request, entry, lease);
+                    return Finish(request, AccountsReadiness.Bootstrapping, entry);
+                }
+                SetActive(request, lease, entry, AccountsReadiness.Ready);
+                return Capture(request, AccountsReadiness.Ready, entry);
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { return Finish(request, AccountsReadiness.Unavailable, entry); }
             finally { activation.Release(); }
@@ -317,20 +502,28 @@ namespace GamePlatform.Features.Accounts
             IAccountScopeLease? old;
             lock (gate)
             {
-                if (generation != request || failedRetirement != null) return false;
+                if (generation != request || failedRetirement != null)
+                    return false;
                 old = active;
                 if (old != null)
                 {
                     // This is the irreversible switch point. The old scope is never active again.
-                    active = null; failedRetirement = old; scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired;
+                    active = null;
+                    failedRetirement = old;
+                    scopeRecoveryRequired = true;
+                    readiness = AccountsReadiness.RecoveryRequired;
                 }
             }
-            if (old == null) return true;
-            if (!await RetireLeaseAsync(old).ConfigureAwait(false)) return false;
+            if (old == null)
+                return true;
+            if (!await RetireLeaseAsync(old).ConfigureAwait(false))
+                return false;
             lock (gate)
             {
-                if (ReferenceEquals(failedRetirement, old)) failedRetirement = null;
-                if (generation == request) scopeRecoveryRequired = false;
+                if (ReferenceEquals(failedRetirement, old))
+                    failedRetirement = null;
+                if (generation == request)
+                    scopeRecoveryRequired = false;
                 return generation == request;
             }
         }
@@ -341,7 +534,8 @@ namespace GamePlatform.Features.Accounts
             using var timeout = new CancellationTokenSource(lateLeaseDrainTimeout);
             try
             {
-                if (!await CompleteWithinAsync(lease.StopAdmissionsAsync(timeout.Token), timeout.Token).ConfigureAwait(false)) return false;
+                if (!await CompleteWithinAsync(lease.StopAdmissionsAsync(timeout.Token), timeout.Token).ConfigureAwait(false))
+                    return false;
                 return await CompleteWithinAsync(lease.DrainAndRetireAsync(timeout.Token), timeout.Token).ConfigureAwait(false);
             }
             catch { return false; }
@@ -349,29 +543,88 @@ namespace GamePlatform.Features.Accounts
         private static async Task<bool> CompleteWithinAsync(Task operation, CancellationToken timeout)
         {
             var completed = await Task.WhenAny(operation, Task.Delay(Timeout.InfiniteTimeSpan, timeout)).ConfigureAwait(false);
-            if (!ReferenceEquals(completed, operation)) return false;
-            await operation.ConfigureAwait(false); return true;
+            if (!ReferenceEquals(completed, operation))
+                return false;
+            await operation.ConfigureAwait(false);
+            return true;
         }
-        private long Begin(AccountsReadiness next) { lock (gate) { generation = checked(generation + 1); readiness = next; current = null; return generation; } }
-        private bool Current(long request) { lock (gate) return generation == request; }
+        private long Begin(AccountsReadiness next)
+        {
+            lock (gate)
+            {
+                generation = checked(generation + 1);
+                readiness = next;
+                current = null;
+                return generation;
+            }
+        }
+        private bool Current(long request)
+        {
+            lock (gate)
+                return generation == request;
+        }
         private AccountsLifecycleSnapshot Late(long request) => new AccountsLifecycleSnapshot(AccountsReadiness.LateResultRejected, null, request);
         private AccountsLifecycleSnapshot Capture(long request, AccountsReadiness next, AccountDirectoryEntry? entry)
         {
-            lock (gate) return generation == request ? new AccountsLifecycleSnapshot(next, entry, request) : Late(request);
+            lock (gate)
+                return generation == request ? new AccountsLifecycleSnapshot(next, entry, request) : Late(request);
         }
         private AccountsLifecycleSnapshot Finish(long request, AccountsReadiness next, AccountDirectoryEntry? entry)
         {
             lock (gate)
             {
-                if (generation != request) return Late(request);
-                readiness = next; current = entry;
+                if (generation != request)
+                    return Late(request);
+                readiness = next;
+                current = entry;
                 return new AccountsLifecycleSnapshot(next, entry, request);
             }
         }
-        private bool ScopeRecoveryRequired() { lock (gate) return scopeRecoveryRequired; }
-        private void Quarantine(IAccountScopeLease? failedLease = null) { lock (gate) { if (failedLease != null) { active = null; failedRetirement = failedLease; } scopeRecoveryRequired = true; readiness = AccountsReadiness.RecoveryRequired; } }
-        private AccountsLifecycleSnapshot Quarantine(long request, AccountDirectoryEntry? entry, IAccountScopeLease? failedLease = null) { Quarantine(failedLease); return Capture(request, AccountsReadiness.RecoveryRequired, entry); }
-        private void Set(long request, AccountsReadiness next, AccountDirectoryEntry? entry) { lock (gate) { if (generation == request) { readiness = next; current = entry; } } }
-        private void SetActive(long request, IAccountScopeLease lease, AccountDirectoryEntry entry, AccountsReadiness next) { lock (gate) { if (generation == request) { active = lease; current = entry; readiness = next; } } }
+        private bool ScopeRecoveryRequired()
+        {
+            lock (gate)
+                return scopeRecoveryRequired;
+        }
+        private void Quarantine(IAccountScopeLease? failedLease = null)
+        {
+            lock (gate)
+            {
+                if (failedLease != null)
+                {
+                    active = null;
+                    failedRetirement = failedLease;
+                }
+                scopeRecoveryRequired = true;
+                readiness = AccountsReadiness.RecoveryRequired;
+            }
+        }
+        private AccountsLifecycleSnapshot Quarantine(long request, AccountDirectoryEntry? entry, IAccountScopeLease? failedLease = null)
+        {
+            Quarantine(failedLease);
+            return Capture(request, AccountsReadiness.RecoveryRequired, entry);
+        }
+        private void Set(long request, AccountsReadiness next, AccountDirectoryEntry? entry)
+        {
+            lock (gate)
+            {
+                if (generation == request)
+                {
+                    readiness = next;
+                    current = entry;
+                }
+            }
+        }
+        private void SetActive(long request, IAccountScopeLease lease, AccountDirectoryEntry entry, AccountsReadiness next)
+        {
+            lock (gate)
+            {
+                if (generation == request)
+                {
+                    active = lease;
+                    current = entry;
+                    readiness = next;
+                }
+            }
+        }
     }
 }

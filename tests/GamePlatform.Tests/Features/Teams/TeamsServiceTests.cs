@@ -186,7 +186,8 @@ namespace GamePlatform.Tests.Features.Teams
                 await service.QueryAsync(Owner(), new TeamsQuery("mine"), CancellationToken.None);
                 await service.QueryAsync(Owner(), new TeamsQuery("messages", Team), CancellationToken.None);
                 remote.CommandResult = RemoteResult<TeamsResponse>.Failed(new RemoteFailure(RemoteFailureKind.Authorization));
-                if (throws) remote.CommandError = new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Authorization), "teams.membership_required");
+                if (throws)
+                    remote.CommandError = new TeamsOperationException(new RemoteFailure(RemoteFailureKind.Authorization), "teams.membership_required");
                 await Assert.ThrowsAsync<TeamsOperationException>(() => service.ExecuteAsync(Owner(), Command(), CancellationToken.None));
             }
             await db.Reopen();
@@ -203,7 +204,8 @@ namespace GamePlatform.Tests.Features.Teams
         {
             await using var db = await Database.Open();
             var remote = new Remote { CommandResult = RemoteResult<TeamsResponse>.Failed(new RemoteFailure(RemoteFailureKind.RateLimited, 429)) };
-            if (throws) remote.CommandError = new TeamsOperationException(new RemoteFailure(RemoteFailureKind.RateLimited, 429), "teams.help_cooldown");
+            if (throws)
+                remote.CommandError = new TeamsOperationException(new RemoteFailure(RemoteFailureKind.RateLimited, 429), "teams.help_cooldown");
             using var service = db.Service(remote, new TeamsStateCodec(), Owner());
             var help = new TeamsCommand(new OperationId(Operation), "request_help", Team);
             await Assert.ThrowsAsync<TeamsOperationException>(() => service.ExecuteAsync(Owner(), help, CancellationToken.None));
@@ -239,8 +241,16 @@ namespace GamePlatform.Tests.Features.Teams
             public Func<Task<RemoteResult<TeamsResponse>>>? Read;
             public TeamsOperationException? CommandError;
             public RemoteResult<TeamsResponse> CommandResult = RemoteResult<TeamsResponse>.Success(Response(Operation));
-            public Task<RemoteResult<TeamsResponse>> QueryAsync(TeamsQuery query, CancellationToken token) { Queries++; return Read?.Invoke() ?? Task.FromResult(RemoteResult<TeamsResponse>.Success(Response())); }
-            public Task<RemoteResult<TeamsResponse>> ExecuteAsync(TeamsCommand command, CancellationToken token) { Commands++; return CommandError == null ? Task.FromResult(CommandResult) : Task.FromException<RemoteResult<TeamsResponse>>(CommandError); }
+            public Task<RemoteResult<TeamsResponse>> QueryAsync(TeamsQuery query, CancellationToken token)
+            {
+                Queries++;
+                return Read?.Invoke() ?? Task.FromResult(RemoteResult<TeamsResponse>.Success(Response()));
+            }
+            public Task<RemoteResult<TeamsResponse>> ExecuteAsync(TeamsCommand command, CancellationToken token)
+            {
+                Commands++;
+                return CommandError == null ? Task.FromResult(CommandResult) : Task.FromException<RemoteResult<TeamsResponse>>(CommandError);
+            }
         }
         internal sealed class Database : IAsyncDisposable
         {
@@ -248,10 +258,26 @@ namespace GamePlatform.Tests.Features.Teams
             public StorageScope Scope = new StorageScope("teams-test", new PlatformId(App.ToString()), new PlatformId(Account.ToString()));
             public SqliteDatabase Current = null!;
             public SqliteDurableFeatureStateStore Store => new SqliteDurableFeatureStateStore(Current, Scope);
-            public static async Task<Database> Open() { var value = new Database(); await value.Reopen(); return value; }
-            public async Task Reopen() { if (Current != null) Assert.True(await Current.DisposeAsync(TimeSpan.FromSeconds(5))); Current = await SqliteDatabase.OpenAsync(path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None); }
+            public static async Task<Database> Open()
+            {
+                var value = new Database();
+                await value.Reopen();
+                return value;
+            }
+            public async Task Reopen()
+            {
+                if (Current != null)
+                    Assert.True(await Current.DisposeAsync(TimeSpan.FromSeconds(5)));
+                Current = await SqliteDatabase.OpenAsync(path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None);
+            }
             public TeamsService Service(ITeamsRemote? remote, ITeamsStateCodec codec, ScopedOwnerContext owner) => new TeamsService(owner, remote, codec, Store, Current, () => 1_790_000_000_000);
-            public async ValueTask DisposeAsync() { Assert.True(await Current.DisposeAsync(TimeSpan.FromSeconds(5))); foreach (string suffix in new[] { "", "-wal", "-shm" }) if (File.Exists(path + suffix)) File.Delete(path + suffix); }
+            public async ValueTask DisposeAsync()
+            {
+                Assert.True(await Current.DisposeAsync(TimeSpan.FromSeconds(5)));
+                foreach (string suffix in new[] { "", "-wal", "-shm" })
+                    if (File.Exists(path + suffix))
+                        File.Delete(path + suffix);
+            }
         }
     }
 }

@@ -37,12 +37,14 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             using var files = new TemporaryDatabase();
             await using (var session = await Session.OpenAsync(files.Path, Context))
             {
-                if (receiptFirst) await session.ObserveAsync();
+                if (receiptFirst)
+                    await session.ObserveAsync();
                 await session.StageSnapshotAsync(12, Coin(12), Other(3));
             }
             await using (var session = await Session.OpenAsync(files.Path, Context))
             {
-                if (!receiptFirst) await session.ObserveAsync();
+                if (!receiptFirst)
+                    await session.ObserveAsync();
                 Assert.Equal(RewardPresentationStatus.Confirmed, await session.StatusAsync());
                 var evidence = await session.State.ReadAsync(Context, "reward-fulfillment", "evidence/" + Grant.ToString("N"), CancellationToken.None);
                 Assert.Equal(ReceiptRevision, evidence!.Revision);
@@ -65,9 +67,11 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
         {
             using var files = new TemporaryDatabase();
             await using var session = await Session.OpenAsync(files.Path, Context);
-            if (receiptFirst) await session.ObserveAsync();
+            if (receiptFirst)
+                await session.ObserveAsync();
             await session.StageSnapshotAsync(ReceiptRevision - 1, Coin(9));
-            if (!receiptFirst) await session.ObserveAsync();
+            if (!receiptFirst)
+                await session.ObserveAsync();
             Assert.Equal(RewardPresentationStatus.AcceptedAwaitingPull, await session.StatusAsync());
 
             await session.Database.ExecuteAsync(Scope, transaction => { session.Correlation.StageInstalledFeed(transaction, ReceiptRevision, new[] { Coin(10) }); return true; }, CancellationToken.None);
@@ -124,9 +128,11 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
         {
             using var files = new TemporaryDatabase();
             await using var session = await Session.OpenAsync(files.Path, Context);
-            if (receiptFirst) await session.ObserveAsync();
+            if (receiptFirst)
+                await session.ObserveAsync();
             await session.StageSnapshotAsync(12, Many(199, Coin(12)));
-            if (!receiptFirst) await session.ObserveAsync();
+            if (!receiptFirst)
+                await session.ObserveAsync();
             Assert.Equal(RewardPresentationStatus.Confirmed, await session.StatusAsync());
         }
 
@@ -152,7 +158,8 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
             await session.ObserveAsync();
             var covered = new InstalledRewardProjection(RewardReceiptLineKind.Currency, new PlatformId("test.coin"), 12);
             var others = new InstalledRewardProjection[1023];
-            for (var i = 0; i < others.Length; i++) others[i] = new InstalledRewardProjection(RewardReceiptLineKind.ItemStack, new PlatformId(("item." + i).PadRight(128, 'x')), i + 1);
+            for (var i = 0; i < others.Length; i++)
+                others[i] = new InstalledRewardProjection(RewardReceiptLineKind.ItemStack, new PlatformId(("item." + i).PadRight(128, 'x')), i + 1);
             var projections = new InstalledRewardProjection[1024];
             Array.Copy(others, projections, others.Length);
             projections[others.Length] = covered;
@@ -187,7 +194,8 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
         private static InstalledRewardProjection[] Many(int others, InstalledRewardProjection covered)
         {
             var result = new InstalledRewardProjection[others + 1];
-            for (var i = 0; i < others; i++) result[i] = new InstalledRewardProjection(RewardReceiptLineKind.ItemStack, new PlatformId("test.item." + i), i + 1);
+            for (var i = 0; i < others; i++)
+                result[i] = new InstalledRewardProjection(RewardReceiptLineKind.ItemStack, new PlatformId("test.item." + i), i + 1);
             result[others] = covered;
             return result;
         }
@@ -207,10 +215,22 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
                 Correlation = new DurableRewardReceiptCorrelation(owner, Scope, State, database, Service, () => 1_000);
             }
 
-            public SqliteDatabase Database { get; }
-            public SqliteDurableFeatureStateStore State { get; }
-            public RewardFulfillmentService Service { get; }
-            public DurableRewardReceiptCorrelation Correlation { get; }
+            public SqliteDatabase Database
+            {
+                get;
+            }
+            public SqliteDurableFeatureStateStore State
+            {
+                get;
+            }
+            public RewardFulfillmentService Service
+            {
+                get;
+            }
+            public DurableRewardReceiptCorrelation Correlation
+            {
+                get;
+            }
 
             public static async Task<Session> OpenAsync(string path, ScopedOwnerContext owner) =>
                 new Session(await SqliteDatabase.OpenAsync(path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None), owner);
@@ -240,11 +260,15 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
 
-            public string Path { get; }
+            public string Path
+            {
+                get;
+            }
 
             public void Dispose()
             {
-                if (Directory.Exists(directory)) Directory.Delete(directory, true);
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, true);
             }
         }
     }

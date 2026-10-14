@@ -161,7 +161,8 @@ namespace GamePlatform.Tests.Sync.Recovery
             Assert.Equal(CommandStreamRecoveryPhase.Adopted, (await f.JournalAsync()).Phase);
             Assert.Equal(1, await f.SuccessorLongAsync("SELECT ready FROM gp_stream_state"));
             await c.StopAsync();
-            using (var injection = new SQLite.SQLiteConnection(Path.Combine(f.Folder, "directory.db"))) injection.Execute("DROP TRIGGER fail_bootstrap_complete");
+            using (var injection = new SQLite.SQLiteConnection(Path.Combine(f.Folder, "directory.db")))
+                injection.Execute("DROP TRIGGER fail_bootstrap_complete");
             await f.ReopenDirectoryAsync();
             c = await f.CoordinatorAsync();
             Assert.Equal(CommandStreamRecoveryOutcome.BootstrapComplete, await c.ResumeAsync(CancellationToken.None));
@@ -221,7 +222,8 @@ namespace GamePlatform.Tests.Sync.Recovery
                 var entry = await directory.ReserveAsync(f.Principal, f.App, f.Installation, f.Prior, CancellationToken.None);
                 await directory.BindIssuedAccountAsync(entry, f.Account, "active", CancellationToken.None);
                 f.PriorDb = await f.OpenGameAsync(Path.Combine(f.Folder, "prior.db"));
-                if (!recreated) await f.InitializeStreamAsync(f.PriorDb, f.Prior, true);
+                if (!recreated)
+                    await f.InitializeStreamAsync(f.PriorDb, f.Prior, true);
                 f.Server = new Server(f);
                 f.Host = new Host(f);
                 return f;
@@ -249,7 +251,8 @@ namespace GamePlatform.Tests.Sync.Recovery
             }, CancellationToken.None);
             public async ValueTask DisposeAsync()
             {
-                if (SuccessorDb != null) Assert.True(await SuccessorDb.DisposeAsync(TimeSpan.FromSeconds(5)));
+                if (SuccessorDb != null)
+                    Assert.True(await SuccessorDb.DisposeAsync(TimeSpan.FromSeconds(5)));
                 Assert.True(await PriorDb.DisposeAsync(TimeSpan.FromSeconds(5)));
                 Assert.True(await DirectoryDb.DisposeAsync(TimeSpan.FromSeconds(5)));
                 Directory.Delete(Folder, true);
@@ -259,16 +262,23 @@ namespace GamePlatform.Tests.Sync.Recovery
         private sealed class Host : ICommandStreamRecoveryHost
         {
             private readonly Fixture f;
-            public Host(Fixture fixture) { f = fixture; }
+            public Host(Fixture fixture)
+            {
+                f = fixture;
+            }
             public bool IsCurrentAccount { get; set; } = true;
             public bool DamageEstablished = true;
             public bool FailBootstrap;
             public ClientStreamId LastQuiesced;
             public Task<bool> QuiesceAsync(ClientStreamId stream, CommandStreamRecoveryReason reason, bool resume, CancellationToken ct)
-            { LastQuiesced = stream; return Task.FromResult(resume || DamageEstablished); }
+            {
+                LastQuiesced = stream;
+                return Task.FromResult(resume || DamageEstablished);
+            }
             public async Task<bool> BootstrapSuccessorAsync(ClientStreamId stream, CancellationToken ct)
             {
-                if (FailBootstrap) return false;
+                if (FailBootstrap)
+                    return false;
                 Assert.Equal(stream, (await f.EntryAsync()).StreamId);
                 if (f.SuccessorDb == null)
                 {
@@ -283,7 +293,10 @@ namespace GamePlatform.Tests.Sync.Recovery
         private sealed class Server : ICommandStreamRecoveryRemote, ICommandReceiptRemote, IPrivateSyncRemote
         {
             private readonly Fixture f;
-            public Server(Fixture fixture) { f = fixture; }
+            public Server(Fixture fixture)
+            {
+                f = fixture;
+            }
             public readonly List<RemoteRequest> Requests = new List<RemoteRequest>();
             public int Inspections, Commits;
             public bool LoseResponse, Offline, ReceiptFound, TokenExpired, HoldResponse;
@@ -297,12 +310,27 @@ namespace GamePlatform.Tests.Sync.Recovery
             public async Task<RemoteResult<CommandStreamRecoveryResult>> RecoverAsync(RemoteRequest request, CancellationToken ct)
             {
                 Requests.Add(request);
-                if (Offline) return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.NotSent));
-                if (Commits == 0 && TokenExpired) return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.InspectionExpired, 409));
-                if (Commits == 0) { Assert.False(TokenExpired); Commits++; }
-                else Assert.Equal(Requests[0].RecoveryId, request.RecoveryId);
-                if (HoldResponse) { RemoteEntered.TrySetResult(true); await ReleaseResponse.Task; }
-                if (LoseResponse) { LoseResponse = false; return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.OutcomeUncertain)); }
+                if (Offline)
+                    return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.NotSent));
+                if (Commits == 0 && TokenExpired)
+                    return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.InspectionExpired, 409));
+                if (Commits == 0)
+                {
+                    Assert.False(TokenExpired);
+                    Commits++;
+                }
+                else
+                    Assert.Equal(Requests[0].RecoveryId, request.RecoveryId);
+                if (HoldResponse)
+                {
+                    RemoteEntered.TrySetResult(true);
+                    await ReleaseResponse.Task;
+                }
+                if (LoseResponse)
+                {
+                    LoseResponse = false;
+                    return RemoteResult<CommandStreamRecoveryResult>.Failed(new RemoteFailure(RemoteFailureKind.OutcomeUncertain));
+                }
                 return RemoteResult<CommandStreamRecoveryResult>.Success(new CommandStreamRecoveryResult(request.PriorStreamId, request.NewStreamId, request.RecoveryId, request.ExpectedFinalizedThrough, 1, 102));
             }
             public Task<RemoteResult<RemoteCommandReceipt>> LookupAsync(RemoteCommand command, CancellationToken ct) => Task.FromResult(RemoteResult<RemoteCommandReceipt>.Success(new RemoteCommandReceipt(ReceiptFound, ReceiptFound ? new RemoteCommandOutcome(RemoteCommandStatus.Accepted, new byte[] { 3 }) : null, 41)));
@@ -313,8 +341,12 @@ namespace GamePlatform.Tests.Sync.Recovery
 
         private sealed class Projector : IPrivateSyncProjectionProjector
         {
-            public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot) { }
-            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group) { }
+            public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot)
+            {
+            }
+            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group)
+            {
+            }
         }
     }
 }

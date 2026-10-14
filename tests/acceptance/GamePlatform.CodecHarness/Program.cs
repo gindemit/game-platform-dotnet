@@ -33,12 +33,23 @@ internal static class Program
             var cases = LoadCases(root);
             switch (args[0])
             {
-                case "self-test": SelfTest(root, cases); break;
-                case "produce": Produce(root, cases, options); break;
-                case "consume": Consume(root, cases, options); break;
-                case "encode": Transcode(options, true); break;
-                case "decode": Transcode(options, false); break;
-                default: throw new InvalidDataException("unsupported_mode_live_service_unavailable");
+                case "self-test":
+                    SelfTest(root, cases);
+                    break;
+                case "produce":
+                    Produce(root, cases, options);
+                    break;
+                case "consume":
+                    Consume(root, cases, options);
+                    break;
+                case "encode":
+                    Transcode(options, true);
+                    break;
+                case "decode":
+                    Transcode(options, false);
+                    break;
+                default:
+                    throw new InvalidDataException("unsupported_mode_live_service_unavailable");
             }
             return 0;
         }
@@ -52,7 +63,8 @@ internal static class Program
 
     private static Dictionary<string, string> Options(string[] args)
     {
-        if (args.Length % 2 != 1) throw new ArgumentException("option_pair");
+        if (args.Length % 2 != 1)
+            throw new ArgumentException("option_pair");
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int i = 1; i < args.Length; i += 2)
         {
@@ -60,7 +72,8 @@ internal static class Program
                 throw new ArgumentException("option_duplicate");
         }
         string[] allowed = { "root", "output", "input", "schema", "sdk-commit", "backend-commit", "unity-commit" };
-        if (result.Keys.Any(k => !allowed.Contains(k))) throw new ArgumentException("unknown_option");
+        if (result.Keys.Any(k => !allowed.Contains(k)))
+            throw new ArgumentException("unknown_option");
         return result;
     }
 
@@ -70,14 +83,16 @@ internal static class Program
     private static string Revision(Dictionary<string, string> options, string key)
     {
         string value = Required(options, key + "-commit");
-        if (!Regex.IsMatch(value, "\\A[0-9a-f]{40}\\z")) throw new ArgumentException("immutable_revision_required");
+        if (!Regex.IsMatch(value, "\\A[0-9a-f]{40}\\z"))
+            throw new ArgumentException("immutable_revision_required");
         return value;
     }
 
     private static JsonElement[] LoadCases(string root)
     {
         using var manifest = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, "tests/acceptance/core-corpus.json")));
-        if (manifest.RootElement.GetProperty("contractVersion").GetString() != Version) throw new InvalidDataException("version");
+        if (manifest.RootElement.GetProperty("contractVersion").GetString() != Version)
+            throw new InvalidDataException("version");
         var cases = manifest.RootElement.GetProperty("validations").EnumerateArray().Select(x => x.Clone()).ToArray();
         if (cases.Length == 0 || cases.Select(Id).Distinct(StringComparer.Ordinal).Count() != cases.Length)
             throw new InvalidDataException("empty_or_duplicate_corpus");
@@ -122,7 +137,9 @@ internal static class Program
                 accepted = true;
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidDataException || ex is FormatException || ex is OverflowException)
-            { accepted = false; }
+            {
+                accepted = false;
+            }
             if (accepted != valid)
             {
                 Console.Error.WriteLine("schema_case_failed " + Id(item));
@@ -146,18 +163,28 @@ internal static class Program
                     throw new InvalidOperationException("fingerprint_known_answer_mismatch");
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidDataException || ex is FormatException || ex is OverflowException)
-            { accepted = false; }
-            if (accepted != valid) throw new InvalidDataException("fingerprint_case_failed");
+            {
+                accepted = false;
+            }
+            if (accepted != valid)
+                throw new InvalidDataException("fingerprint_case_failed");
             fingerprintCount++;
         }
-        if (fingerprintCount == 0) throw new InvalidDataException("empty_fingerprint_corpus");
+        if (fingerprintCount == 0)
+            throw new InvalidDataException("empty_fingerprint_corpus");
         foreach (string hostile in new[] { "{\"x\":1,\"x\":2}", "{\"x\":1.0}", "{\"x\":1e0}", "{\"x\":-0}", "{\"x\":\"\\ud800\"}" })
         {
             bool rejected = false;
-            try { DiagnosticJson.Parse(System.Text.Encoding.UTF8.GetBytes(hostile)); }
+            try
+            {
+                DiagnosticJson.Parse(System.Text.Encoding.UTF8.GetBytes(hostile));
+            }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidDataException || ex is InvalidOperationException)
-            { rejected = true; }
-            if (!rejected) throw new InvalidDataException("hostile_json_accepted");
+            {
+                rejected = true;
+            }
+            if (!rejected)
+                throw new InvalidDataException("hostile_json_accepted");
         }
         Console.WriteLine(JsonSerializer.Serialize(new
         {
@@ -172,16 +199,31 @@ internal static class Program
 
     private static void Produce(string root, JsonElement[] cases, Dictionary<string, string> options)
     {
-        var commits = new { sdk = Revision(options, "sdk"), backend = Revision(options, "backend"), unity = Revision(options, "unity") };
+        var commits = new
+        {
+            sdk = Revision(options, "sdk"),
+            backend = Revision(options, "backend"),
+            unity = Revision(options, "unity")
+        };
         var produced = cases.Where(x => x.GetProperty("expectedValid").GetBoolean()).Select(item =>
         {
             var value = Fixture(root, item);
-            return new { id = Id(item), schema = Schema(item), hex = Hex(Codec.Encode(Schema(item), Dtos.NormalizeDto(Schema(item), value))) };
+            return new
+            {
+                id = Id(item),
+                schema = Schema(item),
+                hex = Hex(Codec.Encode(Schema(item), Dtos.NormalizeDto(Schema(item), value)))
+            };
         }).ToArray();
-        if (produced.Length == 0) throw new InvalidDataException("zero_cases");
+        if (produced.Length == 0)
+            throw new InvalidDataException("zero_cases");
         using var kat = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, "contracts/v1/fixtures/semantic/fingerprint-vectors.json")));
         var fingerprints = kat.RootElement.GetProperty("vectors").EnumerateArray().Where(x => x.GetProperty("valid").GetBoolean()).Select(item =>
-            new { id = item.GetProperty("name").GetString(), sha256 = Codec.Fingerprint(DiagnosticJson.Read(item.GetProperty("input"))) }).ToArray();
+            new
+            {
+                id = item.GetProperty("name").GetString(),
+                sha256 = Codec.Fingerprint(DiagnosticJson.Read(item.GetProperty("input")))
+            }).ToArray();
         byte[] output = JsonSerializer.SerializeToUtf8Bytes(new
         {
             formatVersion = 1,
@@ -211,25 +253,31 @@ internal static class Program
         using var input = JsonDocument.Parse(ReadBounded(Required(options, "input"), 32 * 1024 * 1024));
         var peer = input.RootElement;
         if (peer.GetProperty("formatVersion").GetInt32() != 1 || peer.GetProperty("contractVersion").GetString() != Version ||
-            peer.GetProperty("producer").GetString() != "typescript") throw new InvalidDataException("real_typescript_corpus_required");
+            peer.GetProperty("producer").GetString() != "typescript")
+            throw new InvalidDataException("real_typescript_corpus_required");
         var commits = peer.GetProperty("commits");
         if (commits.GetProperty("sdk").GetString() != sdk || commits.GetProperty("backend").GetString() != backend ||
-            commits.GetProperty("unity").GetString() != unity) throw new InvalidDataException("revision_mismatch");
+            commits.GetProperty("unity").GetString() != unity)
+            throw new InvalidDataException("revision_mismatch");
         var expectedCases = cases.Where(x => x.GetProperty("expectedValid").GetBoolean()).ToDictionary(Id, StringComparer.Ordinal);
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var item in peer.GetProperty("cases").EnumerateArray())
         {
             string id = Id(item);
-            if (!seen.Add(id) || !expectedCases.TryGetValue(id, out var expected)) throw new InvalidDataException("unexpected_or_duplicate_case");
+            if (!seen.Add(id) || !expectedCases.TryGetValue(id, out var expected))
+                throw new InvalidDataException("unexpected_or_duplicate_case");
             string schema = Schema(expected);
-            if (item.GetProperty("schema").GetString() != schema) throw new InvalidDataException("schema_mismatch");
+            if (item.GetProperty("schema").GetString() != schema)
+                throw new InvalidDataException("schema_mismatch");
             string hex = item.GetProperty("hex").GetString()!;
-            if (hex.Length > 524288) throw new InvalidDataException("encoded_limit");
+            if (hex.Length > 524288)
+                throw new InvalidDataException("encoded_limit");
             var decoded = Dtos.NormalizeDto(schema, Codec.Decode(schema, Convert.FromHexString(hex)));
             if (!DiagnosticJson.Write(decoded).SequenceEqual(DiagnosticJson.Write(Fixture(root, expected))))
                 throw new InvalidDataException("peer_semantic_mismatch");
         }
-        if (seen.Count == 0 || seen.Count != expectedCases.Count) throw new InvalidDataException("missing_cases");
+        if (seen.Count == 0 || seen.Count != expectedCases.Count)
+            throw new InvalidDataException("missing_cases");
         using var kat = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, "contracts/v1/fixtures/semantic/fingerprint-vectors.json")));
         var expectedFingerprints = kat.RootElement.GetProperty("vectors").EnumerateArray().Where(x => x.GetProperty("valid").GetBoolean())
             .ToDictionary(x => x.GetProperty("name").GetString()!, x => x.GetProperty("sha256").GetString()!, StringComparer.Ordinal);
@@ -238,9 +286,11 @@ internal static class Program
         {
             string id = Id(item);
             if (!fingerprintSeen.Add(id) || !expectedFingerprints.TryGetValue(id, out string? expected) ||
-                item.GetProperty("sha256").GetString() != expected) throw new InvalidDataException("peer_fingerprint_mismatch");
+                item.GetProperty("sha256").GetString() != expected)
+                throw new InvalidDataException("peer_fingerprint_mismatch");
         }
-        if (fingerprintSeen.Count == 0 || fingerprintSeen.Count != expectedFingerprints.Count) throw new InvalidDataException("missing_fingerprints");
+        if (fingerprintSeen.Count == 0 || fingerprintSeen.Count != expectedFingerprints.Count)
+            throw new InvalidDataException("missing_fingerprints");
         Console.WriteLine(JsonSerializer.Serialize(new
         {
             mode = "consume",
@@ -277,7 +327,8 @@ internal static class Program
     private static byte[] ReadBounded(string path, long maximum)
     {
         using var stream = File.OpenRead(path);
-        if (stream.Length > maximum) throw new InvalidDataException("input_limit");
+        if (stream.Length > maximum)
+            throw new InvalidDataException("input_limit");
         byte[] bytes = new byte[checked((int)stream.Length)];
         stream.ReadExactly(bytes);
         return bytes;

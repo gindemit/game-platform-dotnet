@@ -133,7 +133,8 @@ namespace GamePlatform.Tests.Wire
             Assert.Equal(12, carriers.Count(t => t.Namespace == "GamePlatform.Wire.Contracts.Friends"));
             foreach (var carrier in carriers)
             {
-                foreach (var property in carrier.GetProperties()) Assert.Null(property.SetMethod);
+                foreach (var property in carrier.GetProperties())
+                    Assert.Null(property.SetMethod);
                 Assert.DoesNotContain(carrier.CustomAttributes, a => a.AttributeType.Namespace?.StartsWith("MessagePack", StringComparison.Ordinal) == true);
             }
             Assert.DoesNotContain(assembly.GetReferencedAssemblies(), a => a.Name?.StartsWith("GamePlatform.", StringComparison.Ordinal) == true);

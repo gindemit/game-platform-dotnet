@@ -142,8 +142,10 @@ namespace GamePlatform.Tests.Durability
                 Assert.True(process.Start());
                 var launcherStart = process.StartTime;
                 var deadline = Stopwatch.StartNew();
-                while (!File.Exists(signal) && !process.HasExited && deadline.Elapsed < TimeSpan.FromSeconds(15)) Thread.Sleep(25);
-                if (!process.HasExited) process.Kill(entireProcessTree: true);
+                while (!File.Exists(signal) && !process.HasExited && deadline.Elapsed < TimeSpan.FromSeconds(15))
+                    Thread.Sleep(25);
+                if (!process.HasExited)
+                    process.Kill(entireProcessTree: true);
                 Assert.True(process.WaitForExit(10_000), "Crash probe did not terminate in time.");
                 Assert.True(File.Exists(signal), "Crash probe did not reach the requested write boundary.");
                 Assert.NotEqual(0, process.ExitCode);
@@ -151,7 +153,8 @@ namespace GamePlatform.Tests.Durability
                 var childPid = ReadChildPid(signal);
                 var childPidReused = false;
                 var childWait = Stopwatch.StartNew();
-                while (childPid != null && IsChildAlive(childPid.Value, out childPidReused) && childWait.Elapsed < TimeSpan.FromSeconds(10)) Thread.Sleep(25);
+                while (childPid != null && IsChildAlive(childPid.Value, out childPidReused) && childWait.Elapsed < TimeSpan.FromSeconds(10))
+                    Thread.Sleep(25);
                 var childAliveAtReopen = childPid != null && IsChildAlive(childPid.Value, out childPidReused);
                 var shmWait = Stopwatch.StartNew();
                 var shmReleased = ProbeShmTruncation(files.Path, out var shmFirst);
@@ -196,7 +199,8 @@ namespace GamePlatform.Tests.Durability
                 finally
                 {
                     SqliteErrorLog.Stop();
-                    if (childAliveAtReopen && IsChildAlive(childPid!.Value, out _)) output.WriteLine($"cleanup childPid={childPid} {KillChild(childPid.Value)}");
+                    if (childAliveAtReopen && IsChildAlive(childPid!.Value, out _))
+                        output.WriteLine($"cleanup childPid={childPid} {KillChild(childPid.Value)}");
                 }
             }
         }
@@ -207,12 +211,14 @@ namespace GamePlatform.Tests.Durability
             var path = Environment.GetEnvironmentVariable("GP_CL008_CRASH_PATH");
             var phase = Environment.GetEnvironmentVariable("GP_CL008_CRASH_PHASE");
             var signal = Environment.GetEnvironmentVariable("GP_CL008_CRASH_SIGNAL");
-            if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(phase) || string.IsNullOrEmpty(signal)) return;
+            if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(phase) || string.IsNullOrEmpty(signal))
+                return;
             var database = await SqliteDatabase.OpenAsync(path, Scope, Migrations, CancellationToken.None);
             var checkpoint = phase == "precommit"
                 ? new Action<AdmissionCheckpoint>(observed =>
                 {
-                    if (observed != AdmissionCheckpoint.OutboxInserted) return;
+                    if (observed != AdmissionCheckpoint.OutboxInserted)
+                        return;
                     File.WriteAllText(signal, $"precommit:{Environment.ProcessId}");
                     Thread.Sleep(Timeout.Infinite);
                 })
@@ -363,9 +369,11 @@ namespace GamePlatform.Tests.Durability
             try
             {
                 using var child = Process.GetProcessById(pid);
-                if (child.HasExited) return false;
+                if (child.HasExited)
+                    return false;
                 var name = child.ProcessName;
-                if (name.Equals("testhost", StringComparison.OrdinalIgnoreCase) || name.Equals("dotnet", StringComparison.OrdinalIgnoreCase)) return true;
+                if (name.Equals("testhost", StringComparison.OrdinalIgnoreCase) || name.Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+                    return true;
                 pidReused = true;
                 return false;
             }
@@ -468,7 +476,8 @@ namespace GamePlatform.Tests.Durability
         private static string EvidenceDirectory(string phase)
         {
             var root = Environment.GetEnvironmentVariable("GP_CL008_DIAG_DIR");
-            if (string.IsNullOrEmpty(root)) root = System.IO.Path.Combine(FindRepositoryRoot(), "artifacts", "diagnostics", "cl008");
+            if (string.IsNullOrEmpty(root))
+                root = System.IO.Path.Combine(FindRepositoryRoot(), "artifacts", "diagnostics", "cl008");
             return System.IO.Path.Combine(root, phase + "-" + DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmssfff'Z'", CultureInfo.InvariantCulture));
         }
 
@@ -520,7 +529,8 @@ namespace GamePlatform.Tests.Durability
                     {
                         try
                         {
-                            if (candidate.StartTime >= launcherStart) entries.Add($"{candidate.ProcessName}:{candidate.Id}@{candidate.StartTime:HH:mm:ss.fff}");
+                            if (candidate.StartTime >= launcherStart)
+                                entries.Add($"{candidate.ProcessName}:{candidate.Id}@{candidate.StartTime:HH:mm:ss.fff}");
                         }
                         catch (Exception exception) when (exception is InvalidOperationException || exception is System.ComponentModel.Win32Exception)
                         {
@@ -565,8 +575,10 @@ namespace GamePlatform.Tests.Durability
                 Directory.CreateDirectory(directory);
                 var copyPath = System.IO.Path.Combine(directory, "platform.sqlite3");
                 File.Copy(databasePath, copyPath);
-                if (File.Exists(databasePath + "-wal")) File.Copy(databasePath + "-wal", copyPath + "-wal");
-                if (includeShm && File.Exists(databasePath + "-shm")) File.Copy(databasePath + "-shm", copyPath + "-shm");
+                if (File.Exists(databasePath + "-wal"))
+                    File.Copy(databasePath + "-wal", copyPath + "-wal");
+                if (includeShm && File.Exists(databasePath + "-shm"))
+                    File.Copy(databasePath + "-shm", copyPath + "-shm");
                 return await OpenAndInspect(copyPath);
             }
             catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
@@ -577,7 +589,8 @@ namespace GamePlatform.Tests.Durability
             {
                 try
                 {
-                    if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+                    if (Directory.Exists(directory))
+                        Directory.Delete(directory, recursive: true);
                 }
                 catch (IOException)
                 {
@@ -661,7 +674,8 @@ namespace GamePlatform.Tests.Durability
             var directory = new DirectoryInfo(AppContext.BaseDirectory);
             while (directory != null)
             {
-                if (File.Exists(System.IO.Path.Combine(directory.FullName, "tests", "GamePlatform.Tests", "GamePlatform.Tests.csproj"))) return directory.FullName;
+                if (File.Exists(System.IO.Path.Combine(directory.FullName, "tests", "GamePlatform.Tests", "GamePlatform.Tests.csproj")))
+                    return directory.FullName;
                 directory = directory.Parent;
             }
             throw new InvalidOperationException("The test project could not be located for the crash probe.");
@@ -696,7 +710,8 @@ namespace GamePlatform.Tests.Durability
 
             private static string Install()
             {
-                if (!OperatingSystem.IsWindows() || RuntimeInformation.ProcessArchitecture != Architecture.X64) return "unsupported";
+                if (!OperatingSystem.IsWindows() || RuntimeInformation.ProcessArchitecture != Architecture.X64)
+                    return "unsupported";
                 var result = Configure(ConfigLog, Marshal.GetFunctionPointerForDelegate(Callback), IntPtr.Zero);
                 return result == 0 ? "installed" : $"configResult={result}";
             }
@@ -704,9 +719,11 @@ namespace GamePlatform.Tests.Durability
             private static void Record(IntPtr argument, int code, IntPtr message)
             {
                 var current = marker;
-                if (current == null || Entries.Count >= 32) return;
+                if (current == null || Entries.Count >= 32)
+                    return;
                 var text = Marshal.PtrToStringUTF8(message) ?? string.Empty;
-                if (text.Contains(current, StringComparison.OrdinalIgnoreCase)) Entries.Enqueue($"0x{code:X} {text}");
+                if (text.Contains(current, StringComparison.OrdinalIgnoreCase))
+                    Entries.Enqueue($"0x{code:X} {text}");
             }
         }
 
@@ -724,17 +741,48 @@ namespace GamePlatform.Tests.Durability
             }
         }
 
-        private sealed class FixedClock : IUnixMillisecondClock { public long GetUnixMilliseconds() => 1_789_555_200_000; }
-        private sealed class CountingClock : IUnixMillisecondClock { private readonly long value; public CountingClock(long value) { this.value = value; } public int Calls { get; private set; } public long GetUnixMilliseconds() { Calls++; return value; } }
+        private sealed class FixedClock : IUnixMillisecondClock
+        {
+            public long GetUnixMilliseconds() => 1_789_555_200_000;
+        }
+        private sealed class CountingClock : IUnixMillisecondClock
+        {
+            private readonly long value; public CountingClock(long value)
+            {
+                this.value = value;
+            }
+            public int Calls
+            {
+                get; private set;
+            }
+            public long GetUnixMilliseconds()
+            {
+                Calls++;
+                return value;
+            }
+        }
 
-        private sealed class InjectedFailureException : Exception { }
+        private sealed class InjectedFailureException : Exception
+        {
+        }
 
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-cl008", Guid.NewGuid().ToString("N"));
-            public TemporaryDatabase() { Directory.CreateDirectory(directory); Path = System.IO.Path.Combine(directory, "platform.sqlite3"); }
-            public string Path { get; }
-            public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
+            public TemporaryDatabase()
+            {
+                Directory.CreateDirectory(directory);
+                Path = System.IO.Path.Combine(directory, "platform.sqlite3");
+            }
+            public string Path
+            {
+                get;
+            }
+            public void Dispose()
+            {
+                if (Directory.Exists(directory))
+                    Directory.Delete(directory, recursive: true);
+            }
         }
     }
 }

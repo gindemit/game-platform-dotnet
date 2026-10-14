@@ -22,7 +22,8 @@ namespace GamePlatform.Tests.Serialization
         public void BackendProducedGoldenMapsRoundTripSemanticallyAndEmitIndependentSdkBytes()
         {
             var root = new DirectoryInfo(AppContext.BaseDirectory);
-            while (root != null && !File.Exists(Path.Combine(root.FullName, "GamePlatform.sln"))) root = root.Parent;
+            while (root != null && !File.Exists(Path.Combine(root.FullName, "GamePlatform.sln")))
+                root = root.Parent;
             Assert.NotNull(root);
             using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(root!.FullName, "contracts/teams/fixtures.json")));
             var codec = new QualificationMessagePackCodec();
@@ -38,11 +39,21 @@ namespace GamePlatform.Tests.Serialization
                     Assert.Equal(9_007_199_254_740_993, new TeamsStateCodec().DecodeResponse(foreign).Membership!.HelpCount);
                 if (fixture.GetProperty("name").GetString() == "send-message")
                     Assert.Equal(TeamsServiceTests.Operation, new TeamsStateCodec().DecodeCommand(foreign).OperationId.Value);
-                emitted.Add(new { name = fixture.GetProperty("name").GetString(), schema = fixture.GetProperty("schema").GetString(), diagnostic = fixture.GetProperty("diagnostic").Clone(), messagePackHex = Convert.ToHexString(own).ToLowerInvariant() });
+                emitted.Add(new
+                {
+                    name = fixture.GetProperty("name").GetString(),
+                    schema = fixture.GetProperty("schema").GetString(),
+                    diagnostic = fixture.GetProperty("diagnostic").Clone(),
+                    messagePackHex = Convert.ToHexString(own).ToLowerInvariant()
+                });
             }
             string output = Path.Combine(root.FullName, "artifacts", "teams");
             Directory.CreateDirectory(output);
-            File.WriteAllText(Path.Combine(output, "sdk-fixtures.json"), JsonSerializer.Serialize(new { protocol = "teams-1.0.0", fixtures = emitted }));
+            File.WriteAllText(Path.Combine(output, "sdk-fixtures.json"), JsonSerializer.Serialize(new
+            {
+                protocol = "teams-1.0.0",
+                fixtures = emitted
+            }));
         }
 
         private static V Parse(JsonElement value) => value.ValueKind switch

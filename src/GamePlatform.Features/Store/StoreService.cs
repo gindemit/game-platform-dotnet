@@ -32,10 +32,13 @@ namespace GamePlatform.Features.Store
         /// </remarks>
         public Task<CommandAdmission> PurchaseAsync(string offerId, int offerVersion, Guid purchaseKey, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(offerId)) throw new ArgumentException("An offer ID is required.", nameof(offerId));
-            if (offerVersion <= 0) throw new ArgumentOutOfRangeException(nameof(offerVersion));
+            if (string.IsNullOrWhiteSpace(offerId))
+                throw new ArgumentException("An offer ID is required.", nameof(offerId));
+            if (offerVersion <= 0)
+                throw new ArgumentOutOfRangeException(nameof(offerVersion));
             var key = purchaseKey.ToString("D");
-            if (key[14] != '7' || !UuidIdentity.IsValid(purchaseKey)) throw new ArgumentException("The purchase key must be a UUIDv7.", nameof(purchaseKey));
+            if (key[14] != '7' || !UuidIdentity.IsValid(purchaseKey))
+                throw new ArgumentException("The purchase key must be a UUIDv7.", nameof(purchaseKey));
             var body = codec.EncodePurchaseCommand(offerId, offerVersion, purchaseKey);
             return admitter.AdmitAsync("store.purchase:" + key, "store.offer.purchase", body, cancellationToken);
         }

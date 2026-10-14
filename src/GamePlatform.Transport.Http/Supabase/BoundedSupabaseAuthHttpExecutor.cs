@@ -28,22 +28,32 @@ namespace GamePlatform.Transport.Http.Supabase
         internal BoundedSupabaseAuthHttpExecutor(SupabaseAuthConfiguration configuration, HttpMessageHandler handler)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            if (handler == null) throw new ArgumentNullException(nameof(handler));
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
             client = new HttpClient(handler, true);
             basePath = configuration.AuthBaseUri.AbsolutePath;
         }
 
-        public void Dispose() { if (Interlocked.Exchange(ref disposed, 1) == 0) client.Dispose(); }
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) == 0)
+                client.Dispose();
+        }
 
         public async Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
-            if (Volatile.Read(ref disposed) != 0) throw new ObjectDisposedException(nameof(BoundedSupabaseAuthHttpExecutor));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+            if (Volatile.Read(ref disposed) != 0)
+                throw new ObjectDisposedException(nameof(BoundedSupabaseAuthHttpExecutor));
             cancellationToken.ThrowIfCancellationRequested();
             ValidateRequest(request);
             using var message = CreateMessage(request);
             HttpResponseMessage response;
-            try { response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
             catch (Exception error) { throw new HttpExecutionException(HttpDeliveryCertainty.Uncertain, "The Supabase Auth request failed before a response was received.", error); }
 
@@ -94,15 +104,18 @@ namespace GamePlatform.Transport.Http.Supabase
             var message = new HttpRequestMessage(HttpMethod.Post, request.Uri) { Content = new ByteArrayContent(request.CopyBody()) };
             foreach (var header in request.Headers)
             {
-                if (string.Equals(header.Key, "Content-Type", StringComparison.OrdinalIgnoreCase)) message.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                else message.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                if (string.Equals(header.Key, "Content-Type", StringComparison.OrdinalIgnoreCase))
+                    message.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                else
+                    message.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
             return message;
         }
 
         private async Task<byte[]> ReadBoundedBodyAsync(HttpContent? content, CancellationToken cancellationToken)
         {
-            if (content == null) return Array.Empty<byte>();
+            if (content == null)
+                return Array.Empty<byte>();
             if (content.Headers.ContentLength.HasValue && content.Headers.ContentLength.Value > configuration.MaximumResponseBytes)
                 throw new HttpExecutionException(HttpDeliveryCertainty.ResponseReceived, "The Supabase Auth response body exceeds the configured bound.");
             using var stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -111,7 +124,8 @@ namespace GamePlatform.Transport.Http.Supabase
             while (true)
             {
                 var read = await stream.ReadAsync(chunk, 0, chunk.Length, cancellationToken).ConfigureAwait(false);
-                if (read == 0) break;
+                if (read == 0)
+                    break;
                 if (buffer.Length + read > configuration.MaximumResponseBytes)
                     throw new HttpExecutionException(HttpDeliveryCertainty.ResponseReceived, "The Supabase Auth response body exceeds the configured bound.");
                 buffer.Write(chunk, 0, read);
@@ -122,7 +136,10 @@ namespace GamePlatform.Transport.Http.Supabase
         private static Dictionary<string, string> CopyHeaders(HttpResponseMessage response)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            AddHeaders(result, response.Headers); if (response.Content != null) AddHeaders(result, response.Content.Headers); return result;
+            AddHeaders(result, response.Headers);
+            if (response.Content != null)
+                AddHeaders(result, response.Content.Headers);
+            return result;
         }
         private static void AddHeaders(Dictionary<string, string> target, System.Net.Http.Headers.HttpHeaders source)
         {

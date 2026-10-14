@@ -22,10 +22,13 @@ namespace GamePlatform.Configuration
             for (int i = 0; i < 1000 && (first == null || second == null); i++)
             {
                 string value = Evaluator.Evaluate(compiled, "flag", new EvaluationContext("id" + i, 100, attributes)).Choice!.Value.AsString();
-                if (value == "A") first = value;
-                else second = value;
+                if (value == "A")
+                    first = value;
+                else
+                    second = value;
             }
-            if (first == null || second == null) throw new InvalidConfigurationException("smoke_allocation");
+            if (first == null || second == null)
+                throw new InvalidConfigurationException("smoke_allocation");
             return first + ":" + second;
         }
 #if !RC_TARGET_TYPED
@@ -35,7 +38,8 @@ namespace GamePlatform.Configuration
             string json = "{\"schema\":\"platform.remote-config.v1\",\"app\":\"synthetic\",\"environment\":\"local\",\"release\":\"smoke\",\"features\":[{\"key\":\"flag\",\"enabled\":true,\"default\":{\"revision\":\"a\",\"semanticSha\":\"" + Digest + "\",\"variant\":\"A\",\"value\":\"A\",\"dependencies\":[]},\"rules\":[{\"id\":\"b\",\"conditions\":[],\"outcome\":{\"kind\":\"serve\",\"choice\":{\"revision\":\"b\",\"semanticSha\":\"" + Digest + "\",\"variant\":\"B\",\"value\":\"B\",\"dependencies\":[]}}}]}]}";
             var compiled = ConfigurationReader.Read(Encoding.UTF8.GetBytes(json), "synthetic", "local");
             var selection = Evaluator.Evaluate(compiled, "flag", new EvaluationContext("🙂", 100, new Dictionary<string, ContextAttribute>()));
-            if (selection.Choice!.Value.AsString() != "B") throw new InvalidConfigurationException("smoke_reader");
+            if (selection.Choice!.Value.AsString() != "B")
+                throw new InvalidConfigurationException("smoke_reader");
             return "A:B";
         }
         public static string RunCorpus(byte[] corpus)
@@ -50,22 +54,29 @@ namespace GamePlatform.Configuration
             }
             foreach (var vector in root["allocation"].AsArray())
             {
-                Require(Evaluator.Bucket(vector["key"].AsString(), vector["subject"].AsString()) == vector["bucket"].AsInteger(), "bucket"); passed++;
+                Require(Evaluator.Bucket(vector["key"].AsString(), vector["subject"].AsString()) == vector["bucket"].AsInteger(), "bucket");
+                passed++;
             }
             foreach (var vector in root["versions"].AsArray())
             {
-                Require(Math.Sign(StrictVersion.Parse(vector["left"].AsString()).CompareTo(StrictVersion.Parse(vector["right"].AsString()))) == vector["compare"].AsInteger(), "version"); passed++;
+                Require(Math.Sign(StrictVersion.Parse(vector["left"].AsString()).CompareTo(StrictVersion.Parse(vector["right"].AsString()))) == vector["compare"].AsInteger(), "version");
+                passed++;
             }
             foreach (var vector in root["invalidVersions"].AsArray())
             {
-                Require(!StrictVersion.TryParse(vector.AsString(), out _), "version_invalid"); passed++;
+                Require(!StrictVersion.TryParse(vector.AsString(), out _), "version_invalid");
+                passed++;
             }
             foreach (var vector in root["negativeJson"].AsArray())
             {
                 bool rejected = false;
-                try { CanonicalJson.Parse(Encoding.UTF8.GetBytes(vector.AsString())); }
+                try
+                {
+                    CanonicalJson.Parse(Encoding.UTF8.GetBytes(vector.AsString()));
+                }
                 catch (InvalidConfigurationException) { rejected = true; }
-                Require(rejected, "json_invalid"); passed++;
+                Require(rejected, "json_invalid");
+                passed++;
             }
             var compiled = ConfigurationReader.Read(CanonicalJson.Serialize(root["selector"]), "synthetic", "local");
             foreach (var vector in root["evaluations"].AsArray())
@@ -80,7 +91,8 @@ namespace GamePlatform.Configuration
             foreach (var vector in root["researchSubset"].AsArray())
             {
                 var config = ConfigurationReader.Read(CanonicalJson.Serialize(vector["selector"]), "synthetic", "local");
-                Require(Evaluator.Evaluate(config, vector["feature"].AsString(), Context(vector)).Choice!.Value.AsString() == vector["expectedValue"].AsString(), "research_subset"); passed++;
+                Require(Evaluator.Evaluate(config, vector["feature"].AsString(), Context(vector)).Choice!.Value.AsString() == vector["expectedValue"].AsString(), "research_subset");
+                passed++;
             }
             return "passed:" + passed;
         }
@@ -92,7 +104,11 @@ namespace GamePlatform.Configuration
             return new EvaluationContext(vector["subject"].AsString(), vector["nowSeconds"].AsInteger(), attributes);
         }
         private static bool Equal(JsonValue left, JsonValue right) => Encoding.UTF8.GetString(CanonicalJson.Serialize(left)) == Encoding.UTF8.GetString(CanonicalJson.Serialize(right));
-        private static void Require(bool value, string code) { if (!value) throw new InvalidConfigurationException("corpus:" + code); }
+        private static void Require(bool value, string code)
+        {
+            if (!value)
+                throw new InvalidConfigurationException("corpus:" + code);
+        }
 #endif
     }
 }

@@ -53,14 +53,18 @@ namespace GamePlatform.Tests.Sqlite
                 foreach (var method in type.GetMethods(AllMembers).Cast<MethodBase>().Concat(type.GetConstructors(AllMembers)))
                 {
                     var il = method.GetMethodBody()?.GetILAsByteArray();
-                    if (il == null) continue;
+                    if (il == null)
+                        continue;
                     for (var i = 0; i + 4 < il.Length; i++)
                     {
-                        if (il[i] != 0x28 && il[i] != 0x6F) continue;
+                        if (il[i] != 0x28 && il[i] != 0x6F)
+                            continue;
                         var called = TryResolve(method, BitConverter.ToInt32(il, i + 1));
-                        if (called == null || !called.IsGenericMethod || !RowMaterializers.Contains(called.Name) || !IsSqliteNetEntryPoint(called.DeclaringType)) continue;
+                        if (called == null || !called.IsGenericMethod || !RowMaterializers.Contains(called.Name) || !IsSqliteNetEntryPoint(called.DeclaringType))
+                            continue;
                         var rowType = called.GetGenericArguments()[0];
-                        if (!rowType.IsGenericParameter) rowTypes.Add(rowType.FullName!.Replace('+', '/'));
+                        if (!rowType.IsGenericParameter)
+                            rowTypes.Add(rowType.FullName!.Replace('+', '/'));
                     }
                 }
             }
@@ -89,7 +93,8 @@ namespace GamePlatform.Tests.Sqlite
             for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent)
             {
                 var candidate = Path.Combine(directory.FullName, "integration", "unity", "package", "link.xml");
-                if (File.Exists(candidate)) return candidate;
+                if (File.Exists(candidate))
+                    return candidate;
             }
 
             throw new FileNotFoundException("integration/unity/package/link.xml was not found above the test output.");

@@ -5,9 +5,18 @@ using System.Threading.Tasks;
 
 namespace GamePlatform.Navigation
 {
-    public enum RouteLoadResult { Available, Unavailable }
-    public enum NavigationOutcome { Applied, Cancelled, Stale, Unavailable }
-    public enum NavigationMode { Push, Replace }
+    public enum RouteLoadResult
+    {
+        Available, Unavailable
+    }
+    public enum NavigationOutcome
+    {
+        Applied, Cancelled, Stale, Unavailable
+    }
+    public enum NavigationMode
+    {
+        Push, Replace
+    }
 
     public interface IRouteLoader
     {
@@ -16,8 +25,14 @@ namespace GamePlatform.Navigation
 
     public readonly struct ModalOwner : IEquatable<ModalOwner>
     {
-        internal ModalOwner(long value) { Value = value; }
-        internal long Value { get; }
+        internal ModalOwner(long value)
+        {
+            Value = value;
+        }
+        internal long Value
+        {
+            get;
+        }
         public bool Equals(ModalOwner other) => Value != 0 && Value == other.Value;
         public override bool Equals(object? obj) => obj is ModalOwner other && Equals(other);
         public override int GetHashCode() => Value.GetHashCode();
@@ -41,19 +56,42 @@ namespace GamePlatform.Navigation
         {
             Root = initialRoute ?? throw new ArgumentNullException(nameof(initialRoute));
             Current = initialRoute;
-            if (maximumHistory < 1 || maximumHistory > 64) throw new ArgumentOutOfRangeException(nameof(maximumHistory));
+            if (maximumHistory < 1 || maximumHistory > 64)
+                throw new ArgumentOutOfRangeException(nameof(maximumHistory));
             this.maximumHistory = maximumHistory;
         }
 
-        public NavigationRoute Root { get; }
-        public NavigationRoute Current { get; private set; }
-        public ModalRoute? Modal { get { lock (gate) return modal; } }
-        public int HistoryCount { get { lock (gate) return history.Count; } }
+        public NavigationRoute Root
+        {
+            get;
+        }
+        public NavigationRoute Current
+        {
+            get; private set;
+        }
+        public ModalRoute? Modal
+        {
+            get
+            {
+                lock (gate)
+                    return modal;
+            }
+        }
+        public int HistoryCount
+        {
+            get
+            {
+                lock (gate)
+                    return history.Count;
+            }
+        }
 
         public async Task<NavigationOutcome> NavigateAsync(NavigationRoute route, NavigationMode mode, IRouteLoader loader, CancellationToken cancellationToken)
         {
-            if (route == null) throw new ArgumentNullException(nameof(route));
-            if (loader == null) throw new ArgumentNullException(nameof(loader));
+            if (route == null)
+                throw new ArgumentNullException(nameof(route));
+            if (loader == null)
+                throw new ArgumentNullException(nameof(loader));
             CancellationTokenSource linked;
             long version;
             lock (gate)
@@ -67,29 +105,41 @@ namespace GamePlatform.Navigation
                 loading = true;
             }
             RouteLoadResult loaded;
-            try { loaded = await loader.LoadAsync(route, linked.Token).ConfigureAwait(false); }
+            try
+            {
+                loaded = await loader.LoadAsync(route, linked.Token).ConfigureAwait(false);
+            }
             catch (OperationCanceledException)
             {
                 lock (gate)
                 {
-                    if (version != transition) return NavigationOutcome.Stale;
+                    if (version != transition)
+                        return NavigationOutcome.Stale;
                     loading = false;
                     return cancellationToken.IsCancellationRequested ? NavigationOutcome.Cancelled : NavigationOutcome.Stale;
                 }
             }
             catch
             {
-                lock (gate) { if (version == transition) loading = false; }
+                lock (gate)
+                {
+                    if (version == transition)
+                        loading = false;
+                }
                 throw;
             }
             lock (gate)
             {
-                if (version == transition) loading = false;
-                if (disposed || version != transition || linked.IsCancellationRequested) return NavigationOutcome.Stale;
-                if (loaded == RouteLoadResult.Unavailable) return NavigationOutcome.Unavailable;
+                if (version == transition)
+                    loading = false;
+                if (disposed || version != transition || linked.IsCancellationRequested)
+                    return NavigationOutcome.Stale;
+                if (loaded == RouteLoadResult.Unavailable)
+                    return NavigationOutcome.Unavailable;
                 if (mode == NavigationMode.Push)
                 {
-                    if (history.Count == maximumHistory) history.RemoveAt(0);
+                    if (history.Count == maximumHistory)
+                        history.RemoveAt(0);
                     history.Add(Current);
                 }
                 Current = route;
@@ -99,7 +149,8 @@ namespace GamePlatform.Navigation
 
         public ModalOwner OpenModal(ModalRoute route)
         {
-            if (route == null) throw new ArgumentNullException(nameof(route));
+            if (route == null)
+                throw new ArgumentNullException(nameof(route));
             lock (gate)
             {
                 EnsureActive();
@@ -113,7 +164,8 @@ namespace GamePlatform.Navigation
         {
             lock (gate)
             {
-                if (modal == null || !modalOwner.Equals(owner)) return false;
+                if (modal == null || !modalOwner.Equals(owner))
+                    return false;
                 modal = null;
                 modalOwner = default;
                 return true;
@@ -122,11 +174,13 @@ namespace GamePlatform.Navigation
 
         public bool DeferModal(ModalRoute route)
         {
-            if (route == null) throw new ArgumentNullException(nameof(route));
+            if (route == null)
+                throw new ArgumentNullException(nameof(route));
             lock (gate)
             {
                 EnsureActive();
-                if (deferredModals.Count == 8) return false;
+                if (deferredModals.Count == 8)
+                    return false;
                 deferredModals.Enqueue(route);
                 return true;
             }
@@ -137,7 +191,11 @@ namespace GamePlatform.Navigation
             lock (gate)
             {
                 EnsureActive();
-                if (modal != null || deferredModals.Count == 0) { owner = default; return false; }
+                if (modal != null || deferredModals.Count == 0)
+                {
+                    owner = default;
+                    return false;
+                }
                 modal = deferredModals.Dequeue();
                 modalOwner = new ModalOwner(++modalSequence);
                 owner = modalOwner;
@@ -150,9 +208,19 @@ namespace GamePlatform.Navigation
             lock (gate)
             {
                 EnsureActive();
-                if (modal != null) { modal = null; modalOwner = default; return true; }
-                if (loading) { CancelPendingLoad(); return true; }
-                if (history.Count == 0) return false;
+                if (modal != null)
+                {
+                    modal = null;
+                    modalOwner = default;
+                    return true;
+                }
+                if (loading)
+                {
+                    CancelPendingLoad();
+                    return true;
+                }
+                if (history.Count == 0)
+                    return false;
                 Current = history[history.Count - 1];
                 history.RemoveAt(history.Count - 1);
                 return true;
@@ -184,7 +252,8 @@ namespace GamePlatform.Navigation
         {
             lock (gate)
             {
-                if (disposed) return;
+                if (disposed)
+                    return;
                 disposed = true;
                 CancelPendingLoad();
                 activeLoad?.Dispose();
@@ -197,7 +266,8 @@ namespace GamePlatform.Navigation
 
         private void EnsureActive()
         {
-            if (disposed) throw new ObjectDisposedException(nameof(NavigationCoordinator));
+            if (disposed)
+                throw new ObjectDisposedException(nameof(NavigationCoordinator));
         }
     }
 }

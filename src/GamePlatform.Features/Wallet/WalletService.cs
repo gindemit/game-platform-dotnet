@@ -33,9 +33,12 @@ namespace GamePlatform.Features.Wallet
             ISerializedStorageExecutor transactions, IAtomicCommandStore commands, IWalletStateCodec codec,
             IWalletRemote remote, int refreshCacheCapacity, TimeSpan refreshCacheLifetime, Func<long> nowMilliseconds)
         {
-            if (!owner.IsValid) throw new ArgumentException("A captured owner is required.", nameof(owner));
-            if (!Matches(storageScope, owner.Owner)) throw new ArgumentException("The wallet storage scope does not match the captured owner.", nameof(storageScope));
-            this.owner = owner; this.storageScope = storageScope;
+            if (!owner.IsValid)
+                throw new ArgumentException("A captured owner is required.", nameof(owner));
+            if (!Matches(storageScope, owner.Owner))
+                throw new ArgumentException("The wallet storage scope does not match the captured owner.", nameof(storageScope));
+            this.owner = owner;
+            this.storageScope = storageScope;
             this.state = state ?? throw new ArgumentNullException(nameof(state));
             this.transactions = transactions ?? throw new ArgumentNullException(nameof(transactions));
             this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
@@ -56,7 +59,8 @@ namespace GamePlatform.Features.Wallet
             var read = await reads.GetOrRefreshAsync(key, async token =>
             {
                 var result = await remote.ReadAsync(exact, token).ConfigureAwait(false);
-                if (result == null || result.Owner != exact.Owner || !SameCurrency(result.Confirmed.Currency, exact.Currency)) throw new WalletOwnerMismatchException();
+                if (result == null || result.Owner != exact.Owner || !SameCurrency(result.Confirmed.Currency, exact.Currency))
+                    throw new WalletOwnerMismatchException();
                 ValidateVisibleCatalog(exact.Owner, exact.Currency, catalog);
                 codec.ValidateExtensions(result.Confirmed.CopyExtensions());
                 return new FeatureSnapshot<WalletRemoteRead>(exact.Owner, result.Confirmed.Revision, FeatureSnapshotState.Available,
@@ -69,7 +73,8 @@ namespace GamePlatform.Features.Wallet
         /// <summary>Only a fresh injected backend authorization may admit a spend intent. The local cached balance is never used as authority.</summary>
         public async Task<FeatureSnapshot<WalletSnapshot>> SubmitSpendIntentAsync(WalletSpendRequest request, CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
-            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
             var exactOwner = EnsureOwner(request.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -78,7 +83,8 @@ namespace GamePlatform.Features.Wallet
                 ValidateSpendCatalog(exactOwner, request.Intent.Currency, catalog);
                 if (current.Pending != null && current.Pending.Status != WalletPendingStatus.Rejected)
                 {
-                    if (Equivalent(current.Pending, request)) return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
+                    if (Equivalent(current.Pending, request))
+                        return await ReadSnapshotAsync(new WalletBalanceRequest(exactOwner, request.Intent.Currency), catalog, SnapshotFreshness.Stale, cancellationToken).ConfigureAwait(false);
                     throw new WalletConflictException("A wallet spend is already pending for this currency and captured scope.");
                 }
                 if (current.Pending != null && current.Pending.Status == WalletPendingStatus.Rejected && Equivalent(current.Pending, request))
@@ -87,7 +93,10 @@ namespace GamePlatform.Features.Wallet
                     throw new WalletOfflineSpendException();
 
                 WalletSpendAuthorization authorization;
-                try { authorization = await remote.AuthorizeSpendAsync(request, cancellationToken).ConfigureAwait(false); }
+                try
+                {
+                    authorization = await remote.AuthorizeSpendAsync(request, cancellationToken).ConfigureAwait(false);
+                }
                 catch (WalletOfflineSpendException) { throw; }
                 if (authorization == null || authorization.Owner != exactOwner || authorization.OperationId != request.OperationId ||
                     !string.Equals(authorization.BusinessSource, request.BusinessSource, StringComparison.Ordinal) || !Equivalent(authorization.Intent, request.Intent))
@@ -113,15 +122,18 @@ namespace GamePlatform.Features.Wallet
         /// <summary>Records a matching retained receipt even after presentation visibility was revoked. This never changes a balance.</summary>
         public async Task<FeatureSnapshot<WalletSnapshot>> MarkAcceptedAwaitingPullAsync(WalletSpendAcceptance acceptance, WalletCurrency currency, CancellationToken cancellationToken)
         {
-            if (acceptance == null) throw new ArgumentNullException(nameof(acceptance));
+            if (acceptance == null)
+                throw new ArgumentNullException(nameof(acceptance));
             var exactOwner = EnsureOwner(acceptance.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, currency, cancellationToken).ConfigureAwait(false);
                 var pending = current.Pending;
-                if (pending == null || pending.OperationId != acceptance.OperationId) throw new WalletConflictException("The receipt does not match a durable wallet spend.");
-                if (pending.Status == WalletPendingStatus.Rejected || acceptance.ResultingRevision <= pending.Intent.ExpectedRevision) throw new WalletConflictException("The receipt cannot advance this wallet spend.");
+                if (pending == null || pending.OperationId != acceptance.OperationId)
+                    throw new WalletConflictException("The receipt does not match a durable wallet spend.");
+                if (pending.Status == WalletPendingStatus.Rejected || acceptance.ResultingRevision <= pending.Intent.ExpectedRevision)
+                    throw new WalletConflictException("The receipt cannot advance this wallet spend.");
                 if (pending.Status == WalletPendingStatus.AcceptedAwaitingPull && pending.AcceptedRevision != acceptance.ResultingRevision)
                     throw new WalletConflictException("The retained receipt conflicts with the accepted wallet revision.");
                 var updated = new PendingWalletSpend(pending.OperationId, pending.StreamId, pending.BusinessSource, pending.Intent,
@@ -135,15 +147,18 @@ namespace GamePlatform.Features.Wallet
         /// <summary>Records a matching retained rejection even after presentation visibility was revoked. This never changes a balance.</summary>
         public async Task<FeatureSnapshot<WalletSnapshot>> MarkRejectedAsync(WalletSpendRejection rejection, WalletCurrency currency, CancellationToken cancellationToken)
         {
-            if (rejection == null) throw new ArgumentNullException(nameof(rejection));
+            if (rejection == null)
+                throw new ArgumentNullException(nameof(rejection));
             var exactOwner = EnsureOwner(rejection.Owner);
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, currency, cancellationToken).ConfigureAwait(false);
                 var pending = current.Pending;
-                if (pending == null || pending.OperationId != rejection.OperationId) throw new WalletConflictException("The rejection does not match a durable wallet spend.");
-                if (pending.Status == WalletPendingStatus.AcceptedAwaitingPull) throw new WalletConflictException("An accepted wallet receipt cannot be replaced by a rejection.");
+                if (pending == null || pending.OperationId != rejection.OperationId)
+                    throw new WalletConflictException("The rejection does not match a durable wallet spend.");
+                if (pending.Status == WalletPendingStatus.AcceptedAwaitingPull)
+                    throw new WalletConflictException("An accepted wallet receipt cannot be replaced by a rejection.");
                 if (pending.Status == WalletPendingStatus.Rejected && !string.Equals(pending.RejectionCode, rejection.Code, StringComparison.Ordinal))
                     throw new WalletConflictException("The retained wallet rejection conflicts with the response.");
                 var updated = new PendingWalletSpend(pending.OperationId, pending.StreamId, pending.BusinessSource, pending.Intent,
@@ -158,17 +173,20 @@ namespace GamePlatform.Features.Wallet
         public async Task ApplyConfirmedAsync(ScopedOwnerContext requestedOwner, WalletConfirmedBalance confirmed, CatalogSnapshot catalog, CancellationToken cancellationToken)
         {
             var exactOwner = EnsureOwner(requestedOwner);
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
             ValidateVisibleCatalog(exactOwner, confirmed.Currency, catalog);
             codec.ValidateExtensions(confirmed.CopyExtensions());
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 var current = await ReadDurableAsync(exactOwner, confirmed.Currency, cancellationToken).ConfigureAwait(false);
-                if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision) return;
+                if (current.Confirmed != null && confirmed.Revision < current.Confirmed.Revision)
+                    return;
                 if (current.Confirmed != null && confirmed.Revision == current.Confirmed.Revision)
                 {
-                    if (!Equivalent(current.Confirmed, confirmed)) throw new WalletConflictException("The server supplied different wallet contents for the same revision.");
+                    if (!Equivalent(current.Confirmed, confirmed))
+                        throw new WalletConflictException("The server supplied different wallet contents for the same revision.");
                     return;
                 }
                 await transactions.ExecuteAsync(storageScope, transaction =>
@@ -180,7 +198,14 @@ namespace GamePlatform.Features.Wallet
             finally { mutation.Release(); }
         }
 
-        public void Dispose() { if (disposed) return; disposed = true; reads.Dispose(); mutation.Dispose(); }
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+            disposed = true;
+            reads.Dispose();
+            mutation.Dispose();
+        }
 
         /// <summary>
         /// Stages one strictly advancing confirmed balance in a caller-owned private projection/cursor transaction.
@@ -190,11 +215,15 @@ namespace GamePlatform.Features.Wallet
         public void ApplyConfirmed(ILocalStorageTransaction transaction, long durablePriorRevision, ScopedOwnerContext requestedOwner,
             WalletConfirmedBalance confirmed, CatalogSnapshot catalog)
         {
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
             var exactOwner = EnsureOwner(requestedOwner);
-            if (!transaction.Scope.Equals(storageScope)) throw new WalletOwnerMismatchException();
-            if (durablePriorRevision < 0) throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
-            if (confirmed == null) throw new ArgumentNullException(nameof(confirmed));
+            if (!transaction.Scope.Equals(storageScope))
+                throw new WalletOwnerMismatchException();
+            if (durablePriorRevision < 0)
+                throw new ArgumentOutOfRangeException(nameof(durablePriorRevision));
+            if (confirmed == null)
+                throw new ArgumentNullException(nameof(confirmed));
             ValidateVisibleCatalog(exactOwner, confirmed.Currency, catalog);
             codec.ValidateExtensions(confirmed.CopyExtensions());
             if (confirmed.Revision <= durablePriorRevision)
@@ -208,7 +237,8 @@ namespace GamePlatform.Features.Wallet
         /// <summary>A null catalog is reserved for owner/operation-fenced receipt reconciliation output; public display reads always supply one.</summary>
         private async Task<FeatureSnapshot<WalletSnapshot>> ReadSnapshotAsync(WalletBalanceRequest exact, CatalogSnapshot? catalog, SnapshotFreshness freshness, CancellationToken cancellationToken)
         {
-            if (catalog != null) ValidateVisibleCatalog(exact.Owner, exact.Currency, catalog);
+            if (catalog != null)
+                ValidateVisibleCatalog(exact.Owner, exact.Currency, catalog);
             var durable = await ReadDurableAsync(exact.Owner, exact.Currency, cancellationToken).ConfigureAwait(false);
             if (durable.Confirmed == null && durable.Pending == null)
                 return new FeatureSnapshot<WalletSnapshot>(exact.Owner, 0, FeatureSnapshotState.Missing, SnapshotFreshness.Missing, null, null, null);
@@ -229,7 +259,8 @@ namespace GamePlatform.Features.Wallet
         {
             var confirmed = await state.ReadAsync(exactOwner, FeatureNamespace, ConfirmedKey(currency), cancellationToken).ConfigureAwait(false);
             var pending = await state.ReadAsync(exactOwner, FeatureNamespace, PendingKey(currency), cancellationToken).ConfigureAwait(false);
-            WalletConfirmedBalance? decodedConfirmed = null; PendingWalletSpend? decodedPending = null;
+            WalletConfirmedBalance? decodedConfirmed = null;
+            PendingWalletSpend? decodedPending = null;
             if (confirmed != null)
             {
                 codec.ValidateExtensions(confirmed.CopyExtensions());
@@ -254,26 +285,42 @@ namespace GamePlatform.Features.Wallet
         private Task WritePendingAsync(ScopedOwnerContext exactOwner, PendingWalletSpend pending, CancellationToken cancellationToken) =>
             transactions.ExecuteAsync(storageScope, transaction =>
             {
-                var encoded = codec.EncodePending(pending); ValidatePayload(encoded, "pending wallet spend");
+                var encoded = codec.EncodePending(pending);
+                ValidatePayload(encoded, "pending wallet spend");
                 state.Upsert(transaction, new DurableFeatureMutation(exactOwner, FeatureNamespace, PendingKey(pending.Intent.Currency),
                     pending.LocalRevision, Now(), encoded, Array.Empty<byte>()));
                 return true;
             }, cancellationToken);
 
         private WalletBalanceRequest EnsureRequest(WalletBalanceRequest request)
-        { if (request == null) throw new ArgumentNullException(nameof(request)); EnsureOwner(request.Owner); return request; }
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+            EnsureOwner(request.Owner);
+            return request;
+        }
         private ScopedOwnerContext EnsureOwner(ScopedOwnerContext requestedOwner)
-        { if (disposed) throw new ObjectDisposedException(nameof(WalletService)); if (requestedOwner != owner) throw new WalletOwnerMismatchException(); return requestedOwner; }
+        {
+            if (disposed)
+                throw new ObjectDisposedException(nameof(WalletService));
+            if (requestedOwner != owner)
+                throw new WalletOwnerMismatchException();
+            return requestedOwner;
+        }
         private long Now()
         {
             var value = nowMilliseconds();
-            if (value < 0 || value > 253_402_300_799_999L) throw new ArgumentOutOfRangeException("nowMilliseconds");
+            if (value < 0 || value > 253_402_300_799_999L)
+                throw new ArgumentOutOfRangeException("nowMilliseconds");
             return value;
         }
         private static string ConfirmedKey(WalletCurrency currency) => "balance/" + currency.DefinitionId.Value;
         private static string PendingKey(WalletCurrency currency) => "pending/" + currency.DefinitionId.Value;
         private static void ValidatePayload(byte[]? payload, string label)
-        { if (payload == null || payload.Length == 0 || payload.Length > 262_144) throw new InvalidOperationException("The " + label + " codec payload is invalid."); }
+        {
+            if (payload == null || payload.Length == 0 || payload.Length > 262_144)
+                throw new InvalidOperationException("The " + label + " codec payload is invalid.");
+        }
         private static bool Matches(StorageScope scope, OwnerScope owner) => string.Equals(scope.BackendNamespace, owner.Backend.Value, StringComparison.Ordinal) &&
             string.Equals(scope.AppId.Value, owner.AppId.ToString(), StringComparison.Ordinal) && string.Equals(scope.AccountId.Value, owner.UserId.ToString(), StringComparison.Ordinal);
         private static bool SameCurrency(WalletCurrency left, WalletCurrency right) => left.DefinitionId.Equals(right.DefinitionId) && left.SemanticKey.Equals(right.SemanticKey);
@@ -282,7 +329,15 @@ namespace GamePlatform.Features.Wallet
             string.Equals(pending.BusinessSource, request.BusinessSource, StringComparison.Ordinal) && Equivalent(pending.Intent, request.Intent);
         private static bool Equivalent(WalletConfirmedBalance left, WalletConfirmedBalance right) => SameCurrency(left.Currency, right.Currency) && left.Balance == right.Balance &&
             left.Revision == right.Revision && left.ConfirmedAtMilliseconds == right.ConfirmedAtMilliseconds && Equal(left.CopyExtensions(), right.CopyExtensions());
-        private static bool Equal(byte[] left, byte[] right) { if (left.Length != right.Length) return false; var difference = 0; for (var i = 0; i < left.Length; i++) difference |= left[i] ^ right[i]; return difference == 0; }
+        private static bool Equal(byte[] left, byte[] right)
+        {
+            if (left.Length != right.Length)
+                return false;
+            var difference = 0;
+            for (var i = 0; i < left.Length; i++)
+                difference |= left[i] ^ right[i];
+            return difference == 0;
+        }
         private static void ValidateVisibleCatalog(ScopedOwnerContext owner, WalletCurrency currency, CatalogSnapshot catalog)
         {
             var entry = FindCatalogEntry(owner, currency, catalog);
@@ -298,11 +353,16 @@ namespace GamePlatform.Features.Wallet
         }
         private static CatalogEntry FindCatalogEntry(ScopedOwnerContext owner, WalletCurrency currency, CatalogSnapshot catalog)
         {
-            if (catalog == null || catalog.Request.Owner != owner) throw new WalletCatalogException("The catalog does not belong to the captured wallet scope.");
+            if (catalog == null || catalog.Request.Owner != owner)
+                throw new WalletCatalogException("The catalog does not belong to the captured wallet scope.");
             CatalogEntry? found = null;
             foreach (var entry in catalog.Entries)
             {
-                if (entry.Definition.DefinitionId.Equals(currency.DefinitionId)) { found = entry; break; }
+                if (entry.Definition.DefinitionId.Equals(currency.DefinitionId))
+                {
+                    found = entry;
+                    break;
+                }
             }
             if (found == null || found.Definition.Kind != CatalogResourceKind.Currency || !found.Definition.SemanticKey.Equals(currency.SemanticKey))
                 throw new WalletCatalogException("The currency is absent or incompatible in the exact app catalog.");

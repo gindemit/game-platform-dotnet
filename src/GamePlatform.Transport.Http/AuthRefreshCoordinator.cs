@@ -23,8 +23,10 @@ namespace GamePlatform.Transport.Http
             long rejectedGeneration,
             CancellationToken cancellationToken)
         {
-            if (auth == null) throw new ArgumentNullException(nameof(auth));
-            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256) throw new ArgumentException("The auth session key is invalid.", nameof(auth));
+            if (auth == null)
+                throw new ArgumentNullException(nameof(auth));
+            if (string.IsNullOrWhiteSpace(auth.SessionKey) || auth.SessionKey.Length > 256)
+                throw new ArgumentException("The auth session key is invalid.", nameof(auth));
             ThrowIfDisposed();
             var key = new RefreshKey(auth.SessionKey, accountId);
             var gate = gates.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
@@ -42,26 +44,42 @@ namespace GamePlatform.Transport.Http
 
         public void Dispose()
         {
-            if (Interlocked.Exchange(ref disposed, 1) != 0) return;
-            foreach (var gate in gates.Values) gate.Dispose();
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+            foreach (var gate in gates.Values)
+                gate.Dispose();
             gates.Clear();
         }
 
         private void ThrowIfDisposed()
         {
-            if (Volatile.Read(ref disposed) != 0) throw new ObjectDisposedException(nameof(AuthRefreshCoordinator));
+            if (Volatile.Read(ref disposed) != 0)
+                throw new ObjectDisposedException(nameof(AuthRefreshCoordinator));
         }
 
         private readonly struct RefreshKey : IEquatable<RefreshKey>
         {
-            public RefreshKey(string sessionKey, PlatformUserId? accountId) { SessionKey = sessionKey; AccountId = accountId; }
-            private string SessionKey { get; }
-            private PlatformUserId? AccountId { get; }
+            public RefreshKey(string sessionKey, PlatformUserId? accountId)
+            {
+                SessionKey = sessionKey;
+                AccountId = accountId;
+            }
+            private string SessionKey
+            {
+                get;
+            }
+            private PlatformUserId? AccountId
+            {
+                get;
+            }
             public bool Equals(RefreshKey other) => string.Equals(SessionKey, other.SessionKey, StringComparison.Ordinal) && Nullable.Equals(AccountId, other.AccountId);
             public override bool Equals(object? obj) => obj is RefreshKey other && Equals(other);
             public override int GetHashCode()
             {
-                unchecked { return (StringComparer.Ordinal.GetHashCode(SessionKey) * 397) ^ (AccountId?.GetHashCode() ?? 0); }
+                unchecked
+                {
+                    return (StringComparer.Ordinal.GetHashCode(SessionKey) * 397) ^ (AccountId?.GetHashCode() ?? 0);
+                }
             }
         }
     }

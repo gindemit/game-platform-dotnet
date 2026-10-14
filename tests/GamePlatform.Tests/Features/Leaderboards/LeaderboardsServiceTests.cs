@@ -21,7 +21,10 @@ namespace GamePlatform.Tests.Features.Leaderboards
         internal static LeaderboardsCountryCommand Command(string country = "DE", string board = "players-monthly", Guid? operation = null) =>
             new LeaderboardsCountryCommand(new OperationId(operation ?? TeamsServiceTests.Operation), board, "player", country);
         internal static LeaderboardsCountryResponse CountryResponse(LeaderboardsCountryCommand? command = null)
-        { var x = command ?? Command(); return new LeaderboardsCountryResponse(x.OperationId.Value, x.BoardId, x.ParticipantKind, x.TeamId ?? TeamsServiceTests.Player, x.CountryCode, 1_793_491_200_000); }
+        {
+            var x = command ?? Command();
+            return new LeaderboardsCountryResponse(x.OperationId.Value, x.BoardId, x.ParticipantKind, x.TeamId ?? TeamsServiceTests.Player, x.CountryCode, 1_793_491_200_000);
+        }
         private static LeaderboardsService Service(TeamsServiceTests.Database db, ILeaderboardsRemote? remote, long generation = 1) =>
             new LeaderboardsService(TeamsServiceTests.Owner(generation), remote, new LeaderboardsStateCodec(), db.Store, db.Current, () => 1_791_712_800_000);
         [Fact]
@@ -53,9 +56,12 @@ namespace GamePlatform.Tests.Features.Leaderboards
                 remote.Read = () => Task.FromResult(RemoteResult<LeaderboardsResponse>.Success(Response(scope: "country", country: "DE")));
                 await service.QueryAsync(TeamsServiceTests.Owner(), new LeaderboardsQuery("players-monthly", "country", "DE"), CancellationToken.None);
             }
-            await db.Reopen(); using var offline = Service(db, null, 2);
+            await db.Reopen();
+            using var offline = Service(db, null, 2);
             var cached = await offline.ReadCachedAsync(TeamsServiceTests.Owner(2), new LeaderboardsQuery("players-monthly"), CancellationToken.None);
-            Assert.Equal(SnapshotFreshness.Stale, cached.Freshness); Assert.Equal(0, cached.Revision); Assert.Null(cached.Value!.Self);
+            Assert.Equal(SnapshotFreshness.Stale, cached.Freshness);
+            Assert.Equal(0, cached.Revision);
+            Assert.Null(cached.Value!.Self);
             Assert.Equal(9_007_199_254_740_993, cached.Value.Entries[0].Score);
             Assert.Null((await offline.ReadCachedAsync(TeamsServiceTests.Owner(2), new LeaderboardsQuery("players-monthly", "country", "FR"), CancellationToken.None)).Value);
             Assert.Null((await offline.ReadCachedAsync(TeamsServiceTests.Owner(2), new LeaderboardsQuery("players-monthly", cursor: "abcdefghijklmnop"), CancellationToken.None)).Value);
@@ -71,7 +77,9 @@ namespace GamePlatform.Tests.Features.Leaderboards
             var service = Service(db, remote);
             await Assert.ThrowsAsync<LeaderboardsOperationException>(() => service.QueryAsync(TeamsServiceTests.Owner(2), new LeaderboardsQuery("players-monthly"), CancellationToken.None));
             var task = service.QueryAsync(TeamsServiceTests.Owner(), new LeaderboardsQuery("players-monthly"), CancellationToken.None);
-            await started.Task; service.Dispose(); reply.SetResult(RemoteResult<LeaderboardsResponse>.Success(Response()));
+            await started.Task;
+            service.Dispose();
+            reply.SetResult(RemoteResult<LeaderboardsResponse>.Success(Response()));
             await Assert.ThrowsAsync<ObjectDisposedException>(() => task);
             using var next = Service(db, null, 2);
             Assert.Null((await next.ReadCachedAsync(TeamsServiceTests.Owner(2), new LeaderboardsQuery("players-monthly"), CancellationToken.None)).Value);
@@ -79,7 +87,9 @@ namespace GamePlatform.Tests.Features.Leaderboards
         [Fact]
         public async Task ForeignCountryReceiptAndCoarseConflictRetainRetry()
         {
-            await using var db = await TeamsServiceTests.Database.Open(); var remote = new Remote(); using var service = Service(db, remote);
+            await using var db = await TeamsServiceTests.Database.Open();
+            var remote = new Remote();
+            using var service = Service(db, remote);
             remote.CountryResult = RemoteResult<LeaderboardsCountryResponse>.Success(CountryResponse(Command(operation: TeamsServiceTests.Team)));
             await Assert.ThrowsAsync<LeaderboardsOperationException>(() => service.SetCountryAsync(TeamsServiceTests.Owner(), Command(), CancellationToken.None));
             Assert.NotNull(await service.ReadPendingAsync(TeamsServiceTests.Owner(), CancellationToken.None));
@@ -101,7 +111,8 @@ namespace GamePlatform.Tests.Features.Leaderboards
                 remote.CountryResult = RemoteResult<LeaderboardsCountryResponse>.Failed(new RemoteFailure(retryFailure));
                 await Assert.ThrowsAsync<LeaderboardsOperationException>(() => service.SetCountryAsync(TeamsServiceTests.Owner(), Command(), CancellationToken.None));
             }
-            await db.Reopen(); using var reopened = Service(db, remote, 2);
+            await db.Reopen();
+            using var reopened = Service(db, remote, 2);
             var retained = await reopened.ReadPendingAsync(TeamsServiceTests.Owner(2), CancellationToken.None);
             Assert.Equal(new LeaderboardsStateCodec().EncodeCountry(Command()), new LeaderboardsStateCodec().EncodeCountry(retained!));
             remote.CountryResult = RemoteResult<LeaderboardsCountryResponse>.Success(CountryResponse());
@@ -111,7 +122,8 @@ namespace GamePlatform.Tests.Features.Leaderboards
         [Fact]
         public async Task WrongCohortCannotBecomeCurrentOrCached()
         {
-            await using var db = await TeamsServiceTests.Database.Open(); using var service = Service(db, new Remote());
+            await using var db = await TeamsServiceTests.Database.Open();
+            using var service = Service(db, new Remote());
             await Assert.ThrowsAsync<LeaderboardsOperationException>(() => service.QueryAsync(TeamsServiceTests.Owner(), new LeaderboardsQuery("players-monthly", "country", "DE"), CancellationToken.None));
             Assert.Null((await service.ReadCachedAsync(TeamsServiceTests.Owner(), new LeaderboardsQuery("players-monthly", "country", "DE"), CancellationToken.None)).Value);
         }
@@ -128,7 +140,9 @@ namespace GamePlatform.Tests.Features.Leaderboards
         [Fact]
         public async Task AuthorizationDenialClearsStaleAssignmentButKeepsUncertainOwnerReceipt()
         {
-            await using var db = await TeamsServiceTests.Database.Open(); var remote = new Remote(); using var service = Service(db, remote);
+            await using var db = await TeamsServiceTests.Database.Open();
+            var remote = new Remote();
+            using var service = Service(db, remote);
             await service.QueryAsync(TeamsServiceTests.Owner(), new LeaderboardsQuery("players-monthly"), CancellationToken.None);
             remote.CountryResult = RemoteResult<LeaderboardsCountryResponse>.Failed(new RemoteFailure(RemoteFailureKind.OutcomeUncertain));
             await Assert.ThrowsAsync<LeaderboardsOperationException>(() => service.SetCountryAsync(TeamsServiceTests.Owner(), Command(), CancellationToken.None));
@@ -140,7 +154,9 @@ namespace GamePlatform.Tests.Features.Leaderboards
         [Fact]
         public async Task CountryAcknowledgementInvalidatesOnlyThatBoardAndNeverInventsProjectionRevision()
         {
-            await using var db = await TeamsServiceTests.Database.Open(); var remote = new Remote(); using var service = Service(db, remote);
+            await using var db = await TeamsServiceTests.Database.Open();
+            var remote = new Remote();
+            using var service = Service(db, remote);
             await service.QueryAsync(TeamsServiceTests.Owner(), new LeaderboardsQuery("players-monthly"), CancellationToken.None);
             remote.Read = () => Task.FromResult(RemoteResult<LeaderboardsResponse>.Success(Response("teams-monthly")));
             await service.QueryAsync(TeamsServiceTests.Owner(), new LeaderboardsQuery("teams-monthly"), CancellationToken.None);
@@ -156,7 +172,11 @@ namespace GamePlatform.Tests.Features.Leaderboards
             public LeaderboardsOperationException? CountryError;
             public RemoteResult<LeaderboardsCountryResponse> CountryResult = RemoteResult<LeaderboardsCountryResponse>.Success(CountryResponse());
             public Task<RemoteResult<LeaderboardsResponse>> QueryAsync(LeaderboardsQuery query, CancellationToken token) => Read?.Invoke() ?? Task.FromResult(RemoteResult<LeaderboardsResponse>.Success(Response()));
-            public Task<RemoteResult<LeaderboardsCountryResponse>> SetCountryAsync(LeaderboardsCountryCommand command, CancellationToken token) { Commands++; return CountryError == null ? Task.FromResult(CountryResult) : Task.FromException<RemoteResult<LeaderboardsCountryResponse>>(CountryError); }
+            public Task<RemoteResult<LeaderboardsCountryResponse>> SetCountryAsync(LeaderboardsCountryCommand command, CancellationToken token)
+            {
+                Commands++;
+                return CountryError == null ? Task.FromResult(CountryResult) : Task.FromException<RemoteResult<LeaderboardsCountryResponse>>(CountryError);
+            }
         }
     }
 }

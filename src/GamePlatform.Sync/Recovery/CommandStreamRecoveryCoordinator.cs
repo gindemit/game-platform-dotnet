@@ -25,7 +25,10 @@ namespace GamePlatform.Sync.Recovery
     /// </summary>
     public interface ICommandStreamRecoveryHost
     {
-        bool IsCurrentAccount { get; }
+        bool IsCurrentAccount
+        {
+            get;
+        }
         Task<bool> QuiesceAsync(ClientStreamId priorStreamId, CommandStreamRecoveryReason reason, bool resume, CancellationToken cancellationToken);
         /// <summary>
         /// Opens successor storage without copying sequenced commands and performs genuine
@@ -79,22 +82,29 @@ namespace GamePlatform.Sync.Recovery
         private async Task<CommandStreamRecoveryOutcome> RunAsync(CommandStreamRecoveryReason reason, bool resumeOnly, CancellationToken cancellationToken)
         {
             var wireReason = Reason(reason);
-            if (!Current) return CommandStreamRecoveryOutcome.Retired;
+            if (!Current)
+                return CommandStreamRecoveryOutcome.Retired;
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime.Token);
             var ct = linked.Token;
-            try { await single.WaitAsync(ct).ConfigureAwait(false); }
+            try
+            {
+                await single.WaitAsync(ct).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) when (!Current) { return CommandStreamRecoveryOutcome.Retired; }
             try
             {
                 CheckCurrent(ct);
                 var record = await journal.LoadAsync(ct).ConfigureAwait(false);
                 CheckCurrent(ct);
-                if (record != null) RequireOwner(record.Request);
-                if (resumeOnly && record == null) return CommandStreamRecoveryOutcome.DamageNotEstablished;
+                if (record != null)
+                    RequireOwner(record.Request);
+                if (resumeOnly && record == null)
+                    return CommandStreamRecoveryOutcome.DamageNotEstablished;
                 if (!resumeOnly && record?.Phase == CommandStreamRecoveryPhase.BootstrapComplete)
                 {
                     // A new recovery requires a new lifetime bound to the durably adopted directory entry.
-                    if (account.StreamId != record.Request.SuccessorStreamId) return CommandStreamRecoveryOutcome.BootstrapRequired;
+                    if (account.StreamId != record.Request.SuccessorStreamId)
+                        return CommandStreamRecoveryOutcome.BootstrapRequired;
                     record = null;
                 }
                 // A retained completed journal resumes bootstrap; it cannot prove the host's DB is intact.
@@ -125,8 +135,13 @@ namespace GamePlatform.Sync.Recovery
                             command.InstallationId, command.Sequence, command.OperationKind, command.SchemaVersion,
                             command.FingerprintVersion, command.ClientCreatedAt, command.CopyBody(), command.CopyFingerprint()), ct).ConfigureAwait(false);
                         CheckCurrent(ct);
-                        if (!lookup.IsSuccess) return CommandStreamRecoveryOutcome.RemoteFailure;
-                        if (!lookup.Value!.Found) { missingReceipt = true; continue; }
+                        if (!lookup.IsSuccess)
+                            return CommandStreamRecoveryOutcome.RemoteFailure;
+                        if (!lookup.Value!.Found)
+                        {
+                            missingReceipt = true;
+                            continue;
+                        }
                         await commands.RecordReceiptAsync(command,
                             lookup.Value.Outcome!.Status == RemoteCommandStatus.Accepted ? CommandTerminalOutcome.Accepted : CommandTerminalOutcome.Rejected,
                             lookup.Value.Outcome.Result, ct).ConfigureAwait(false);
@@ -139,7 +154,8 @@ namespace GamePlatform.Sync.Recovery
                     {
                         var inspected = await remote.InspectAsync(prior, ct).ConfigureAwait(false);
                         CheckCurrent(ct);
-                        if (!inspected.IsSuccess) return CommandStreamRecoveryOutcome.RemoteFailure;
+                        if (!inspected.IsSuccess)
+                            return CommandStreamRecoveryOutcome.RemoteFailure;
                         var state = inspected.Value!;
                         if (state.StreamId != prior || state.InstallationId != account.InstallationId || state.State != CommandStreamState.Active)
                             return CommandStreamRecoveryOutcome.RemoteFailure;
@@ -203,7 +219,8 @@ namespace GamePlatform.Sync.Recovery
         private bool Current => Volatile.Read(ref stopped) == 0 && host.IsCurrentAccount;
         private void CheckCurrent(CancellationToken ct)
         {
-            if (!Current) throw new OperationCanceledException(lifetime.Token);
+            if (!Current)
+                throw new OperationCanceledException(lifetime.Token);
             ct.ThrowIfCancellationRequested();
         }
         private void RequireOwner(JournalRequest request)

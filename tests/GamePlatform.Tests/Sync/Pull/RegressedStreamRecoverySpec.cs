@@ -299,7 +299,8 @@ namespace GamePlatform.Tests.Sync.Pull
             var db = await OpenAsync(path, account);
             await db.ExecuteAsync(account.Scope, t => ((SqliteTransactionSession)t).Execute("INSERT INTO gp_stream_state VALUES (1,?,?,?,?,?,0,1,0,0)", account.Scope.BackendNamespace, account.Scope.AppId.Value, account.Scope.AccountId.Value, account.Stream.ToString(), account.Installation.ToString("D")), CancellationToken.None);
             Assert.Equal(PrivateSyncResult.BootstrapInstalled, await Coordinator(db, account, server).BootstrapAsync(account.Stream, CancellationToken.None));
-            for (var sequence = 1; sequence <= accepted; sequence++) await AdmitAsync(db, account, sequence);
+            for (var sequence = 1; sequence <= accepted; sequence++)
+                await AdmitAsync(db, account, sequence);
             await DrainAsync(Sender(db, account, server));
             Assert.Equal(PrivateSyncResult.BoundaryComplete, await Coordinator(db, account, server).PullOnceAsync(CancellationToken.None));
             return db;
@@ -318,7 +319,9 @@ namespace GamePlatform.Tests.Sync.Pull
 
         private static async Task DrainAsync(OrderedCommandSender sender)
         {
-            while (await sender.RunOnceAsync(CancellationToken.None) == SendCycleResult.Finalized) { }
+            while (await sender.RunOnceAsync(CancellationToken.None) == SendCycleResult.Finalized)
+            {
+            }
         }
 
         private static Task<IReadOnlyList<OutboxRow>> ReadOutboxAsync(SqliteDatabase db, Account account) => db.ExecuteAsync(account.Scope, t =>
@@ -371,10 +374,24 @@ namespace GamePlatform.Tests.Sync.Pull
 
         private sealed class OutboxRow
         {
-            public OutboxRow(string identity, string state, byte[]? result) { Identity = identity; State = state; Result = result; }
-            public string Identity { get; }
-            public string State { get; }
-            public byte[]? Result { get; }
+            public OutboxRow(string identity, string state, byte[]? result)
+            {
+                Identity = identity;
+                State = state;
+                Result = result;
+            }
+            public string Identity
+            {
+                get;
+            }
+            public string State
+            {
+                get;
+            }
+            public byte[]? Result
+            {
+                get;
+            }
         }
 
         private sealed class Account
@@ -386,10 +403,22 @@ namespace GamePlatform.Tests.Sync.Pull
                 Installation = Guid.Parse(stream.Substring(0, 9) + "1212" + stream.Substring(13));
                 Marker = marker;
             }
-            public StorageScope Scope { get; }
-            public ClientStreamId Stream { get; }
-            public Guid Installation { get; }
-            public byte Marker { get; }
+            public StorageScope Scope
+            {
+                get;
+            }
+            public ClientStreamId Stream
+            {
+                get;
+            }
+            public Guid Installation
+            {
+                get;
+            }
+            public byte Marker
+            {
+                get;
+            }
             public OperationId Operation(long sequence) => new OperationId(Guid.Parse($"{Marker:x2}99f9a0-cccc-7777-8888-{sequence:D12}"));
         }
 
@@ -408,9 +437,15 @@ namespace GamePlatform.Tests.Sync.Pull
 
             public Func<long, bool> Rejects { get; set; } = _ => false;
             public Queue<long> StaleBoundaries { get; } = new Queue<long>();
-            public int FailedLookups { get; set; }
+            public int FailedLookups
+            {
+                get; set;
+            }
             public RemoteFailure LookupFailure { get; set; } = new RemoteFailure(RemoteFailureKind.Unavailable, 503);
-            public bool Retired { get; set; }
+            public bool Retired
+            {
+                get; set;
+            }
             public List<long> Executed { get; } = new List<long>();
             public List<long> LookedUp { get; } = new List<long>();
 
@@ -421,7 +456,8 @@ namespace GamePlatform.Tests.Sync.Pull
                 while (finalized.Count > through)
                 {
                     var lost = finalized[finalized.Count - 1];
-                    if (lost.Accepted) grants[lost.Operation]--;
+                    if (lost.Accepted)
+                        grants[lost.Operation]--;
                     finalized.RemoveAt(finalized.Count - 1);
                 }
                 RotateEpoch();
@@ -460,7 +496,8 @@ namespace GamePlatform.Tests.Sync.Pull
                 var accepted = !Rejects(command.Sequence);
                 finalized.Add((command.OperationId, accepted));
                 Executed.Add(command.Sequence);
-                if (accepted) grants[command.OperationId] = (grants.TryGetValue(command.OperationId, out var count) ? count : 0) + 1;
+                if (accepted)
+                    grants[command.OperationId] = (grants.TryGetValue(command.OperationId, out var count) ? count : 0) + 1;
                 return Task.FromResult(RemoteResult<RemoteCommandOutcome>.Success(Outcome(accepted)));
             }
 
@@ -496,18 +533,39 @@ namespace GamePlatform.Tests.Sync.Pull
         private sealed class NoopProjector : IPrivateSyncProjectionProjector
         {
             public static readonly NoopProjector Instance = new NoopProjector();
-            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group) { }
-            public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot) { }
+            public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group)
+            {
+            }
+            public void ReplaceConfirmedSnapshot(ILocalStorageTransaction transaction, IReadOnlyList<StoredProjectionMutation> snapshot)
+            {
+            }
         }
 
-        private sealed class InjectedFailure : Exception { }
+        private sealed class InjectedFailure : Exception
+        {
+        }
 
         private sealed class TemporaryDatabase : IDisposable
         {
             private readonly string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "game-platform-regressed-stream", Guid.NewGuid().ToString("N"));
-            public TemporaryDatabase() { Directory.CreateDirectory(directory); Path = System.IO.Path.Combine(directory, "platform.sqlite3"); }
-            public string Path { get; }
-            public void Dispose() { try { if (Directory.Exists(directory)) Directory.Delete(directory, true); } catch (IOException) { } }
+            public TemporaryDatabase()
+            {
+                Directory.CreateDirectory(directory);
+                Path = System.IO.Path.Combine(directory, "platform.sqlite3");
+            }
+            public string Path
+            {
+                get;
+            }
+            public void Dispose()
+            {
+                try
+                {
+                    if (Directory.Exists(directory))
+                        Directory.Delete(directory, true);
+                }
+                catch (IOException) { }
+            }
         }
     }
 }

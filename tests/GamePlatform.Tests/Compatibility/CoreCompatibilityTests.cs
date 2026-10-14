@@ -49,7 +49,9 @@ public sealed class CoreCompatibilityTests
     {
         Assert.Equal(number, (int)failure);
         var result = PlatformResult<string>.Error(failure, null!);
-        Assert.False(result.Succeeded); Assert.Null(result.Value); Assert.Equal(string.Empty, result.Diagnostic);
+        Assert.False(result.Succeeded);
+        Assert.Null(result.Value);
+        Assert.Equal(string.Empty, result.Diagnostic);
     }
 
     [Fact]
@@ -115,13 +117,18 @@ public sealed class CoreCompatibilityTests
     {
         var clock = new Clock { Value = 0x010203040506 };
         var generator = new UuidV7Generator(clock, new Entropy());
-        var first = new byte[16]; UuidIdentity.WriteRfcBytes(generator.NewId(), first);
+        var first = new byte[16];
+        UuidIdentity.WriteRfcBytes(generator.NewId(), first);
         Assert.Equal(Convert.FromHexString("010203040506"), first[..6]);
-        Assert.Equal(7, first[6] >> 4); Assert.Equal(0x80, first[8] & 0xc0);
+        Assert.Equal(7, first[6] >> 4);
+        Assert.Equal(0x80, first[8] & 0xc0);
         clock.Value -= 1000;
-        var second = new byte[16]; UuidIdentity.WriteRfcBytes(generator.NewId(), second);
-        Assert.Equal(first[..6], second[..6]); Assert.NotEqual(first, second);
-        clock.Value = -1; Assert.Throws<ArgumentOutOfRangeException>(() => generator.NewId());
+        var second = new byte[16];
+        UuidIdentity.WriteRfcBytes(generator.NewId(), second);
+        Assert.Equal(first[..6], second[..6]);
+        Assert.NotEqual(first, second);
+        clock.Value = -1;
+        Assert.Throws<ArgumentOutOfRangeException>(() => generator.NewId());
         clock.Value = PlatformNumbers.MaximumUnixMilliseconds + 1;
         Assert.Throws<ArgumentOutOfRangeException>(() => generator.NewId());
     }
@@ -132,7 +139,8 @@ public sealed class CoreCompatibilityTests
         var owner = new OwnerScope(new BackendNamespace("backend-a"), new AppId(Issued), new PlatformUserId(Issued));
         var view = new ScopedOwnerContext(owner, new SemanticId("view/1"), 0);
         var replacement = new ScopedOwnerContext(owner, new SemanticId("view/2"), long.MaxValue);
-        Assert.Equal(view.Owner, replacement.Owner); Assert.NotEqual(view, replacement);
+        Assert.Equal(view.Owner, replacement.Owner);
+        Assert.NotEqual(view, replacement);
         Assert.NotEqual(owner, new OwnerScope(new BackendNamespace("backend-b"), owner.AppId, owner.UserId));
         Assert.Throws<ArgumentException>(() => new OwnerScope(default, owner.AppId, owner.UserId));
         Assert.Throws<ArgumentException>(() => new OwnerScope(owner.Backend, default, owner.UserId));
@@ -162,13 +170,16 @@ public sealed class CoreCompatibilityTests
         var value = Outcome(metrics);
         metrics["moves"] = 0;
         Assert.Equal(9007199254740993L, value.Metrics["moves"]);
-        Assert.Equal(long.MinValue, value.Score); Assert.Equal(long.MaxValue, value.DurationTicks);
+        Assert.Equal(long.MinValue, value.Score);
+        Assert.Equal(long.MaxValue, value.DurationTicks);
         Assert.Equal(string.Empty, value.ValidationReference);
         Assert.Throws<NotSupportedException>(() => ((IDictionary<string, long>)value.Metrics).Add("new", 1));
         var many = new Dictionary<string, long>();
-        for (int i = 0; i < 1000; i++) many.Add("key" + i, i);
+        for (int i = 0; i < 1000; i++)
+            many.Add("key" + i, i);
         Assert.Equal(1000, Outcome(many).Metrics.Count);
-        many.Add("too-many", 0); Assert.Throws<ArgumentOutOfRangeException>(() => Outcome(many));
+        many.Add("too-many", 0);
+        Assert.Throws<ArgumentOutOfRangeException>(() => Outcome(many));
         Assert.Throws<ArgumentException>(() => Outcome(new Dictionary<string, long> { [" "] = 0 }));
         Assert.Empty(Outcome(null).Metrics);
     }
@@ -204,10 +215,16 @@ public sealed class CoreCompatibilityTests
         new(new PlatformId("session"), new PlatformId("pocket-bloom"), new PlatformId("fixture/0"), new PlatformId("normal"),
             true, long.MinValue, long.MaxValue, 1000000, metrics, null);
 
-    private sealed class Clock : IUnixMillisecondClock { public long Value; public long GetUnixMilliseconds() => Value; }
+    private sealed class Clock : IUnixMillisecondClock
+    {
+        public long Value; public long GetUnixMilliseconds() => Value;
+    }
     private sealed class Entropy : IUuidRandomSource
     {
         private byte next;
-        public void Fill(Span<byte> destination) { destination.Fill(next++); }
+        public void Fill(Span<byte> destination)
+        {
+            destination.Fill(next++);
+        }
     }
 }

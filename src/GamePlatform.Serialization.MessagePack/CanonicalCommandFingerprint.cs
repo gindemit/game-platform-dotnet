@@ -30,10 +30,13 @@ namespace GamePlatform.Serialization.MessagePack
         {
             if (!owner.IsValid || !operationId.IsValid || !streamId.IsValid || !UuidIdentity.IsValid(installationId))
                 throw new ArgumentException("A complete command owner and identity are required.");
-            if (sequence <= 0) throw new ArgumentOutOfRangeException(nameof(sequence));
-            if (schemaVersion != 1 || fingerprintVersion != 1) throw new NotSupportedException("The command fingerprint version is unsupported.");
+            if (sequence <= 0)
+                throw new ArgumentOutOfRangeException(nameof(sequence));
+            if (schemaVersion != 1 || fingerprintVersion != 1)
+                throw new NotSupportedException("The command fingerprint version is unsupported.");
             PlatformNumbers.UnixMilliseconds(clientCreatedAt);
-            if (destination.Length != 32) throw new ArgumentException("A SHA-256 destination is required.", nameof(destination));
+            if (destination.Length != 32)
+                throw new ArgumentException("A SHA-256 destination is required.", nameof(destination));
 
             var payload = codec.Decode(PayloadSchema(operationKind), semanticBody.ToArray());
             var command = QualificationValue.Object(new[]
@@ -63,10 +66,14 @@ namespace GamePlatform.Serialization.MessagePack
 
         private string PayloadSchema(string operationKind)
         {
-            if (storeQuest && string.Equals(operationKind, "store.offer.purchase", StringComparison.Ordinal)) return "a06/store-quest.schema.json#/$defs/purchaseCommand";
-            if (storeQuest && string.Equals(operationKind, "quest.claim", StringComparison.Ordinal)) return "a06/store-quest.schema.json#/$defs/claimCommand";
-            if (string.Equals(operationKind, "profile.patch", StringComparison.Ordinal)) return "profile.schema.json#/$defs/patchCommand";
-            if (string.Equals(operationKind, "gameplay.session.completed", StringComparison.Ordinal)) return "gameplay.schema.json#/$defs/completionCommand";
+            if (storeQuest && string.Equals(operationKind, "store.offer.purchase", StringComparison.Ordinal))
+                return "a06/store-quest.schema.json#/$defs/purchaseCommand";
+            if (storeQuest && string.Equals(operationKind, "quest.claim", StringComparison.Ordinal))
+                return "a06/store-quest.schema.json#/$defs/claimCommand";
+            if (string.Equals(operationKind, "profile.patch", StringComparison.Ordinal))
+                return "profile.schema.json#/$defs/patchCommand";
+            if (string.Equals(operationKind, "gameplay.session.completed", StringComparison.Ordinal))
+                return "gameplay.schema.json#/$defs/completionCommand";
             throw new NotSupportedException("The command kind has no frozen fingerprint mapping.");
         }
 
