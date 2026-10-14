@@ -1,9 +1,6 @@
 using System;
-using System.IO;
 using System.Text;
 using System.Linq;
-using GamePlatform.Configuration;
-using GamePlatform.Configuration.Client;
 using Xunit;
 
 namespace GamePlatform.Configuration.Client.Tests

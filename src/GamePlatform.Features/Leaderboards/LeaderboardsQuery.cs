@@ -1,5 +1,4 @@
 using System;
-using GamePlatform.Core;
 namespace GamePlatform.Features.Leaderboards
 {
     public sealed class LeaderboardsQuery

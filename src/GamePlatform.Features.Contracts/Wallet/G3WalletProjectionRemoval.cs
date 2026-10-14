@@ -1,6 +1,3 @@
-using System;
-using GamePlatform.Core;
-
 namespace GamePlatform.Features.Contracts.Wallet
 {
 

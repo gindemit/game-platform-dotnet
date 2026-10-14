@@ -1,5 +1,3 @@
-using System;
-
 namespace GamePlatform.Core
 {
     public enum PlatformFailure

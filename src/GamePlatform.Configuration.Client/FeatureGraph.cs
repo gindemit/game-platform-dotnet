@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using GamePlatform.Configuration;
 
 namespace GamePlatform.Configuration.Client
 {

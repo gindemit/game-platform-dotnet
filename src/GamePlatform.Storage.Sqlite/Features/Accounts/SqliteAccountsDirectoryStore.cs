@@ -1,12 +1,9 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Core;
 using GamePlatform.Storage.Abstractions;
 using GamePlatform.Storage.Abstractions.Accounts;
-using GamePlatform.Storage.Sqlite.Executor;
-using GamePlatform.Storage.Sqlite.Recovery;
 using SQLite;
 
 namespace GamePlatform.Storage.Sqlite.Features.Accounts

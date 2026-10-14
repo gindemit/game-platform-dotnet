@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GamePlatform.Configuration;
 
 namespace GamePlatform.Configuration.Client
 {

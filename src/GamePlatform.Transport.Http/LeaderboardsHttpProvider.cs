@@ -9,7 +9,6 @@ using GamePlatform.Features.Leaderboards;
 using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Transport.Abstractions;
 using GamePlatform.Wire.Contracts;
-using W = GamePlatform.Wire.Contracts.Leaderboards;
 
 namespace GamePlatform.Transport.Http
 {

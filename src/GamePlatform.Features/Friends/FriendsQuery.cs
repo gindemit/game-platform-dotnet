@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using GamePlatform.Core;
 namespace GamePlatform.Features.Friends
 {
     public sealed class FriendsQuery

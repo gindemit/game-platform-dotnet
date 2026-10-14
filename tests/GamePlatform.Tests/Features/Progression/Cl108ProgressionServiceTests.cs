@@ -11,7 +11,6 @@ using GamePlatform.Features.Contracts;
 using GamePlatform.Features.Contracts.Snapshots;
 using GamePlatform.Features.Progression;
 using GamePlatform.Storage.Abstractions;
-using GamePlatform.Storage.Abstractions.FeatureState;
 using GamePlatform.Storage.Abstractions.Outbox;
 using GamePlatform.Storage.Sqlite.Cache;
 using GamePlatform.Storage.Sqlite.Executor;

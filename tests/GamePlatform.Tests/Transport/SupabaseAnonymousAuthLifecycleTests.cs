@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
 using GamePlatform.Features.Accounts;
 using GamePlatform.Transport.Abstractions;

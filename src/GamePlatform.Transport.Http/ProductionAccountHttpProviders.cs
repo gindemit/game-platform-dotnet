@@ -2,7 +2,6 @@ using System;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
 using GamePlatform.Serialization.MessagePack;
-using GamePlatform.Storage.Abstractions.Outbox;
 using GamePlatform.Transport.Abstractions;
 
 namespace GamePlatform.Transport.Http

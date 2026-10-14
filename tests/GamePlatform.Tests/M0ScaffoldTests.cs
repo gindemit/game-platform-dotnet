@@ -9,7 +9,6 @@ using GamePlatform.Serialization.Json;
 using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Storage.Sqlite;
 using GamePlatform.Transport.Http;
-using Xunit;
 
 namespace GamePlatform.Tests
 {

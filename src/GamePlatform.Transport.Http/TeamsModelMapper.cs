@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using D = GamePlatform.Features.Teams;
 using W = GamePlatform.Wire.Contracts.Teams;

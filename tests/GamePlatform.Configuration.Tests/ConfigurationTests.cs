@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using GamePlatform.Configuration;
 using Xunit;
 
 namespace GamePlatform.Configuration.Tests

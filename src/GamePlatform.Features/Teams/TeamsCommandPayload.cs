@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using GamePlatform.Core;
 namespace GamePlatform.Features.Teams
 {
     public sealed class TeamsCommandPayload

@@ -8,7 +8,6 @@ using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Transport.Abstractions;
 using GamePlatform.Transport.Http;
 using GamePlatform.Wire.Contracts;
-using Xunit;
 
 namespace GamePlatform.Tests.Transport
 {

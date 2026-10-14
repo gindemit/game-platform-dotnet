@@ -6,8 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 using System.Reflection;
-using GamePlatform.Configuration;
-using GamePlatform.Configuration.Client;
 using Xunit;
 
 namespace GamePlatform.Configuration.Client.Tests

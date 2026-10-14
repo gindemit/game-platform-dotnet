@@ -9,7 +9,6 @@ using GamePlatform.Storage.Abstractions;
 using GamePlatform.Storage.Sqlite.Cache;
 using GamePlatform.Storage.Sqlite.Executor;
 using GamePlatform.Storage.Sqlite.Migrations;
-using Xunit;
 
 namespace GamePlatform.Tests.Features.RewardFulfillment
 {

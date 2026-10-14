@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GamePlatform.Configuration;
-using GamePlatform.Configuration.Client;
 using Xunit;
 
 namespace GamePlatform.Configuration.Client.Tests
