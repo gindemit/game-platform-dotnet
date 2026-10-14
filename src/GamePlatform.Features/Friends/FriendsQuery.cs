@@ -24,4 +24,3 @@ namespace GamePlatform.Features.Friends
         public int PageSize { get; }
     }
 }
-

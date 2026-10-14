@@ -24,4 +24,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         public bool? AllowRequests { get; }
     }
 }
-

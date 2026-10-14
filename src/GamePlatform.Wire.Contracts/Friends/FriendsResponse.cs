@@ -108,4 +108,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         public string? ResultCode { get; }
     }
 }
-

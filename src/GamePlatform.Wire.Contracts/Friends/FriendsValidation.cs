@@ -63,4 +63,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         }
     }
 }
-

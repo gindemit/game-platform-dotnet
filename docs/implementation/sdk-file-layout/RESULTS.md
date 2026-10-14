@@ -53,6 +53,11 @@ Checks ran in coordinator-owned disposable source copies outside the repositorie
   missing or added declarations. Comparison includes documentation, attributes and
   declaration bodies. Each destination retains its original imports and namespace
   framing. Selected inputs contain no preprocessor directives requiring adaptation.
+- Final Git whitespace review normalized file endings in 22 new files (19 extra
+  blank endings and three missing final newlines). Only terminal newline bytes
+  changed; Roslyn comparison, formatting verification and the cumulative staged
+  whitespace check passed afterward. The 995-test result predates this terminal
+  whitespace cleanup; no declaration tokens changed.
 - Scope/byte audit: all changed baseline source paths belong to the two approved
   leases; excluded source, generated/vendor/configuration/delivery bytes and the
   unrelated Accounts edit are unchanged.

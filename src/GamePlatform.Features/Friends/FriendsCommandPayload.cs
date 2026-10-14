@@ -24,4 +24,3 @@ namespace GamePlatform.Features.Friends
         public bool? AllowRequests { get; }
     }
 }
-

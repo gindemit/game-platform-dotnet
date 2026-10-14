@@ -22,4 +22,3 @@ namespace GamePlatform.Features.Friends
         public string? AvatarKey { get; }
     }
 }
-

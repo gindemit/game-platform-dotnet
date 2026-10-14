@@ -33,4 +33,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         public PublicPlayer Peer { get; }
     }
 }
-

@@ -108,4 +108,3 @@ namespace GamePlatform.Features.Friends
         public string? ResultCode { get; }
     }
 }
-

@@ -76,3 +76,21 @@ agents were performed.
 Approval is limited to this reviewed maintenance scope. It does not establish
 Unity import, IL2CPP, browser/device, retained-database or deployed runtime
 acceptance, and does not activate any feature or change existing product gates.
+
+
+## Supplemental final-newline review
+
+Approved the 22-file terminal-newline cleanup after layout commit `72fa93a`.
+Independently compared every changed file with that commit: bytes before terminal
+CR/LF characters are identical, each current file has one final newline, and the
+staged source scope is exactly the EOF cleanup inventory. Staged bytes agree with
+the working source after checkout line-ending normalization. No declaration,
+import, namespace or behavior changed. The preserved Accounts SHA256 is unchanged
+and Accounts remains outside the staged source scope.
+
+The cumulative staged `git diff --cached --check` against the SDK base now passes.
+The repeated Roslyn report retains 618 before/after types, 298 moves and zero
+declaration issues; the coordinator records a repeated passing formatting check.
+The 995 passing tests precede this terminal-byte-only cleanup, as RESULTS now
+states explicitly. No repeat builds/tests were needed or run by this reviewer.
+The original approval and runtime limitations continue to apply.

@@ -94,5 +94,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         public int? CohortSize { get; }
     }
 }
-
-

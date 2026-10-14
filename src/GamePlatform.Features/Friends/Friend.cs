@@ -19,4 +19,3 @@ namespace GamePlatform.Features.Friends
         public long SinceMilliseconds { get; }
     }
 }
-

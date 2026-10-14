@@ -19,4 +19,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         public long BlockedAtMilliseconds { get; }
     }
 }
-

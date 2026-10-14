@@ -33,4 +33,3 @@ namespace GamePlatform.Features.Friends
         public PublicPlayer Peer { get; }
     }
 }
-

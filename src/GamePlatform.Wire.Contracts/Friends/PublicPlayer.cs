@@ -22,4 +22,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         public string? AvatarKey { get; }
     }
 }
-

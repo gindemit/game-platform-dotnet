@@ -36,5 +36,3 @@ namespace GamePlatform.Wire.Contracts.Friends
         public string? CountryCode { get; }
     }
 }
-
-
