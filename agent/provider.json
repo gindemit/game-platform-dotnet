@@ -74,7 +74,7 @@
       "path": "docs/IMPLEMENTATION_STATUS.md",
       "heading": "# SDK current status",
       "title": "SDK current status",
-      "summary": "Current dev.144 source and consumer identity, scoped runtime evidence and historical acceptance limits.",
+      "summary": "Optional configuration lifecycle local source/package evidence, dev.150 consumer identity and historical acceptance limits.",
       "kind": "status",
       "authority": "current_evidence",
       "topics": [
@@ -326,7 +326,20 @@
       "path": "docs/implementation/remote-config/IMPLEMENTATION.md",
       "heading": "# Optional remote configuration core",
       "title": "Optional remote configuration core",
-      "summary": "Standalone bounded JSON/evaluator/activation; feature facade and publishing unavailable.",
+      "summary": "Standalone bounded JSON/evaluator/activation with separate optional lifecycle; legacy feature facade unavailable.",
+      "kind": "requirement",
+      "authority": "binding",
+      "topics": [
+        "remote-config"
+      ],
+      "tasks": []
+    },
+    {
+      "id": "dotnet-configuration-client",
+      "path": "docs/implementation/remote-config/CLIENT.md",
+      "heading": "# Optional configuration lifecycle",
+      "title": "Optional configuration lifecycle and host adapters",
+      "summary": "Scoped async selected graphs, durable pins, independent controls and exact native/browser boundaries; target/live/game gates remain separate.",
       "kind": "requirement",
       "authority": "binding",
       "topics": [
@@ -664,27 +677,32 @@
     },
     {
       "id": "remote-config",
-      "status": "optional core implemented; feature facade remains unavailable (no end-to-end acceptance)",
+      "status": "optional core/lifecycle locally reviewed and tested; legacy facade unavailable; Unity/full-service, device, live and game gates remain separate",
       "statusPath": "docs/IMPLEMENTATION_STATUS.md",
       "sourcePaths": [
         "src/GamePlatform.Features/RemoteConfig",
-        "src/GamePlatform.Configuration"
+        "src/GamePlatform.Configuration",
+        "src/GamePlatform.Configuration.Client",
+        "integration/RemoteConfig/Client"
       ],
       "testPaths": [
         "tests/GamePlatform.Tests",
-        "tests/GamePlatform.Configuration.Tests"
+        "tests/GamePlatform.Configuration.Tests",
+        "tests/GamePlatform.Configuration.Client.Tests"
       ],
       "requirements": [
         "src/GamePlatform.Features/RemoteConfig/README.md",
         "docs/FEATURES.md",
-        "docs/implementation/remote-config/IMPLEMENTATION.md"
+        "docs/implementation/remote-config/IMPLEMENTATION.md",
+        "docs/implementation/remote-config/CLIENT.md"
       ],
       "mandatoryRequirements": [
         "dotnet-agent-rules",
         "dotnet-architecture",
         "dotnet-testing",
         "dotnet-feature-remote-config",
-        "dotnet-configuration-core"
+        "dotnet-configuration-core",
+        "dotnet-configuration-client"
       ]
     },
     {

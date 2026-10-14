@@ -1,5 +1,29 @@
 # SDK current status
 
+## 2026-10-14 optional configuration lifecycle: local source/package checkpoint
+
+Reviewed source `5573a2a03492f3fd6088926d6320484b33e942fe` adds the independently usable
+netstandard2.1 `GamePlatform.Configuration.Client` and explicit native/browser host
+adapters around the existing pure evaluator. It has no account, SQLite, Unity or game
+dependency in its portable assembly. Async selected-graph validation, durable cache,
+pin restoration, public emergency polling and owner-generation fencing are scoped to
+the optional lifecycle; the legacy RemoteConfig feature facade remains unavailable.
+
+Independent client review passed 64 focused tests and seven additional lifecycle/race
+probes, and reproduced the exact optional DLLs using recorded Git/build-path inputs.
+Full local owning gates passed 75 Python and 995 .NET tests; nine existing joined-recovery
+cases were skipped without their separate harness. Formatting and Release build passed.
+Two clean clones reproduced byte-identical ordinary SDK/UPM packages: 23 managed
+assemblies, with both Configuration projects excluded. This does not repin the game.
+
+Actual two-origin shipping JS tests passed IndexedDB restore, stale-generation refusal,
+quota/abort boundaries and two-tab conflict/merge. They are separate from C#/Unity
+runtime qualification. The isolated Unity full-client measurements are pending at
+this checkpoint; Android JNI/device, live edge/deployment and game integration remain
+unrun. Exact source/staged artifact identities, earlier failures and limits are in the
+[service receipts](https://github.com/gindemit/game-platform-workspace/tree/main/docs/work/remote-config-service).
+Consumer dev.150 and all historical/public gates retain their recorded scopes.
+
 ## 2026-10-12 FIN-ANDROID configured consumer qualification
 
 Current reviewed consumer Git delivery is `0.1.0-dev.150`,

@@ -47,9 +47,12 @@ Pinned instances preserve original refs; a new attempt receives the next choice.
 
 No network, clocks, pollers, cache, account store, exposure emission, telemetry,
 dynamic code or provider IO is part of evaluation. Read/activation do not fetch.
-Dependency/persistence/publishing/enrollment and game composition remain unbuilt;
-the existing RemoteConfig feature facade is still unavailable. Platform/runtime
-acceptance and isolated size results live in the workspace RC-TARGETS receipt.
+The separate optional [configuration lifecycle](CLIENT.md) supplies asynchronous
+selected-graph verification, durable cache/pins and independent emergency polling
+around this pure core. Backend services and game composition have separate scopes;
+the existing RemoteConfig feature facade is still unavailable. Historical core
+runtime/size evidence stays in the workspace RC-TARGETS receipt; new lifecycle
+source, adapters and target qualification use the remote-config-service receipts.
 
 Standalone validation from a disposable source copy:
 
