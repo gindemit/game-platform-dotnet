@@ -96,11 +96,24 @@ namespace GamePlatform.Features.Accounts
     /// <summary>Portable account lifecycle. It persists reservation before provisioning and never derives a principal from a session key.</summary>
     public sealed class AccountsLifecycleService
     {
-        private readonly IAccountsAuthLifecycle auth; private readonly IAccountsAuthRecovery? recovery; private readonly IProvisioningRemoteFactory provisioningFactory; private readonly IAccountDirectoryStore directory; private readonly IAccountScopeLeaseFactory scopes; private readonly UuidV7Generator ids; private readonly TimeSpan lateLeaseDrainTimeout;
-        private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1); private readonly object gate = new object();
-        private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned; private AccountDirectoryEntry? current; private IAccountScopeLease? active; private IAccountScopeLease? failedRetirement; private bool scopeRecoveryRequired;
-        private bool stopped; private TaskCompletionSource<AccountsLifecycleSnapshot>? stoppedCompletion;
-        private AccountPrincipalDescriptor? recoveryPrincipal; private AppId recoveryApp;
+        private readonly IAccountsAuthLifecycle auth;
+        private readonly IAccountsAuthRecovery? recovery;
+        private readonly IProvisioningRemoteFactory provisioningFactory;
+        private readonly IAccountDirectoryStore directory;
+        private readonly IAccountScopeLeaseFactory scopes;
+        private readonly UuidV7Generator ids;
+        private readonly TimeSpan lateLeaseDrainTimeout;
+        private readonly SemaphoreSlim activation = new SemaphoreSlim(1, 1);
+        private readonly object gate = new object();
+        private long generation; private AccountsReadiness readiness = AccountsReadiness.NeverProvisioned;
+        private AccountDirectoryEntry? current;
+        private IAccountScopeLease? active;
+        private IAccountScopeLease? failedRetirement;
+        private bool scopeRecoveryRequired;
+        private bool stopped;
+        private TaskCompletionSource<AccountsLifecycleSnapshot>? stoppedCompletion;
+        private AccountPrincipalDescriptor? recoveryPrincipal;
+        private AppId recoveryApp;
 
         public AccountsLifecycleService(IAccountsAuthLifecycle auth, IProvisioningRemoteFactory provisioningFactory, IAccountDirectoryStore directory, IAccountScopeLeaseFactory scopes, UuidV7Generator ids, TimeSpan? lateLeaseDrainTimeout = null, IAccountsAuthRecovery? recovery = null)
         {
