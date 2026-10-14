@@ -11,6 +11,7 @@ from pathlib import Path
 
 PROJECTS = {
     "GamePlatform.Configuration",
+    "GamePlatform.Configuration.Client",
     "GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Features.Contracts",
     "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions", "GamePlatform.Features",
     "GamePlatform.Sync", "GamePlatform.Navigation", "GamePlatform.Features.Presentation",

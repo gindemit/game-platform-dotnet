@@ -3,6 +3,7 @@
   "runtimeTarget": "netstandard2.1",
   "projects": {
     "GamePlatform.Configuration": [],
+    "GamePlatform.Configuration.Client": ["GamePlatform.Configuration"],
     "GamePlatform.Core": [],
     "GamePlatform.Diagnostics.Abstractions": [],
     "GamePlatform.Features.Contracts": ["GamePlatform.Core"],
@@ -21,6 +22,7 @@
   },
   "allowedRuntimePackages": {
     "GamePlatform.Configuration": [],
+    "GamePlatform.Configuration.Client": [],
     "GamePlatform.Core": [],
     "GamePlatform.Diagnostics.Abstractions": [],
     "GamePlatform.Features.Contracts": [],

@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_REPOSITORY_URL = 'https://github.com/gindemit/game-platform-dotnet'
 MESSAGEPACK_PROJECT = 'GamePlatform.Serialization.MessagePack'
-OPTIONAL_PROJECTS = {'GamePlatform.Configuration'}
+OPTIONAL_PROJECTS = {'GamePlatform.Configuration', 'GamePlatform.Configuration.Client'}
 
 
 def regular_runtime_projects(root):

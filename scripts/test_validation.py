@@ -25,8 +25,20 @@ class ValidationTests(unittest.TestCase):
             path.write_text(json.dumps(manifest), encoding="utf-8")
             self.assertIn("unexpected Friends contract path: ../outside", validate.validate(root))
 
-    def test_project_inventory_has_sixteen(self): self.assertEqual(16, len(validate.PROJECTS))
+    def test_project_inventory_has_seventeen_with_optional_client(self): self.assertEqual(17, len(validate.PROJECTS))
     def test_feature_inventory_has_sixteen(self): self.assertEqual(16, len(validate.FEATURES))
+
+    def test_optional_client_cannot_depend_on_account_storage_or_runtime_packages(self):
+        for forbidden in ("project", "package"):
+            with self.subTest(forbidden=forbidden), tempfile.TemporaryDirectory() as tmp:
+                root = self.copy_repository(Path(tmp))
+                project = root / "src/GamePlatform.Configuration.Client/GamePlatform.Configuration.Client.csproj"
+                text = project.read_text(encoding="utf-8")
+                reference = ('<ProjectReference Include="../GamePlatform.Storage.Sqlite/GamePlatform.Storage.Sqlite.csproj" />'
+                             if forbidden == "project" else '<PackageReference Include="VContainer" Version="1.0.0" />')
+                project.write_text(text.replace("</Project>", "<ItemGroup>" + reference + "</ItemGroup></Project>"), encoding="utf-8")
+                errors = validate.validate(root)
+                self.assertTrue(any("forbidden references" in error or "runtime package" in error or "forbidden package" in error for error in errors))
 
     def test_sha256_is_byte_exact(self):
         with tempfile.TemporaryDirectory() as tmp:
