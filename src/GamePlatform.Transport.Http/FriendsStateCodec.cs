@@ -1,4 +1,3 @@
-#nullable enable
 using GamePlatform.Features.Friends;
 using GamePlatform.Serialization.MessagePack;
 namespace GamePlatform.Transport.Http

@@ -1,4 +1,3 @@
-#nullable enable
 using GamePlatform.Core;
 using GamePlatform.Features.Teams;
 using GamePlatform.Serialization.MessagePack;

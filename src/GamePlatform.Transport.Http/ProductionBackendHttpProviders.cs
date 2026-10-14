@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;

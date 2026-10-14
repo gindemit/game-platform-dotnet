@@ -21,6 +21,13 @@ dotnet_diagnostic.IDE0055.severity = warning
 generated_code = true
 dotnet_diagnostic.IDE0055.severity = none
 
+# Our generated DTOs and codecs use the project nullable context.
+[src/GamePlatform.Wire.Contracts/*.g.cs]
+generated_code = false
+
+[src/GamePlatform.Serialization.MessagePack/*.g.cs]
+generated_code = false
+
 [src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs]
 generated_code = true
 dotnet_diagnostic.IDE0055.severity = none

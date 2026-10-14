@@ -1,5 +1,4 @@
 // Generated from the reviewed DTO catalog. Do not edit by hand.
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Globalization;

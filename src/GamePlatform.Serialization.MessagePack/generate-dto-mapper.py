@@ -45,7 +45,7 @@ def convert(typ, expression, schema, direction, depth=0):
     return f'{direction}{typ}({expression}, b)'
 
 
-lines = ['// Generated from the reviewed DTO catalog. Do not edit by hand.', '#nullable enable',
+lines = ['// Generated from the reviewed DTO catalog. Do not edit by hand.',
  'using System;', 'using System.Collections.Generic;', 'using System.Globalization;', 'using System.Linq;',
  'using GamePlatform.Wire.Contracts;', 'using V = GamePlatform.Serialization.MessagePack.QualificationValue;',
  'using K = GamePlatform.Serialization.MessagePack.QualificationValueKind;',

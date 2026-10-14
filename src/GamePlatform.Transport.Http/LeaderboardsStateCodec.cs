@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using GamePlatform.Features.Leaderboards;
 using GamePlatform.Serialization.MessagePack;

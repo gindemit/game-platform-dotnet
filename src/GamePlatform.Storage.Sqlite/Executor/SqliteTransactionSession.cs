@@ -22,25 +22,25 @@ namespace GamePlatform.Storage.Sqlite.Executor
 
         public StorageScope Scope { get; }
 
-        public int Execute(string sql, params object[] parameters)
+        public int Execute(string sql, params object?[]? parameters)
         {
             EnsureActive();
             ValidateSql(sql);
-            return connection.Execute(sql, parameters ?? Array.Empty<object>());
+            return connection.Execute(sql, parameters ?? Array.Empty<object?>());
         }
 
-        public T ExecuteScalar<T>(string sql, params object[] parameters)
+        public T ExecuteScalar<T>(string sql, params object?[]? parameters)
         {
             EnsureActive();
             ValidateSql(sql);
-            return connection.ExecuteScalar<T>(sql, parameters ?? Array.Empty<object>());
+            return connection.ExecuteScalar<T>(sql, parameters ?? Array.Empty<object?>());
         }
 
-        internal IReadOnlyList<T> Query<T>(string sql, params object[] parameters) where T : new()
+        internal IReadOnlyList<T> Query<T>(string sql, params object?[]? parameters) where T : new()
         {
             EnsureActive();
             ValidateSql(sql);
-            return connection.Query<T>(sql, parameters ?? Array.Empty<object>());
+            return connection.Query<T>(sql, parameters ?? Array.Empty<object?>());
         }
 
         internal void Close() => active = false;

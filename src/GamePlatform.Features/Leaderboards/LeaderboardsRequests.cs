@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using GamePlatform.Core;
 namespace GamePlatform.Features.Leaderboards
