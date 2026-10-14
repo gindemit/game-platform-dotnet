@@ -16,6 +16,14 @@ explicit app/environment-bound control memory across owner/subject replacements;
 new clients reject a mismatched memory scope. Retire/Dispose cannot reset its floor.
 There is no global resolver, hidden polling service or account identity dependency.
 
+Lifecycle and deadline awaits preserve the caller's synchronization context.
+Single-threaded hosts must call the client from their owning pumped context and
+provide host-driven asynchronous transport, storage and clock completions. The
+WebGL host preserves Unity's context through its bridge awaits; asynchronous
+completion, cancellation and teardown fencing remain intact. Context-free native
+callers retain normal task scheduling. This adds no Unity dependency to the
+portable library and starts no background thread or automatic polling service.
+
 Call RestoreAsync at startup, TickAsync while foreground and GetFeatureAsync at the
 consumer's safe context boundary. RefreshAsync fetches and commits metadata; metadata
 alone does not make a feature available. RefreshControlsAsync independently observes
@@ -121,6 +129,29 @@ existing output. No build/import/deploy or game mutation occurs during staging.
 
 ## Evidence boundary
 
+At the 2026-10-14 repair checkpoint, task source `2aeef858` commits the reviewed
+caller-context overlay on published439272a. Validation uses immutableSDK495
+plus the exact reviewed overlay. Owning local gates pass
+75 Python and 998 .NET tests, with nine pre-existing joined-recovery skips.
+Ordinary local packaging has 23 managed and three native payloads and excludes
+both configuration projects; historical CI154/dev.154 provenance remains
+historical and does not establish a new game pin or delivered configuration DLL.
+
+The repaired target candidate is separately frozen SDK557 plus exactly the
+three reviewed ConfigurationClient.cs/Policies.cs/UnityConfigurationHost.cs
+overlays. Independent reproduction matches core DLL SHA256
+`26e9846a4401b3f851852062e1c8a06b578a757bf4c7efda49d757f633eb2c45` and client DLL
+SHA256 `f060a37447b8fa0c2c2a449957ee60c19ee5b648342a98e843441d82f7123b46`.
+All eight isolated matched targets pass; actual Android growth is 482,256 bytes
+against the 262,144-byte objective (exceeded), while WebGL growth is 134,133
+bytes (within objective). Actual native joined runtime5 is accepted at its local
+scope. Actual C# browser2 lifecycle, durable cached state after actual reload and two-host CAS retry are locally reviewed; the automatic PlayerPrefs reload-marker dispatch remains unproven.
+The cached post-reload proof uses visible owner replacement (generation2 to3),
+not the automatic restore-only coroutine. Earlier two deadline-preserved CAS
+attempts and one noncolliding commit remain separate from actual Conflict,Committed.
+Exact receipts live in the workspace remote-config-service work packet.
+The legacy facade remains unavailable; live/device/game integration remains held.
+
 Focused tests exercise real Windows files, interrupted commits, CAS contention,
 cancel-before-replace, lost acknowledgements, scoped LRU/pins, raw whitespace restoration,
 clock uncertainty, identity fencing, captured-release and admission races. The loopback
@@ -140,3 +171,8 @@ shipping database. Root records actual browser execution separately. Unity IL2CP
 managed-to-Java JNI and physical devices require their named target evidence; no claim
 is inferred from portable .NET tests or reference-assembly compilation. RC-LIVE and
 Pocket Bloom integration remain held.
+
+Final local browser review: `rc-s5-repaired-browser-results-review.json`,
+SHA256 `12742f6d6955de28a2b3c999b4f201ea74a77bbe51486ebafdfd845ea3f1cc0e`, in the workspace service packet. Two-origin read success
+and source credentials=omit are recorded; browser server receipts do not archive
+request credentials/CORS header fields. Native HTTP header observations are separate.

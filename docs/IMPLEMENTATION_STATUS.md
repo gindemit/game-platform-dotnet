@@ -1,5 +1,33 @@
 # SDK current status
 
+## 2026-10-14 configuration scheduling repair and local target checkpoint
+
+Task source `2aeef858` commits the reviewed caller-context repair on published
+parent439272a. Owning validation uses immutable SDK495
+(`495eb8bf4db36c1fb8a735a2baed36fa8a306afe`) plus the exact reviewed overlay.
+Owning local gates pass 75 Python and 998 .NET tests; nine pre-existing
+joined-recovery cases remain skipped without their separate harness. The ordinary
+local package has 23 managed and three native payloads, with both Configuration
+projects excluded. Historical CI154/dev.154 delivery provenance remains dated
+history; this checkpoint does not repin the game or assert a new CI delivery.
+
+Repaired target inputs are separately frozen SDK557
+(`5573a2a03492f3fd6088926d6320484b33e942fe`) plus exactly three reviewed source
+overlays. Independent reproduction matches core DLL SHA256
+`26e9846a4401b3f851852062e1c8a06b578a757bf4c7efda49d757f633eb2c45` and client DLL
+SHA256 `f060a37447b8fa0c2c2a449957ee60c19ee5b648342a98e843441d82f7123b46`.
+All eight isolated matched targets passed. Measured Android growth is 482,256
+bytes, exceeding the 262,144-byte objective; WebGL growth is 134,133 bytes and
+meets that objective. These measurements do not qualify Android JNI or a device.
+
+Actual native joined runtime5 is accepted at its scoped local boundary. Actual C# browser2 lifecycle, durable cached state after actual reload and two-host CAS retry are locally reviewed; the automatic PlayerPrefs reload-marker dispatch remains unproven.
+The actual page reload was followed by visible owner replacement/restoration at
+generation3, not automatic restore-only dispatch. Actual Conflict,Committed
+confirms shipping retry; earlier timeout/noncollision attempts remain retained.
+The legacy RemoteConfig facade remains unavailable. Live/deployment, physical
+devices and game integration remain held. Exact evidence and limits belong to
+the [service receipts](https://github.com/gindemit/game-platform-workspace/tree/main/docs/work/remote-config-service).
+
 ## 2026-10-14 optional configuration lifecycle: local source/package checkpoint
 
 Reviewed source `5573a2a03492f3fd6088926d6320484b33e942fe` adds the independently usable
@@ -229,3 +257,8 @@ SDK Release passed 659/659, validation and package verification at the R10 quali
 The imported SDK passed exact Unity gate, IL2CPP build and both-phone R10 qualification. LC09 Home and LC11 level editor are N/A in P3 and carried forward; LC06 account switch remains component-level. A13 is local nonproduction only. Managed hosting, provider/social identity, production backup/rollout, full multi-host isolation and later feature breadth remain P4 or release work. No old gameplay-save migration is supported; preserve issued identity and new SQLite/outbox.
 
 Original ledgers remain [execution-manifest.json](implementation/execution-manifest.json) and [CLIENT_HANDOFF.json](implementation/coordination/CLIENT_HANDOFF.json). Do not dispatch closed P3 rows or treat a bounded packaging/campaign change as full original feature or P4 acceptance. Update current import pins only after actual reviewed package integration; retain historical hashes/evidence unchanged.
+
+Final local browser review: `rc-s5-repaired-browser-results-review.json`,
+SHA256 `12742f6d6955de28a2b3c999b4f201ea74a77bbe51486ebafdfd845ea3f1cc0e`, in the workspace service packet. Two-origin read success
+and source credentials=omit are recorded; browser server receipts do not archive
+request credentials/CORS header fields. Native HTTP header observations are separate.
