@@ -7,22 +7,10 @@ namespace GamePlatform.Configuration
 {
     public sealed class ContextAttribute
     {
-        public JsonValue Value
-        {
-            get;
-        }
-        public string Source
-        {
-            get;
-        }
-        public long ObservedAtSeconds
-        {
-            get;
-        }
-        public bool Verified
-        {
-            get;
-        }
+        public JsonValue Value { get; }
+        public string Source { get; }
+        public long ObservedAtSeconds { get; }
+        public bool Verified { get; }
         public ContextAttribute(JsonValue value, string source, long observedAtSeconds, bool verified)
         {
             Value = value ?? throw new ArgumentNullException(nameof(value));
@@ -34,18 +22,9 @@ namespace GamePlatform.Configuration
     }
     public sealed class EvaluationContext
     {
-        public string SubjectId
-        {
-            get;
-        }
-        public long NowSeconds
-        {
-            get;
-        }
-        public IReadOnlyDictionary<string, ContextAttribute> Attributes
-        {
-            get;
-        }
+        public string SubjectId { get; }
+        public long NowSeconds { get; }
+        public IReadOnlyDictionary<string, ContextAttribute> Attributes { get; }
         public EvaluationContext(string subjectId, long nowSeconds, IReadOnlyDictionary<string, ContextAttribute> attributes)
         {
             ConfigurationLimits.String(subjectId);
@@ -70,27 +49,12 @@ namespace GamePlatform.Configuration
     }
     public sealed class Selection
     {
-        public Choice? Choice
-        {
-            get;
-        }
-        public string? RuleId
-        {
-            get;
-        }
-        public int? Bucket
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
+        public Choice? Choice { get; }
+        public string? RuleId { get; }
+        public int? Bucket { get; }
+        public string Reason { get; }
         public string? Variant => Choice?.Variant;
-        public ExperimentReference? Experiment
-        {
-            get;
-        }
+        public ExperimentReference? Experiment { get; }
         internal Selection(Choice? choice, string? ruleId, int? bucket, string reason, ExperimentReference? experiment = null)
         {
             Choice = choice;

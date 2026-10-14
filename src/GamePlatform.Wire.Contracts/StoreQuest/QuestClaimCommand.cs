@@ -11,13 +11,7 @@ namespace GamePlatform.Wire.Contracts
             OccurrenceKey = occurrenceKey ?? throw new ArgumentNullException(nameof(occurrenceKey));
         }
 
-        public string QuestId
-        {
-            get;
-        }
-        public string OccurrenceKey
-        {
-            get;
-        }
+        public string QuestId { get; }
+        public string OccurrenceKey { get; }
     }
 }

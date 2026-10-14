@@ -175,14 +175,8 @@ namespace GamePlatform.Features.Wallet
                 Kind = kind;
                 Projection = projection;
             }
-            public byte Kind
-            {
-                get;
-            }
-            public G3ConfirmedWalletProjection? Projection
-            {
-                get;
-            }
+            public byte Kind { get; }
+            public G3ConfirmedWalletProjection? Projection { get; }
         }
     }
 

@@ -13,10 +13,7 @@ namespace GamePlatform.Wire.Contracts
             this.value = value;
             IsPresent = true;
         }
-        public bool IsPresent
-        {
-            get;
-        }
+        public bool IsPresent { get; }
         public T Value => IsPresent ? value : throw new InvalidOperationException("wire_field_absent");
         public static WireOptional<T> Present(T value) => new WireOptional<T>(value);
         public static WireOptional<T> Absent => default;
@@ -61,26 +58,11 @@ namespace GamePlatform.Wire.Contracts
             Items = items;
             Properties = properties;
         }
-        public ExtensionValueKind Kind
-        {
-            get;
-        }
-        public bool Boolean
-        {
-            get;
-        }
-        public string? Text
-        {
-            get;
-        }
-        public IReadOnlyList<ExtensionValue>? Items
-        {
-            get;
-        }
-        public IReadOnlyDictionary<string, ExtensionValue>? Properties
-        {
-            get;
-        }
+        public ExtensionValueKind Kind { get; }
+        public bool Boolean { get; }
+        public string? Text { get; }
+        public IReadOnlyList<ExtensionValue>? Items { get; }
+        public IReadOnlyDictionary<string, ExtensionValue>? Properties { get; }
         public static ExtensionValue Null { get; } = new ExtensionValue(ExtensionValueKind.Null);
         public static ExtensionValue FromBoolean(bool value) => new ExtensionValue(ExtensionValueKind.Boolean, boolean: value);
         public static ExtensionValue FromString(string value) => new ExtensionValue(ExtensionValueKind.String, text: value ?? throw new ArgumentNullException(nameof(value)));
@@ -101,22 +83,10 @@ namespace GamePlatform.Wire.Contracts
             Text = text;
             Integer = integer;
         }
-        public ErrorDetailKind Kind
-        {
-            get;
-        }
-        public bool Boolean
-        {
-            get;
-        }
-        public string? Text
-        {
-            get;
-        }
-        public int Integer
-        {
-            get;
-        }
+        public ErrorDetailKind Kind { get; }
+        public bool Boolean { get; }
+        public string? Text { get; }
+        public int Integer { get; }
         public static ErrorDetailValue Null => default;
         public static ErrorDetailValue FromBoolean(bool value) => new ErrorDetailValue(ErrorDetailKind.Boolean, boolean: value);
         public static ErrorDetailValue FromString(string value) => new ErrorDetailValue(ErrorDetailKind.String, text: value ?? throw new ArgumentNullException(nameof(value)));

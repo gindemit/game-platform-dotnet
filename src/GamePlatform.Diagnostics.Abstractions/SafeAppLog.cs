@@ -24,14 +24,8 @@ namespace GamePlatform.Diagnostics.Abstractions
             Generation = generation;
         }
 
-        public Guid CorrelationId
-        {
-            get;
-        }
-        public long Generation
-        {
-            get;
-        }
+        public Guid CorrelationId { get; }
+        public long Generation { get; }
     }
 
     /// <summary>Immutable sanitized data. Exceptions, arbitrary strings and mutable objects never cross this boundary.</summary>
@@ -48,30 +42,12 @@ namespace GamePlatform.Diagnostics.Abstractions
             HasException = hasException;
         }
 
-        public AppLogLevel Level
-        {
-            get;
-        }
-        public string Category
-        {
-            get;
-        }
-        public string EventName
-        {
-            get;
-        }
-        public AppLogContext Context
-        {
-            get;
-        }
-        public IReadOnlyDictionary<string, object?> Fields
-        {
-            get;
-        }
-        public bool HasException
-        {
-            get;
-        }
+        public AppLogLevel Level { get; }
+        public string Category { get; }
+        public string EventName { get; }
+        public AppLogContext Context { get; }
+        public IReadOnlyDictionary<string, object?> Fields { get; }
+        public bool HasException { get; }
     }
 
     public sealed class NullStructuredAppLogSink : IStructuredAppLogSink

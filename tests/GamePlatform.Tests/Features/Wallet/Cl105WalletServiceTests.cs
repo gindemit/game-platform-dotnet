@@ -339,18 +339,9 @@ namespace GamePlatform.Tests.Features.Wallet
 
         private sealed class TestRemote : IWalletRemote
         {
-            public bool Offline
-            {
-                get; set;
-            }
-            public WalletRemoteRead? ReadValue
-            {
-                get; set;
-            }
-            public int AuthorizationCalls
-            {
-                get; private set;
-            }
+            public bool Offline { get; set; }
+            public WalletRemoteRead? ReadValue { get; set; }
+            public int AuthorizationCalls { get; private set; }
             public Task<WalletRemoteRead> ReadAsync(WalletBalanceRequest request, CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -423,10 +414,7 @@ namespace GamePlatform.Tests.Features.Wallet
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 if (Directory.Exists(directory))

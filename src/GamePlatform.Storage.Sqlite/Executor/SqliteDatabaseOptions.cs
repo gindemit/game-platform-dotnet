@@ -12,19 +12,10 @@ namespace GamePlatform.Storage.Sqlite.Executor
             NowMilliseconds = nowMilliseconds ?? throw new ArgumentNullException(nameof(nowMilliseconds));
         }
 
-        public TimeSpan BusyTimeout
-        {
-            get;
-        }
-        internal Func<long> NowMilliseconds
-        {
-            get;
-        }
+        public TimeSpan BusyTimeout { get; }
+        internal Func<long> NowMilliseconds { get; }
 
-        public static SqliteDatabaseOptions Default
-        {
-            get;
-        } = new SqliteDatabaseOptions(
+        public static SqliteDatabaseOptions Default { get; } = new SqliteDatabaseOptions(
             TimeSpan.FromSeconds(2),
             () => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
     }

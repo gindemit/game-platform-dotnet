@@ -11,14 +11,8 @@ namespace GamePlatform.Wire.Contracts.Teams
             TeamId = teamId;
             Revision = revision;
         }
-        public Guid TeamId
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
+        public Guid TeamId { get; }
+        public long Revision { get; }
         public string EntityType => "teams";
         public string Kind => "invalidation";
     }

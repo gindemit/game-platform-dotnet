@@ -39,18 +39,9 @@ namespace GamePlatform.Features.Contracts.Inventory
             Quantity = quantity;
             Revision = revision;
         }
-        public PlatformId DefinitionId
-        {
-            get;
-        }
-        public long Quantity
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
+        public PlatformId DefinitionId { get; }
+        public long Quantity { get; }
+        public long Revision { get; }
     }
 
     public sealed class InventoryInstance
@@ -80,22 +71,10 @@ namespace GamePlatform.Features.Contracts.Inventory
             this.payload = payload.ToArray();
             this.auditExtensions = auditExtensions.ToArray();
         }
-        public PlatformId InstanceId
-        {
-            get;
-        }
-        public PlatformId DefinitionId
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public InventoryInstanceState State
-        {
-            get;
-        }
+        public PlatformId InstanceId { get; }
+        public PlatformId DefinitionId { get; }
+        public long Revision { get; }
+        public InventoryInstanceState State { get; }
         public byte[] CopyPayload() => (byte[])payload.Clone();
         public byte[] CopyAuditExtensions() => (byte[])auditExtensions.Clone();
     }
@@ -121,14 +100,8 @@ namespace GamePlatform.Features.Contracts.Inventory
             Revision = revision;
             ConfirmedAtMilliseconds = confirmedAtMilliseconds;
         }
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAtMilliseconds
-        {
-            get;
-        }
+        public long Revision { get; }
+        public long ConfirmedAtMilliseconds { get; }
         public IReadOnlyList<InventoryStack> Stacks => Array.AsReadOnly(stacks);
         public IReadOnlyList<InventoryInstance> Instances => Array.AsReadOnly(instances);
         private static T[] Copy<T>(IEnumerable<T> values) where T : class
@@ -179,46 +152,16 @@ namespace GamePlatform.Features.Contracts.Inventory
             Status = status;
             AcceptedInventoryRevision = acceptedInventoryRevision;
         }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public InventoryIntentKind Kind
-        {
-            get;
-        }
-        public InventoryEntryKind TargetKind
-        {
-            get;
-        }
-        public PlatformId TargetId
-        {
-            get;
-        }
-        public long ExpectedInventoryRevision
-        {
-            get;
-        }
-        public long LocalRevision
-        {
-            get;
-        }
-        public InventoryIntentStatus Status
-        {
-            get;
-        }
-        public long? AcceptedInventoryRevision
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public InventoryIntentKind Kind { get; }
+        public InventoryEntryKind TargetKind { get; }
+        public PlatformId TargetId { get; }
+        public long ExpectedInventoryRevision { get; }
+        public long LocalRevision { get; }
+        public InventoryIntentStatus Status { get; }
+        public long? AcceptedInventoryRevision { get; }
     }
 
     /// <summary>Receipt outcome only. It has no holdings, quantities, or grant instructions.</summary>
@@ -234,18 +177,9 @@ namespace GamePlatform.Features.Contracts.Inventory
             OperationId = operationId;
             ResultingInventoryRevision = resultingInventoryRevision;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public long ResultingInventoryRevision
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public long ResultingInventoryRevision { get; }
     }
 
     public sealed class InventorySnapshot
@@ -260,10 +194,7 @@ namespace GamePlatform.Features.Contracts.Inventory
             if (this.pending.Length > 64 || this.pending.Any(value => value == null) || this.pending.Select(value => value.OperationId).Distinct().Count() != this.pending.Length)
                 throw new ArgumentException("Pending inventory intents are invalid.", nameof(pending));
         }
-        public InventoryConfirmedSnapshot? Confirmed
-        {
-            get;
-        }
+        public InventoryConfirmedSnapshot? Confirmed { get; }
         public IReadOnlyList<InventoryIntent> PendingIntents => Array.AsReadOnly(pending);
     }
 
@@ -285,34 +216,13 @@ namespace GamePlatform.Features.Contracts.Inventory
             TargetKind = targetKind;
             TargetId = targetId;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public InventoryIntentKind Kind
-        {
-            get;
-        }
-        public InventoryEntryKind TargetKind
-        {
-            get;
-        }
-        public PlatformId TargetId
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public InventoryIntentKind Kind { get; }
+        public InventoryEntryKind TargetKind { get; }
+        public PlatformId TargetId { get; }
     }
 
     /// <summary>Frozen semantic authority boundary; it does not create a provider route or make an offline holding spendable.</summary>
@@ -334,18 +244,9 @@ namespace GamePlatform.Features.Contracts.Inventory
             OperationKind = operationKind;
             Reason = reason;
         }
-        public bool Permitted
-        {
-            get;
-        }
-        public string? OperationKind
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
+        public bool Permitted { get; }
+        public string? OperationKind { get; }
+        public string Reason { get; }
     }
 
     public interface IInventoryStateCodec

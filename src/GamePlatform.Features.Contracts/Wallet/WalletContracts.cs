@@ -19,14 +19,8 @@ namespace GamePlatform.Features.Contracts.Wallet
             DefinitionId = definitionId;
             SemanticKey = semanticKey;
         }
-        public PlatformId DefinitionId
-        {
-            get;
-        }
-        public SemanticId SemanticKey
-        {
-            get;
-        }
+        public PlatformId DefinitionId { get; }
+        public SemanticId SemanticKey { get; }
     }
 
     /// <summary>One server-confirmed exact signed-64 balance. Local code never derives a replacement balance.</summary>
@@ -46,22 +40,10 @@ namespace GamePlatform.Features.Contracts.Wallet
             ConfirmedAtMilliseconds = confirmedAtMilliseconds;
             this.extensions = extensions.ToArray();
         }
-        public WalletCurrency Currency
-        {
-            get;
-        }
-        public long Balance
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAtMilliseconds
-        {
-            get;
-        }
+        public WalletCurrency Currency { get; }
+        public long Balance { get; }
+        public long Revision { get; }
+        public long ConfirmedAtMilliseconds { get; }
         public byte[] CopyExtensions() => (byte[])extensions.Clone();
     }
 
@@ -78,18 +60,9 @@ namespace GamePlatform.Features.Contracts.Wallet
             ExpectedRevision = expectedRevision;
             Amount = amount;
         }
-        public WalletCurrency Currency
-        {
-            get;
-        }
-        public long ExpectedRevision
-        {
-            get;
-        }
-        public long Amount
-        {
-            get;
-        }
+        public WalletCurrency Currency { get; }
+        public long ExpectedRevision { get; }
+        public long Amount { get; }
     }
 
     public enum WalletPendingStatus
@@ -129,38 +102,14 @@ namespace GamePlatform.Features.Contracts.Wallet
             AcceptedRevision = acceptedRevision;
             RejectionCode = rejectionCode;
         }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public WalletSpendIntent Intent
-        {
-            get;
-        }
-        public long LocalRevision
-        {
-            get;
-        }
-        public WalletPendingStatus Status
-        {
-            get;
-        }
-        public long? AcceptedRevision
-        {
-            get;
-        }
-        public string? RejectionCode
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public WalletSpendIntent Intent { get; }
+        public long LocalRevision { get; }
+        public WalletPendingStatus Status { get; }
+        public long? AcceptedRevision { get; }
+        public string? RejectionCode { get; }
     }
 
     public sealed class WalletSnapshot
@@ -170,14 +119,8 @@ namespace GamePlatform.Features.Contracts.Wallet
             Confirmed = confirmed;
             Pending = pending;
         }
-        public WalletConfirmedBalance? Confirmed
-        {
-            get;
-        }
-        public PendingWalletSpend? Pending
-        {
-            get;
-        }
+        public WalletConfirmedBalance? Confirmed { get; }
+        public PendingWalletSpend? Pending { get; }
     }
 
     public sealed class WalletBalanceRequest
@@ -189,14 +132,8 @@ namespace GamePlatform.Features.Contracts.Wallet
             Owner = owner;
             Currency = currency ?? throw new ArgumentNullException(nameof(currency));
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public WalletCurrency Currency
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public WalletCurrency Currency { get; }
     }
 
     public sealed class WalletSpendRequest
@@ -216,26 +153,11 @@ namespace GamePlatform.Features.Contracts.Wallet
             BusinessSource = businessSource;
             Intent = intent ?? throw new ArgumentNullException(nameof(intent));
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public WalletSpendIntent Intent
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public WalletSpendIntent Intent { get; }
     }
 
     /// <summary>A receipt only records the expected future server projection revision; it never includes a locally trusted balance.</summary>
@@ -253,18 +175,9 @@ namespace GamePlatform.Features.Contracts.Wallet
             OperationId = operationId;
             ResultingRevision = resultingRevision;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public long ResultingRevision
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public long ResultingRevision { get; }
     }
 
     public sealed class WalletSpendRejection
@@ -280,18 +193,9 @@ namespace GamePlatform.Features.Contracts.Wallet
             OperationId = operationId;
             Code = code;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public string Code
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public string Code { get; }
     }
 
     public sealed class WalletRemoteRead
@@ -303,14 +207,8 @@ namespace GamePlatform.Features.Contracts.Wallet
             Owner = owner;
             Confirmed = confirmed ?? throw new ArgumentNullException(nameof(confirmed));
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public WalletConfirmedBalance Confirmed
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public WalletConfirmedBalance Confirmed { get; }
     }
 
     /// <summary>Fresh backend authorization for one immutable intent. This is not a balance, grant, receipt or debit.</summary>
@@ -328,22 +226,10 @@ namespace GamePlatform.Features.Contracts.Wallet
             BusinessSource = businessSource;
             Intent = intent ?? throw new ArgumentNullException(nameof(intent));
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public WalletSpendIntent Intent
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public string BusinessSource { get; }
+        public WalletSpendIntent Intent { get; }
     }
 
     /// <summary>Feature-owned remote boundary. Implementations must authenticate and validate funds online before authorizing admission.</summary>

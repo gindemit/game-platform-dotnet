@@ -40,46 +40,16 @@ namespace GamePlatform.Storage.Abstractions.Recovery
             InspectionToken = inspectionToken;
             ExpectedFinalizedThrough = expectedFinalizedThrough;
         }
-        public AccountPrincipalDescriptor Principal
-        {
-            get;
-        }
-        public AppId AppId
-        {
-            get;
-        }
-        public PlatformUserId AccountId
-        {
-            get;
-        }
-        public Guid InstallationId
-        {
-            get;
-        }
-        public ClientStreamId PriorStreamId
-        {
-            get;
-        }
-        public ClientStreamId SuccessorStreamId
-        {
-            get;
-        }
-        public Guid RecoveryId
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
-        public string InspectionToken
-        {
-            get;
-        }
-        public long ExpectedFinalizedThrough
-        {
-            get;
-        }
+        public AccountPrincipalDescriptor Principal { get; }
+        public AppId AppId { get; }
+        public PlatformUserId AccountId { get; }
+        public Guid InstallationId { get; }
+        public ClientStreamId PriorStreamId { get; }
+        public ClientStreamId SuccessorStreamId { get; }
+        public Guid RecoveryId { get; }
+        public string Reason { get; }
+        public string InspectionToken { get; }
+        public long ExpectedFinalizedThrough { get; }
 
         private static bool IsBase64Url(string value)
         {
@@ -108,22 +78,10 @@ namespace GamePlatform.Storage.Abstractions.Recovery
             RemoteNextSequence = remoteNextSequence;
             RemotePriorFinalizedThrough = remotePriorFinalizedThrough;
         }
-        public CommandStreamRecoveryRequest Request
-        {
-            get;
-        }
-        public CommandStreamRecoveryPhase Phase
-        {
-            get;
-        }
-        public long? RemoteNextSequence
-        {
-            get;
-        }
-        public long? RemotePriorFinalizedThrough
-        {
-            get;
-        }
+        public CommandStreamRecoveryRequest Request { get; }
+        public CommandStreamRecoveryPhase Phase { get; }
+        public long? RemoteNextSequence { get; }
+        public long? RemotePriorFinalizedThrough { get; }
     }
 
     /// <summary>Durable crash-recovery journal sharing the persistent principal directory lifetime.</summary>

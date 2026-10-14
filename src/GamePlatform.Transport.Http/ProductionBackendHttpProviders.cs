@@ -50,14 +50,8 @@ namespace GamePlatform.Transport.Http
         private readonly AuthRefreshCoordinator refresh;
         private readonly MessagePackWireCodec codec;
         private readonly StoreQuestCapability storeQuest;
-        public IProvisioningRemote Provisioning
-        {
-            get;
-        }
-        public ICommandFingerprint CommandFingerprint
-        {
-            get;
-        }
+        public IProvisioningRemote Provisioning { get; }
+        public ICommandFingerprint CommandFingerprint { get; }
 
         public ProductionAccountHttpProviders ForAccount(AppId appId, PlatformUserId accountId, Guid installationId) =>
             new ProductionAccountHttpProviders(appId, accountId, installationId, configuration, executor, codec, auth, refresh, storeQuest);
@@ -95,37 +89,13 @@ namespace GamePlatform.Transport.Http
             RewardReceipts = new G3RewardReceiptHttpProvider(appId, accountId, configuration, executor, new G3RewardReceiptMessagePackCodec(), codec, auth, refresh);
         }
 
-        public IPrivateSyncRemote PrivateSync
-        {
-            get;
-        }
-        public TeamsHttpProvider Teams
-        {
-            get;
-        }
-        public FriendsHttpProvider Friends
-        {
-            get;
-        }
-        public LeaderboardsHttpProvider Leaderboards
-        {
-            get;
-        }
-        public ICommandRemote CommandPush
-        {
-            get;
-        }
-        public ICommandReceiptRemote CommandReceipts
-        {
-            get;
-        }
-        public ICommandStreamRecoveryRemote CommandStreamRecovery
-        {
-            get;
-        }
-        public G3RewardReceiptHttpProvider RewardReceipts
-        {
-            get;
-        }
+        public IPrivateSyncRemote PrivateSync { get; }
+        public TeamsHttpProvider Teams { get; }
+        public FriendsHttpProvider Friends { get; }
+        public LeaderboardsHttpProvider Leaderboards { get; }
+        public ICommandRemote CommandPush { get; }
+        public ICommandReceiptRemote CommandReceipts { get; }
+        public ICommandStreamRecoveryRemote CommandStreamRecovery { get; }
+        public G3RewardReceiptHttpProvider RewardReceipts { get; }
     }
 }

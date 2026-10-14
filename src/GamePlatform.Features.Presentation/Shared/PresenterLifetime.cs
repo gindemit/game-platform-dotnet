@@ -18,10 +18,7 @@ namespace GamePlatform.Features.Presentation.Shared
             this.borrowedService = borrowedService ?? throw new ArgumentNullException(nameof(borrowedService));
         }
 
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
         public object BorrowedService => borrowedService;
         public bool IsBound => subscription != null;
 
@@ -76,14 +73,8 @@ namespace GamePlatform.Features.Presentation.Shared
             State = state;
             DiagnosticCode = diagnosticCode;
         }
-        public GamePlatform.Navigation.CompletionPresentationState State
-        {
-            get;
-        }
-        public string DiagnosticCode
-        {
-            get;
-        }
+        public GamePlatform.Navigation.CompletionPresentationState State { get; }
+        public string DiagnosticCode { get; }
         public bool CanAdvance => State == GamePlatform.Navigation.CompletionPresentationState.Confirmed;
         public bool CanRetrySave => State == GamePlatform.Navigation.CompletionPresentationState.SaveFailed;
     }

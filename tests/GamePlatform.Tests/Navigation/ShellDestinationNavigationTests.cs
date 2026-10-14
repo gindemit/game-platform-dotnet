@@ -177,10 +177,7 @@ namespace GamePlatform.Tests.Navigation
             {
                 this.navigation = navigation;
             }
-            public bool BackResult
-            {
-                get; private set;
-            }
+            public bool BackResult { get; private set; }
             public Task<RouteLoadResult> LoadAsync(NavigationRoute route, CancellationToken cancellationToken)
             {
                 BackResult = navigation.Back();

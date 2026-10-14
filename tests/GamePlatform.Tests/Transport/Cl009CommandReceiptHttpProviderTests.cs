@@ -220,14 +220,8 @@ namespace GamePlatform.Tests.Transport
             {
                 this.decoded = decoded;
             }
-            public bool ThrowOnDecode
-            {
-                get; set;
-            }
-            public int DecodeCount
-            {
-                get; private set;
-            }
+            public bool ThrowOnDecode { get; set; }
+            public int DecodeCount { get; private set; }
             public List<object> Encoded { get; } = new List<object>();
             public byte[] Encode<T>(T value)
             {

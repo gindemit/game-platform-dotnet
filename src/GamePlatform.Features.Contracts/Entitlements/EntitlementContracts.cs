@@ -34,14 +34,8 @@ namespace GamePlatform.Features.Contracts.Entitlements
             BusinessSource = businessSource;
         }
 
-        public PlatformId ReceiptId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
+        public PlatformId ReceiptId { get; }
+        public string BusinessSource { get; }
     }
 
     /// <summary>One opaque server-confirmed entitlement. Payload is not parsed or made authoritative by this feature.</summary>
@@ -73,26 +67,11 @@ namespace GamePlatform.Features.Contracts.Entitlements
             this.payload = payload.ToArray();
         }
 
-        public PlatformId EntitlementId
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public EntitlementRightState State
-        {
-            get;
-        }
-        public EntitlementOriginReceipt OriginReceipt
-        {
-            get;
-        }
-        public long? ExpiresAtServerMilliseconds
-        {
-            get;
-        }
+        public PlatformId EntitlementId { get; }
+        public long Revision { get; }
+        public EntitlementRightState State { get; }
+        public EntitlementOriginReceipt OriginReceipt { get; }
+        public long? ExpiresAtServerMilliseconds { get; }
         public byte[] CopyPayload() => (byte[])payload.Clone();
     }
 
@@ -116,14 +95,8 @@ namespace GamePlatform.Features.Contracts.Entitlements
             ConfirmedAtMilliseconds = confirmedAtMilliseconds;
         }
 
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAtMilliseconds
-        {
-            get;
-        }
+        public long Revision { get; }
+        public long ConfirmedAtMilliseconds { get; }
         public IReadOnlyList<EntitlementRight> Rights => Array.AsReadOnly(rights);
     }
 
@@ -137,14 +110,8 @@ namespace GamePlatform.Features.Contracts.Entitlements
             OfflineEligibility = offlineEligibility;
         }
 
-        public EntitlementRight Right
-        {
-            get;
-        }
-        public EntitlementOfflineEligibility OfflineEligibility
-        {
-            get;
-        }
+        public EntitlementRight Right { get; }
+        public EntitlementOfflineEligibility OfflineEligibility { get; }
     }
 
     /// <summary>Presentation projection. No local clock is accepted because device time cannot create authority.</summary>
@@ -163,10 +130,7 @@ namespace GamePlatform.Features.Contracts.Entitlements
                 throw new ArgumentException("Entitlement views do not faithfully describe the confirmed projection.", nameof(rights));
         }
 
-        public EntitlementConfirmedSnapshot Confirmed
-        {
-            get;
-        }
+        public EntitlementConfirmedSnapshot Confirmed { get; }
         public IReadOnlyList<EntitlementRightView> Rights => Array.AsReadOnly(rights);
     }
 

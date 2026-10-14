@@ -609,14 +609,8 @@ namespace GamePlatform.Tests.Sync.Pull
         }
         private sealed class RecordingProjector : IPrivateSyncProjectionProjector
         {
-            public List<long> Revisions { get; } = new List<long>(); public List<long> RawRevisions { get; } = new List<long>(); public List<string> Keys { get; } = new List<string>(); public int SnapshotCalls
-            {
-                get; private set;
-            }
-            public List<string> SnapshotKeys { get; } = new List<string>(); public long CheckpointDuringSnapshot
-            {
-                get; private set;
-            }
+            public List<long> Revisions { get; } = new List<long>(); public List<long> RawRevisions { get; } = new List<long>(); public List<string> Keys { get; } = new List<string>(); public int SnapshotCalls { get; private set; }
+            public List<string> SnapshotKeys { get; } = new List<string>(); public long CheckpointDuringSnapshot { get; private set; }
             public void ProjectConfirmedGroup(ILocalStorageTransaction transaction, StoredPullGroup group)
             {
                 var s = (SqliteTransactionSession)transaction;
@@ -656,26 +650,11 @@ namespace GamePlatform.Tests.Sync.Pull
         }
         private sealed class G3Sink : IG3PrivateProjectionSink
         {
-            public bool ThrowOnGroup
-            {
-                get; set;
-            }
-            public PrivateSyncProjectionObservation SnapshotObservation
-            {
-                get; private set;
-            }
-            public PrivateSyncProjectionObservation GroupObservation
-            {
-                get; private set;
-            }
-            public ProjectionProfileSnapshot? Profile
-            {
-                get; private set;
-            }
-            public IReadOnlyList<ProjectionProgressionSnapshot> Progression { get; private set; } = Array.Empty<ProjectionProgressionSnapshot>(); public IReadOnlyList<ProjectionWalletSnapshot> Wallet { get; private set; } = Array.Empty<ProjectionWalletSnapshot>(); public IReadOnlyList<IProjectionChange> GroupChanges { get; private set; } = Array.Empty<IProjectionChange>(); public long GroupRevision
-            {
-                get; private set;
-            }
+            public bool ThrowOnGroup { get; set; }
+            public PrivateSyncProjectionObservation SnapshotObservation { get; private set; }
+            public PrivateSyncProjectionObservation GroupObservation { get; private set; }
+            public ProjectionProfileSnapshot? Profile { get; private set; }
+            public IReadOnlyList<ProjectionProgressionSnapshot> Progression { get; private set; } = Array.Empty<ProjectionProgressionSnapshot>(); public IReadOnlyList<ProjectionWalletSnapshot> Wallet { get; private set; } = Array.Empty<ProjectionWalletSnapshot>(); public IReadOnlyList<IProjectionChange> GroupChanges { get; private set; } = Array.Empty<IProjectionChange>(); public long GroupRevision { get; private set; }
             public void ReplaceSnapshot(ILocalStorageTransaction transaction, PrivateSyncProjectionObservation observation, ProjectionProfileSnapshot? profile, IReadOnlyList<ProjectionProgressionSnapshot> progression, IReadOnlyList<ProjectionWalletSnapshot> wallet)
             {
                 SnapshotObservation = observation;
@@ -736,10 +715,7 @@ namespace GamePlatform.Tests.Sync.Pull
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 try

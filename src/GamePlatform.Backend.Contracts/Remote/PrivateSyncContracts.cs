@@ -19,18 +19,9 @@ namespace GamePlatform.Backend.Contracts.Remote
             SchemaVersion = schemaVersion;
             Required = required;
         }
-        public string Name
-        {
-            get;
-        }
-        public int SchemaVersion
-        {
-            get;
-        }
-        public bool Required
-        {
-            get;
-        }
+        public string Name { get; }
+        public int SchemaVersion { get; }
+        public bool Required { get; }
     }
 
     /// <summary>Internal semantic mirror of the frozen private-feed change literal.</summary>
@@ -62,22 +53,10 @@ namespace GamePlatform.Backend.Contracts.Remote
             Kind = kind;
             this.payload = payload == null ? Array.Empty<byte>() : (byte[])payload.Clone();
         }
-        public string Collection
-        {
-            get;
-        }
-        public string EntityKey
-        {
-            get;
-        }
-        public long EntityRevision
-        {
-            get;
-        }
-        public ProjectionMutationKind Kind
-        {
-            get;
-        }
+        public string Collection { get; }
+        public string EntityKey { get; }
+        public long EntityRevision { get; }
+        public ProjectionMutationKind Kind { get; }
         public byte[] CopyPayload() => (byte[])payload.Clone();
     }
 
@@ -113,46 +92,16 @@ namespace GamePlatform.Backend.Contracts.Remote
             ExpiresAt = expiresAt;
             ServerTime = serverTime;
         }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string StreamState
-        {
-            get;
-        }
-        public long FinalizedThrough
-        {
-            get;
-        }
-        public long? NextSequence
-        {
-            get;
-        }
-        public long CommittedThrough
-        {
-            get;
-        }
-        public long VisibilityGeneration
-        {
-            get;
-        }
-        public Guid LogEpoch
-        {
-            get;
-        }
-        public IReadOnlyList<SnapshotCollection> Collections
-        {
-            get;
-        }
-        public long ExpiresAt
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public ClientStreamId StreamId { get; }
+        public string StreamState { get; }
+        public long FinalizedThrough { get; }
+        public long? NextSequence { get; }
+        public long CommittedThrough { get; }
+        public long VisibilityGeneration { get; }
+        public Guid LogEpoch { get; }
+        public IReadOnlyList<SnapshotCollection> Collections { get; }
+        public long ExpiresAt { get; }
+        public long ServerTime { get; }
         public byte[] CopySession() => (byte[])session.Clone(); public byte[] CopyFirstPageToken() => (byte[])firstPage.Clone();
         private static IReadOnlyList<SnapshotCollection> Copy(IReadOnlyList<SnapshotCollection> values)
         {
@@ -196,22 +145,10 @@ namespace GamePlatform.Backend.Contracts.Remote
             initialCursor = initialPullCursor == null ? null : (byte[])initialPullCursor.Clone();
             ServerTime = serverTime;
         }
-        public long CommittedThrough
-        {
-            get;
-        }
-        public IReadOnlyList<RemoteProjectionMutation> Entities
-        {
-            get;
-        }
-        public bool HasMore
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public long CommittedThrough { get; }
+        public IReadOnlyList<RemoteProjectionMutation> Entities { get; }
+        public bool HasMore { get; }
+        public long ServerTime { get; }
         public byte[] CopySession() => (byte[])session.Clone(); public byte[]? CopyNextPageToken() => nextPage == null ? null : (byte[])nextPage.Clone(); public byte[]? CopyInitialPullCursor() => initialCursor == null ? null : (byte[])initialCursor.Clone();
         private static IReadOnlyList<RemoteProjectionMutation> Copy(IReadOnlyList<RemoteProjectionMutation> values)
         {
@@ -236,14 +173,8 @@ namespace GamePlatform.Backend.Contracts.Remote
                 copy[i] = changes[i] ?? throw new ArgumentException("A change is null.", nameof(changes));
             Changes = Array.AsReadOnly(copy);
         }
-        public long FeedRevision
-        {
-            get;
-        }
-        public IReadOnlyList<RemoteProjectionMutation> Changes
-        {
-            get;
-        }
+        public long FeedRevision { get; }
+        public IReadOnlyList<RemoteProjectionMutation> Changes { get; }
     }
     public sealed class RemotePullPage
     {
@@ -275,30 +206,12 @@ namespace GamePlatform.Backend.Contracts.Remote
                 throw new ArgumentOutOfRangeException(nameof(reason));
             return new RemotePullPage(true, reason, 0, Array.Empty<RemotePullGroup>(), null, false, serverTime);
         }
-        public bool ResetRequired
-        {
-            get;
-        }
-        public string? ResetReason
-        {
-            get;
-        }
-        public long CommittedThrough
-        {
-            get;
-        }
-        public IReadOnlyList<RemotePullGroup> Groups
-        {
-            get;
-        }
-        public bool HasMore
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public bool ResetRequired { get; }
+        public string? ResetReason { get; }
+        public long CommittedThrough { get; }
+        public IReadOnlyList<RemotePullGroup> Groups { get; }
+        public bool HasMore { get; }
+        public long ServerTime { get; }
         public byte[]? CopyNextCursor() => nextCursor == null ? null : (byte[])nextCursor.Clone();
         private static IReadOnlyList<RemotePullGroup> Copy(IReadOnlyList<RemotePullGroup> values)
         {

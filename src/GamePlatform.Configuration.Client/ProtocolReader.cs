@@ -114,22 +114,10 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ImmutableFileReference
     {
-        public string Path
-        {
-            get;
-        }
-        public string RepresentationSha
-        {
-            get;
-        }
-        public string SemanticSha
-        {
-            get;
-        }
-        public int DecodedBytes
-        {
-            get;
-        }
+        public string Path { get; }
+        public string RepresentationSha { get; }
+        public string SemanticSha { get; }
+        public int DecodedBytes { get; }
         internal ImmutableFileReference(string path, string representationSha, string semanticSha, int decodedBytes)
         {
             Path = path;
@@ -140,26 +128,11 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ReleasePointer
     {
-        public long Sequence
-        {
-            get;
-        }
-        public long IssuedAtSeconds
-        {
-            get;
-        }
-        public string Release
-        {
-            get;
-        }
-        public ImmutableFileReference Manifest
-        {
-            get;
-        }
-        public JsonValue Document
-        {
-            get;
-        }
+        public long Sequence { get; }
+        public long IssuedAtSeconds { get; }
+        public string Release { get; }
+        public ImmutableFileReference Manifest { get; }
+        public JsonValue Document { get; }
         internal ReleasePointer(long sequence, long issued, string release, ImmutableFileReference manifest, JsonValue document)
         {
             Sequence = sequence;
@@ -171,18 +144,9 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class AssetDescriptor
     {
-        public FeatureRevisionReference Reference
-        {
-            get;
-        }
-        public ImmutableFileReference File
-        {
-            get;
-        }
-        public IReadOnlyList<FeatureRevisionReference> Dependencies
-        {
-            get;
-        }
+        public FeatureRevisionReference Reference { get; }
+        public ImmutableFileReference File { get; }
+        public IReadOnlyList<FeatureRevisionReference> Dependencies { get; }
         internal AssetDescriptor(FeatureRevisionReference reference, ImmutableFileReference file, IReadOnlyList<FeatureRevisionReference> dependencies)
         {
             Reference = reference;
@@ -192,22 +156,10 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ReleaseManifest
     {
-        public string Release
-        {
-            get;
-        }
-        public ImmutableFileReference Selector
-        {
-            get;
-        }
-        public IReadOnlyList<AssetDescriptor> Assets
-        {
-            get;
-        }
-        public JsonValue Document
-        {
-            get;
-        }
+        public string Release { get; }
+        public ImmutableFileReference Selector { get; }
+        public IReadOnlyList<AssetDescriptor> Assets { get; }
+        public JsonValue Document { get; }
         internal ReleaseManifest(string release, ImmutableFileReference selector, IReadOnlyList<AssetDescriptor> assets, JsonValue document)
         {
             Release = release;
@@ -218,18 +170,9 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ControlSnapshot
     {
-        public long Sequence
-        {
-            get;
-        }
-        public JsonValue Document
-        {
-            get;
-        }
-        public IReadOnlyDictionary<string, int> Restrictions
-        {
-            get;
-        }
+        public long Sequence { get; }
+        public JsonValue Document { get; }
+        public IReadOnlyDictionary<string, int> Restrictions { get; }
         internal ControlSnapshot(long sequence, JsonValue document, Dictionary<string, int> restrictions)
         {
             Sequence = sequence;

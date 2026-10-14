@@ -21,18 +21,9 @@ namespace GamePlatform.Transport.Http
             BackendNamespace = backendNamespace;
             MaximumResponseBytes = maximumResponseBytes;
         }
-        public Uri BaseUri
-        {
-            get;
-        }
-        public BackendNamespace BackendNamespace
-        {
-            get;
-        }
-        public int MaximumResponseBytes
-        {
-            get;
-        }
+        public Uri BaseUri { get; }
+        public BackendNamespace BackendNamespace { get; }
+        public int MaximumResponseBytes { get; }
         public Uri Resolve(string relativePath)
         {
             if (string.IsNullOrWhiteSpace(relativePath) || relativePath[0] == '/' || relativePath.Contains(".."))

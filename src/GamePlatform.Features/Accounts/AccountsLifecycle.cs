@@ -36,18 +36,9 @@ namespace GamePlatform.Features.Accounts
             Principal = principal;
             Session = session;
         }
-        public AccountAuthLifecycleKind Kind
-        {
-            get;
-        }
-        public AccountPrincipalDescriptor? Principal
-        {
-            get;
-        }
-        internal IAuthSession? Session
-        {
-            get;
-        }
+        public AccountAuthLifecycleKind Kind { get; }
+        public AccountPrincipalDescriptor? Principal { get; }
+        internal IAuthSession? Session { get; }
         public static AccountAuthLifecycleResult Authenticated(AccountPrincipalDescriptor principal, IAuthSession session) => new AccountAuthLifecycleResult(AccountAuthLifecycleKind.Authenticated, principal, session);
         public static AccountAuthLifecycleResult UnavailableOffline(AccountPrincipalDescriptor? knownPrincipal) => new AccountAuthLifecycleResult(AccountAuthLifecycleKind.UnavailableOffline, knownPrincipal, null);
         public static AccountAuthLifecycleResult Cancelled() => new AccountAuthLifecycleResult(AccountAuthLifecycleKind.Cancelled, null, null);
@@ -76,14 +67,8 @@ namespace GamePlatform.Features.Accounts
     /// <summary>One account-private scope; its implementation reads actual private-sync readiness and owns admission draining.</summary>
     public interface IAccountScopeLease
     {
-        AccountDirectoryEntry Entry
-        {
-            get;
-        }
-        long Generation
-        {
-            get;
-        }
+        AccountDirectoryEntry Entry { get; }
+        long Generation { get; }
         Task<bool> IsBootstrapReadyAsync(CancellationToken cancellationToken);
         Task<AccountBootstrapResult> BootstrapAsync(CancellationToken cancellationToken);
         Task StopAdmissionsAsync(CancellationToken cancellationToken);
@@ -104,18 +89,9 @@ namespace GamePlatform.Features.Accounts
             Entry = entry;
             Generation = generation;
         }
-        public AccountsReadiness Readiness
-        {
-            get;
-        }
-        public AccountDirectoryEntry? Entry
-        {
-            get;
-        }
-        public long Generation
-        {
-            get;
-        }
+        public AccountsReadiness Readiness { get; }
+        public AccountDirectoryEntry? Entry { get; }
+        public long Generation { get; }
     }
 
     /// <summary>Portable account lifecycle. It persists reservation before provisioning and never derives a principal from a session key.</summary>

@@ -751,10 +751,7 @@ namespace GamePlatform.Tests.Durability
             {
                 this.value = value;
             }
-            public int Calls
-            {
-                get; private set;
-            }
+            public int Calls { get; private set; }
             public long GetUnixMilliseconds()
             {
                 Calls++;
@@ -774,10 +771,7 @@ namespace GamePlatform.Tests.Durability
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 if (Directory.Exists(directory))

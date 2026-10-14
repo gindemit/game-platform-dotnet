@@ -16,18 +16,9 @@ namespace GamePlatform.Core
             AppId = appId;
             UserId = userId;
         }
-        public BackendNamespace Backend
-        {
-            get;
-        }
-        public AppId AppId
-        {
-            get;
-        }
-        public PlatformUserId UserId
-        {
-            get;
-        }
+        public BackendNamespace Backend { get; }
+        public AppId AppId { get; }
+        public PlatformUserId UserId { get; }
         public bool IsValid => Backend.IsValid && AppId.IsValid && UserId.IsValid;
         public bool Equals(OwnerScope other) => Backend == other.Backend && AppId == other.AppId && UserId == other.UserId;
         public override bool Equals(object? obj) => obj is OwnerScope other && Equals(other);
@@ -50,18 +41,9 @@ namespace GamePlatform.Core
             ViewKey = viewKey;
             Generation = generation;
         }
-        public OwnerScope Owner
-        {
-            get;
-        }
-        public SemanticId ViewKey
-        {
-            get;
-        }
-        public long Generation
-        {
-            get;
-        }
+        public OwnerScope Owner { get; }
+        public SemanticId ViewKey { get; }
+        public long Generation { get; }
         public bool IsValid => Owner.IsValid && ViewKey.IsValid && Generation >= 0;
         public bool Equals(ScopedOwnerContext other) => Owner == other.Owner && ViewKey == other.ViewKey && Generation == other.Generation;
         public override bool Equals(object? obj) => obj is ScopedOwnerContext other && Equals(other);

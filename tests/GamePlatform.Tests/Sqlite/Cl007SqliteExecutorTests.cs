@@ -287,10 +287,7 @@ namespace GamePlatform.Tests.Sqlite
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
 
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
 
             public void Dispose()
             {

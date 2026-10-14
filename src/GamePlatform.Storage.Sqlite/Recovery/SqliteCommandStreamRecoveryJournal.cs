@@ -261,29 +261,14 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             public string AccountId { get; set; } = string.Empty; public string InstallationId { get; set; } = string.Empty;
             public string PriorStreamId { get; set; } = string.Empty; public string SuccessorStreamId { get; set; } = string.Empty;
             public string RecoveryId { get; set; } = string.Empty; public string Reason { get; set; } = string.Empty;
-            public string InspectionToken { get; set; } = string.Empty; public long ExpectedFinalizedThrough
-            {
-                get; set;
-            }
-            public int Phase
-            {
-                get; set;
-            }
-            public long? RemoteNextSequence
-            {
-                get; set;
-            }
-            public long? RemotePriorFinalizedThrough
-            {
-                get; set;
-            }
+            public string InspectionToken { get; set; } = string.Empty; public long ExpectedFinalizedThrough { get; set; }
+            public int Phase { get; set; }
+            public long? RemoteNextSequence { get; set; }
+            public long? RemotePriorFinalizedThrough { get; set; }
         }
         private sealed class DirectoryRow
         {
-            public string InstallationId { get; set; } = string.Empty; public string StreamId { get; set; } = string.Empty; public string? AccountId
-            {
-                get; set;
-            }
+            public string InstallationId { get; set; } = string.Empty; public string StreamId { get; set; } = string.Empty; public string? AccountId { get; set; }
             public string MembershipStatus { get; set; } = string.Empty;
         }
     }

@@ -46,10 +46,7 @@ namespace GamePlatform.Configuration.Unity
         private long nextRequest;
         private long monotonic;
         private bool dead;
-        public bool IsTrusted
-        {
-            get; private set;
-        }
+        public bool IsTrusted { get; private set; }
         public long UtcSeconds => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         public long MonotonicSeconds
         {

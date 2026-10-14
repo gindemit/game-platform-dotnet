@@ -64,14 +64,8 @@ namespace GamePlatform.Transport.Http
                 SessionKey = sessionKey;
                 AccountId = accountId;
             }
-            private string SessionKey
-            {
-                get;
-            }
-            private PlatformUserId? AccountId
-            {
-                get;
-            }
+            private string SessionKey { get; }
+            private PlatformUserId? AccountId { get; }
             public bool Equals(RefreshKey other) => string.Equals(SessionKey, other.SessionKey, StringComparison.Ordinal) && Nullable.Equals(AccountId, other.AccountId);
             public override bool Equals(object? obj) => obj is RefreshKey other && Equals(other);
             public override int GetHashCode()

@@ -308,10 +308,7 @@ namespace GamePlatform.Tests.Features
         private sealed class ControlledRemote : IProfileRemote
         {
             private readonly TaskCompletionSource<ProfileRemoteRead> completion = new TaskCompletionSource<ProfileRemoteRead>(TaskCreationOptions.RunContinuationsAsynchronously);
-            public int Calls
-            {
-                get; private set;
-            }
+            public int Calls { get; private set; }
             public Task<ProfileRemoteRead> ReadAsync(ScopedOwnerContext _, CancellationToken __)
             {
                 Calls++;
@@ -371,10 +368,7 @@ namespace GamePlatform.Tests.Features
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 if (Directory.Exists(directory))

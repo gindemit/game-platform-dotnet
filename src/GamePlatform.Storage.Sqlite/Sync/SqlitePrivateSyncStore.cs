@@ -440,33 +440,18 @@ namespace GamePlatform.Storage.Sqlite.Sync
         {
             public string Collection { get; set; } = string.Empty;
             public string EntityKey { get; set; } = string.Empty;
-            public long EntityRevision
-            {
-                get; set;
-            }
+            public long EntityRevision { get; set; }
             public byte[] Payload { get; set; } = Array.Empty<byte>();
         }
         private sealed class TerminalCommandRow
         {
             public string OperationId { get; set; } = string.Empty;
             public string InstallationId { get; set; } = string.Empty;
-            public long Sequence
-            {
-                get; set;
-            }
+            public long Sequence { get; set; }
             public string OperationKind { get; set; } = string.Empty;
-            public int SchemaVersion
-            {
-                get; set;
-            }
-            public int FingerprintVersion
-            {
-                get; set;
-            }
-            public long ClientCreatedAt
-            {
-                get; set;
-            }
+            public int SchemaVersion { get; set; }
+            public int FingerprintVersion { get; set; }
+            public long ClientCreatedAt { get; set; }
             public byte[] SemanticBody { get; set; } = Array.Empty<byte>();
             public byte[] Fingerprint { get; set; } = Array.Empty<byte>();
             public string DeliveryState { get; set; } = string.Empty;

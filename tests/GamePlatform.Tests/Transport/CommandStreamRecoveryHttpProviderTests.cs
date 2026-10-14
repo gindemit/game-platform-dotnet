@@ -154,10 +154,7 @@ namespace GamePlatform.Tests.Transport
             {
                 Send = send;
             }
-            public Func<HttpRequestData, HttpResponseData> Send
-            {
-                get; set;
-            }
+            public Func<HttpRequestData, HttpResponseData> Send { get; set; }
             public List<HttpRequestData> Requests { get; } = new List<HttpRequestData>();
             public Task<HttpResponseData> SendAsync(HttpRequestData request, CancellationToken cancellationToken)
             {

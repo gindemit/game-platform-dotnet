@@ -11,7 +11,9 @@ indent_style = space
 indent_size = 4
 csharp_new_line_before_open_brace = all
 csharp_preserve_single_line_statements = false
-csharp_preserve_single_line_blocks = false
+# Keep simple auto-properties such as public string Name { get; } compact.
+# This preserves existing compact blocks; it does not collapse expanded code.
+csharp_preserve_single_line_blocks = true
 dotnet_diagnostic.IDE0055.severity = warning
 
 # Generated contracts and third-party source retain their owning layout.

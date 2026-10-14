@@ -28,18 +28,9 @@ namespace GamePlatform.Features.RewardFulfillment
             ResourceId = resourceId;
             ProjectionRevision = projectionRevision;
         }
-        public RewardReceiptLineKind Kind
-        {
-            get;
-        }
-        public PlatformId ResourceId
-        {
-            get;
-        }
-        public long ProjectionRevision
-        {
-            get;
-        }
+        public RewardReceiptLineKind Kind { get; }
+        public PlatformId ResourceId { get; }
+        public long ProjectionRevision { get; }
     }
 
     /// <summary>

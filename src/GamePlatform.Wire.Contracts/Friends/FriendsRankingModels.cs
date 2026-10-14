@@ -28,34 +28,13 @@ namespace GamePlatform.Wire.Contracts.Friends
             BadgeId = badgeId;
             CountryCode = countryCode;
         }
-        public Guid ParticipantId
-        {
-            get;
-        }
-        public long Rank
-        {
-            get;
-        }
-        public long Score
-        {
-            get;
-        }
-        public string DisplayName
-        {
-            get;
-        }
-        public string? AvatarKey
-        {
-            get;
-        }
-        public string? BadgeId
-        {
-            get;
-        }
-        public string? CountryCode
-        {
-            get;
-        }
+        public Guid ParticipantId { get; }
+        public long Rank { get; }
+        public long Score { get; }
+        public string DisplayName { get; }
+        public string? AvatarKey { get; }
+        public string? BadgeId { get; }
+        public string? CountryCode { get; }
     }
 
     public sealed class FriendsRankingCountrySelection
@@ -72,18 +51,9 @@ namespace GamePlatform.Wire.Contracts.Friends
             PendingCountryCode = pendingCountryCode;
             PendingEffectiveAt = pendingEffectiveAt;
         }
-        public string? CurrentCountryCode
-        {
-            get;
-        }
-        public string? PendingCountryCode
-        {
-            get;
-        }
-        public long? PendingEffectiveAt
-        {
-            get;
-        }
+        public string? CurrentCountryCode { get; }
+        public string? PendingCountryCode { get; }
+        public long? PendingEffectiveAt { get; }
     }
 
     public sealed class FriendsRankingResponse
@@ -148,98 +118,29 @@ namespace GamePlatform.Wire.Contracts.Friends
             GraphRevision = graphRevision;
             CohortSize = cohortSize;
         }
-        public string BoardId
-        {
-            get;
-        }
-        public string ParticipantKind
-        {
-            get;
-        }
-        public string Scope
-        {
-            get;
-        }
-        public string? CountryCode
-        {
-            get;
-        }
-        public string PeriodId
-        {
-            get;
-        }
-        public long PeriodStart
-        {
-            get;
-        }
-        public long PeriodEnd
-        {
-            get;
-        }
-        public long ResetAt
-        {
-            get;
-        }
-        public Guid SnapshotId
-        {
-            get;
-        }
-        public long SnapshotCreatedAt
-        {
-            get;
-        }
-        public long ExpiresAt
-        {
-            get;
-        }
-        public string ScoreAuthority
-        {
-            get;
-        }
-        public IReadOnlyList<FriendsRankingEntry> Entries
-        {
-            get;
-        }
-        public string? NextCursor
-        {
-            get;
-        }
-        public FriendsRankingEntry? Self
-        {
-            get;
-        }
-        public int SnapshotLimit
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
-        public FriendsRankingCountrySelection? CountrySelection
-        {
-            get;
-        }
-        public Guid? AppId
-        {
-            get;
-        }
-        public Guid? AccountId
-        {
-            get;
-        }
-        public Guid? PlayerId
-        {
-            get;
-        }
-        public long? GraphRevision
-        {
-            get;
-        }
-        public int? CohortSize
-        {
-            get;
-        }
+        public string BoardId { get; }
+        public string ParticipantKind { get; }
+        public string Scope { get; }
+        public string? CountryCode { get; }
+        public string PeriodId { get; }
+        public long PeriodStart { get; }
+        public long PeriodEnd { get; }
+        public long ResetAt { get; }
+        public Guid SnapshotId { get; }
+        public long SnapshotCreatedAt { get; }
+        public long ExpiresAt { get; }
+        public string ScoreAuthority { get; }
+        public IReadOnlyList<FriendsRankingEntry> Entries { get; }
+        public string? NextCursor { get; }
+        public FriendsRankingEntry? Self { get; }
+        public int SnapshotLimit { get; }
+        public long ServerTime { get; }
+        public FriendsRankingCountrySelection? CountrySelection { get; }
+        public Guid? AppId { get; }
+        public Guid? AccountId { get; }
+        public Guid? PlayerId { get; }
+        public long? GraphRevision { get; }
+        public int? CohortSize { get; }
     }
 
     internal static class FriendsRankingValidation

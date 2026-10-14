@@ -34,38 +34,14 @@ namespace GamePlatform.Storage.Abstractions.Outbox
             this.body = (byte[])body.Clone();
             this.fingerprint = (byte[])fingerprint.Clone();
         }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public Guid InstallationId
-        {
-            get;
-        }
-        public long Sequence
-        {
-            get;
-        }
-        public string OperationKind
-        {
-            get;
-        }
-        public int SchemaVersion
-        {
-            get;
-        }
-        public int FingerprintVersion
-        {
-            get;
-        }
-        public long ClientCreatedAt
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public Guid InstallationId { get; }
+        public long Sequence { get; }
+        public string OperationKind { get; }
+        public int SchemaVersion { get; }
+        public int FingerprintVersion { get; }
+        public long ClientCreatedAt { get; }
         public byte[] CopyBody() => (byte[])body.Clone();
         public byte[] CopyFingerprint() => (byte[])fingerprint.Clone();
     }

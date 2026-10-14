@@ -39,46 +39,16 @@ namespace GamePlatform.Features.Contracts
             Metrics = new ReadOnlyDictionary<string, long>(copy);
             ValidationReference = CompatibilityGuard.Optional(validationReference, nameof(validationReference));
         }
-        public PlatformId Session
-        {
-            get;
-        }
-        public PlatformId Mode
-        {
-            get;
-        }
-        public PlatformId Content
-        {
-            get;
-        }
-        public PlatformId Difficulty
-        {
-            get;
-        }
-        public bool Success
-        {
-            get;
-        }
-        public long Score
-        {
-            get;
-        }
-        public long DurationTicks
-        {
-            get;
-        }
-        public int TicksPerSecond
-        {
-            get;
-        }
-        public IReadOnlyDictionary<string, long> Metrics
-        {
-            get;
-        }
-        public string ValidationReference
-        {
-            get;
-        }
+        public PlatformId Session { get; }
+        public PlatformId Mode { get; }
+        public PlatformId Content { get; }
+        public PlatformId Difficulty { get; }
+        public bool Success { get; }
+        public long Score { get; }
+        public long DurationTicks { get; }
+        public int TicksPerSecond { get; }
+        public IReadOnlyDictionary<string, long> Metrics { get; }
+        public string ValidationReference { get; }
     }
 
     public interface IGameplayOutcomeSink
@@ -96,18 +66,9 @@ namespace GamePlatform.Features.Contracts
             Counter = CompatibilityGuard.Required(counter, nameof(counter), 128);
             Amount = amount;
         }
-        public long Sequence
-        {
-            get;
-        }
-        public string Counter
-        {
-            get;
-        }
-        public long Amount
-        {
-            get;
-        }
+        public long Sequence { get; }
+        public string Counter { get; }
+        public long Amount { get; }
     }
 
     public interface IProgressObserver

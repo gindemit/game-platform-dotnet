@@ -20,10 +20,7 @@ namespace GamePlatform.Storage.Sqlite.Executor
             Scope = scope;
         }
 
-        public StorageScope Scope
-        {
-            get;
-        }
+        public StorageScope Scope { get; }
 
         public int Execute(string sql, params object[] parameters)
         {

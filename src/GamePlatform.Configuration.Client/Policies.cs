@@ -40,18 +40,9 @@ namespace GamePlatform.Configuration.Client
         public const int GraphBytes = 8388608;
         public const int CacheBudgetBytes = 33554432;
         public const int FreshSeconds = 86400;
-        public Uri NormalRoot
-        {
-            get;
-        }
-        public Uri ControlRoot
-        {
-            get;
-        }
-        public bool AllowLoopbackHttp
-        {
-            get;
-        }
+        public Uri NormalRoot { get; }
+        public Uri ControlRoot { get; }
+        public bool AllowLoopbackHttp { get; }
         public ConfigurationClientPolicy(Uri normalRoot, Uri controlRoot, bool allowLoopbackHttp = false)
         {
             NormalRoot = Root(normalRoot, allowLoopbackHttp);

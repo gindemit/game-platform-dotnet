@@ -171,14 +171,8 @@ namespace GamePlatform.Features.Shared
                 Task = task;
                 ExpiresAt = expiresAt;
             }
-            public Task<FeatureSnapshot<T>> Task
-            {
-                get;
-            }
-            public long ExpiresAt
-            {
-                get;
-            }
+            public Task<FeatureSnapshot<T>> Task { get; }
+            public long ExpiresAt { get; }
         }
     }
 }

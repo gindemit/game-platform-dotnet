@@ -288,10 +288,7 @@ namespace GamePlatform.Tests.Features.Entitlements
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 if (Directory.Exists(directory))

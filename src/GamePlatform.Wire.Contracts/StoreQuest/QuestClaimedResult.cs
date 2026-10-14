@@ -15,25 +15,10 @@ namespace GamePlatform.Wire.Contracts
             Lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }
 
-        public Guid ClaimId
-        {
-            get;
-        }
-        public Guid OriginatingOperationId
-        {
-            get;
-        }
-        public string QuestId
-        {
-            get;
-        }
-        public string OccurrenceKey
-        {
-            get;
-        }
-        public IReadOnlyList<ILiveSliceRewardLine> Lines
-        {
-            get;
-        }
+        public Guid ClaimId { get; }
+        public Guid OriginatingOperationId { get; }
+        public string QuestId { get; }
+        public string OccurrenceKey { get; }
+        public IReadOnlyList<ILiveSliceRewardLine> Lines { get; }
     }
 }

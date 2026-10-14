@@ -137,23 +137,11 @@ namespace GamePlatform.Storage.Sqlite.Recovery
             public string OperationId { get; set; } = "";
             public string StreamId { get; set; } = "";
             public string InstallationId { get; set; } = "";
-            public long Sequence
-            {
-                get; set;
-            }
+            public long Sequence { get; set; }
             public string OperationKind { get; set; } = "";
-            public int SchemaVersion
-            {
-                get; set;
-            }
-            public int FingerprintVersion
-            {
-                get; set;
-            }
-            public long CreatedAt
-            {
-                get; set;
-            }
+            public int SchemaVersion { get; set; }
+            public int FingerprintVersion { get; set; }
+            public long CreatedAt { get; set; }
             public byte[] Body { get; set; } = Array.Empty<byte>();
             public byte[] Fingerprint { get; set; } = Array.Empty<byte>();
         }

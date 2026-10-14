@@ -10,14 +10,8 @@ namespace GamePlatform.Wire.Contracts.Friends
             PlayerId = playerId;
             Revision = revision;
         }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
+        public Guid PlayerId { get; }
+        public long Revision { get; }
         public string EntityType => "friends"; public string Kind => "invalidation";
     }
 }

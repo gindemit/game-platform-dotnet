@@ -11,14 +11,8 @@ namespace GamePlatform.Features.Contracts
 
     public interface IFeatureCapability
     {
-        string FeatureId
-        {
-            get;
-        }
-        FeatureStatus Status
-        {
-            get;
-        }
+        string FeatureId { get; }
+        FeatureStatus Status { get; }
         Task<PlatformResult<string>> ExecuteUnavailableAsync(CancellationToken cancellationToken);
     }
 }

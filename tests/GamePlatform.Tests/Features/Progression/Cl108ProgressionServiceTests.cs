@@ -695,10 +695,7 @@ namespace GamePlatform.Tests.Features.Progression
             {
                 this.inner = inner;
             }
-            public bool FailAfterInsert
-            {
-                get; set;
-            }
+            public bool FailAfterInsert { get; set; }
             public Task<IReadOnlyList<ProgressionConfirmationEvidence>> ReadAsync(ScopedOwnerContext owner, CancellationToken cancellationToken) => inner.ReadAsync(owner, cancellationToken);
             public void ValidateAndInsert(ILocalStorageTransaction transaction, ScopedOwnerContext owner, ProgressionConfirmationEvidence evidence, IProgressionStateCodec codec)
             {
@@ -716,10 +713,7 @@ namespace GamePlatform.Tests.Features.Progression
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 for (var attempt = 0; attempt != 5 && Directory.Exists(directory); attempt++)

@@ -9,14 +9,8 @@ namespace GamePlatform.Configuration.Client
 {
     public sealed class ConfigurationScope
     {
-        public string App
-        {
-            get;
-        }
-        public string Environment
-        {
-            get;
-        }
+        public string App { get; }
+        public string Environment { get; }
         public ConfigurationScope(string app, string environment)
         {
             Wire.Text(app);
@@ -27,22 +21,10 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ConfigurationOwner
     {
-        public string OwnerId
-        {
-            get;
-        }
-        public string SubjectId
-        {
-            get;
-        }
-        public long Generation
-        {
-            get;
-        }
-        public bool Persistent
-        {
-            get;
-        }
+        public string OwnerId { get; }
+        public string SubjectId { get; }
+        public long Generation { get; }
+        public bool Persistent { get; }
         public ConfigurationOwner(string ownerId, string subjectId, long generation, bool persistent = true)
         {
             Wire.Text(ownerId);
@@ -57,18 +39,9 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class CacheNamespace
     {
-        public ConfigurationScope Scope
-        {
-            get;
-        }
-        public ConfigurationOwner? Owner
-        {
-            get;
-        }
-        public string Key
-        {
-            get;
-        }
+        public ConfigurationScope Scope { get; }
+        public ConfigurationOwner? Owner { get; }
+        public string Key { get; }
         public CacheNamespace(ConfigurationScope scope, ConfigurationOwner? owner)
         {
             Scope = scope ?? throw new ArgumentNullException(nameof(scope));
@@ -78,22 +51,10 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ConfigurationHttpRequest
     {
-        public Uri Address
-        {
-            get;
-        }
-        public int MaximumDecodedBytes
-        {
-            get;
-        }
-        public string? ETag
-        {
-            get;
-        }
-        public bool Immutable
-        {
-            get;
-        }
+        public Uri Address { get; }
+        public int MaximumDecodedBytes { get; }
+        public string? ETag { get; }
+        public bool Immutable { get; }
         public ConfigurationHttpRequest(Uri address, int maximumDecodedBytes, string? etag, bool immutable)
         {
             Address = address ?? throw new ArgumentNullException(nameof(address));
@@ -107,27 +68,12 @@ namespace GamePlatform.Configuration.Client
     public sealed class ConfigurationHttpResponse
     {
         private readonly byte[] bytes;
-        public int Status
-        {
-            get;
-        }
+        public int Status { get; }
         public byte[] Bytes => (byte[])bytes.Clone();
-        public string? ETag
-        {
-            get;
-        }
-        public int? RetryAfterSeconds
-        {
-            get;
-        }
-        public Uri Address
-        {
-            get;
-        }
-        public string ContentType
-        {
-            get;
-        }
+        public string? ETag { get; }
+        public int? RetryAfterSeconds { get; }
+        public Uri Address { get; }
+        public string ContentType { get; }
         public ConfigurationHttpResponse(int status, byte[] bytes, Uri address, string contentType = "application/json", string? etag = null, int? retryAfterSeconds = null)
         {
             Status = status;
@@ -146,18 +92,9 @@ namespace GamePlatform.Configuration.Client
     }
     public interface IConfigurationClock
     {
-        long UtcSeconds
-        {
-            get;
-        }
-        long MonotonicSeconds
-        {
-            get;
-        }
-        bool IsTrusted
-        {
-            get;
-        }
+        long UtcSeconds { get; }
+        long MonotonicSeconds { get; }
+        bool IsTrusted { get; }
         Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken);
     }
     public interface IConfigurationRandom
@@ -167,10 +104,7 @@ namespace GamePlatform.Configuration.Client
     public sealed class StoreSnapshot
     {
         private readonly byte[] metadata;
-        public long Generation
-        {
-            get;
-        }
+        public long Generation { get; }
         public byte[] Metadata => (byte[])metadata.Clone();
         public StoreSnapshot(long generation, byte[] metadata)
         {
@@ -192,18 +126,9 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class FeatureOrigin
     {
-        public long ReleaseSequence
-        {
-            get;
-        }
-        public string ManifestRepresentationSha
-        {
-            get;
-        }
-        public string SelectorRepresentationSha
-        {
-            get;
-        }
+        public long ReleaseSequence { get; }
+        public string ManifestRepresentationSha { get; }
+        public string SelectorRepresentationSha { get; }
         public FeatureOrigin(long releaseSequence, string manifestRepresentationSha, string selectorRepresentationSha)
         {
             if (releaseSequence < 1)
@@ -218,26 +143,11 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class FeatureSelection
     {
-        public Choice Choice
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
-        public string? RuleId
-        {
-            get;
-        }
-        public int? Bucket
-        {
-            get;
-        }
-        public ExperimentReference? Experiment
-        {
-            get;
-        }
+        public Choice Choice { get; }
+        public string Reason { get; }
+        public string? RuleId { get; }
+        public int? Bucket { get; }
+        public ExperimentReference? Experiment { get; }
         internal FeatureSelection(Choice choice, string reason, string? ruleId, int? bucket, ExperimentReference? experiment)
         {
             Choice = choice;
@@ -250,38 +160,14 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class FeatureContext
     {
-        public string FeatureKey
-        {
-            get;
-        }
-        public FeatureSelection Selection
-        {
-            get;
-        }
-        public FeatureOrigin Origin
-        {
-            get;
-        }
-        public IReadOnlyList<FeatureRevisionReference> Closure
-        {
-            get;
-        }
-        public JsonValue Payload
-        {
-            get;
-        }
-        public bool Durable
-        {
-            get;
-        }
-        internal string NamespaceKey
-        {
-            get;
-        }
-        internal long OwnerGeneration
-        {
-            get;
-        }
+        public string FeatureKey { get; }
+        public FeatureSelection Selection { get; }
+        public FeatureOrigin Origin { get; }
+        public IReadOnlyList<FeatureRevisionReference> Closure { get; }
+        public JsonValue Payload { get; }
+        public bool Durable { get; }
+        internal string NamespaceKey { get; }
+        internal long OwnerGeneration { get; }
         internal FeatureContext(CacheNamespace binding, string key, FeatureSelection selection, FeatureOrigin origin, IEnumerable<FeatureRevisionReference> closure, JsonValue payload, bool durable)
         {
             if (binding.Owner == null)
@@ -299,26 +185,11 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ConfigurationResult
     {
-        public string Status
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
-        public bool Durable
-        {
-            get;
-        }
-        public FeatureContext? Feature
-        {
-            get;
-        }
-        public Choice? BundledChoice
-        {
-            get;
-        }
+        public string Status { get; }
+        public string Reason { get; }
+        public bool Durable { get; }
+        public FeatureContext? Feature { get; }
+        public Choice? BundledChoice { get; }
         public ConfigurationResult(string status, string reason, bool durable, FeatureContext? feature = null, Choice? bundledChoice = null)
         {
             Status = status;
@@ -330,18 +201,9 @@ namespace GamePlatform.Configuration.Client
     }
     public sealed class ConfigurationDiagnostic
     {
-        public string Channel
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
-        public long AtSeconds
-        {
-            get;
-        }
+        public string Channel { get; }
+        public string Reason { get; }
+        public long AtSeconds { get; }
         public ConfigurationDiagnostic(string channel, string reason, long atSeconds)
         {
             Channel = channel;
@@ -352,18 +214,9 @@ namespace GamePlatform.Configuration.Client
     public sealed class OperationalRestrictions
     {
         private readonly IReadOnlyDictionary<string, int> values;
-        public long Sequence
-        {
-            get;
-        }
-        public string RepresentationSha
-        {
-            get;
-        }
-        public bool Durable
-        {
-            get;
-        }
+        public long Sequence { get; }
+        public string RepresentationSha { get; }
+        public bool Durable { get; }
         internal OperationalRestrictions(long sequence, string digest, bool durable, IDictionary<string, int> restrictions)
         {
             Sequence = sequence;
@@ -387,10 +240,7 @@ namespace GamePlatform.Configuration.Client
     {
         private readonly object sync = new object();
         private OperationalRestrictions current = new OperationalRestrictions(0, string.Empty, false, new Dictionary<string, int>());
-        public ConfigurationScope Scope
-        {
-            get;
-        }
+        public ConfigurationScope Scope { get; }
         public OperationalRestrictions Current
         {
             get

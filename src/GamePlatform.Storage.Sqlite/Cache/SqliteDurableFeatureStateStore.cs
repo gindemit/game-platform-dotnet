@@ -139,26 +139,11 @@ namespace GamePlatform.Storage.Sqlite.Cache
             this.payload = payload ?? throw new StorageException(StorageFailure.Corrupt, "A feature-state payload is missing.");
             this.extensions = extensions ?? throw new StorageException(StorageFailure.Corrupt, "Feature-state extensions are missing.");
         }
-        public string ViewKey
-        {
-            get;
-        }
-        public string FeatureNamespace
-        {
-            get;
-        }
-        public string EntityKey
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAt
-        {
-            get;
-        }
+        public string ViewKey { get; }
+        public string FeatureNamespace { get; }
+        public string EntityKey { get; }
+        public long Revision { get; }
+        public long ConfirmedAt { get; }
         public DurableFeatureState ToState(ScopedOwnerContext owner)
         {
             if (!string.Equals(ViewKey, owner.ViewKey.Value, StringComparison.Ordinal))

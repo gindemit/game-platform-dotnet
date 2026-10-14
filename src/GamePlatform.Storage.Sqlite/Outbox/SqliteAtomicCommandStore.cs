@@ -27,18 +27,9 @@ namespace GamePlatform.Storage.Sqlite.Outbox
             LocalNextSequence = localNextSequence;
             ServerFinalizedThrough = serverFinalizedThrough;
         }
-        public StreamRecoveryState State
-        {
-            get;
-        }
-        public long LocalNextSequence
-        {
-            get;
-        }
-        public long ServerFinalizedThrough
-        {
-            get;
-        }
+        public StreamRecoveryState State { get; }
+        public long LocalNextSequence { get; }
+        public long ServerFinalizedThrough { get; }
     }
 
     public sealed class SqliteAtomicCommandStore : IAtomicCommandStore

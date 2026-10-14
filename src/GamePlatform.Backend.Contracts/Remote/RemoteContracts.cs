@@ -18,22 +18,13 @@ namespace GamePlatform.Backend.Contracts.Remote
             Value = value;
             Generation = generation;
         }
-        public string Value
-        {
-            get;
-        }
-        public long Generation
-        {
-            get;
-        }
+        public string Value { get; }
+        public long Generation { get; }
     }
 
     public interface IAuthSession
     {
-        string SessionKey
-        {
-            get;
-        }
+        string SessionKey { get; }
         Task<AccessTokenSnapshot> GetAsync(CancellationToken cancellationToken);
         Task<AccessTokenSnapshot> RefreshAsync(long rejectedGeneration, CancellationToken cancellationToken);
     }
@@ -51,18 +42,9 @@ namespace GamePlatform.Backend.Contracts.Remote
             StatusCode = statusCode;
             RetryAfter = retryAfter;
         }
-        public RemoteFailureKind Kind
-        {
-            get;
-        }
-        public int? StatusCode
-        {
-            get;
-        }
-        public TimeSpan? RetryAfter
-        {
-            get;
-        }
+        public RemoteFailureKind Kind { get; }
+        public int? StatusCode { get; }
+        public TimeSpan? RetryAfter { get; }
     }
 
     public readonly struct RemoteResult<T>
@@ -79,18 +61,9 @@ namespace GamePlatform.Backend.Contracts.Remote
             Value = default;
             Failure = failure;
         }
-        public bool IsSuccess
-        {
-            get;
-        }
-        public T? Value
-        {
-            get;
-        }
-        public RemoteFailure Failure
-        {
-            get;
-        }
+        public bool IsSuccess { get; }
+        public T? Value { get; }
+        public RemoteFailure Failure { get; }
         public static RemoteResult<T> Success(T value) => new RemoteResult<T>(value ?? throw new ArgumentNullException(nameof(value)));
         public static RemoteResult<T> Failed(RemoteFailure failure) => new RemoteResult<T>(failure);
     }
@@ -114,30 +87,12 @@ namespace GamePlatform.Backend.Contracts.Remote
             NextSequence = nextSequence;
             ServerTime = serverTime;
         }
-        public PlatformUserId AccountId
-        {
-            get;
-        }
-        public AppId AppId
-        {
-            get;
-        }
-        public string MembershipStatus
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public long NextSequence
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public PlatformUserId AccountId { get; }
+        public AppId AppId { get; }
+        public string MembershipStatus { get; }
+        public ClientStreamId StreamId { get; }
+        public long NextSequence { get; }
+        public long ServerTime { get; }
     }
 
     public interface IProvisioningRemote
@@ -166,38 +121,14 @@ namespace GamePlatform.Backend.Contracts.Remote
             this.semanticBody = (byte[])semanticBody.Clone();
             this.fingerprint = (byte[])fingerprint.Clone();
         }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public Guid InstallationId
-        {
-            get;
-        }
-        public long Sequence
-        {
-            get;
-        }
-        public string OperationKind
-        {
-            get;
-        }
-        public int SchemaVersion
-        {
-            get;
-        }
-        public int FingerprintVersion
-        {
-            get;
-        }
-        public long ClientCreatedAt
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public Guid InstallationId { get; }
+        public long Sequence { get; }
+        public string OperationKind { get; }
+        public int SchemaVersion { get; }
+        public int FingerprintVersion { get; }
+        public long ClientCreatedAt { get; }
         public byte[] SemanticBody => (byte[])semanticBody.Clone(); public byte[] Fingerprint => (byte[])fingerprint.Clone();
     }
     public enum RemoteCommandStatus
@@ -213,10 +144,7 @@ namespace GamePlatform.Backend.Contracts.Remote
             Status = status;
             this.result = result == null ? null : (byte[])result.Clone();
         }
-        public RemoteCommandStatus Status
-        {
-            get;
-        }
+        public RemoteCommandStatus Status { get; }
         public byte[]? Result => result == null ? null : (byte[])result.Clone();
     }
     public interface ICommandRemote
@@ -237,18 +165,9 @@ namespace GamePlatform.Backend.Contracts.Remote
             ObservedFinalizedThrough = observedFinalizedThrough;
         }
 
-        public bool Found
-        {
-            get;
-        }
-        public RemoteCommandOutcome? Outcome
-        {
-            get;
-        }
-        public long ObservedFinalizedThrough
-        {
-            get;
-        }
+        public bool Found { get; }
+        public RemoteCommandOutcome? Outcome { get; }
+        public long ObservedFinalizedThrough { get; }
     }
 
     public interface ICommandReceiptRemote

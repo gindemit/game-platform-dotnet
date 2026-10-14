@@ -18,30 +18,12 @@ namespace GamePlatform.Features.Progression
     {
         private readonly struct DurableProgressionState
         {
-            public ProgressionConfirmedProjection? Confirmed
-            {
-                get;
-            }
-            public IReadOnlyList<PendingProgressionCompletion> Pending
-            {
-                get;
-            }
-            public long PendingRevision
-            {
-                get;
-            }
-            public IReadOnlyList<ProgressionConfirmationEvidence> Confirmations
-            {
-                get;
-            }
-            public long? LatestEvidenceRevision
-            {
-                get;
-            }
-            public IReadOnlyCollection<OperationId> ReceiptConfirmed
-            {
-                get;
-            }
+            public ProgressionConfirmedProjection? Confirmed { get; }
+            public IReadOnlyList<PendingProgressionCompletion> Pending { get; }
+            public long PendingRevision { get; }
+            public IReadOnlyList<ProgressionConfirmationEvidence> Confirmations { get; }
+            public long? LatestEvidenceRevision { get; }
+            public IReadOnlyCollection<OperationId> ReceiptConfirmed { get; }
 
             public DurableProgressionState(ProgressionConfirmedProjection? confirmed,
                 IReadOnlyList<PendingProgressionCompletion> pending, long pendingRevision,

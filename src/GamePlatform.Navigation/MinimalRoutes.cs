@@ -9,10 +9,7 @@ namespace GamePlatform.Navigation
         {
             Kind = kind;
         }
-        public string Kind
-        {
-            get;
-        }
+        public string Kind { get; }
 
         internal static string RequireKey(string value, string parameterName)
         {
@@ -38,14 +35,8 @@ namespace GamePlatform.Navigation
             ContentKey = contentKey;
             LevelScopeGeneration = levelScopeGeneration;
         }
-        public SemanticId ContentKey
-        {
-            get;
-        }
-        public long LevelScopeGeneration
-        {
-            get;
-        }
+        public SemanticId ContentKey { get; }
+        public long LevelScopeGeneration { get; }
     }
 
     public enum CompletionPresentationState
@@ -62,14 +53,8 @@ namespace GamePlatform.Navigation
             ContentKey = contentKey;
             State = state;
         }
-        public SemanticId ContentKey
-        {
-            get;
-        }
-        public CompletionPresentationState State
-        {
-            get;
-        }
+        public SemanticId ContentKey { get; }
+        public CompletionPresentationState State { get; }
     }
 
     public readonly struct CallerReturnContext
@@ -81,23 +66,14 @@ namespace GamePlatform.Navigation
                 throw new ArgumentOutOfRangeException(nameof(callerKey));
             CallerKey = callerKey;
         }
-        public NavigationRoute Route
-        {
-            get;
-        }
-        public string CallerKey
-        {
-            get;
-        }
+        public NavigationRoute Route { get; }
+        public string CallerKey { get; }
     }
 
     public sealed class ProfileRoute : NavigationRoute
     {
         public ProfileRoute(CallerReturnContext returnContext) : base("profile") { ReturnContext = returnContext; }
-        public CallerReturnContext ReturnContext
-        {
-            get;
-        }
+        public CallerReturnContext ReturnContext { get; }
     }
 
     public sealed class DestinationRoute : NavigationRoute
@@ -106,10 +82,7 @@ namespace GamePlatform.Navigation
         {
             DestinationKey = RequireKey(destinationKey, nameof(destinationKey));
         }
-        public string DestinationKey
-        {
-            get;
-        }
+        public string DestinationKey { get; }
     }
 
     public sealed class DetailRoute : NavigationRoute
@@ -119,14 +92,8 @@ namespace GamePlatform.Navigation
             DetailKey = RequireKey(detailKey, nameof(detailKey));
             ReturnContext = returnContext;
         }
-        public string DetailKey
-        {
-            get;
-        }
-        public CallerReturnContext ReturnContext
-        {
-            get;
-        }
+        public string DetailKey { get; }
+        public CallerReturnContext ReturnContext { get; }
     }
 
     public sealed class ModalRoute : NavigationRoute
@@ -135,9 +102,6 @@ namespace GamePlatform.Navigation
         {
             ModalKey = RequireKey(modalKey, nameof(modalKey));
         }
-        public string ModalKey
-        {
-            get;
-        }
+        public string ModalKey { get; }
     }
 }

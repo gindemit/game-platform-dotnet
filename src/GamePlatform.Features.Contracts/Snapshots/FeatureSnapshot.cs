@@ -75,34 +75,13 @@ namespace GamePlatform.Features.Contracts.Snapshots
             DiagnosticCode = diagnosticCode;
         }
 
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public FeatureSnapshotState State
-        {
-            get;
-        }
-        public SnapshotFreshness Freshness
-        {
-            get;
-        }
-        public T? Value
-        {
-            get;
-        }
-        public long? LastConfirmedAtMilliseconds
-        {
-            get;
-        }
-        public string? DiagnosticCode
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public long Revision { get; }
+        public FeatureSnapshotState State { get; }
+        public SnapshotFreshness Freshness { get; }
+        public T? Value { get; }
+        public long? LastConfirmedAtMilliseconds { get; }
+        public string? DiagnosticCode { get; }
     }
 
     public interface IFeatureSnapshotReader<in TQuery, TSnapshot> where TSnapshot : class

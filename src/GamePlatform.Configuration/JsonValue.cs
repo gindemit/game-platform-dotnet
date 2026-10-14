@@ -67,10 +67,7 @@ namespace GamePlatform.Configuration
     public sealed class JsonValue
     {
         private readonly object? payload;
-        public JsonKind Kind
-        {
-            get;
-        }
+        public JsonKind Kind { get; }
         private JsonValue(JsonKind kind, object? payload)
         {
             Kind = kind;

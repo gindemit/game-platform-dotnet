@@ -25,18 +25,9 @@ namespace GamePlatform.Configuration
 
     public sealed class FeatureRevisionReference
     {
-        public string Key
-        {
-            get;
-        }
-        public string Revision
-        {
-            get;
-        }
-        public string SemanticSha
-        {
-            get;
-        }
+        public string Key { get; }
+        public string Revision { get; }
+        public string SemanticSha { get; }
         public FeatureRevisionReference(string key, string revision, string semanticSha)
         {
             ConfigurationLimits.String(key, true);
@@ -49,14 +40,8 @@ namespace GamePlatform.Configuration
     }
     public sealed class ExperimentReference
     {
-        public string Key
-        {
-            get;
-        }
-        public string Version
-        {
-            get;
-        }
+        public string Key { get; }
+        public string Version { get; }
         public ExperimentReference(string key, string version)
         {
             ConfigurationLimits.String(key, true);
@@ -67,14 +52,8 @@ namespace GamePlatform.Configuration
     }
     public sealed class EnrollmentReference
     {
-        public string Id
-        {
-            get;
-        }
-        public ExperimentReference Experiment
-        {
-            get;
-        }
+        public string Id { get; }
+        public ExperimentReference Experiment { get; }
         public EnrollmentReference(string id, ExperimentReference experiment)
         {
             ConfigurationLimits.String(id, true);
@@ -84,14 +63,8 @@ namespace GamePlatform.Configuration
     }
     public sealed class InstanceReference
     {
-        public string Id
-        {
-            get;
-        }
-        public FeatureRevisionReference Feature
-        {
-            get;
-        }
+        public string Id { get; }
+        public FeatureRevisionReference Feature { get; }
         public InstanceReference(string id, FeatureRevisionReference feature)
         {
             ConfigurationLimits.String(id, true);
@@ -101,26 +74,11 @@ namespace GamePlatform.Configuration
     }
     public sealed class Choice
     {
-        public string Revision
-        {
-            get;
-        }
-        public string SemanticSha
-        {
-            get;
-        }
-        public string Variant
-        {
-            get;
-        }
-        public JsonValue Value
-        {
-            get;
-        }
-        public IReadOnlyList<FeatureRevisionReference> Dependencies
-        {
-            get;
-        }
+        public string Revision { get; }
+        public string SemanticSha { get; }
+        public string Variant { get; }
+        public JsonValue Value { get; }
+        public IReadOnlyList<FeatureRevisionReference> Dependencies { get; }
         public Choice(string revision, string semanticSha, string variant, JsonValue value, IEnumerable<FeatureRevisionReference> dependencies)
         {
             ConfigurationLimits.String(revision, true);
@@ -141,34 +99,13 @@ namespace GamePlatform.Configuration
     }
     public sealed class Condition
     {
-        public string Attribute
-        {
-            get;
-        }
-        public string Type
-        {
-            get;
-        }
-        public string Operator
-        {
-            get;
-        }
-        public JsonValue Value
-        {
-            get;
-        }
-        public string Source
-        {
-            get;
-        }
-        public long MaxAgeSeconds
-        {
-            get;
-        }
-        internal StrictVersion? Version
-        {
-            get;
-        }
+        public string Attribute { get; }
+        public string Type { get; }
+        public string Operator { get; }
+        public JsonValue Value { get; }
+        public string Source { get; }
+        public long MaxAgeSeconds { get; }
+        internal StrictVersion? Version { get; }
         public Condition(string attribute, string type, string op, JsonValue value, string source, long maxAgeSeconds)
         {
             ConfigurationLimits.String(attribute, true);
@@ -198,14 +135,8 @@ namespace GamePlatform.Configuration
     }
     public sealed class Allocation
     {
-        public int Weight
-        {
-            get;
-        }
-        public Choice Choice
-        {
-            get;
-        }
+        public int Weight { get; }
+        public Choice Choice { get; }
         public Allocation(int weight, Choice choice)
         {
             if (weight < 0 || weight > 100)
@@ -217,18 +148,9 @@ namespace GamePlatform.Configuration
     public sealed class Outcome
     {
         public const string AllocationAlgorithm = "sha1-first7-mod100-v1";
-        public Choice? Choice
-        {
-            get;
-        }
-        public ExperimentReference? Experiment
-        {
-            get;
-        }
-        public IReadOnlyList<Allocation> Allocations
-        {
-            get;
-        }
+        public Choice? Choice { get; }
+        public ExperimentReference? Experiment { get; }
+        public IReadOnlyList<Allocation> Allocations { get; }
         private Outcome(Choice? choice, ExperimentReference? experiment, IReadOnlyList<Allocation> allocations)
         {
             Choice = choice;
@@ -253,18 +175,9 @@ namespace GamePlatform.Configuration
     }
     public sealed class Rule
     {
-        public string Id
-        {
-            get;
-        }
-        public IReadOnlyList<Condition> Conditions
-        {
-            get;
-        }
-        public Outcome Outcome
-        {
-            get;
-        }
+        public string Id { get; }
+        public IReadOnlyList<Condition> Conditions { get; }
+        public Outcome Outcome { get; }
         public Rule(string id, IEnumerable<Condition> conditions, Outcome outcome)
         {
             ConfigurationLimits.String(id, true);
@@ -275,22 +188,10 @@ namespace GamePlatform.Configuration
     }
     public sealed class FeatureDefinition
     {
-        public string Key
-        {
-            get;
-        }
-        public bool Enabled
-        {
-            get;
-        }
-        public Choice Default
-        {
-            get;
-        }
-        public IReadOnlyList<Rule> Rules
-        {
-            get;
-        }
+        public string Key { get; }
+        public bool Enabled { get; }
+        public Choice Default { get; }
+        public IReadOnlyList<Rule> Rules { get; }
         public FeatureDefinition(string key, bool enabled, Choice @default, IEnumerable<Rule> rules)
         {
             ConfigurationLimits.String(key, true);
@@ -307,22 +208,10 @@ namespace GamePlatform.Configuration
     public sealed class ConfigurationDefinition
     {
         public const string Schema = "platform.remote-config.v1";
-        public string App
-        {
-            get;
-        }
-        public string Environment
-        {
-            get;
-        }
-        public string Release
-        {
-            get;
-        }
-        public IReadOnlyList<FeatureDefinition> Features
-        {
-            get;
-        }
+        public string App { get; }
+        public string Environment { get; }
+        public string Release { get; }
+        public IReadOnlyList<FeatureDefinition> Features { get; }
         public ConfigurationDefinition(string app, string environment, string release, IEnumerable<FeatureDefinition> features)
         {
             ConfigurationLimits.String(app, true);
@@ -346,22 +235,10 @@ namespace GamePlatform.Configuration
     }
     public sealed class CompiledConfiguration
     {
-        public ConfigurationDefinition Definition
-        {
-            get;
-        }
-        public string SemanticSha
-        {
-            get;
-        }
-        public string? RepresentationSha
-        {
-            get;
-        }
-        internal IReadOnlyDictionary<string, FeatureDefinition> Features
-        {
-            get;
-        }
+        public ConfigurationDefinition Definition { get; }
+        public string SemanticSha { get; }
+        public string? RepresentationSha { get; }
+        internal IReadOnlyDictionary<string, FeatureDefinition> Features { get; }
         internal CompiledConfiguration(ConfigurationDefinition definition, string semanticSha, string? representationSha)
         {
             Definition = definition;

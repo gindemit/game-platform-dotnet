@@ -41,34 +41,13 @@ namespace GamePlatform.Features.Profiles
             this.extensions = extensions.ToArray();
         }
 
-        public string DisplayName
-        {
-            get;
-        }
-        public bool HasAvatarKey
-        {
-            get;
-        }
-        public string? AvatarKey
-        {
-            get;
-        }
-        public bool HasLocale
-        {
-            get;
-        }
-        public string? Locale
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long UpdatedAtMilliseconds
-        {
-            get;
-        }
+        public string DisplayName { get; }
+        public bool HasAvatarKey { get; }
+        public string? AvatarKey { get; }
+        public bool HasLocale { get; }
+        public string? Locale { get; }
+        public long Revision { get; }
+        public long UpdatedAtMilliseconds { get; }
         /// <summary>Opaque, already validated supported-extension bytes. Callers receive a defensive copy.</summary>
         public byte[] CopyExtensions() => (byte[])extensions.Clone();
     }
@@ -104,34 +83,13 @@ namespace GamePlatform.Features.Profiles
             Locale = locale;
         }
 
-        public long ExpectedRevision
-        {
-            get;
-        }
-        public bool HasDisplayName
-        {
-            get;
-        }
-        public string? DisplayName
-        {
-            get;
-        }
-        public bool HasAvatarKey
-        {
-            get;
-        }
-        public string? AvatarKey
-        {
-            get;
-        }
-        public bool HasLocale
-        {
-            get;
-        }
-        public string? Locale
-        {
-            get;
-        }
+        public long ExpectedRevision { get; }
+        public bool HasDisplayName { get; }
+        public string? DisplayName { get; }
+        public bool HasAvatarKey { get; }
+        public string? AvatarKey { get; }
+        public bool HasLocale { get; }
+        public string? Locale { get; }
     }
 
     public enum ProfilePendingStatus
@@ -168,34 +126,13 @@ namespace GamePlatform.Features.Profiles
             AcceptedRevision = acceptedRevision;
         }
 
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public ProfilePatch Patch
-        {
-            get;
-        }
-        public long LocalRevision
-        {
-            get;
-        }
-        public ProfilePendingStatus Status
-        {
-            get;
-        }
-        public long? AcceptedRevision
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public ProfilePatch Patch { get; }
+        public long LocalRevision { get; }
+        public ProfilePendingStatus Status { get; }
+        public long? AcceptedRevision { get; }
     }
 
     /// <summary>Immutable observation combining the last confirmed projection and (if present) a local intent.</summary>
@@ -206,14 +143,8 @@ namespace GamePlatform.Features.Profiles
             Confirmed = confirmed;
             Pending = pending;
         }
-        public ProfileConfirmed? Confirmed
-        {
-            get;
-        }
-        public PendingProfileEdit? Pending
-        {
-            get;
-        }
+        public ProfileConfirmed? Confirmed { get; }
+        public PendingProfileEdit? Pending { get; }
     }
 
     public sealed class ProfileUpdateRequest
@@ -234,26 +165,11 @@ namespace GamePlatform.Features.Profiles
             BusinessSource = businessSource;
             Patch = patch ?? throw new ArgumentNullException(nameof(patch));
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public ProfilePatch Patch
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public ProfilePatch Patch { get; }
     }
 
     /// <summary>Receipt-derived outcome. It may only move a matching local command to awaiting-pull.</summary>
@@ -271,18 +187,9 @@ namespace GamePlatform.Features.Profiles
             OperationId = operationId;
             ResultingRevision = resultingRevision;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public long ResultingRevision
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public long ResultingRevision { get; }
     }
 
     /// <summary>Feature-owned remote read port. An adapter must bind it to the frozen getProfile operation.</summary>
@@ -300,14 +207,8 @@ namespace GamePlatform.Features.Profiles
             Owner = owner;
             Profile = profile ?? throw new ArgumentNullException(nameof(profile));
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public ProfileConfirmed Profile
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public ProfileConfirmed Profile { get; }
     }
 
     /// <summary>Codec boundary for the local known-field records and frozen semantic command body.</summary>

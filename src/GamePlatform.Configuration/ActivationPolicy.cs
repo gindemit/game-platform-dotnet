@@ -5,18 +5,9 @@ namespace GamePlatform.Configuration
 {
     public sealed class ActivationResult
     {
-        public CompiledConfiguration? Active
-        {
-            get;
-        }
-        public bool Accepted
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
+        public CompiledConfiguration? Active { get; }
+        public bool Accepted { get; }
+        public string Reason { get; }
 
         internal ActivationResult(CompiledConfiguration? active, bool accepted, string reason)
         {

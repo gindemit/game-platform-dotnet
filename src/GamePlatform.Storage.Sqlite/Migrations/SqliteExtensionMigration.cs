@@ -34,18 +34,9 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             Migrations = new ReadOnlyCollection<SqliteExtensionMigration>(copied);
         }
 
-        public string ExtensionNamespace
-        {
-            get;
-        }
-        public int MinimumPlatformVersion
-        {
-            get;
-        }
-        public IReadOnlyList<SqliteExtensionMigration> Migrations
-        {
-            get;
-        }
+        public string ExtensionNamespace { get; }
+        public int MinimumPlatformVersion { get; }
+        public IReadOnlyList<SqliteExtensionMigration> Migrations { get; }
 
         internal string GetChecksum(SqliteExtensionMigration migration) => migration.GetChecksum(ExtensionNamespace, MinimumPlatformVersion);
 
@@ -88,18 +79,9 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             Statements = new ReadOnlyCollection<string>(copied);
         }
 
-        public int Version
-        {
-            get;
-        }
-        public string Id
-        {
-            get;
-        }
-        public IReadOnlyList<string> Statements
-        {
-            get;
-        }
+        public int Version { get; }
+        public string Id { get; }
+        public IReadOnlyList<string> Statements { get; }
 
         internal string GetChecksum(string extensionNamespace, int minimumPlatformVersion)
         {

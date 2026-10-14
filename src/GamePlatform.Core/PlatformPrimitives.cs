@@ -26,10 +26,7 @@ namespace GamePlatform.Core
             Value = value;
         }
 
-        public string Value
-        {
-            get;
-        }
+        public string Value { get; }
         public bool IsValid => !string.IsNullOrWhiteSpace(Value) && Value.Length <= 128;
         public bool Equals(PlatformId other) => string.Equals(Value, other.Value, StringComparison.Ordinal);
         public override bool Equals(object? obj) => obj is PlatformId other && Equals(other);
@@ -46,18 +43,9 @@ namespace GamePlatform.Core
             Diagnostic = diagnostic;
         }
 
-        public T? Value
-        {
-            get;
-        }
-        public PlatformFailure Failure
-        {
-            get;
-        }
-        public string Diagnostic
-        {
-            get;
-        }
+        public T? Value { get; }
+        public PlatformFailure Failure { get; }
+        public string Diagnostic { get; }
         public bool Succeeded => Failure == PlatformFailure.None;
 
         public static PlatformResult<T> Success(T value) => new PlatformResult<T>(value, PlatformFailure.None, string.Empty);
@@ -82,13 +70,7 @@ namespace GamePlatform.Core
             Reason = reason;
         }
 
-        public string Capability
-        {
-            get;
-        }
-        public string Reason
-        {
-            get;
-        }
+        public string Capability { get; }
+        public string Reason { get; }
     }
 }

@@ -11,10 +11,7 @@ namespace GamePlatform.Core
                 throw new ArgumentException("An RFC UUID is required.", nameof(value));
             Value = value;
         }
-        public Guid Value
-        {
-            get;
-        }
+        public Guid Value { get; }
         public bool IsValid => UuidIdentity.IsValid(Value);
         public static AppId FromRfcBytes(ReadOnlySpan<byte> bytes) => new AppId(UuidIdentity.FromRfcBytes(bytes));
         public void WriteRfcBytes(Span<byte> destination) => UuidIdentity.WriteRfcBytes(Value, destination);

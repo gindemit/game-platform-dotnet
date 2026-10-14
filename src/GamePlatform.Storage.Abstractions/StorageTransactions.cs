@@ -22,18 +22,9 @@ namespace GamePlatform.Storage.Abstractions
             AccountId = accountId;
         }
 
-        public string BackendNamespace
-        {
-            get;
-        }
-        public PlatformId AppId
-        {
-            get;
-        }
-        public PlatformId AccountId
-        {
-            get;
-        }
+        public string BackendNamespace { get; }
+        public PlatformId AppId { get; }
+        public PlatformId AccountId { get; }
 
         public bool Equals(StorageScope other) =>
             string.Equals(BackendNamespace, other.BackendNamespace, StringComparison.Ordinal) &&
@@ -53,10 +44,7 @@ namespace GamePlatform.Storage.Abstractions
 
     public interface ILocalStorageTransaction
     {
-        StorageScope Scope
-        {
-            get;
-        }
+        StorageScope Scope { get; }
     }
 
     public interface ISerializedStorageExecutor
@@ -92,9 +80,6 @@ namespace GamePlatform.Storage.Abstractions
             Failure = failure;
         }
 
-        public StorageFailure Failure
-        {
-            get;
-        }
+        public StorageFailure Failure { get; }
     }
 }

@@ -25,10 +25,7 @@ namespace GamePlatform.Sync.Recovery
     /// </summary>
     public interface ICommandStreamRecoveryHost
     {
-        bool IsCurrentAccount
-        {
-            get;
-        }
+        bool IsCurrentAccount { get; }
         Task<bool> QuiesceAsync(ClientStreamId priorStreamId, CommandStreamRecoveryReason reason, bool resume, CancellationToken cancellationToken);
         /// <summary>
         /// Opens successor storage without copying sequenced commands and performs genuine

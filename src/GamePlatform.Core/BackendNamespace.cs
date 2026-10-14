@@ -9,10 +9,7 @@ namespace GamePlatform.Core
         {
             Value = new PlatformId(value).Value;
         }
-        public string Value
-        {
-            get;
-        }
+        public string Value { get; }
         public bool IsValid => !string.IsNullOrWhiteSpace(Value) && Value.Length <= 128;
         public bool Equals(BackendNamespace other) => string.Equals(Value, other.Value, StringComparison.Ordinal);
         public override bool Equals(object? obj) => obj is BackendNamespace other && Equals(other);

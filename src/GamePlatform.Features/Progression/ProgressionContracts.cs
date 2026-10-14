@@ -42,14 +42,8 @@ namespace GamePlatform.Features.Progression
             Version = version;
             this.value = new ReadOnlyDictionary<string, string>(copied);
         }
-        public string Schema
-        {
-            get;
-        }
-        public int Version
-        {
-            get;
-        }
+        public string Schema { get; }
+        public int Version { get; }
         public IReadOnlyDictionary<string, string> Value => value;
     }
 
@@ -84,42 +78,15 @@ namespace GamePlatform.Features.Progression
             ValidationScheme = validationScheme;
             Extension = extension;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public GameplayOutcome Outcome
-        {
-            get;
-        }
-        public int ContentVersion
-        {
-            get;
-        }
-        public ProgressionOutcomeAuthority OutcomeAuthority
-        {
-            get;
-        }
-        public string ValidationScheme
-        {
-            get;
-        }
-        public ProgressionCommandExtension? Extension
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public GameplayOutcome Outcome { get; }
+        public int ContentVersion { get; }
+        public ProgressionOutcomeAuthority OutcomeAuthority { get; }
+        public string ValidationScheme { get; }
+        public ProgressionCommandExtension? Extension { get; }
     }
 
     /// <summary>Durable local intent. Accepted means only that the command receipt was retained; pull remains authoritative.</summary>
@@ -151,46 +118,16 @@ namespace GamePlatform.Features.Progression
             ValidationScheme = validationScheme;
             Extension = extension;
         }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public GameplayOutcome Outcome
-        {
-            get;
-        }
-        public int ContentVersion
-        {
-            get;
-        }
-        public ProgressionOutcomeAuthority OutcomeAuthority
-        {
-            get;
-        }
-        public long LocalRevision
-        {
-            get;
-        }
-        public ProgressionPendingStatus Status
-        {
-            get;
-        }
-        public string ValidationScheme
-        {
-            get;
-        }
-        public ProgressionCommandExtension? Extension
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string BusinessSource { get; }
+        public GameplayOutcome Outcome { get; }
+        public int ContentVersion { get; }
+        public ProgressionOutcomeAuthority OutcomeAuthority { get; }
+        public long LocalRevision { get; }
+        public ProgressionPendingStatus Status { get; }
+        public string ValidationScheme { get; }
+        public ProgressionCommandExtension? Extension { get; }
     }
 
     /// <summary>One server-owned semantic progression key/value. It is not a game checkpoint and may not be inferred from completion.</summary>
@@ -205,14 +142,8 @@ namespace GamePlatform.Features.Progression
             StateKey = stateKey;
             Value = value;
         }
-        public SemanticId StateKey
-        {
-            get;
-        }
-        public long Value
-        {
-            get;
-        }
+        public SemanticId StateKey { get; }
+        public long Value { get; }
     }
 
     /// <summary>A complete authoritative projection boundary supplied by bootstrap/pull. Its revision is owned by the synchronization adapter.</summary>
@@ -232,14 +163,8 @@ namespace GamePlatform.Features.Progression
             ConfirmedAtMilliseconds = confirmedAtMilliseconds;
             this.states = new ReadOnlyCollection<ProgressionConfirmedState>(states.ToArray());
         }
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAtMilliseconds
-        {
-            get;
-        }
+        public long Revision { get; }
+        public long ConfirmedAtMilliseconds { get; }
         public IReadOnlyList<ProgressionConfirmedState> States => states;
     }
 
@@ -257,14 +182,8 @@ namespace GamePlatform.Features.Progression
             Owner = owner;
             this.confirmedOperationIds = new ReadOnlyCollection<OperationId>(confirmedOperationIds.ToArray());
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public ProgressionConfirmedProjection Projection
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public ProgressionConfirmedProjection Projection { get; }
         public IReadOnlyList<OperationId> ConfirmedOperationIds => confirmedOperationIds;
     }
 
@@ -278,10 +197,7 @@ namespace GamePlatform.Features.Progression
             Confirmed = confirmed;
             this.pending = new ReadOnlyCollection<PendingProgressionCompletion>(pending.ToArray());
         }
-        public ProgressionConfirmedProjection? Confirmed
-        {
-            get;
-        }
+        public ProgressionConfirmedProjection? Confirmed { get; }
         public IReadOnlyList<PendingProgressionCompletion> PendingCompletions => pending;
     }
 
@@ -296,14 +212,8 @@ namespace GamePlatform.Features.Progression
             Owner = owner;
             OperationId = operationId;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
     }
 
     /// <summary>Serialization/transport boundary. An adapter maps the frozen gameplay command and projection; it must not invent rewards.</summary>

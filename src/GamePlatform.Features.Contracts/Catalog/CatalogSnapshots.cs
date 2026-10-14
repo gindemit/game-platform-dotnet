@@ -46,26 +46,11 @@ namespace GamePlatform.Features.Contracts.Catalog
             this.definitionPayload = definitionPayload.ToArray();
         }
 
-        public PlatformId DefinitionId
-        {
-            get;
-        }
-        public CatalogResourceKind Kind
-        {
-            get;
-        }
-        public SemanticId SemanticKey
-        {
-            get;
-        }
-        public long DefinitionVersion
-        {
-            get;
-        }
-        public int SchemaVersion
-        {
-            get;
-        }
+        public PlatformId DefinitionId { get; }
+        public CatalogResourceKind Kind { get; }
+        public SemanticId SemanticKey { get; }
+        public long DefinitionVersion { get; }
+        public int SchemaVersion { get; }
         public int DefinitionPayloadLength => definitionPayload.Length;
         public byte[] CopyDefinitionPayload() => (byte[])definitionPayload.Clone();
     }
@@ -95,34 +80,13 @@ namespace GamePlatform.Features.Contracts.Catalog
             this.presentationPayload = presentationPayload.ToArray();
         }
 
-        public PlatformId DefinitionId
-        {
-            get;
-        }
-        public long BindingVersion
-        {
-            get;
-        }
-        public bool Visible
-        {
-            get;
-        }
-        public bool CanUse
-        {
-            get;
-        }
-        public bool CanGrant
-        {
-            get;
-        }
-        public bool CanSpend
-        {
-            get;
-        }
-        public bool CanSubmit
-        {
-            get;
-        }
+        public PlatformId DefinitionId { get; }
+        public long BindingVersion { get; }
+        public bool Visible { get; }
+        public bool CanUse { get; }
+        public bool CanGrant { get; }
+        public bool CanSpend { get; }
+        public bool CanSubmit { get; }
         public int PresentationPayloadLength => presentationPayload.Length;
         public byte[] CopyPresentationPayload() => (byte[])presentationPayload.Clone();
 
@@ -154,14 +118,8 @@ namespace GamePlatform.Features.Contracts.Catalog
                 throw new CatalogSnapshotCorruptException("Invisible bindings must not be installed in an allowed catalog snapshot.");
         }
 
-        public CatalogDefinition Definition
-        {
-            get;
-        }
-        public CatalogAppBinding Binding
-        {
-            get;
-        }
+        public CatalogDefinition Definition { get; }
+        public CatalogAppBinding Binding { get; }
     }
 
     /// <summary>Exact cache identity. Owner includes backend, app, account, view and generation.</summary>
@@ -181,22 +139,10 @@ namespace GamePlatform.Features.Contracts.Catalog
             Audience = audience;
         }
 
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public long SnapshotVersion
-        {
-            get;
-        }
-        public string Locale
-        {
-            get;
-        }
-        public string Audience
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public long SnapshotVersion { get; }
+        public string Locale { get; }
+        public string Audience { get; }
 
         public string ToCanonicalQuery() => "version=" + SnapshotVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) +
             ";locale=" + Locale + ";audience=" + Audience;
@@ -248,22 +194,10 @@ namespace GamePlatform.Features.Contracts.Catalog
             ConfirmedAtMilliseconds = confirmedAtMilliseconds;
         }
 
-        public CatalogSnapshotRequest Request
-        {
-            get;
-        }
-        public int SchemaVersion
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAtMilliseconds
-        {
-            get;
-        }
+        public CatalogSnapshotRequest Request { get; }
+        public int SchemaVersion { get; }
+        public long Revision { get; }
+        public long ConfirmedAtMilliseconds { get; }
         public IReadOnlyList<CatalogEntry> Entries => Array.AsReadOnly(entries);
     }
 
@@ -275,14 +209,8 @@ namespace GamePlatform.Features.Contracts.Catalog
             Boundary = boundary;
             Version = version;
         }
-        public string Boundary
-        {
-            get;
-        }
-        public int Version
-        {
-            get;
-        }
+        public string Boundary { get; }
+        public int Version { get; }
     }
 
     public sealed class CatalogSnapshotCorruptException : Exception

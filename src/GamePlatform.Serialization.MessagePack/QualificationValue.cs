@@ -16,14 +16,8 @@ namespace GamePlatform.Serialization.MessagePack
     {
         internal static readonly UTF8Encoding Utf8 = new UTF8Encoding(false, true);
         private readonly object? value;
-        public QualificationValueKind Kind
-        {
-            get;
-        }
-        internal long EncodedByteLength
-        {
-            get; set;
-        }
+        public QualificationValueKind Kind { get; }
+        internal long EncodedByteLength { get; set; }
         private QualificationValue(QualificationValueKind kind, object? value)
         {
             Kind = kind;

@@ -43,38 +43,14 @@ namespace GamePlatform.Backend.Contracts.Remote
             ServerTime = serverTime;
         }
 
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public Guid InstallationId
-        {
-            get;
-        }
-        public long FinalizedThrough
-        {
-            get;
-        }
-        public long? NextSequence
-        {
-            get;
-        }
-        public CommandStreamState State
-        {
-            get;
-        }
-        public string InspectionToken
-        {
-            get;
-        }
-        public long ExpiresAt
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public ClientStreamId StreamId { get; }
+        public Guid InstallationId { get; }
+        public long FinalizedThrough { get; }
+        public long? NextSequence { get; }
+        public CommandStreamState State { get; }
+        public string InspectionToken { get; }
+        public long ExpiresAt { get; }
+        public long ServerTime { get; }
 
         internal static void ValidateToken(string token)
         {
@@ -110,30 +86,12 @@ namespace GamePlatform.Backend.Contracts.Remote
             ExpectedFinalizedThrough = expectedFinalizedThrough;
         }
 
-        public ClientStreamId PriorStreamId
-        {
-            get;
-        }
-        public ClientStreamId NewStreamId
-        {
-            get;
-        }
-        public Guid RecoveryId
-        {
-            get;
-        }
-        public CommandStreamRecoveryReason Reason
-        {
-            get;
-        }
-        public string InspectionToken
-        {
-            get;
-        }
-        public long ExpectedFinalizedThrough
-        {
-            get;
-        }
+        public ClientStreamId PriorStreamId { get; }
+        public ClientStreamId NewStreamId { get; }
+        public Guid RecoveryId { get; }
+        public CommandStreamRecoveryReason Reason { get; }
+        public string InspectionToken { get; }
+        public long ExpectedFinalizedThrough { get; }
     }
 
     public sealed class CommandStreamRecoveryResult
@@ -154,30 +112,12 @@ namespace GamePlatform.Backend.Contracts.Remote
             ServerTime = serverTime;
         }
 
-        public ClientStreamId PriorStreamId
-        {
-            get;
-        }
-        public ClientStreamId NewStreamId
-        {
-            get;
-        }
-        public Guid RecoveryId
-        {
-            get;
-        }
-        public long PriorFinalizedThrough
-        {
-            get;
-        }
-        public long NextSequence
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public ClientStreamId PriorStreamId { get; }
+        public ClientStreamId NewStreamId { get; }
+        public Guid RecoveryId { get; }
+        public long PriorFinalizedThrough { get; }
+        public long NextSequence { get; }
+        public long ServerTime { get; }
     }
 
     public interface ICommandStreamRecoveryRemote

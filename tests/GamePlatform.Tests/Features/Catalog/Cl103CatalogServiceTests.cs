@@ -140,10 +140,7 @@ namespace GamePlatform.Tests.Features.Catalog
             {
                 this.download = download;
             }
-            public int Calls
-            {
-                get; private set;
-            }
+            public int Calls { get; private set; }
             public Task<CatalogSnapshot> DownloadAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -156,10 +153,7 @@ namespace GamePlatform.Tests.Features.Catalog
         {
             private readonly Dictionary<string, CatalogSnapshot> snapshots = new Dictionary<string, CatalogSnapshot>();
             public List<CatalogSnapshot> Installed { get; } = new List<CatalogSnapshot>();
-            public Exception? ReadFailure
-            {
-                get; set;
-            }
+            public Exception? ReadFailure { get; set; }
             public Task<CatalogSnapshot?> ReadAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();

@@ -23,10 +23,7 @@ namespace GamePlatform.Features.Progression
             ProjectionRevision = projectionRevision;
             this.operationIds = new ReadOnlyCollection<OperationId>(operationIds.ToArray());
         }
-        public long ProjectionRevision
-        {
-            get;
-        }
+        public long ProjectionRevision { get; }
         public IReadOnlyList<OperationId> OperationIds => operationIds;
     }
 
@@ -63,13 +60,7 @@ namespace GamePlatform.Features.Progression
             LatestRevision = latestRevision;
             ActiveGroups = activeGroups ?? throw new ArgumentNullException(nameof(activeGroups));
         }
-        public long? LatestRevision
-        {
-            get;
-        }
-        public IReadOnlyList<ProgressionConfirmationEvidence> ActiveGroups
-        {
-            get;
-        }
+        public long? LatestRevision { get; }
+        public IReadOnlyList<ProgressionConfirmationEvidence> ActiveGroups { get; }
     }
 }

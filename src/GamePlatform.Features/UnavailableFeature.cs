@@ -9,10 +9,7 @@ namespace GamePlatform.Features
     public abstract class UnavailableFeature : IFeatureCapability
     {
         protected UnavailableFeature(string featureId) => FeatureId = featureId ?? throw new ArgumentNullException(nameof(featureId));
-        public string FeatureId
-        {
-            get;
-        }
+        public string FeatureId { get; }
         public FeatureStatus Status => FeatureStatus.Stubbed;
         public Task<PlatformResult<string>> ExecuteUnavailableAsync(CancellationToken cancellationToken)
         {

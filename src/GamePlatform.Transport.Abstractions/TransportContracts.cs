@@ -25,18 +25,9 @@ namespace GamePlatform.Transport.Abstractions
             Headers = CopyHeaders(headers);
             this.body = body == null ? Array.Empty<byte>() : (byte[])body.Clone();
         }
-        public string Method
-        {
-            get;
-        }
-        public string Uri
-        {
-            get;
-        }
-        public IReadOnlyDictionary<string, string> Headers
-        {
-            get;
-        }
+        public string Method { get; }
+        public string Uri { get; }
+        public IReadOnlyDictionary<string, string> Headers { get; }
         public int BodyLength => body.Length;
         public byte[] CopyBody() => (byte[])body.Clone();
 
@@ -70,14 +61,8 @@ namespace GamePlatform.Transport.Abstractions
             Headers = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(headers ?? throw new ArgumentNullException(nameof(headers)), StringComparer.OrdinalIgnoreCase));
             this.body = body == null ? Array.Empty<byte>() : (byte[])body.Clone();
         }
-        public int StatusCode
-        {
-            get;
-        }
-        public IReadOnlyDictionary<string, string> Headers
-        {
-            get;
-        }
+        public int StatusCode { get; }
+        public IReadOnlyDictionary<string, string> Headers { get; }
         public int BodyLength => body.Length;
         public byte[] CopyBody() => (byte[])body.Clone();
         public bool TryGetHeader(string name, out string value) => Headers.TryGetValue(name, out value!);
@@ -86,10 +71,7 @@ namespace GamePlatform.Transport.Abstractions
     public sealed class HttpExecutionException : Exception
     {
         public HttpExecutionException(HttpDeliveryCertainty certainty, string message, Exception? innerException = null) : base(message, innerException) { Certainty = certainty; }
-        public HttpDeliveryCertainty Certainty
-        {
-            get;
-        }
+        public HttpDeliveryCertainty Certainty { get; }
     }
 
     public interface IHttpExecutor

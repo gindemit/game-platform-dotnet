@@ -28,10 +28,7 @@ namespace GamePlatform.Storage.Sqlite.Executor
             Scope = scope;
         }
 
-        public StorageScope Scope
-        {
-            get;
-        }
+        public StorageScope Scope { get; }
         public int ConnectionCount => disposed ? 0 : 1;
         public int NativeVersionNumber => connection.LibVersionNumber;
         public int MaximumConcurrentTransactions => Volatile.Read(ref maximumConcurrentTransactions);

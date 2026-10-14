@@ -29,10 +29,7 @@ namespace GamePlatform.Navigation
         {
             Value = value;
         }
-        internal long Value
-        {
-            get;
-        }
+        internal long Value { get; }
         public bool Equals(ModalOwner other) => Value != 0 && Value == other.Value;
         public override bool Equals(object? obj) => obj is ModalOwner other && Equals(other);
         public override int GetHashCode() => Value.GetHashCode();
@@ -61,14 +58,8 @@ namespace GamePlatform.Navigation
             this.maximumHistory = maximumHistory;
         }
 
-        public NavigationRoute Root
-        {
-            get;
-        }
-        public NavigationRoute Current
-        {
-            get; private set;
-        }
+        public NavigationRoute Root { get; }
+        public NavigationRoute Current { get; private set; }
         public ModalRoute? Modal
         {
             get

@@ -21,18 +21,9 @@ namespace GamePlatform.Features.Contracts.Wallet
             Revision = revision;
         }
 
-        public SemanticId CurrencyId
-        {
-            get;
-        }
-        public long Balance
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
+        public SemanticId CurrencyId { get; }
+        public long Balance { get; }
+        public long Revision { get; }
     }
 
     /// <summary>Exact owner/view/generation fenced cached-wallet read key for the G3 projection.</summary>
@@ -48,14 +39,8 @@ namespace GamePlatform.Features.Contracts.Wallet
             CurrencyId = currencyId;
         }
 
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public SemanticId CurrencyId
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public SemanticId CurrencyId { get; }
     }
 
     /// <summary>Explicit private-feed removal semantics. Both kinds read as Missing and never synthesize a zero balance.</summary>
@@ -71,10 +56,7 @@ namespace GamePlatform.Features.Contracts.Wallet
     /// </summary>
     public interface IG3WalletProjectionCodec
     {
-        int SchemaVersion
-        {
-            get;
-        }
+        int SchemaVersion { get; }
         byte[] Encode(G3ConfirmedWalletProjection projection);
         G3ConfirmedWalletProjection Decode(int schemaVersion, ReadOnlySpan<byte> payload);
     }

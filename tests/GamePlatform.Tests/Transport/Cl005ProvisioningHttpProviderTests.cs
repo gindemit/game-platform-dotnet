@@ -191,18 +191,9 @@ namespace GamePlatform.Tests.Transport
 
         private sealed class StubCodec : IWireCodec
         {
-            public bool ThrowOnDecode
-            {
-                get; set;
-            }
-            public int DecodeCount
-            {
-                get; private set;
-            }
-            public ProvisionResponse? DecodedResponse
-            {
-                get; set;
-            }
+            public bool ThrowOnDecode { get; set; }
+            public int DecodeCount { get; private set; }
+            public ProvisionResponse? DecodedResponse { get; set; }
             public byte[] Encode<T>(T value) => new byte[] { 1, 2, 3 };
             public T Decode<T>(byte[] payload)
             {

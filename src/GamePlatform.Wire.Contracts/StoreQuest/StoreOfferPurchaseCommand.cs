@@ -12,17 +12,8 @@ namespace GamePlatform.Wire.Contracts
             PurchaseKey = purchaseKey;
         }
 
-        public string OfferId
-        {
-            get;
-        }
-        public int OfferVersion
-        {
-            get;
-        }
-        public Guid PurchaseKey
-        {
-            get;
-        }
+        public string OfferId { get; }
+        public int OfferVersion { get; }
+        public Guid PurchaseKey { get; }
     }
 }

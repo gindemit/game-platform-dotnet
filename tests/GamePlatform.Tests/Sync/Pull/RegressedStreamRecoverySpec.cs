@@ -380,18 +380,9 @@ namespace GamePlatform.Tests.Sync.Pull
                 State = state;
                 Result = result;
             }
-            public string Identity
-            {
-                get;
-            }
-            public string State
-            {
-                get;
-            }
-            public byte[]? Result
-            {
-                get;
-            }
+            public string Identity { get; }
+            public string State { get; }
+            public byte[]? Result { get; }
         }
 
         private sealed class Account
@@ -403,22 +394,10 @@ namespace GamePlatform.Tests.Sync.Pull
                 Installation = Guid.Parse(stream.Substring(0, 9) + "1212" + stream.Substring(13));
                 Marker = marker;
             }
-            public StorageScope Scope
-            {
-                get;
-            }
-            public ClientStreamId Stream
-            {
-                get;
-            }
-            public Guid Installation
-            {
-                get;
-            }
-            public byte Marker
-            {
-                get;
-            }
+            public StorageScope Scope { get; }
+            public ClientStreamId Stream { get; }
+            public Guid Installation { get; }
+            public byte Marker { get; }
             public OperationId Operation(long sequence) => new OperationId(Guid.Parse($"{Marker:x2}99f9a0-cccc-7777-8888-{sequence:D12}"));
         }
 
@@ -437,15 +416,9 @@ namespace GamePlatform.Tests.Sync.Pull
 
             public Func<long, bool> Rejects { get; set; } = _ => false;
             public Queue<long> StaleBoundaries { get; } = new Queue<long>();
-            public int FailedLookups
-            {
-                get; set;
-            }
+            public int FailedLookups { get; set; }
             public RemoteFailure LookupFailure { get; set; } = new RemoteFailure(RemoteFailureKind.Unavailable, 503);
-            public bool Retired
-            {
-                get; set;
-            }
+            public bool Retired { get; set; }
             public List<long> Executed { get; } = new List<long>();
             public List<long> LookedUp { get; } = new List<long>();
 
@@ -553,10 +526,7 @@ namespace GamePlatform.Tests.Sync.Pull
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 try

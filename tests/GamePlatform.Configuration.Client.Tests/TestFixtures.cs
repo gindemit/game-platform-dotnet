@@ -55,10 +55,7 @@ namespace GamePlatform.Configuration.Client.Tests
     internal sealed class OwnedDirectory : IDisposable
     {
         private readonly string root = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "owned-client-tests"));
-        internal string Path
-        {
-            get;
-        }
+        internal string Path { get; }
         internal OwnedDirectory()
         {
             Path = System.IO.Path.Combine(root, Guid.NewGuid().ToString("N"));
@@ -91,19 +88,10 @@ namespace GamePlatform.Configuration.Client.Tests
     {
         internal JsonValue Corpus { get; } = CanonicalJson.Parse(File.ReadAllBytes(System.IO.Path.Combine(AppContext.BaseDirectory, "corpus/service-vectors-v1.json")));
         internal ConfigurationScope Scope { get; } = new ConfigurationScope("synthetic", "local");
-        internal ConfigurationOwner Owner
-        {
-            get;
-        }
+        internal ConfigurationOwner Owner { get; }
         internal Dictionary<string, byte[]> Documents { get; } = new Dictionary<string, byte[]>(StringComparer.Ordinal);
-        internal CompiledConfiguration Bundled
-        {
-            get;
-        }
-        internal ConfigurationControlMemory ControlMemory
-        {
-            get;
-        }
+        internal CompiledConfiguration Bundled { get; }
+        internal ConfigurationControlMemory ControlMemory { get; }
         internal Fixture()
         {
             ControlMemory = new ConfigurationControlMemory(Scope);
@@ -272,10 +260,7 @@ namespace GamePlatform.Configuration.Client.Tests
         private readonly List<Task> handlers = new List<Task>();
         private readonly Fixture fixture;
         internal readonly List<string> Requests = new List<string>();
-        internal Uri Root
-        {
-            get;
-        }
+        internal Uri Root { get; }
         internal bool Gzip;
         internal LocalHttpServer(Fixture fixture)
         {

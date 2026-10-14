@@ -17,26 +17,11 @@ namespace GamePlatform.Wire.Contracts.Leaderboards
             Cursor = cursor;
             Limit = limit;
         }
-        public string BoardId
-        {
-            get;
-        }
-        public string Scope
-        {
-            get;
-        }
-        public string? CountryCode
-        {
-            get;
-        }
-        public string? Cursor
-        {
-            get;
-        }
-        public int Limit
-        {
-            get;
-        }
+        public string BoardId { get; }
+        public string Scope { get; }
+        public string? CountryCode { get; }
+        public string? Cursor { get; }
+        public int Limit { get; }
     }
     public sealed class LeaderboardsCountryCommand
     {
@@ -55,25 +40,10 @@ namespace GamePlatform.Wire.Contracts.Leaderboards
             CountryCode = countryCode;
             TeamId = teamId;
         }
-        public Guid OperationId
-        {
-            get;
-        }
-        public string BoardId
-        {
-            get;
-        }
-        public string ParticipantKind
-        {
-            get;
-        }
-        public string CountryCode
-        {
-            get;
-        }
-        public Guid? TeamId
-        {
-            get;
-        }
+        public Guid OperationId { get; }
+        public string BoardId { get; }
+        public string ParticipantKind { get; }
+        public string CountryCode { get; }
+        public Guid? TeamId { get; }
     }
 }

@@ -178,10 +178,7 @@ namespace GamePlatform.Tests.Navigation
 
         private sealed class TrackedDisposable : IDisposable
         {
-            public bool Disposed
-            {
-                get; private set;
-            }
+            public bool Disposed { get; private set; }
             public void Dispose() => Disposed = true;
         }
     }

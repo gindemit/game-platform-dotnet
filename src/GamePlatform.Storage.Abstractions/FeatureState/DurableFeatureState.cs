@@ -31,26 +31,11 @@ namespace GamePlatform.Storage.Abstractions.FeatureState
             this.extensions = extensions.ToArray();
         }
 
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public string FeatureNamespace
-        {
-            get;
-        }
-        public string EntityKey
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAtMilliseconds
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public string FeatureNamespace { get; }
+        public string EntityKey { get; }
+        public long Revision { get; }
+        public long ConfirmedAtMilliseconds { get; }
         public int PayloadLength => payload.Length;
         public int ExtensionLength => extensions.Length;
         public byte[] CopyPayload() => (byte[])payload.Clone();
@@ -97,26 +82,11 @@ namespace GamePlatform.Storage.Abstractions.FeatureState
             this.extensions = extensions == null ? null : (byte[])extensions.Clone();
         }
 
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public string FeatureNamespace
-        {
-            get;
-        }
-        public string EntityKey
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long ConfirmedAtMilliseconds
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public string FeatureNamespace { get; }
+        public string EntityKey { get; }
+        public long Revision { get; }
+        public long ConfirmedAtMilliseconds { get; }
         public bool PreservesExistingExtensions => extensions == null;
         public byte[] CopyPayload() => (byte[])payload.Clone();
         public byte[]? CopyExtensions() => extensions == null ? null : (byte[])extensions.Clone();

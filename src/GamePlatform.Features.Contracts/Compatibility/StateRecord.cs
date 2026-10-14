@@ -25,21 +25,9 @@ namespace GamePlatform.Features.Contracts
                 throw new ArgumentNullException(nameof(payload));
             Payload = CompatibilityGuard.Optional(payload, nameof(payload), 1024 * 1024);
         }
-        public int SchemaVersion
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public string Payload
-        {
-            get;
-        }
-        public DataOwnership Ownership
-        {
-            get;
-        }
+        public int SchemaVersion { get; }
+        public long Revision { get; }
+        public string Payload { get; }
+        public DataOwnership Ownership { get; }
     }
 }

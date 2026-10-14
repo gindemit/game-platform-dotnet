@@ -344,10 +344,7 @@ namespace GamePlatform.Tests.Transport
             {
                 this.send = send;
             }
-            public int Calls
-            {
-                get; private set;
-            }
+            public int Calls { get; private set; }
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 Calls++;

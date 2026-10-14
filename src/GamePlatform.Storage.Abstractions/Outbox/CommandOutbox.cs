@@ -41,30 +41,12 @@ namespace GamePlatform.Storage.Abstractions.Outbox
             this.semanticBody = semanticBody.ToArray();
         }
 
-        public OwnerScope Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string OperationKind
-        {
-            get;
-        }
-        public int SchemaVersion
-        {
-            get;
-        }
-        public int FingerprintVersion
-        {
-            get;
-        }
+        public OwnerScope Owner { get; }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public string OperationKind { get; }
+        public int SchemaVersion { get; }
+        public int FingerprintVersion { get; }
         public int SemanticBodyLength => semanticBody.Length;
 
         public void CopySemanticBodyTo(Span<byte> destination)
@@ -96,30 +78,12 @@ namespace GamePlatform.Storage.Abstractions.Outbox
             LocalRevision = localRevision;
         }
 
-        public OperationId OperationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public Guid InstallationId
-        {
-            get;
-        }
-        public long ClientCreatedAt
-        {
-            get;
-        }
-        public long Sequence
-        {
-            get;
-        }
-        public long LocalRevision
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public ClientStreamId StreamId { get; }
+        public Guid InstallationId { get; }
+        public long ClientCreatedAt { get; }
+        public long Sequence { get; }
+        public long LocalRevision { get; }
     }
 
     public interface ICommandFingerprint

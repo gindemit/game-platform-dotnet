@@ -215,22 +215,10 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
                 Correlation = new DurableRewardReceiptCorrelation(owner, Scope, State, database, Service, () => 1_000);
             }
 
-            public SqliteDatabase Database
-            {
-                get;
-            }
-            public SqliteDurableFeatureStateStore State
-            {
-                get;
-            }
-            public RewardFulfillmentService Service
-            {
-                get;
-            }
-            public DurableRewardReceiptCorrelation Correlation
-            {
-                get;
-            }
+            public SqliteDatabase Database { get; }
+            public SqliteDurableFeatureStateStore State { get; }
+            public RewardFulfillmentService Service { get; }
+            public DurableRewardReceiptCorrelation Correlation { get; }
 
             public static async Task<Session> OpenAsync(string path, ScopedOwnerContext owner) =>
                 new Session(await SqliteDatabase.OpenAsync(path, Scope, SqlitePlatformMigrationRegistry.Migrations, CancellationToken.None), owner);
@@ -260,10 +248,7 @@ namespace GamePlatform.Tests.Features.RewardFulfillment
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
 
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
 
             public void Dispose()
             {

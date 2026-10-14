@@ -145,10 +145,7 @@ namespace GamePlatform.Tests.Sync.Push
                 this.entered = entered;
                 this.release = release;
             }
-            public int Calls
-            {
-                get; private set;
-            }
+            public int Calls { get; private set; }
             public async Task<RemoteResult<RemoteCommandOutcome>> SendAsync(RemoteCommand command, CancellationToken token)
             {
                 Calls++;
@@ -175,10 +172,7 @@ namespace GamePlatform.Tests.Sync.Push
                 Directory.CreateDirectory(directory);
                 Path = System.IO.Path.Combine(directory, "platform.sqlite3");
             }
-            public string Path
-            {
-                get;
-            }
+            public string Path { get; }
             public void Dispose()
             {
                 if (Directory.Exists(directory))

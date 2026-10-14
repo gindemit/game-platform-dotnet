@@ -28,34 +28,13 @@ namespace GamePlatform.Features.Leaderboards
             BadgeId = badgeId;
             CountryCode = countryCode;
         }
-        public Guid ParticipantId
-        {
-            get;
-        }
-        public long Rank
-        {
-            get;
-        }
-        public long Score
-        {
-            get;
-        }
-        public string DisplayName
-        {
-            get;
-        }
-        public string? AvatarKey
-        {
-            get;
-        }
-        public string? BadgeId
-        {
-            get;
-        }
-        public string? CountryCode
-        {
-            get;
-        }
+        public Guid ParticipantId { get; }
+        public long Rank { get; }
+        public long Score { get; }
+        public string DisplayName { get; }
+        public string? AvatarKey { get; }
+        public string? BadgeId { get; }
+        public string? CountryCode { get; }
     }
 
     public sealed class LeaderboardsCountrySelection
@@ -72,18 +51,9 @@ namespace GamePlatform.Features.Leaderboards
             PendingCountryCode = pendingCountryCode;
             PendingEffectiveAt = pendingEffectiveAt;
         }
-        public string? CurrentCountryCode
-        {
-            get;
-        }
-        public string? PendingCountryCode
-        {
-            get;
-        }
-        public long? PendingEffectiveAt
-        {
-            get;
-        }
+        public string? CurrentCountryCode { get; }
+        public string? PendingCountryCode { get; }
+        public long? PendingEffectiveAt { get; }
     }
 
     public sealed class LeaderboardsResponse
@@ -148,98 +118,29 @@ namespace GamePlatform.Features.Leaderboards
             GraphRevision = graphRevision;
             CohortSize = cohortSize;
         }
-        public string BoardId
-        {
-            get;
-        }
-        public string ParticipantKind
-        {
-            get;
-        }
-        public string Scope
-        {
-            get;
-        }
-        public string? CountryCode
-        {
-            get;
-        }
-        public string PeriodId
-        {
-            get;
-        }
-        public long PeriodStart
-        {
-            get;
-        }
-        public long PeriodEnd
-        {
-            get;
-        }
-        public long ResetAt
-        {
-            get;
-        }
-        public Guid SnapshotId
-        {
-            get;
-        }
-        public long SnapshotCreatedAt
-        {
-            get;
-        }
-        public long ExpiresAt
-        {
-            get;
-        }
-        public string ScoreAuthority
-        {
-            get;
-        }
-        public IReadOnlyList<LeaderboardEntry> Entries
-        {
-            get;
-        }
-        public string? NextCursor
-        {
-            get;
-        }
-        public LeaderboardEntry? Self
-        {
-            get;
-        }
-        public int SnapshotLimit
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
-        public LeaderboardsCountrySelection? CountrySelection
-        {
-            get;
-        }
-        public Guid? AppId
-        {
-            get;
-        }
-        public Guid? AccountId
-        {
-            get;
-        }
-        public Guid? PlayerId
-        {
-            get;
-        }
-        public long? GraphRevision
-        {
-            get;
-        }
-        public int? CohortSize
-        {
-            get;
-        }
+        public string BoardId { get; }
+        public string ParticipantKind { get; }
+        public string Scope { get; }
+        public string? CountryCode { get; }
+        public string PeriodId { get; }
+        public long PeriodStart { get; }
+        public long PeriodEnd { get; }
+        public long ResetAt { get; }
+        public Guid SnapshotId { get; }
+        public long SnapshotCreatedAt { get; }
+        public long ExpiresAt { get; }
+        public string ScoreAuthority { get; }
+        public IReadOnlyList<LeaderboardEntry> Entries { get; }
+        public string? NextCursor { get; }
+        public LeaderboardEntry? Self { get; }
+        public int SnapshotLimit { get; }
+        public long ServerTime { get; }
+        public LeaderboardsCountrySelection? CountrySelection { get; }
+        public Guid? AppId { get; }
+        public Guid? AccountId { get; }
+        public Guid? PlayerId { get; }
+        public long? GraphRevision { get; }
+        public int? CohortSize { get; }
     }
 
     public sealed class LeaderboardsCountryResponse
@@ -259,30 +160,12 @@ namespace GamePlatform.Features.Leaderboards
             CountryCode = countryCode;
             EffectiveAt = effectiveAt;
         }
-        public Guid OperationId
-        {
-            get;
-        }
-        public string BoardId
-        {
-            get;
-        }
-        public string ParticipantKind
-        {
-            get;
-        }
-        public Guid ParticipantId
-        {
-            get;
-        }
-        public string CountryCode
-        {
-            get;
-        }
-        public long EffectiveAt
-        {
-            get;
-        }
+        public Guid OperationId { get; }
+        public string BoardId { get; }
+        public string ParticipantKind { get; }
+        public Guid ParticipantId { get; }
+        public string CountryCode { get; }
+        public long EffectiveAt { get; }
     }
 
     internal static class LeaderboardsValidation

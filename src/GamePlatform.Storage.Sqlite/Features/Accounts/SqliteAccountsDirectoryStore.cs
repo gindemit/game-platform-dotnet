@@ -29,10 +29,7 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
             Scope = scope;
         }
 
-        public AccountDirectoryScope Scope
-        {
-            get;
-        }
+        public AccountDirectoryScope Scope { get; }
         public int ConnectionCount => disposed ? 0 : 1;
 
         /// <summary>Executes a synchronous consumer pb_ extension callback in the owned serialized transaction.</summary>
@@ -249,50 +246,26 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
 
         private sealed class DirectoryColumn
         {
-            public int Cid
-            {
-                get; set;
-            }
+            public int Cid { get; set; }
             public string Name { get; set; } = string.Empty;
             public string Type { get; set; } = string.Empty;
-            public int Notnull
-            {
-                get; set;
-            }
-            public int Pk
-            {
-                get; set;
-            }
+            public int Notnull { get; set; }
+            public int Pk { get; set; }
         }
 
         private sealed class DirectoryIndex
         {
-            public int Seq
-            {
-                get; set;
-            }
+            public int Seq { get; set; }
             public string Name { get; set; } = string.Empty;
-            public int Unique
-            {
-                get; set;
-            }
+            public int Unique { get; set; }
             public string Origin { get; set; } = string.Empty;
-            public int Partial
-            {
-                get; set;
-            }
+            public int Partial { get; set; }
         }
 
         private sealed class DirectoryIndexColumn
         {
-            public int Seq
-            {
-                get; set;
-            }
-            public int Cid
-            {
-                get; set;
-            }
+            public int Seq { get; set; }
+            public int Cid { get; set; }
             public string Name { get; set; } = string.Empty;
         }
 
@@ -486,14 +459,8 @@ namespace GamePlatform.Storage.Sqlite.Features.Accounts
         {
             public string InstallationId { get; set; } = string.Empty;
             public string ClientStreamId { get; set; } = string.Empty;
-            public string? PlatformUserId
-            {
-                get; set;
-            }
-            public string? MembershipStatus
-            {
-                get; set;
-            }
+            public string? PlatformUserId { get; set; }
+            public string? MembershipStatus { get; set; }
         }
     }
 }

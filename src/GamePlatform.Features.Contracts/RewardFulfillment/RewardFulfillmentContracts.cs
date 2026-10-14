@@ -48,30 +48,12 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             Quantity = quantity;
             ExpiresAtServerMilliseconds = expiresAtServerMilliseconds;
         }
-        public int LineIndex
-        {
-            get;
-        }
-        public int DefinitionVersion
-        {
-            get;
-        }
-        public RewardReceiptLineKind Kind
-        {
-            get;
-        }
-        public PlatformId ResourceId
-        {
-            get;
-        }
-        public long? Quantity
-        {
-            get;
-        }
-        public long? ExpiresAtServerMilliseconds
-        {
-            get;
-        }
+        public int LineIndex { get; }
+        public int DefinitionVersion { get; }
+        public RewardReceiptLineKind Kind { get; }
+        public PlatformId ResourceId { get; }
+        public long? Quantity { get; }
+        public long? ExpiresAtServerMilliseconds { get; }
     }
 
     /// <summary>Immutable accepted backend receipt. Its source is the canonical backend business-source key, never a client-selected eligibility key.</summary>
@@ -108,34 +90,13 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             PlanId = planId;
             PlanVersion = planVersion;
         }
-        public Guid GrantId
-        {
-            get;
-        }
-        public OperationId OriginatingOperationId
-        {
-            get;
-        }
-        public long FeedRevision
-        {
-            get;
-        }
-        public long RecordedAtMilliseconds
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public string PlanId
-        {
-            get;
-        }
-        public int PlanVersion
-        {
-            get;
-        }
+        public Guid GrantId { get; }
+        public OperationId OriginatingOperationId { get; }
+        public long FeedRevision { get; }
+        public long RecordedAtMilliseconds { get; }
+        public string BusinessSource { get; }
+        public string PlanId { get; }
+        public int PlanVersion { get; }
         public IReadOnlyList<RewardReceiptLine> Lines => Array.AsReadOnly(lines);
     }
 
@@ -152,18 +113,9 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             OperationId = operationId;
             Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public RewardReceipt Receipt
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public RewardReceipt Receipt { get; }
     }
 
     /// <summary>Receipt-group membership observed from the ordered private feed after the Wallet, Inventory and Entitlements projections were installed.</summary>
@@ -184,22 +136,10 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             ResourceId = resourceId;
             ProjectionRevision = projectionRevision;
         }
-        public int LineIndex
-        {
-            get;
-        }
-        public RewardReceiptLineKind Kind
-        {
-            get;
-        }
-        public PlatformId ResourceId
-        {
-            get;
-        }
-        public long ProjectionRevision
-        {
-            get;
-        }
+        public int LineIndex { get; }
+        public RewardReceiptLineKind Kind { get; }
+        public PlatformId ResourceId { get; }
+        public long ProjectionRevision { get; }
     }
 
     /// <summary>Feed evidence only. It carries no balances, holdings, right payloads or local mutation authority.</summary>
@@ -229,26 +169,11 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             BusinessSource = businessSource;
             FeedRevision = feedRevision;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public Guid GrantId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public long FeedRevision
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public Guid GrantId { get; }
+        public string BusinessSource { get; }
+        public long FeedRevision { get; }
         public IReadOnlyList<RewardProjectionLine> Lines => Array.AsReadOnly(lines);
     }
 
@@ -267,22 +192,10 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             BusinessSource = businessSource;
             Code = code;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public string Code
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
+        public string BusinessSource { get; }
+        public string Code { get; }
     }
 
     public sealed class RewardPresentationRecord
@@ -309,30 +222,12 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             RejectionCode = rejectionCode;
             Presented = presented;
         }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public string BusinessSource
-        {
-            get;
-        }
-        public RewardPresentationStatus Status
-        {
-            get;
-        }
-        public RewardReceipt? Receipt
-        {
-            get;
-        }
-        public string? RejectionCode
-        {
-            get;
-        }
-        public bool Presented
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public string BusinessSource { get; }
+        public RewardPresentationStatus Status { get; }
+        public RewardReceipt? Receipt { get; }
+        public string? RejectionCode { get; }
+        public bool Presented { get; }
     }
 
     public sealed class RewardPresentationQuery
@@ -346,14 +241,8 @@ namespace GamePlatform.Features.Contracts.RewardFulfillment
             Owner = owner;
             OperationId = operationId;
         }
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public OperationId OperationId
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public OperationId OperationId { get; }
     }
 
     public interface IRewardFulfillmentStateCodec

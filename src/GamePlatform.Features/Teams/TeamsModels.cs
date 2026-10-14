@@ -43,50 +43,17 @@ namespace GamePlatform.Features.Teams
                 throw new ArgumentOutOfRangeException(nameof(createdAtMilliseconds));
             CreatedAtMilliseconds = createdAtMilliseconds;
         }
-        public Guid TeamId
-        {
-            get;
-        }
-        public string Name
-        {
-            get;
-        }
-        public string Description
-        {
-            get;
-        }
-        public string BadgeId
-        {
-            get;
-        }
-        public string Language
-        {
-            get;
-        }
-        public string JoinPolicy
-        {
-            get;
-        }
-        public int RequiredLevel
-        {
-            get;
-        }
-        public int Capacity
-        {
-            get;
-        }
-        public int MemberCount
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long CreatedAtMilliseconds
-        {
-            get;
-        }
+        public Guid TeamId { get; }
+        public string Name { get; }
+        public string Description { get; }
+        public string BadgeId { get; }
+        public string Language { get; }
+        public string JoinPolicy { get; }
+        public int RequiredLevel { get; }
+        public int Capacity { get; }
+        public int MemberCount { get; }
+        public long Revision { get; }
+        public long CreatedAtMilliseconds { get; }
     }
 
     public sealed class TeamMembership
@@ -109,26 +76,11 @@ namespace GamePlatform.Features.Teams
                 throw new ArgumentOutOfRangeException(nameof(helpCount));
             HelpCount = helpCount;
         }
-        public Guid TeamId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public string Role
-        {
-            get;
-        }
-        public long JoinedAtMilliseconds
-        {
-            get;
-        }
-        public long HelpCount
-        {
-            get;
-        }
+        public Guid TeamId { get; }
+        public Guid PlayerId { get; }
+        public string Role { get; }
+        public long JoinedAtMilliseconds { get; }
+        public long HelpCount { get; }
     }
 
     public sealed class TeamMember
@@ -158,38 +110,14 @@ namespace GamePlatform.Features.Teams
                 throw new ArgumentOutOfRangeException(nameof(mutedUntilMilliseconds));
             MutedUntilMilliseconds = mutedUntilMilliseconds;
         }
-        public Guid TeamId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public string Role
-        {
-            get;
-        }
-        public long JoinedAtMilliseconds
-        {
-            get;
-        }
-        public long HelpCount
-        {
-            get;
-        }
-        public string DisplayName
-        {
-            get;
-        }
-        public string? AvatarKey
-        {
-            get;
-        }
-        public long MutedUntilMilliseconds
-        {
-            get;
-        }
+        public Guid TeamId { get; }
+        public Guid PlayerId { get; }
+        public string Role { get; }
+        public long JoinedAtMilliseconds { get; }
+        public long HelpCount { get; }
+        public string DisplayName { get; }
+        public string? AvatarKey { get; }
+        public long MutedUntilMilliseconds { get; }
     }
 
     public sealed class TeamMessage
@@ -216,34 +144,13 @@ namespace GamePlatform.Features.Teams
             CreatedAtMilliseconds = createdAtMilliseconds;
             Deleted = deleted;
         }
-        public Guid MessageId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public string DisplayName
-        {
-            get;
-        }
-        public string Text
-        {
-            get;
-        }
-        public string Kind
-        {
-            get;
-        }
-        public long CreatedAtMilliseconds
-        {
-            get;
-        }
-        public bool Deleted
-        {
-            get;
-        }
+        public Guid MessageId { get; }
+        public Guid PlayerId { get; }
+        public string DisplayName { get; }
+        public string Text { get; }
+        public string Kind { get; }
+        public long CreatedAtMilliseconds { get; }
+        public bool Deleted { get; }
     }
 
     public sealed class TeamJoinRequest
@@ -269,30 +176,12 @@ namespace GamePlatform.Features.Teams
                 throw new ArgumentOutOfRangeException(nameof(createdAtMilliseconds));
             CreatedAtMilliseconds = createdAtMilliseconds;
         }
-        public Guid RequestId
-        {
-            get;
-        }
-        public Guid TeamId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public string DisplayName
-        {
-            get;
-        }
-        public string Status
-        {
-            get;
-        }
-        public long CreatedAtMilliseconds
-        {
-            get;
-        }
+        public Guid RequestId { get; }
+        public Guid TeamId { get; }
+        public Guid PlayerId { get; }
+        public string DisplayName { get; }
+        public string Status { get; }
+        public long CreatedAtMilliseconds { get; }
     }
 
     public sealed class TeamInvitation
@@ -321,34 +210,13 @@ namespace GamePlatform.Features.Teams
                 throw new ArgumentOutOfRangeException(nameof(expiresAtMilliseconds));
             ExpiresAtMilliseconds = expiresAtMilliseconds;
         }
-        public Guid InviteId
-        {
-            get;
-        }
-        public Guid TeamId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public Guid InviterPlayerId
-        {
-            get;
-        }
-        public string Status
-        {
-            get;
-        }
-        public long CreatedAtMilliseconds
-        {
-            get;
-        }
-        public long ExpiresAtMilliseconds
-        {
-            get;
-        }
+        public Guid InviteId { get; }
+        public Guid TeamId { get; }
+        public Guid PlayerId { get; }
+        public Guid InviterPlayerId { get; }
+        public string Status { get; }
+        public long CreatedAtMilliseconds { get; }
+        public long ExpiresAtMilliseconds { get; }
     }
 
     public sealed class TeamHelpRequest
@@ -384,46 +252,16 @@ namespace GamePlatform.Features.Teams
                 throw new ArgumentNullException(nameof(status));
             Status = status;
         }
-        public Guid RequestId
-        {
-            get;
-        }
-        public Guid TeamId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public string DisplayName
-        {
-            get;
-        }
-        public int CurrentCount
-        {
-            get;
-        }
-        public int RequiredCount
-        {
-            get;
-        }
-        public long CreatedAtMilliseconds
-        {
-            get;
-        }
-        public long ExpiresAtMilliseconds
-        {
-            get;
-        }
-        public bool ContributedByMe
-        {
-            get;
-        }
-        public string Status
-        {
-            get;
-        }
+        public Guid RequestId { get; }
+        public Guid TeamId { get; }
+        public Guid PlayerId { get; }
+        public string DisplayName { get; }
+        public int CurrentCount { get; }
+        public int RequiredCount { get; }
+        public long CreatedAtMilliseconds { get; }
+        public long ExpiresAtMilliseconds { get; }
+        public bool ContributedByMe { get; }
+        public string Status { get; }
     }
 
     public sealed class TeamsResponse
@@ -469,70 +307,22 @@ namespace GamePlatform.Features.Teams
             NextCursor = nextCursor;
             ResultCode = resultCode;
         }
-        public Guid AppId
-        {
-            get;
-        }
-        public Guid AccountId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public long ServerTimeMilliseconds
-        {
-            get;
-        }
-        public Guid? OperationId
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public TeamSummary? Team
-        {
-            get;
-        }
-        public TeamMembership? Membership
-        {
-            get;
-        }
-        public IReadOnlyList<TeamSummary> Teams
-        {
-            get;
-        }
-        public IReadOnlyList<TeamMember> Members
-        {
-            get;
-        }
-        public IReadOnlyList<TeamMessage> Messages
-        {
-            get;
-        }
-        public IReadOnlyList<TeamJoinRequest> Requests
-        {
-            get;
-        }
-        public IReadOnlyList<TeamInvitation> Invites
-        {
-            get;
-        }
-        public IReadOnlyList<TeamHelpRequest> HelpRequests
-        {
-            get;
-        }
-        public string? NextCursor
-        {
-            get;
-        }
-        public string? ResultCode
-        {
-            get;
-        }
+        public Guid AppId { get; }
+        public Guid AccountId { get; }
+        public Guid PlayerId { get; }
+        public long ServerTimeMilliseconds { get; }
+        public Guid? OperationId { get; }
+        public long Revision { get; }
+        public TeamSummary? Team { get; }
+        public TeamMembership? Membership { get; }
+        public IReadOnlyList<TeamSummary> Teams { get; }
+        public IReadOnlyList<TeamMember> Members { get; }
+        public IReadOnlyList<TeamMessage> Messages { get; }
+        public IReadOnlyList<TeamJoinRequest> Requests { get; }
+        public IReadOnlyList<TeamInvitation> Invites { get; }
+        public IReadOnlyList<TeamHelpRequest> HelpRequests { get; }
+        public string? NextCursor { get; }
+        public string? ResultCode { get; }
     }
 
 }

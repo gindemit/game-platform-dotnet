@@ -19,14 +19,8 @@ namespace GamePlatform.Storage.Abstractions.Accounts
             AppId = appId;
         }
 
-        public BackendNamespace BackendNamespace
-        {
-            get;
-        }
-        public AppId AppId
-        {
-            get;
-        }
+        public BackendNamespace BackendNamespace { get; }
+        public AppId AppId { get; }
         public bool IsValid => BackendNamespace.IsValid && AppId.IsValid;
         public bool Equals(AccountDirectoryScope other) => BackendNamespace == other.BackendNamespace && AppId == other.AppId;
         public override bool Equals(object? obj) => obj is AccountDirectoryScope other && Equals(other);
@@ -47,18 +41,9 @@ namespace GamePlatform.Storage.Abstractions.Accounts
             Subject = subject;
         }
 
-        public BackendNamespace BackendNamespace
-        {
-            get;
-        }
-        public string Issuer
-        {
-            get;
-        }
-        public string Subject
-        {
-            get;
-        }
+        public BackendNamespace BackendNamespace { get; }
+        public string Issuer { get; }
+        public string Subject { get; }
         public bool Equals(AccountPrincipalDescriptor? other) => other != null && BackendNamespace == other.BackendNamespace && string.Equals(Issuer, other.Issuer, StringComparison.Ordinal) && string.Equals(Subject, other.Subject, StringComparison.Ordinal);
         public override bool Equals(object? obj) => Equals(obj as AccountPrincipalDescriptor);
         public override int GetHashCode() => HashCode.Combine(BackendNamespace, Issuer, Subject);
@@ -89,30 +74,12 @@ namespace GamePlatform.Storage.Abstractions.Accounts
             MembershipStatus = membershipStatus;
         }
 
-        public AccountPrincipalDescriptor Principal
-        {
-            get;
-        }
-        public AppId AppId
-        {
-            get;
-        }
-        public Guid InstallationId
-        {
-            get;
-        }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public PlatformUserId? AccountId
-        {
-            get;
-        }
-        public string? MembershipStatus
-        {
-            get;
-        }
+        public AccountPrincipalDescriptor Principal { get; }
+        public AppId AppId { get; }
+        public Guid InstallationId { get; }
+        public ClientStreamId StreamId { get; }
+        public PlatformUserId? AccountId { get; }
+        public string? MembershipStatus { get; }
         public bool HasIssuedAccount => AccountId.HasValue;
     }
 

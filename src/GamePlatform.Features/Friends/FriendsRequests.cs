@@ -19,22 +19,10 @@ namespace GamePlatform.Features.Friends
             Cursor = cursor;
             PageSize = pageSize;
         }
-        public string View
-        {
-            get;
-        }
-        public string? PublicCode
-        {
-            get;
-        }
-        public string? Cursor
-        {
-            get;
-        }
-        public int PageSize
-        {
-            get;
-        }
+        public string View { get; }
+        public string? PublicCode { get; }
+        public string? Cursor { get; }
+        public int PageSize { get; }
     }
     public sealed class FriendsCommand
     {
@@ -52,18 +40,9 @@ namespace GamePlatform.Features.Friends
             Action = action;
             Payload = payload;
         }
-        public OperationId OperationId
-        {
-            get;
-        }
-        public string Action
-        {
-            get;
-        }
-        public FriendsCommandPayload Payload
-        {
-            get;
-        }
+        public OperationId OperationId { get; }
+        public string Action { get; }
+        public FriendsCommandPayload Payload { get; }
     }
     public sealed class FriendsCommandPayload
     {
@@ -80,22 +59,10 @@ namespace GamePlatform.Features.Friends
             RequestId = requestId;
             AllowRequests = allowRequests;
         }
-        public string? PublicCode
-        {
-            get;
-        }
-        public Guid? TargetPlayerId
-        {
-            get;
-        }
-        public Guid? RequestId
-        {
-            get;
-        }
-        public bool? AllowRequests
-        {
-            get;
-        }
+        public string? PublicCode { get; }
+        public Guid? TargetPlayerId { get; }
+        public Guid? RequestId { get; }
+        public bool? AllowRequests { get; }
     }
 }
 

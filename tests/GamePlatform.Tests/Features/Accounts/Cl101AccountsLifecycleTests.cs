@@ -1056,18 +1056,9 @@ namespace GamePlatform.Tests.Features.Accounts
                 Ordinal = Interlocked.Increment(ref owner.Opened);
                 owner.OpenedEvent(Ordinal);
             }
-            public int Ordinal
-            {
-                get;
-            }
-            public AccountDirectoryEntry Entry
-            {
-                get;
-            }
-            public long Generation
-            {
-                get;
-            }
+            public int Ordinal { get; }
+            public AccountDirectoryEntry Entry { get; }
+            public long Generation { get; }
             public Task<bool> IsBootstrapReadyAsync(CancellationToken t) => Task.FromResult(ready); public Task<AccountBootstrapResult> BootstrapAsync(CancellationToken t) => Task.FromResult(bootstrap); public Task StopAdmissionsAsync(CancellationToken t)
             {
                 Interlocked.Increment(ref owner.Stopped);

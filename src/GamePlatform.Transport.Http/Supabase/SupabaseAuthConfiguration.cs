@@ -42,34 +42,13 @@ namespace GamePlatform.Transport.Http.Supabase
             RecoveryTimeout = recoveryBound;
         }
 
-        public Uri AuthBaseUri
-        {
-            get;
-        }
-        public string PrincipalIssuer
-        {
-            get;
-        }
-        public BackendNamespace BackendNamespace
-        {
-            get;
-        }
-        public string PublishableApiKey
-        {
-            get;
-        }
-        public string SessionStorageKey
-        {
-            get;
-        }
-        public int MaximumResponseBytes
-        {
-            get;
-        }
-        public TimeSpan RecoveryTimeout
-        {
-            get;
-        }
+        public Uri AuthBaseUri { get; }
+        public string PrincipalIssuer { get; }
+        public BackendNamespace BackendNamespace { get; }
+        public string PublishableApiKey { get; }
+        public string SessionStorageKey { get; }
+        public int MaximumResponseBytes { get; }
+        public TimeSpan RecoveryTimeout { get; }
 
         public Uri Resolve(string relativePath)
         {
@@ -120,18 +99,9 @@ namespace GamePlatform.Transport.Http.Supabase
             State = state;
             Subject = subject == null ? null : Guid.ParseExact(subject, "D").ToString("D");
         }
-        public long Version
-        {
-            get;
-        }
-        public SupabaseAnonymousSessionState State
-        {
-            get;
-        }
-        public string? Subject
-        {
-            get;
-        }
+        public long Version { get; }
+        public SupabaseAnonymousSessionState State { get; }
+        public string? Subject { get; }
     }
 
     /// <summary>Defensively copied logical public/secret record. The public portion has no secret.</summary>
@@ -147,10 +117,7 @@ namespace GamePlatform.Transport.Http.Supabase
             this.secret = secret == null ? null : (byte[])secret.Clone();
         }
         private readonly byte[]? secret;
-        public SupabaseAnonymousSessionPublicRecord? Public
-        {
-            get;
-        }
+        public SupabaseAnonymousSessionPublicRecord? Public { get; }
         public bool Exists => Public != null;
         public byte[]? CopySecret() => secret == null ? null : (byte[])secret.Clone();
         public static SupabaseAnonymousSessionSnapshot Absent() => new SupabaseAnonymousSessionSnapshot(null, null);
@@ -164,14 +131,8 @@ namespace GamePlatform.Transport.Http.Supabase
             Subject = subject;
             _ = new SupabaseAnonymousSessionPublicRecord(0, state, subject);
         }
-        public SupabaseAnonymousSessionState State
-        {
-            get;
-        }
-        public string? Subject
-        {
-            get;
-        }
+        public SupabaseAnonymousSessionState State { get; }
+        public string? Subject { get; }
     }
 
     public sealed class SupabaseAnonymousSessionCompareExchangeResult
@@ -181,14 +142,8 @@ namespace GamePlatform.Transport.Http.Supabase
             Applied = applied;
             Current = current ?? throw new ArgumentNullException(nameof(current));
         }
-        public bool Applied
-        {
-            get;
-        }
-        public SupabaseAnonymousSessionSnapshot Current
-        {
-            get;
-        }
+        public bool Applied { get; }
+        public SupabaseAnonymousSessionSnapshot Current { get; }
     }
 
     /// <summary>
@@ -198,10 +153,7 @@ namespace GamePlatform.Transport.Http.Supabase
     /// </summary>
     public interface ISupabaseAnonymousSessionStore
     {
-        bool IsAvailable
-        {
-            get;
-        }
+        bool IsAvailable { get; }
         System.Threading.Tasks.Task<SupabaseAnonymousSessionSnapshot> ReadAsync(string key, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task<SupabaseAnonymousSessionCompareExchangeResult> CompareExchangeAsync(string key,
             SupabaseAnonymousSessionSnapshot expected, SupabaseAnonymousSessionTransition next, byte[]? secret,

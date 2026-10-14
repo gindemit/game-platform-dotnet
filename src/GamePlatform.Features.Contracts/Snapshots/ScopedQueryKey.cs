@@ -17,18 +17,9 @@ namespace GamePlatform.Features.Contracts.Snapshots
             CanonicalQuery = canonicalQuery;
         }
 
-        public ScopedOwnerContext Owner
-        {
-            get;
-        }
-        public string FeatureNamespace
-        {
-            get;
-        }
-        public string CanonicalQuery
-        {
-            get;
-        }
+        public ScopedOwnerContext Owner { get; }
+        public string FeatureNamespace { get; }
+        public string CanonicalQuery { get; }
 
         public bool Equals(ScopedQueryKey other) => Owner == other.Owner &&
             string.Equals(FeatureNamespace, other.FeatureNamespace, StringComparison.Ordinal) &&

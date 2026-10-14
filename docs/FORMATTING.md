@@ -2,10 +2,20 @@
 
 The repository pins .NET SDK `9.0.203` in `global.json`. The root `.editorconfig`
 applies four-space indentation, Allman braces and expanded single-line statements
-and blocks to first-party C# throughout the repository, including the identity
+to first-party C# throughout the repository, including the identity
 types and optional configuration libraries. Visual Studio reads these project
 settings; use **Edit > Advanced > Format Document** (`Ctrl+K`, `Ctrl+D`) to apply
 them to the current document.
+
+Simple auto-properties use one line, for example `public string Reason { get; }`
+or `public string Name { get; private set; }`. The owner's October 14 follow-up
+selected `csharp_preserve_single_line_blocks = true` so the formatter retains
+this layout. The switch also preserves other blocks that are already compact;
+it does not collapse expanded executable code or require existing multiline
+properties to become compact. New auto-properties should use the one-line form.
+Accessors with executable bodies, comments or attributes retain their existing
+layout. The one-time cleanup changed only simple auto-property accessor lists;
+see [the auto-property results](work/autoproperties-2026-10-14/RESULTS.md).
 
 CI on push to `main`, pull requests and manual dispatch restores the locked
 solution, then checks its first-party runtime, test and acceptance projects:

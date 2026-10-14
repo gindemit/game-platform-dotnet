@@ -183,14 +183,8 @@ namespace GamePlatform.Transport.Http
                 Response = null;
                 Failure = failure;
             }
-            public HttpResponseData? Response
-            {
-                get;
-            }
-            public RemoteFailure? Failure
-            {
-                get;
-            }
+            public HttpResponseData? Response { get; }
+            public RemoteFailure? Failure { get; }
         }
     }
 }

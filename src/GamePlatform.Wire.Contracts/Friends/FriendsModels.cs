@@ -18,18 +18,9 @@ namespace GamePlatform.Wire.Contracts.Friends
             DisplayName = displayName;
             AvatarKey = avatarKey;
         }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public string DisplayName
-        {
-            get;
-        }
-        public string? AvatarKey
-        {
-            get;
-        }
+        public Guid PlayerId { get; }
+        public string DisplayName { get; }
+        public string? AvatarKey { get; }
     }
     public sealed class Friend
     {
@@ -41,14 +32,8 @@ namespace GamePlatform.Wire.Contracts.Friends
             Player = player;
             SinceMilliseconds = sinceMilliseconds;
         }
-        public PublicPlayer Player
-        {
-            get;
-        }
-        public long SinceMilliseconds
-        {
-            get;
-        }
+        public PublicPlayer Player { get; }
+        public long SinceMilliseconds { get; }
     }
     public sealed class BlockedPlayer
     {
@@ -60,14 +45,8 @@ namespace GamePlatform.Wire.Contracts.Friends
             Player = player;
             BlockedAtMilliseconds = blockedAtMilliseconds;
         }
-        public PublicPlayer Player
-        {
-            get;
-        }
-        public long BlockedAtMilliseconds
-        {
-            get;
-        }
+        public PublicPlayer Player { get; }
+        public long BlockedAtMilliseconds { get; }
     }
     public sealed class FriendRequest
     {
@@ -88,34 +67,13 @@ namespace GamePlatform.Wire.Contracts.Friends
             ExpiresAtMilliseconds = expiresAtMilliseconds;
             Peer = peer;
         }
-        public Guid RequestId
-        {
-            get;
-        }
-        public Guid SenderPlayerId
-        {
-            get;
-        }
-        public Guid RecipientPlayerId
-        {
-            get;
-        }
-        public string Status
-        {
-            get;
-        }
-        public long CreatedAtMilliseconds
-        {
-            get;
-        }
-        public long ExpiresAtMilliseconds
-        {
-            get;
-        }
-        public PublicPlayer Peer
-        {
-            get;
-        }
+        public Guid RequestId { get; }
+        public Guid SenderPlayerId { get; }
+        public Guid RecipientPlayerId { get; }
+        public string Status { get; }
+        public long CreatedAtMilliseconds { get; }
+        public long ExpiresAtMilliseconds { get; }
+        public PublicPlayer Peer { get; }
     }
     public sealed class FriendsResponse
     {
@@ -194,102 +152,30 @@ namespace GamePlatform.Wire.Contracts.Friends
             NextCursor = nextCursor;
             ResultCode = resultCode;
         }
-        public Guid AppId
-        {
-            get;
-        }
-        public Guid AccountId
-        {
-            get;
-        }
-        public Guid PlayerId
-        {
-            get;
-        }
-        public long ServerTimeMilliseconds
-        {
-            get;
-        }
-        public long CacheExpiresAtMilliseconds
-        {
-            get;
-        }
-        public Guid? OperationId
-        {
-            get;
-        }
-        public string? View
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public long GraphRevision
-        {
-            get;
-        }
-        public string MyPublicCode
-        {
-            get;
-        }
-        public bool AllowRequests
-        {
-            get;
-        }
-        public int FriendCount
-        {
-            get;
-        }
-        public int IncomingCount
-        {
-            get;
-        }
-        public int OutgoingCount
-        {
-            get;
-        }
-        public IReadOnlyList<Friend> Friends
-        {
-            get;
-        }
-        public IReadOnlyList<FriendRequest> Requests
-        {
-            get;
-        }
-        public IReadOnlyList<BlockedPlayer> BlockedPlayers
-        {
-            get;
-        }
-        public IReadOnlyList<PublicPlayer> Suggestions
-        {
-            get;
-        }
-        public PublicPlayer? Player
-        {
-            get;
-        }
-        public FriendRequest? Request
-        {
-            get;
-        }
-        public string? Relationship
-        {
-            get;
-        }
-        public Guid? RelationshipRequestId
-        {
-            get;
-        }
-        public string? NextCursor
-        {
-            get;
-        }
-        public string? ResultCode
-        {
-            get;
-        }
+        public Guid AppId { get; }
+        public Guid AccountId { get; }
+        public Guid PlayerId { get; }
+        public long ServerTimeMilliseconds { get; }
+        public long CacheExpiresAtMilliseconds { get; }
+        public Guid? OperationId { get; }
+        public string? View { get; }
+        public long Revision { get; }
+        public long GraphRevision { get; }
+        public string MyPublicCode { get; }
+        public bool AllowRequests { get; }
+        public int FriendCount { get; }
+        public int IncomingCount { get; }
+        public int OutgoingCount { get; }
+        public IReadOnlyList<Friend> Friends { get; }
+        public IReadOnlyList<FriendRequest> Requests { get; }
+        public IReadOnlyList<BlockedPlayer> BlockedPlayers { get; }
+        public IReadOnlyList<PublicPlayer> Suggestions { get; }
+        public PublicPlayer? Player { get; }
+        public FriendRequest? Request { get; }
+        public string? Relationship { get; }
+        public Guid? RelationshipRequestId { get; }
+        public string? NextCursor { get; }
+        public string? ResultCode { get; }
     }
     internal static class FriendsValidation
     {

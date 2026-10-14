@@ -30,22 +30,10 @@ namespace GamePlatform.Storage.Sqlite.Migrations
             Checksum = ComputeChecksum(version, id, copied);
         }
 
-        public int Version
-        {
-            get;
-        }
-        public string Id
-        {
-            get;
-        }
-        public IReadOnlyList<string> Statements
-        {
-            get;
-        }
-        public string Checksum
-        {
-            get;
-        }
+        public int Version { get; }
+        public string Id { get; }
+        public IReadOnlyList<string> Statements { get; }
+        public string Checksum { get; }
 
         private static string ComputeChecksum(int version, string id, IReadOnlyList<string> statements)
         {

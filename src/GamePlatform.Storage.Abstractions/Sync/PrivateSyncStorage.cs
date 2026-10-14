@@ -29,22 +29,10 @@ namespace GamePlatform.Storage.Abstractions.Sync
             Kind = kind;
             this.payload = (byte[])(payload ?? throw new ArgumentNullException(nameof(payload))).Clone();
         }
-        public string Collection
-        {
-            get;
-        }
-        public string EntityKey
-        {
-            get;
-        }
-        public long Revision
-        {
-            get;
-        }
-        public StoredProjectionKind Kind
-        {
-            get;
-        }
+        public string Collection { get; }
+        public string EntityKey { get; }
+        public long Revision { get; }
+        public StoredProjectionKind Kind { get; }
         public byte[] CopyPayload() => (byte[])payload.Clone();
     }
     public sealed class BootstrapBoundary
@@ -63,42 +51,15 @@ namespace GamePlatform.Storage.Abstractions.Sync
             this.session = (byte[])session.Clone();
             this.firstPage = (byte[])firstPage.Clone();
         }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public string StreamState
-        {
-            get;
-        }
-        public long FinalizedThrough
-        {
-            get;
-        }
-        public long? NextSequence
-        {
-            get;
-        }
-        public long CommittedThrough
-        {
-            get;
-        }
-        public long VisibilityGeneration
-        {
-            get;
-        }
-        public Guid LogEpoch
-        {
-            get;
-        }
-        public long ExpiresAt
-        {
-            get;
-        }
-        public IReadOnlyList<string> RequiredCollections
-        {
-            get;
-        }
+        public ClientStreamId StreamId { get; }
+        public string StreamState { get; }
+        public long FinalizedThrough { get; }
+        public long? NextSequence { get; }
+        public long CommittedThrough { get; }
+        public long VisibilityGeneration { get; }
+        public Guid LogEpoch { get; }
+        public long ExpiresAt { get; }
+        public IReadOnlyList<string> RequiredCollections { get; }
         public byte[] CopySession() => (byte[])session.Clone(); public byte[] CopyFirstPageToken() => (byte[])firstPage.Clone();
         private static IReadOnlyList<string> Copy(IReadOnlyList<string> values)
         {
@@ -126,22 +87,10 @@ namespace GamePlatform.Storage.Abstractions.Sync
             this.cursor = cursor == null ? null : (byte[])cursor.Clone();
             ServerTime = serverTime;
         }
-        public long CommittedThrough
-        {
-            get;
-        }
-        public IReadOnlyList<StoredProjectionMutation> Entities
-        {
-            get;
-        }
-        public bool HasMore
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public long CommittedThrough { get; }
+        public IReadOnlyList<StoredProjectionMutation> Entities { get; }
+        public bool HasMore { get; }
+        public long ServerTime { get; }
         public byte[] CopySession() => (byte[])session.Clone(); public byte[] CopyRequestedPageToken() => (byte[])requestedPage.Clone(); public byte[]? CopyNextPageToken() => next == null ? null : (byte[])next.Clone(); public byte[]? CopyInitialPullCursor() => cursor == null ? null : (byte[])cursor.Clone();
         private static IReadOnlyList<StoredProjectionMutation> Copy(IReadOnlyList<StoredProjectionMutation> values)
         {
@@ -160,14 +109,8 @@ namespace GamePlatform.Storage.Abstractions.Sync
             Revision = revision;
             Changes = Copy(changes);
         }
-        public long Revision
-        {
-            get;
-        }
-        public IReadOnlyList<StoredProjectionMutation> Changes
-        {
-            get;
-        }
+        public long Revision { get; }
+        public IReadOnlyList<StoredProjectionMutation> Changes { get; }
         private static IReadOnlyList<StoredProjectionMutation> Copy(IReadOnlyList<StoredProjectionMutation> values)
         {
             if (values == null)
@@ -197,14 +140,8 @@ namespace GamePlatform.Storage.Abstractions.Sync
             FixedThrough = fixedThrough;
             ServerTimeMilliseconds = serverTimeMilliseconds;
         }
-        public long FixedThrough
-        {
-            get;
-        }
-        public long ServerTimeMilliseconds
-        {
-            get;
-        }
+        public long FixedThrough { get; }
+        public long ServerTimeMilliseconds { get; }
     }
     public interface IObservedPrivateSyncProjectionProjector : IPrivateSyncProjectionProjector
     {
@@ -223,22 +160,10 @@ namespace GamePlatform.Storage.Abstractions.Sync
             HasMore = hasMore;
             ServerTime = serverTime;
         }
-        public long CommittedThrough
-        {
-            get;
-        }
-        public IReadOnlyList<StoredPullGroup> Groups
-        {
-            get;
-        }
-        public bool HasMore
-        {
-            get;
-        }
-        public long ServerTime
-        {
-            get;
-        }
+        public long CommittedThrough { get; }
+        public IReadOnlyList<StoredPullGroup> Groups { get; }
+        public bool HasMore { get; }
+        public long ServerTime { get; }
         public byte[] CopyNextCursor() => (byte[])cursor.Clone(); private static IReadOnlyList<StoredPullGroup> Copy(IReadOnlyList<StoredPullGroup> values)
         {
             if (values == null)
@@ -261,26 +186,11 @@ namespace GamePlatform.Storage.Abstractions.Sync
             this.session = (byte[])session.Clone();
             this.pageToken = (byte[])pageToken.Clone();
         }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public long CommittedThrough
-        {
-            get;
-        }
-        public long VisibilityGeneration
-        {
-            get;
-        }
-        public Guid LogEpoch
-        {
-            get;
-        }
-        public long ExpiresAt
-        {
-            get;
-        }
+        public ClientStreamId StreamId { get; }
+        public long CommittedThrough { get; }
+        public long VisibilityGeneration { get; }
+        public Guid LogEpoch { get; }
+        public long ExpiresAt { get; }
         public byte[] CopySession() => (byte[])session.Clone(); public byte[] CopyPageToken() => (byte[])pageToken.Clone();
     }
     public sealed class PullCheckpoint
@@ -292,18 +202,9 @@ namespace GamePlatform.Storage.Abstractions.Sync
             CommittedThrough = committedThrough;
             FixedThrough = fixedThrough;
         }
-        public ClientStreamId StreamId
-        {
-            get;
-        }
-        public byte[] CopyCursor() => (byte[])cursor.Clone(); public long CommittedThrough
-        {
-            get;
-        }
-        public long? FixedThrough
-        {
-            get;
-        }
+        public ClientStreamId StreamId { get; }
+        public byte[] CopyCursor() => (byte[])cursor.Clone(); public long CommittedThrough { get; }
+        public long? FixedThrough { get; }
     }
     public sealed class StoredTerminalCommand
     {
@@ -312,14 +213,8 @@ namespace GamePlatform.Storage.Abstractions.Sync
             Command = command ?? throw new ArgumentNullException(nameof(command));
             Outcome = outcome;
         }
-        public LeasedCommand Command
-        {
-            get;
-        }
-        public CommandTerminalOutcome Outcome
-        {
-            get;
-        }
+        public LeasedCommand Command { get; }
+        public CommandTerminalOutcome Outcome { get; }
     }
     public interface IPrivateSyncStore
     {

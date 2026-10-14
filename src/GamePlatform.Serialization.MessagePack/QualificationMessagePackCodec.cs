@@ -344,10 +344,7 @@ namespace GamePlatform.Serialization.MessagePack
         private sealed class BoundedBuffer : IBufferWriter<byte>
         {
             private readonly byte[] bytes = new byte[262144];
-            internal int WrittenCount
-            {
-                get; private set;
-            }
+            internal int WrittenCount { get; private set; }
             internal ReadOnlySpan<byte> WrittenSpan => bytes.AsSpan(0, WrittenCount);
             public void Advance(int count)
             {

@@ -426,18 +426,9 @@ namespace GamePlatform.Transport.Http.Supabase
                 Current = current;
                 Cancelled = cancelled;
             }
-            public bool Applied
-            {
-                get;
-            }
-            public SupabaseAnonymousSessionSnapshot? Current
-            {
-                get;
-            }
-            public bool Cancelled
-            {
-                get;
-            }
+            public bool Applied { get; }
+            public SupabaseAnonymousSessionSnapshot? Current { get; }
+            public bool Cancelled { get; }
         }
         private sealed class SendResult
         {
@@ -447,18 +438,9 @@ namespace GamePlatform.Transport.Http.Supabase
                 Certainty = certainty;
                 Cancelled = cancelled;
             }
-            public HttpResponseData? Response
-            {
-                get;
-            }
-            public HttpDeliveryCertainty? Certainty
-            {
-                get;
-            }
-            public bool Cancelled
-            {
-                get;
-            }
+            public HttpResponseData? Response { get; }
+            public HttpDeliveryCertainty? Certainty { get; }
+            public bool Cancelled { get; }
             public static SendResult ResponseResult(HttpResponseData response) => new SendResult(response, null, false);
             public static SendResult Failed(HttpDeliveryCertainty certainty) => new SendResult(null, certainty, false);
             public static SendResult CancelledResult() => new SendResult(null, null, true);
@@ -473,22 +455,10 @@ namespace GamePlatform.Transport.Http.Supabase
                 Subject = subject;
                 ExpiresAtMilliseconds = expiresAtMilliseconds;
             }
-            public string AccessToken
-            {
-                get;
-            }
-            public string RefreshToken
-            {
-                get;
-            }
-            public string Subject
-            {
-                get;
-            }
-            public long ExpiresAtMilliseconds
-            {
-                get;
-            }
+            public string AccessToken { get; }
+            public string RefreshToken { get; }
+            public string Subject { get; }
+            public long ExpiresAtMilliseconds { get; }
             public static bool TryDecode(byte[] body, long nowMilliseconds, out AuthPayload payload)
             {
                 payload = null!;
