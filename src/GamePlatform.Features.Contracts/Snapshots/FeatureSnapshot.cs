@@ -3,22 +3,6 @@ using GamePlatform.Core;
 
 namespace GamePlatform.Features.Contracts.Snapshots
 {
-    public enum SnapshotFreshness
-    {
-        Missing = 0,
-        Stale = 1,
-        Current = 2
-    }
-
-    public enum FeatureSnapshotState
-    {
-        Missing = 0,
-        Available = 1,
-        Stale = 2,
-        Pending = 3,
-        Unavailable = 4,
-        Error = 5
-    }
 
     /// <summary>An immutable observation captured for exactly one owner/view generation.</summary>
     public sealed class FeatureSnapshot<T> where T : class
@@ -82,10 +66,5 @@ namespace GamePlatform.Features.Contracts.Snapshots
         public T? Value { get; }
         public long? LastConfirmedAtMilliseconds { get; }
         public string? DiagnosticCode { get; }
-    }
-
-    public interface IFeatureSnapshotReader<in TQuery, TSnapshot> where TSnapshot : class
-    {
-        FeatureSnapshot<TSnapshot> Read(ScopedOwnerContext owner, TQuery query);
     }
 }

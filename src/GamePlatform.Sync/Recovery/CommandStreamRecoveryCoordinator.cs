@@ -11,29 +11,6 @@ using RemoteRequest = GamePlatform.Backend.Contracts.Remote.CommandStreamRecover
 
 namespace GamePlatform.Sync.Recovery
 {
-    public enum CommandStreamRecoveryOutcome
-    {
-        BootstrapComplete, DamageNotEstablished, UnresolvedCommands, RemoteFailure,
-        OutcomeUncertain, BootstrapRequired, Retired
-    }
-
-    /// <summary>
-    /// Account lifetime owned by the host. Quiescence drains gameplay admission, push, pull
-    /// and late callbacks before returning true. New recovery requires verified damage;
-    /// journal resume must fence writers even when the directory already names the successor.
-    /// </summary>
-    public interface ICommandStreamRecoveryHost
-    {
-        bool IsCurrentAccount { get; }
-        Task<bool> QuiesceAsync(ClientStreamId priorStreamId, CommandStreamRecoveryReason reason, bool resume, CancellationToken cancellationToken);
-        /// <summary>
-        /// Opens successor storage without copying sequenced commands and performs genuine
-        /// complete private bootstrap. The prior database/evidence remains quarantined.
-        /// True requires durable identity, allocator, projections and checkpoint convergence;
-        /// no gameplay admission occurs until this coordinator returns BootstrapComplete.
-        /// </summary>
-        Task<bool> BootstrapSuccessorAsync(ClientStreamId successorStreamId, CancellationToken cancellationToken);
-    }
 
     /// <summary>
     /// Explicit account-owned recovery; construction starts no IO. The owner awaits StopAsync

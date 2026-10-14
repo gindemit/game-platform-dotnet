@@ -6,10 +6,6 @@ using GamePlatform.Storage.Abstractions.Outbox;
 
 namespace GamePlatform.Sync.Push
 {
-    public enum SendCycleResult
-    {
-        Idle, Finalized, Retryable, OutcomeUncertain
-    }
     public sealed class OrderedCommandSender
     {
         private readonly ICommandDeliveryStore store;

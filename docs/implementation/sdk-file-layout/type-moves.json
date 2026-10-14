@@ -1,0 +1,1817 @@
+{
+  "schemaVersion": 1,
+  "sourceBase": "186af3c57db3f7bed1566a18019e29f6c5124947",
+  "selectedSourceFiles": 61,
+  "selectedDeclarations": 327,
+  "allTopLevelTypesBefore": 618,
+  "allTopLevelTypesAfter": 618,
+  "movedDeclarations": 298,
+  "newNamedFiles": 298,
+  "removedGroupedFiles": 35,
+  "declarationDifferences": [],
+  "moves": [
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/ScopedOwnerContext`0",
+      "from": "src/GamePlatform.Core/OwnerScope.cs",
+      "to": "src/GamePlatform.Core/ScopedOwnerContext.cs",
+      "declarationSha256": "560004cef9cd52fd360d91840af114d66b976e3d56cedc30dcf321438c56f58d"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/PlatformFailure`0",
+      "from": "src/GamePlatform.Core/PlatformPrimitives.cs",
+      "to": "src/GamePlatform.Core/PlatformFailure.cs",
+      "declarationSha256": "8d275bbab9f0b58c5fe91824839271a155fde246702ba7e3fdb312b60e38aec0"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/PlatformId`0",
+      "from": "src/GamePlatform.Core/PlatformPrimitives.cs",
+      "to": "src/GamePlatform.Core/PlatformId.cs",
+      "declarationSha256": "157892b85360f7c2009bdd7806d96f0709e855486d41b88e772dbf9f743ac3c2"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/PlatformResult`1",
+      "from": "src/GamePlatform.Core/PlatformPrimitives.cs",
+      "to": "src/GamePlatform.Core/PlatformResult.cs",
+      "declarationSha256": "847c0596d3b8b49bcbbe94dbc7c69e604198c4be968ec2fa316e6deb18aa9cb6"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/PlatformCapabilityUnavailableException`0",
+      "from": "src/GamePlatform.Core/PlatformPrimitives.cs",
+      "to": "src/GamePlatform.Core/PlatformCapabilityUnavailableException.cs",
+      "declarationSha256": "ed9202940e524e061045bd610330b93bb96b7fba3b360ee477f45582e6a6b565"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/IUnixMillisecondClock`0",
+      "from": "src/GamePlatform.Core/UuidIdentity.cs",
+      "to": "src/GamePlatform.Core/IUnixMillisecondClock.cs",
+      "declarationSha256": "663e35714aa349ed6c7f5203598b274935f1609b87b9860038c9b0baffa55772"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/IUuidRandomSource`0",
+      "from": "src/GamePlatform.Core/UuidIdentity.cs",
+      "to": "src/GamePlatform.Core/IUuidRandomSource.cs",
+      "declarationSha256": "a32d9cf661b893a8bfc40bfd275af3c1f14f6fbd7925e553a3e90d1d584e5723"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/SystemUnixMillisecondClock`0",
+      "from": "src/GamePlatform.Core/UuidIdentity.cs",
+      "to": "src/GamePlatform.Core/SystemUnixMillisecondClock.cs",
+      "declarationSha256": "473869bb769561dbadb5eeb7d7f60f3051fa186f34e7b18ce7acb16b38671743"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/CryptographicUuidRandomSource`0",
+      "from": "src/GamePlatform.Core/UuidIdentity.cs",
+      "to": "src/GamePlatform.Core/CryptographicUuidRandomSource.cs",
+      "declarationSha256": "31202964c6fecb085a4e339810e5a634ade1f40e97e54cb8a680ade73e26f89d"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/UuidV7Generator`0",
+      "from": "src/GamePlatform.Core/UuidIdentity.cs",
+      "to": "src/GamePlatform.Core/UuidV7Generator.cs",
+      "declarationSha256": "a8bbd4502c306f7fb5495daa5fb995f4755b96a40d1644ac34e30d64657b1989"
+    },
+    {
+      "type": "GamePlatform.Core/GamePlatform.Core/PlatformNumbers`0",
+      "from": "src/GamePlatform.Core/UuidIdentity.cs",
+      "to": "src/GamePlatform.Core/PlatformNumbers.cs",
+      "declarationSha256": "9a9c5d2218eda27eaf42701776301481094a7cab9d1e11bdd31b650d9ae42cdb"
+    },
+    {
+      "type": "GamePlatform.Diagnostics.Abstractions/GamePlatform.Diagnostics.Abstractions/IStructuredAppLogSink`0",
+      "from": "src/GamePlatform.Diagnostics.Abstractions/SafeAppLog.cs",
+      "to": "src/GamePlatform.Diagnostics.Abstractions/IStructuredAppLogSink.cs",
+      "declarationSha256": "10fb94b26154343dda7dd0ff0917bec833fd12478c999722ef04df01f7b5d679"
+    },
+    {
+      "type": "GamePlatform.Diagnostics.Abstractions/GamePlatform.Diagnostics.Abstractions/AppLogContext`0",
+      "from": "src/GamePlatform.Diagnostics.Abstractions/SafeAppLog.cs",
+      "to": "src/GamePlatform.Diagnostics.Abstractions/AppLogContext.cs",
+      "declarationSha256": "78ea9a41660719e5888f8a29026dcb4bc983281836c751ee63aba03e52495557"
+    },
+    {
+      "type": "GamePlatform.Diagnostics.Abstractions/GamePlatform.Diagnostics.Abstractions/AppLogRecord`0",
+      "from": "src/GamePlatform.Diagnostics.Abstractions/SafeAppLog.cs",
+      "to": "src/GamePlatform.Diagnostics.Abstractions/AppLogRecord.cs",
+      "declarationSha256": "061a355fcebe21b082f4125f8d7e85b36db4c7dec93d54355e04c888cf2d45c1"
+    },
+    {
+      "type": "GamePlatform.Diagnostics.Abstractions/GamePlatform.Diagnostics.Abstractions/NullStructuredAppLogSink`0",
+      "from": "src/GamePlatform.Diagnostics.Abstractions/SafeAppLog.cs",
+      "to": "src/GamePlatform.Diagnostics.Abstractions/NullStructuredAppLogSink.cs",
+      "declarationSha256": "a59b67283b914f39b06d9c38d464b0510b3ab3add649d09e0cd46bb4d83a4ab3"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/NavigationRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/NavigationRoute.cs",
+      "declarationSha256": "560b9883ffceef3db977651ddcf534f3196aaabbcf5b58ff429f6cc6c09f9ce7"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/HomeRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/HomeRoute.cs",
+      "declarationSha256": "0eb31c1199e9e5298d429892b8a5f8c76882e821e26757a7aa8bc354270615c1"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/PlayRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/PlayRoute.cs",
+      "declarationSha256": "4f5762192f60bf9208de2adbe52eaf15ae2459a9418c9854d0ed1e3935959d91"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/CompletionPresentationState`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/CompletionPresentationState.cs",
+      "declarationSha256": "ad10264ad23fda531fb7e20186f83d39df44b140fa3ef41ec2f18989b2fd0e0c"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/ResultRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/ResultRoute.cs",
+      "declarationSha256": "9bf4eae6487b053bd23dbdc5232e0d6b2505324f7626a3850452fc63b4526f07"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/CallerReturnContext`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/CallerReturnContext.cs",
+      "declarationSha256": "f9475c2de7fb99c0cd7d56945401c2aed3703cb5044b90918066562ecdd1fa3a"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/ProfileRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/ProfileRoute.cs",
+      "declarationSha256": "43c52af6f26005154e26af8e5135e453c2f829e91a6a61d41c42efee81bf1901"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/DestinationRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/DestinationRoute.cs",
+      "declarationSha256": "263d578c0db5392d984113d1474ece91f23e4f3db350b7360774924c4c87d941"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/DetailRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/DetailRoute.cs",
+      "declarationSha256": "cfb01d1c2279fdb0b8458991dd0375cbd231c13b0c931148d80e82f6679321d0"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/ModalRoute`0",
+      "from": "src/GamePlatform.Navigation/MinimalRoutes.cs",
+      "to": "src/GamePlatform.Navigation/ModalRoute.cs",
+      "declarationSha256": "653077d694fea7968d131bf087c93191630160669f83a0173f6207459019f98a"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/RouteLoadResult`0",
+      "from": "src/GamePlatform.Navigation/NavigationCoordinator.cs",
+      "to": "src/GamePlatform.Navigation/RouteLoadResult.cs",
+      "declarationSha256": "c4c892e9fde7e1e758e6b209c270a8b9e941d0daf009cdfbf6a385f214ef3958"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/NavigationOutcome`0",
+      "from": "src/GamePlatform.Navigation/NavigationCoordinator.cs",
+      "to": "src/GamePlatform.Navigation/NavigationOutcome.cs",
+      "declarationSha256": "fa45d0d2504e1326010a080a8ecda099f4a439e42a580a30d9bee1d05aae1a01"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/NavigationMode`0",
+      "from": "src/GamePlatform.Navigation/NavigationCoordinator.cs",
+      "to": "src/GamePlatform.Navigation/NavigationMode.cs",
+      "declarationSha256": "14630c7c7a40cdff5b0f4792ea246db367f6ab855d3b2ecbc3d4bb1c9aafc87e"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/IRouteLoader`0",
+      "from": "src/GamePlatform.Navigation/NavigationCoordinator.cs",
+      "to": "src/GamePlatform.Navigation/IRouteLoader.cs",
+      "declarationSha256": "9c4c1aadbdd794ec09c0f13a24f6823166df8346fadf7e31e4bac64212f3b780"
+    },
+    {
+      "type": "GamePlatform.Navigation/GamePlatform.Navigation/ModalOwner`0",
+      "from": "src/GamePlatform.Navigation/NavigationCoordinator.cs",
+      "to": "src/GamePlatform.Navigation/ModalOwner.cs",
+      "declarationSha256": "cb2c8cf1fa20ec053facb7d58fd0c66256adcb1d840d260a5a53dc1bb0683be4"
+    },
+    {
+      "type": "GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack/QualificationValueKind`0",
+      "from": "src/GamePlatform.Serialization.MessagePack/QualificationValue.cs",
+      "to": "src/GamePlatform.Serialization.MessagePack/QualificationValueKind.cs",
+      "declarationSha256": "c2c76691d15aabca2d350392cf58c76cfd61ae562efd7cd4a79b3ccdde5caad3"
+    },
+    {
+      "type": "GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack/QualificationCodecException`0",
+      "from": "src/GamePlatform.Serialization.MessagePack/QualificationValue.cs",
+      "to": "src/GamePlatform.Serialization.MessagePack/QualificationCodecException.cs",
+      "declarationSha256": "d382b2d92dd81318a22bf4fce5d71d130fb5ebe7f2df0fa3ae359f840db4fc93"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions/StorageScope`0",
+      "from": "src/GamePlatform.Storage.Abstractions/StorageTransactions.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/StorageScope.cs",
+      "declarationSha256": "71b2e2a5a2d7b49ad2d113117455f8db8994270d13ca930c524447aab9bdfa29"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions/ILocalStorageTransaction`0",
+      "from": "src/GamePlatform.Storage.Abstractions/StorageTransactions.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/ILocalStorageTransaction.cs",
+      "declarationSha256": "ebb6bb8d479e35e16141adbb5568f272035320c88e19e33d295101da349cc25a"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions/ISerializedStorageExecutor`0",
+      "from": "src/GamePlatform.Storage.Abstractions/StorageTransactions.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/ISerializedStorageExecutor.cs",
+      "declarationSha256": "d686cfcd7661e43fa59077c75b248bf3b4fcf8f140b4900409c2074264569f65"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions/StorageFailure`0",
+      "from": "src/GamePlatform.Storage.Abstractions/StorageTransactions.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/StorageFailure.cs",
+      "declarationSha256": "2b0defee9556f8472a4aec191e8ed27b338b54b6412aea57bf86d6312a44e2ec"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions/StorageException`0",
+      "from": "src/GamePlatform.Storage.Abstractions/StorageTransactions.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/StorageException.cs",
+      "declarationSha256": "3467abe33b3e96f80a43cc18e9ff6a4c168dd619ffceef600892dacea46537ae"
+    },
+    {
+      "type": "GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions/HttpDeliveryCertainty`0",
+      "from": "src/GamePlatform.Transport.Abstractions/TransportContracts.cs",
+      "to": "src/GamePlatform.Transport.Abstractions/HttpDeliveryCertainty.cs",
+      "declarationSha256": "29913f90b3687b5a773f052b9d85f6c67a154972bb88cf2eb57e268ed9d82b21"
+    },
+    {
+      "type": "GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions/HttpRequestData`0",
+      "from": "src/GamePlatform.Transport.Abstractions/TransportContracts.cs",
+      "to": "src/GamePlatform.Transport.Abstractions/HttpRequestData.cs",
+      "declarationSha256": "93e535055b9616f3922d5ac57a2bf25834494e8d4914a7240ae265c415fdd6ba"
+    },
+    {
+      "type": "GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions/HttpResponseData`0",
+      "from": "src/GamePlatform.Transport.Abstractions/TransportContracts.cs",
+      "to": "src/GamePlatform.Transport.Abstractions/HttpResponseData.cs",
+      "declarationSha256": "7c3a595b7fa8f4ccd0e18727fd8419279ce1e34ddf9234bfdeffcbf202b8f37b"
+    },
+    {
+      "type": "GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions/HttpExecutionException`0",
+      "from": "src/GamePlatform.Transport.Abstractions/TransportContracts.cs",
+      "to": "src/GamePlatform.Transport.Abstractions/HttpExecutionException.cs",
+      "declarationSha256": "b81863483896f60c26e03ad1af4eeda69166015d32590eaead9790d61ff6062a"
+    },
+    {
+      "type": "GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions/IHttpExecutor`0",
+      "from": "src/GamePlatform.Transport.Abstractions/TransportContracts.cs",
+      "to": "src/GamePlatform.Transport.Abstractions/IHttpExecutor.cs",
+      "declarationSha256": "89d7c487f0fe41781c966dc8f91e8861c4cca925d6169d6fb3b029a2fca30f31"
+    },
+    {
+      "type": "GamePlatform.Transport.Abstractions/GamePlatform.Transport.Abstractions/IWireCodec`0",
+      "from": "src/GamePlatform.Transport.Abstractions/TransportContracts.cs",
+      "to": "src/GamePlatform.Transport.Abstractions/IWireCodec.cs",
+      "declarationSha256": "366ce5555ec5f4d21124edb44735f5d7c0cbd979dc99aead2688f715ffa9cb21"
+    },
+    {
+      "type": "GamePlatform.Transport.Http/GamePlatform.Transport.Http/BackendWireRepresentation`0",
+      "from": "src/GamePlatform.Transport.Http/PrivateSyncHttpProvider.cs",
+      "to": "src/GamePlatform.Transport.Http/BackendWireRepresentation.cs",
+      "declarationSha256": "db70e058597f65078a6014b886b292b40555385becbd2e5126f079eaf368c8f5"
+    },
+    {
+      "type": "GamePlatform.Transport.Http/GamePlatform.Transport.Http/ProductionAccountHttpProviders`0",
+      "from": "src/GamePlatform.Transport.Http/ProductionBackendHttpProviders.cs",
+      "to": "src/GamePlatform.Transport.Http/ProductionAccountHttpProviders.cs",
+      "declarationSha256": "9594651f160bd22ce85c70b42a06a6944ef8a0235d18cd31635822a205657233"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/CommandStreamRecoveryReason`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryReason.cs",
+      "declarationSha256": "a52517a7e1973f897677e05d0298f6d312b46f555d849d0ae4c08cb543a374cc"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/CommandStreamState`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamState.cs",
+      "declarationSha256": "57f837fc1b0637ba6746a249e2d6c260f065700a9c478e6a45e4c7afc76cf61a"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/CommandStreamInspection`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamInspection.cs",
+      "declarationSha256": "273a8bed0353349fba4e32f840116e7f73e3fdaa09c7b0ce822049294e3e0700"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/CommandStreamRecoveryRequest`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryRequest.cs",
+      "declarationSha256": "1cbc5b55b2bfdc572cbfd2df841c2e67c72c7923ee10327bf60e51c71a7a040e"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/CommandStreamRecoveryResult`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryResult.cs",
+      "declarationSha256": "2548ce68b1d693a6138202c8a8cb04e07c04ccd9cc14a8dc6ff96602633d0cb5"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/ICommandStreamRecoveryRemote`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/CommandStreamRecoveryContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/ICommandStreamRecoveryRemote.cs",
+      "declarationSha256": "1a7a82e6b806ebc8bdd804f99085915dca8e3e34a7de51373f763721bd1ac96a"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/SnapshotCollection`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/SnapshotCollection.cs",
+      "declarationSha256": "eb909de0c3be66a82b387732fed2c65516495e9b4020b0f9cc19267d239ee2f6"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/ProjectionMutationKind`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/ProjectionMutationKind.cs",
+      "declarationSha256": "03012ee07f7a746fc27563ff9fd33d98152542f1e219a217550ca58b6b05645e"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteProjectionMutation`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteProjectionMutation.cs",
+      "declarationSha256": "222596f3a65ee9efd8c862d0c15b7fbb54e89038ab56842baff5a3563b0e93cb"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/BootstrapStart`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/BootstrapStart.cs",
+      "declarationSha256": "e0c8310bf8001f8e52ec479f7f4e51225e174a88745f20230b011ddd0c0e9dc3"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/BootstrapPage`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/BootstrapPage.cs",
+      "declarationSha256": "2e81a986d52ff5077a79f111fea12d8cedb68963ee3515b30b878179c03ef9a2"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemotePullGroup`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemotePullGroup.cs",
+      "declarationSha256": "ba6b95737a160e32494aca2b38a1e9c3dce7def51e127408d3adb267ec86f963"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemotePullPage`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemotePullPage.cs",
+      "declarationSha256": "6518db8540a1a63324dc78cd3010b1248a5fe860b96cdb057adac9d16d07ae4f"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/IPrivateSyncRemote`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/PrivateSyncContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/IPrivateSyncRemote.cs",
+      "declarationSha256": "371bec93fa26a7eea9afda1f3984c51ae5dfae126d563480c57c24834b6c5158"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/AccessTokenSnapshot`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/AccessTokenSnapshot.cs",
+      "declarationSha256": "58c21874a87d5d555a19e6b955b29895ad77f5a2729698dd6596144c1c916586"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/IAuthSession`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/IAuthSession.cs",
+      "declarationSha256": "5b4dbe59a71175482e85946c03440fdbe679db0beb8d8e97b223c6000eb946ba"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteFailureKind`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteFailureKind.cs",
+      "declarationSha256": "456c5c6baece3e1e20394d0971c6fc6b996971967f72d8aa5e5858e8efa68aca"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteFailure`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteFailure.cs",
+      "declarationSha256": "1f769e7eb97c7f1caf10d0bfa7970d6b808aff413c71cae79cb790d692aa1a2c"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteResult`1",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteResult.cs",
+      "declarationSha256": "be9186195a40a0b14dad642de6d65ebec493603bb3445efaf61980585597bb13"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/ProvisioningSnapshot`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/ProvisioningSnapshot.cs",
+      "declarationSha256": "2fcb430a1205a9ee1441833bc43e4c6a19b1ad5815066219d834ddb978df039e"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/IProvisioningRemote`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/IProvisioningRemote.cs",
+      "declarationSha256": "f48bda2f4f2b92a570fecf3554d21ab6b33f761ac8f02a4826522157b595b598"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteCommand`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteCommand.cs",
+      "declarationSha256": "6770ef3eb5128ebddcaacbdc2a1145024359eafa8d8eae9ca40d7a415ce27e30"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteCommandStatus`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteCommandStatus.cs",
+      "declarationSha256": "ab70da48568f574b16d0080b66510e6520d351105674881017786a7ce467363b"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteCommandOutcome`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteCommandOutcome.cs",
+      "declarationSha256": "8eda8c8a31aa5675ec48866aabe30835acbd1b0c061b57189da16f7c1b510df9"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/ICommandRemote`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/ICommandRemote.cs",
+      "declarationSha256": "87e9bbbb0facf7af69c18fc153fd34935f130a6314ada6f5a1b0baee984b2777"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/RemoteCommandReceipt`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/RemoteCommandReceipt.cs",
+      "declarationSha256": "99a690681d0c8fdcc48e957e6fe15cf9133330f232eebcdf25d44ca950bbfdd3"
+    },
+    {
+      "type": "GamePlatform.Backend.Contracts/GamePlatform.Backend.Contracts.Remote/ICommandReceiptRemote`0",
+      "from": "src/GamePlatform.Backend.Contracts/Remote/RemoteContracts.cs",
+      "to": "src/GamePlatform.Backend.Contracts/Remote/ICommandReceiptRemote.cs",
+      "declarationSha256": "140aa0610ffaea1cd168367c4f99e8d777559414664015be18c859bc8f7036c5"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Catalog/ICatalogSnapshotProvider`0",
+      "from": "src/GamePlatform.Features/Catalog/CatalogService.cs",
+      "to": "src/GamePlatform.Features/Catalog/ICatalogSnapshotProvider.cs",
+      "declarationSha256": "8b5eafb4cd41498614075db9d5ccb67bd8b17d592b4943e7f668681e9d307426"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Catalog/ICatalogSnapshotStore`0",
+      "from": "src/GamePlatform.Features/Catalog/CatalogService.cs",
+      "to": "src/GamePlatform.Features/Catalog/ICatalogSnapshotStore.cs",
+      "declarationSha256": "289b46989b876e0ed78194edba119945cedc161686ca8d6586b4b44301a9ea9d"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/PublicPlayer`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Features/Friends/PublicPlayer.cs",
+      "declarationSha256": "990137ece39e3eb9c76e68527eae0f978d764a4fbc071c4f0afd322bc54b5fa5"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/Friend`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Features/Friends/Friend.cs",
+      "declarationSha256": "ec4585ec7dae56c2a117e0d0affa96fd0215e65c59fb9818f9bef49c663d4c03"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/BlockedPlayer`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Features/Friends/BlockedPlayer.cs",
+      "declarationSha256": "74c99e1729c42523c747d9929ff8c791fad7177ce272f28498738b998fe4edee"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/FriendRequest`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Features/Friends/FriendRequest.cs",
+      "declarationSha256": "9948adf428ee6ef938acd6ac1cc1a3534987bb808a5b9d0b5025adbe283deef3"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/FriendsResponse`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Features/Friends/FriendsResponse.cs",
+      "declarationSha256": "737cab07c69858af0e90a86a51f4a304a3a3dce346e50d67cae10adbaabf27cd"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/FriendsValidation`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Features/Friends/FriendsValidation.cs",
+      "declarationSha256": "510b7463c728824eca4bff9d97b47585030506efb72a8739f22ceb069b3d3dc2"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/FriendsQuery`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsRequests.cs",
+      "to": "src/GamePlatform.Features/Friends/FriendsQuery.cs",
+      "declarationSha256": "5db67ba876ef976b15077b89655cb8d475958fb4e0c439234d6f67f07da3372a"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/FriendsCommand`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsRequests.cs",
+      "to": "src/GamePlatform.Features/Friends/FriendsCommand.cs",
+      "declarationSha256": "6fbf44b7a638f31f2d137e64868fc7934113ae8acdf81d2e476084c551527434"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/FriendsCommandPayload`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsRequests.cs",
+      "to": "src/GamePlatform.Features/Friends/FriendsCommandPayload.cs",
+      "declarationSha256": "b002a60736a2283ac18582e0b41b3d039181312434bfa06cd4c4d76a8f3fcdce"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/IFriendsRemote`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsService.cs",
+      "to": "src/GamePlatform.Features/Friends/IFriendsRemote.cs",
+      "declarationSha256": "78eb5cb0083ed10869839e08a20aa5c615c95af56068d89b418637bfa24a68d1"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/IFriendsStateCodec`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsService.cs",
+      "to": "src/GamePlatform.Features/Friends/IFriendsStateCodec.cs",
+      "declarationSha256": "c03d22990676456d2d63984d73f835ded5032fc87f5414b6c17e9c2f688a74ef"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Friends/FriendsOperationException`0",
+      "from": "src/GamePlatform.Features/Friends/FriendsService.cs",
+      "to": "src/GamePlatform.Features/Friends/FriendsOperationException.cs",
+      "declarationSha256": "73b52f566c535895f8d53b20da5fd7cc773216e7e018213f90142281eab7a4ef"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardEntry`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardEntry.cs",
+      "declarationSha256": "d0d462fb38329891bfa0e7038af52c2b4455a0ec55309c05ce299398ac7174ce"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardsCountrySelection`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardsCountrySelection.cs",
+      "declarationSha256": "5608c558048ca649928872318cb807b00e7baa5846d4f60d906e95228bc226d7"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardsResponse`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardsResponse.cs",
+      "declarationSha256": "451ae682a1fe5d45d224aefa6264a6322a8a0e8db489d601a6c61a8ff724700e"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardsCountryResponse`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardsCountryResponse.cs",
+      "declarationSha256": "d9dabd397b5806c2b8c37d94d9982901cab677abcb431370cddbfd578098a7ad"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardsValidation`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardsValidation.cs",
+      "declarationSha256": "6fdbeb56a18048c59288ca9c48599fd692edf24bb8f8c7e9061d780b2475c6bf"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardsQuery`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsRequests.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardsQuery.cs",
+      "declarationSha256": "fb6b9d4ee027aee9c41e92dbb29fe122f990e4c258502753e4be1c72a981616c"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardsCountryCommand`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsRequests.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardsCountryCommand.cs",
+      "declarationSha256": "eb0ce7e3d03814a8615cc998de6c2278927c836e95d6e794452f42e271e27eef"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/ILeaderboardsRemote`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsService.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/ILeaderboardsRemote.cs",
+      "declarationSha256": "f743f7bc4d1ae50c62a66db8fb1251cdd77f16551e09322a9a69aaef533d8421"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/ILeaderboardsStateCodec`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsService.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/ILeaderboardsStateCodec.cs",
+      "declarationSha256": "582191b0bd3048c876df1704d0043db954793b37daa7b855c70e84c5074b38e9"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Leaderboards/LeaderboardsOperationException`0",
+      "from": "src/GamePlatform.Features/Leaderboards/LeaderboardsService.cs",
+      "to": "src/GamePlatform.Features/Leaderboards/LeaderboardsOperationException.cs",
+      "declarationSha256": "648fe82a8af2dcdea3b73d911bfce1f93cbbe2131723edf4b4851051977e736a"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileConfirmed`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileConfirmed.cs",
+      "declarationSha256": "a061f8554c8ce1e6973e09c53b3e38e15e3bde22576bc9f3fe09884261c758fa"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfilePatch`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfilePatch.cs",
+      "declarationSha256": "de783c4f47ed65aa57e023a65e6f243f6315629a94df7332469af78d6b198f9e"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfilePendingStatus`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfilePendingStatus.cs",
+      "declarationSha256": "beea08968b950348a81eb949d55e0df7af2957fd3c476e72251fb2f0930a8261"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/PendingProfileEdit`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/PendingProfileEdit.cs",
+      "declarationSha256": "0a1692150da11a037f76ecf4ca376ef2f5ebf65e0f1ae976d74d4b00cbb6c5f7"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileSnapshot`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileSnapshot.cs",
+      "declarationSha256": "4e63b59e96ee90754acb5aca5b81e1c272ea37a43cb0a70cec20d26becf66c2b"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileUpdateRequest`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileUpdateRequest.cs",
+      "declarationSha256": "e947224f72701394fcf18c7ccc3f328fe101b630480b589ab655aa156c41bafd"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileUpdateAcceptance`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileUpdateAcceptance.cs",
+      "declarationSha256": "135aaeed43da7a876903c6143cfb7d4acf5c193833c3cf07901c2ef7b933902c"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/IProfileRemote`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/IProfileRemote.cs",
+      "declarationSha256": "59cd7edc134a9a3f66afaaa078c779e01745145ac08b666296409680508a0dd1"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileRemoteRead`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileRemoteRead.cs",
+      "declarationSha256": "737eda8c35b94e438a9b966716b2753326cc64964b2936da528a452d60151d3b"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/IProfileStateCodec`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/IProfileStateCodec.cs",
+      "declarationSha256": "c81029971dece88ff7c5bc4c61d45faa2812c45c7311e4c59874d3b0dd6b8919"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileConflictException`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileConflictException.cs",
+      "declarationSha256": "466abb475c5715996efe246b723fabb74818051c6bfe9e2f0c703884d3fc5dac"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileOwnerMismatchException`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileOwnerMismatchException.cs",
+      "declarationSha256": "c9df37397bb0a92eb66e72e02ec75d7039cf1a0301b5230757dade08ef34304b"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Profiles/ProfileValidation`0",
+      "from": "src/GamePlatform.Features/Profiles/ProfileContracts.cs",
+      "to": "src/GamePlatform.Features/Profiles/ProfileValidation.cs",
+      "declarationSha256": "79b91e3d66a2064695ba98e72ff4dd12e3e16a9c23f91acece2a875220406a8d"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionConfirmationEvidence`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionConfirmationEvidenceStore.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionConfirmationEvidence.cs",
+      "declarationSha256": "e452b8db1a123afaf47677abd601ab90980cdeb3d98474e59bddfc742dd18b65"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/IProgressionConfirmationEvidenceStore`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionConfirmationEvidenceStore.cs",
+      "to": "src/GamePlatform.Features/Progression/IProgressionConfirmationEvidenceStore.cs",
+      "declarationSha256": "715be1a164b7ec66d878b7f0e2bc5b61fd8bb337d5cd241db680e0eb9017016e"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ICompactingProgressionConfirmationEvidenceStore`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionConfirmationEvidenceStore.cs",
+      "to": "src/GamePlatform.Features/Progression/ICompactingProgressionConfirmationEvidenceStore.cs",
+      "declarationSha256": "0a3ff535e5dc02758ddca09ac853ec75e6c99f9dfffeb2fa132cc7ea6a855db5"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionConfirmationEvidenceHead`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionConfirmationEvidenceStore.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionConfirmationEvidenceHead.cs",
+      "declarationSha256": "76ac3d62e4f07e6890cf2affe64511194b4967e6268fd3bb54ee051e4db6a6c5"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionOutcomeAuthority`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionOutcomeAuthority.cs",
+      "declarationSha256": "ab9ae27d50584a2de0f2a6c1d92eea6c64baded684ace08f4b46c51683df2db7"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionPendingStatus`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionPendingStatus.cs",
+      "declarationSha256": "1796b4506abcb7e55f481257a933b69c083536fcba7d3467d7cbd203ed0d11d9"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionCommandExtension`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionCommandExtension.cs",
+      "declarationSha256": "6156f63a312648f19a9483c2f501e110862d364467b47d4c665d7045413c5e64"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionCompletionRequest`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionCompletionRequest.cs",
+      "declarationSha256": "fc1586f9e343ec8039ca0d9b2056dd2f6744772cf88c0efe46a364262f09afa4"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/PendingProgressionCompletion`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/PendingProgressionCompletion.cs",
+      "declarationSha256": "d815b93ad369ef859937312d6a66b9fa66af604e18c4019f1a0ed3287b71b9e1"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionConfirmedState`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionConfirmedState.cs",
+      "declarationSha256": "4db326c7d98e94a467cd43537c0db37ff2d6545d966cd4ec6f238b638fb06209"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionConfirmedProjection`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionConfirmedProjection.cs",
+      "declarationSha256": "19f514ba24e39a42bb878a22314a75fbbf3bac32bcd592834428767cdebd3615"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionConfirmation`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionConfirmation.cs",
+      "declarationSha256": "4df73d65985359911d1186a51c285be8c40f6faaa37b433470140dd004a65ae7"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionSnapshot`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionSnapshot.cs",
+      "declarationSha256": "7ab703d971760225ced33e9089518aff2c3afd0a9c6b6f34461567d5fe3b0de0"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionAcceptance`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionAcceptance.cs",
+      "declarationSha256": "85702f630b3b1fa1e139fa4d5fbec278f4131a9815e28ed57633de52d2139cc7"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/IProgressionStateCodec`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/IProgressionStateCodec.cs",
+      "declarationSha256": "2b74588d33b0a83aee33b6870a4c4011f33c7c4e8e32e1e1a62e8f9d49ee7e9a"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionConflictException`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionConflictException.cs",
+      "declarationSha256": "99cd1d85e3353aa3bf59a55ee84cb7a7368ceb11401ce621aa04024bc248a27c"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionOwnerMismatchException`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionOwnerMismatchException.cs",
+      "declarationSha256": "f8383429545a4255b61d091c4e70ef800cce1ffd75d263980c4aeec888691ba9"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Progression/ProgressionValidation`0",
+      "from": "src/GamePlatform.Features/Progression/ProgressionContracts.cs",
+      "to": "src/GamePlatform.Features/Progression/ProgressionValidation.cs",
+      "declarationSha256": "9b8494e23aa638fee148b01415457dfece581fcea1bcb5e5ccaef4d26fb758c5"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.RewardFulfillment/DurableRewardFulfillmentStateCodec`0",
+      "from": "src/GamePlatform.Features/RewardFulfillment/DurableRewardFulfillmentComposition.cs",
+      "to": "src/GamePlatform.Features/RewardFulfillment/DurableRewardFulfillmentStateCodec.cs",
+      "declarationSha256": "195aa165334a129ae5179958fb34eda606b1106dbe9292bb0a40e48cf98cf180"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.RewardFulfillment/InstalledRewardProjection`0",
+      "from": "src/GamePlatform.Features/RewardFulfillment/DurableRewardReceiptCorrelation.cs",
+      "to": "src/GamePlatform.Features/RewardFulfillment/InstalledRewardProjection.cs",
+      "declarationSha256": "eeae28f76b53b69f85ab5b42127fccab918286c75aea19df391e6d5543c9ce66"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamSummary`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamSummary.cs",
+      "declarationSha256": "56087f2a5c04a9b6d40cebf50ffd00ab268658009a7d83cce66d34f00f978117"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamMembership`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamMembership.cs",
+      "declarationSha256": "ba03e4eb745654868f2de9eb74f2b8b3d9e26f80cef75b19e6828672dd802f21"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamMember`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamMember.cs",
+      "declarationSha256": "b8cecdefae988b72a423a8f4bc0cd26abc4d0eeaecbf4f9ae73b1c1ab44c9f97"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamMessage`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamMessage.cs",
+      "declarationSha256": "8c99085bf85ab0bc76c317095356358f3a5b0c53e8b79487d34cf018597c91ef"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamJoinRequest`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamJoinRequest.cs",
+      "declarationSha256": "c3b08a235d46c3bad492dc2c88f8686ba9fd1ed50fa912d8476845714e8526a7"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamInvitation`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamInvitation.cs",
+      "declarationSha256": "6e06626a0e6f460697ff338e161124817df911a769e0eb5e1320bdc4aeeead46"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamHelpRequest`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamHelpRequest.cs",
+      "declarationSha256": "7f62698de150486dc8779febbf257276ff9ef6bf1718e455e0fe3140db2a922c"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamsResponse`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamsResponse.cs",
+      "declarationSha256": "d2087cd23fdf74eee14640b5fe671f67501d80cafcd4c33040c9b49658a1a84c"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamsQuery`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsRequests.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamsQuery.cs",
+      "declarationSha256": "7f15727ba9527e15e4acefe315cdbfeedb685f3236f37331e8e845323afffa28"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamsCommand`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsRequests.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamsCommand.cs",
+      "declarationSha256": "66c2e7036e2cdaeead74b836f3f0957d2680d60c2c6556c23dcf4ee5ecc99fd2"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamsCommandPayload`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsRequests.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamsCommandPayload.cs",
+      "declarationSha256": "b3140c005b7a11de4d042365108faab0abb6806e8ff52bb1b5ea493cb36aef50"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/ITeamsRemote`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsService.cs",
+      "to": "src/GamePlatform.Features/Teams/ITeamsRemote.cs",
+      "declarationSha256": "972156b820c3819c4b3c655c800e6bba3193410c1083b8ecbb98b3db19ceee12"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/ITeamsStateCodec`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsService.cs",
+      "to": "src/GamePlatform.Features/Teams/ITeamsStateCodec.cs",
+      "declarationSha256": "8bfe648d126e138bf480f3c693d0336fb927941eb023944f226bafe0d283d485"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Teams/TeamsOperationException`0",
+      "from": "src/GamePlatform.Features/Teams/TeamsService.cs",
+      "to": "src/GamePlatform.Features/Teams/TeamsOperationException.cs",
+      "declarationSha256": "3f0b0ba444c85695dc61f793e56b07424887ac10af4e234f9e42b96232ecf819"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Wallet/G3WalletProjectionConflictException`0",
+      "from": "src/GamePlatform.Features/Wallet/G3WalletProjectionService.cs",
+      "to": "src/GamePlatform.Features/Wallet/G3WalletProjectionConflictException.cs",
+      "declarationSha256": "a5a5bdfa93030c0c7f77541f4de12081dfb078331ed14ea878ecde24c2df35b3"
+    },
+    {
+      "type": "GamePlatform.Features/GamePlatform.Features.Wallet/G3WalletProjectionOwnerMismatchException`0",
+      "from": "src/GamePlatform.Features/Wallet/G3WalletProjectionService.cs",
+      "to": "src/GamePlatform.Features/Wallet/G3WalletProjectionOwnerMismatchException.cs",
+      "declarationSha256": "d4c65168d00ad4e7e612b0d441d17cc93175c78cc6abf57ee0d020224f7c6f43"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogResourceKind`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogResourceKind.cs",
+      "declarationSha256": "1cefdac4e612def176c35beca9d04d3e4863528e8e8bc62bd9d83fdd4fca5ad9"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogPermission`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogPermission.cs",
+      "declarationSha256": "2091043017ea7de98a3a73b9ef5fc0d18ef2e49f9982ddbf1c1ff3d4db5c0e6a"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogDefinition`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogDefinition.cs",
+      "declarationSha256": "34ec4b1ffc1eb9a727e63af41a2f948648ed458b3fc23a109719fe600d2b8a8d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogAppBinding`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogAppBinding.cs",
+      "declarationSha256": "12c2f99c58f5893cbe4719d3fe06412212bb909dc01dda2b528b07f3b98b620d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogEntry`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogEntry.cs",
+      "declarationSha256": "9945c96e4e4bd31683c2eb08c6f93b62cec5bb9d1be4c42ec17f29fb2ea92e34"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogSnapshotRequest`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshotRequest.cs",
+      "declarationSha256": "6b3e0f940cc7e8e841142ded473dc35c7774289ccd4386ae1c235fca7232ac1d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogSnapshot`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshot.cs",
+      "declarationSha256": "c7edf99f2f6299be72d1f3b8f2994680fc76e2ad3cae16ededfc14988e17dee7"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogSnapshotUnsupportedVersionException`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshotUnsupportedVersionException.cs",
+      "declarationSha256": "166996469dd4e7532867a25b6c9edb7e4fdb6311e9b701d51544deb522e158f9"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Catalog/CatalogSnapshotCorruptException`0",
+      "from": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshots.cs",
+      "to": "src/GamePlatform.Features.Contracts/Catalog/CatalogSnapshotCorruptException.cs",
+      "declarationSha256": "b13c66bd2b220d40092ed069b0d1d76d69e5afbdaf34b8b8d426ccc06ea96e2c"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts/GameplayOutcome`0",
+      "from": "src/GamePlatform.Features.Contracts/Compatibility/GameplayContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Compatibility/GameplayOutcome.cs",
+      "declarationSha256": "574be876cbc3b346c7d96772ab489547d0c5fe920e38f81c7ad1b1d368fa8f2d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts/IGameplayOutcomeSink`0",
+      "from": "src/GamePlatform.Features.Contracts/Compatibility/GameplayContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Compatibility/IGameplayOutcomeSink.cs",
+      "declarationSha256": "cadbcbb5391828367f8cb41aca9f88c67bbcd2e2db19ecfdd7a54bd204dd56db"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts/ProgressEvent`0",
+      "from": "src/GamePlatform.Features.Contracts/Compatibility/GameplayContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Compatibility/ProgressEvent.cs",
+      "declarationSha256": "e80bcb79d2891c6232c10dc7496340a4684785458def6cf611a6fad06ddc3e90"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts/IProgressObserver`0",
+      "from": "src/GamePlatform.Features.Contracts/Compatibility/GameplayContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Compatibility/IProgressObserver.cs",
+      "declarationSha256": "7b0ea46e4e1a2886ff99de5ffed77e0a2b1bea186c303513c200497bc8f65558"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts/CompatibilityGuard`0",
+      "from": "src/GamePlatform.Features.Contracts/Compatibility/GameplayContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Compatibility/CompatibilityGuard.cs",
+      "declarationSha256": "02bff74ccba07e09a0ffd2a4051f2df17dc74984502bf00ec2dde59895988d63"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementRightState`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementRightState.cs",
+      "declarationSha256": "41fa525d8290e863cf681fbb8f7d65ae5bc1335214300f5df803d12941d7aaf1"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementOfflineEligibility`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementOfflineEligibility.cs",
+      "declarationSha256": "32b561371866d19074173436c7e8a2db336312ff06b578be3c85aa22dac1efab"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementOriginReceipt`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementOriginReceipt.cs",
+      "declarationSha256": "f3483c7442704126c89b3d6f2a36697a8b9a87f6dcd2d84c52001bd0f2df20c4"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementRight`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementRight.cs",
+      "declarationSha256": "95a4224979c47086bcf90a277113e110aa4985ac04d905c55d97afee9b4066cf"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementConfirmedSnapshot`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementConfirmedSnapshot.cs",
+      "declarationSha256": "03efa710429d439751c2388b193d83eddd4e225d489f529dfa449ad4a9499679"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementRightView`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementRightView.cs",
+      "declarationSha256": "b7cc3f6ba57f02e02390a63884f84fcdd71a3041cbddc0fee9e5ee7e01a8dafa"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementSnapshot`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementSnapshot.cs",
+      "declarationSha256": "36075f64c64cb98e531fb07df08734d0b3775a7f729a651a453913c473325802"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/IEntitlementStateCodec`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/IEntitlementStateCodec.cs",
+      "declarationSha256": "4fd5252f7d340e393e8c7f77057fb456f204696c66fbfa2a6c80f141ea2a841b"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementOwnerMismatchException`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementOwnerMismatchException.cs",
+      "declarationSha256": "a3d101fcdd530a45b2cc90ec5a6c1bbb19a69fb6011cdc69a07a9219b9fb212b"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Entitlements/EntitlementProjectionConflictException`0",
+      "from": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Entitlements/EntitlementProjectionConflictException.cs",
+      "declarationSha256": "f33dcbbd51cfb2751d79f36746ea61d82ee08cc2010cb35342a35a28770b0b57"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryEntryKind`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryEntryKind.cs",
+      "declarationSha256": "169e14dc099048713c9381f4c68a8897f3d4851831a17bcee2da33683fe86642"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryInstanceState`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryInstanceState.cs",
+      "declarationSha256": "04ebb8754685efbc0cb4ebc4ab2dfdfa4692d491c0c1d110c2341fd9b6df3f9a"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryIntentKind`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryIntentKind.cs",
+      "declarationSha256": "4450454d9f12829012e066d2b6511d6a7f5ed4e130878972bbe904947860ff62"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryIntentStatus`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryIntentStatus.cs",
+      "declarationSha256": "a40de90b20655a9ad41f8ef616b02ca272d95d5845584ac64c929a7a1aabd48c"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryStack`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryStack.cs",
+      "declarationSha256": "e6b471deeac0e8508c45ac3294a8bde058fde91d56f996ec6430128ec3058c47"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryInstance`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryInstance.cs",
+      "declarationSha256": "7fe381c85a4ddf9f20d444d3bd3958e87166767ee5f61c1cde9d4076297f8d38"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryConfirmedSnapshot`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryConfirmedSnapshot.cs",
+      "declarationSha256": "159182a7838e5a8f5f21579106fd87342889535ed1187d9ba463e55c60c2d6e5"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryIntent`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryIntent.cs",
+      "declarationSha256": "debe7afcf4a4eb39869920cfb3db25207ab0127011c9883d59cd3e9beba61a22"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryIntentAcceptance`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryIntentAcceptance.cs",
+      "declarationSha256": "12374da9231f5342879f955d32f4787a6e23f0816a2895febd25688bc41e46ed"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventorySnapshot`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventorySnapshot.cs",
+      "declarationSha256": "222ab611da8a9014b04c73c75e2c9e7ac6cc268cc22b66074aeeebcf688e0e10"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryIntentRequest`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryIntentRequest.cs",
+      "declarationSha256": "f7127bb1eb4d1f6f1e8985395c2d7b54421aeb12b65afc171571b9ae9409ed19"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/IInventoryIntentAuthority`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/IInventoryIntentAuthority.cs",
+      "declarationSha256": "a94627f4d57e0d38338199890cf9ce87ebf5ff90a8186870e22b0e7b3707ad50"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryIntentAuthorization`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryIntentAuthorization.cs",
+      "declarationSha256": "55bbcf79a4cab8734ac06cfb72d330125155fcaf748051db4fbb871665fc750f"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/IInventoryStateCodec`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/IInventoryStateCodec.cs",
+      "declarationSha256": "23144bf97d13ac083bcc4a641f9a6e8c15129c15c434654e27ffe61f7d53abac"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryOwnerMismatchException`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryOwnerMismatchException.cs",
+      "declarationSha256": "83a448665b71cf513fc0345235953791a16ee40d890c3357374f598a8ea318aa"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryIntentRejectedException`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryIntentRejectedException.cs",
+      "declarationSha256": "ef562e463f0c038259c5f3c4d03fddd7002b720f80a3c5ffe08f578cf579307d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryProjectionConflictException`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryProjectionConflictException.cs",
+      "declarationSha256": "dc37018678f6db6c14366e3fc00693b07e5dfb3c465968a6845ac64d5305b103"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Inventory/InventoryValidation`0",
+      "from": "src/GamePlatform.Features.Contracts/Inventory/InventoryContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Inventory/InventoryValidation.cs",
+      "declarationSha256": "134c00fbef5de150b3ee3c47472a553abe2dc0f3d16fccb685d1de7f4bd13fca"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardPresentationStatus`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardPresentationStatus.cs",
+      "declarationSha256": "06641025461de9730b1286eaca34f215407a44d7e0f286663478460bdcce8be0"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardReceiptLineKind`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardReceiptLineKind.cs",
+      "declarationSha256": "d981189a23c72c211926a7c833b7fee361f56eaa00fa69211de0d2de9a59f132"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardReceiptLine`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardReceiptLine.cs",
+      "declarationSha256": "6697e3e1c7763ab3ca33c1ecbe90bed1e2bcf421426b811523931a0b524e9fdd"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardReceipt`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardReceipt.cs",
+      "declarationSha256": "efb43e134c9b6a35017331147f0e1012ed5b96b55c0f047ea5e067e7ddff9220"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardReceiptObservation`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardReceiptObservation.cs",
+      "declarationSha256": "0b108ef6b1a733c996cf8392548b8f090f77142fd94ac3a2f530f142113578d0"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardProjectionLine`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardProjectionLine.cs",
+      "declarationSha256": "0e2747d496e202bc5bc8084f04ee6189cba4a42a2c3995b2fdd1dee96f3bc61f"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardProjectionGroup`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardProjectionGroup.cs",
+      "declarationSha256": "90cade6aab8abe6544f05ed5b721fc69712a68af339f3acb022c4df4f19c7d73"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardRejection`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardRejection.cs",
+      "declarationSha256": "525e2d44f324f3d29ac1360e8efc930d4359b5e13ccdde71ecb3e7bb6e18d121"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardPresentationRecord`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardPresentationRecord.cs",
+      "declarationSha256": "06842dc59b6aa9c5c9297a2c95d13794a82f4a40d25b1ba960dfc62decddc6d6"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardPresentationQuery`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardPresentationQuery.cs",
+      "declarationSha256": "c454c8ea547f5f1f492f160114ca6a145e45a11ac0eeeb68d6f0a6dec89c4db0"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/IRewardFulfillmentStateCodec`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/IRewardFulfillmentStateCodec.cs",
+      "declarationSha256": "1f22777ed2ee498281f44ea4a55b7d59c4fa10bdd6e27301af750ba84efa012e"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardFulfillmentOwnerMismatchException`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentOwnerMismatchException.cs",
+      "declarationSha256": "6271e4bd457a43fb313c3214b99daa1fe47fe86c5cb166a837c343c75debbcde"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardFulfillmentConflictException`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentConflictException.cs",
+      "declarationSha256": "a75b490bb710d922a0205ed895872ecc58c2fc63eb52f69a627efb353b3ade94"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.RewardFulfillment/RewardValidation`0",
+      "from": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardFulfillmentContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/RewardFulfillment/RewardValidation.cs",
+      "declarationSha256": "e7e487cc5db9b9fd595c775f9b12607e22a7be722a6bbc5095cdb0e0b3d9f29a"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Snapshots/SnapshotFreshness`0",
+      "from": "src/GamePlatform.Features.Contracts/Snapshots/FeatureSnapshot.cs",
+      "to": "src/GamePlatform.Features.Contracts/Snapshots/SnapshotFreshness.cs",
+      "declarationSha256": "f0ff4931cad347e6547b2a0deebb14507e5704a2c10d874594a346aec6c0fcb7"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Snapshots/FeatureSnapshotState`0",
+      "from": "src/GamePlatform.Features.Contracts/Snapshots/FeatureSnapshot.cs",
+      "to": "src/GamePlatform.Features.Contracts/Snapshots/FeatureSnapshotState.cs",
+      "declarationSha256": "120e2323efe26c9476376aac5f1216d8ebe41b870eee626fc8046b501e4d4a49"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Snapshots/IFeatureSnapshotReader`2",
+      "from": "src/GamePlatform.Features.Contracts/Snapshots/FeatureSnapshot.cs",
+      "to": "src/GamePlatform.Features.Contracts/Snapshots/IFeatureSnapshotReader.cs",
+      "declarationSha256": "1039b3c8193de77ef153ef68e514018f861dbcbf5461a46d64e157f643b31121"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/G3ConfirmedWalletProjection`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/G3WalletProjectionContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/G3ConfirmedWalletProjection.cs",
+      "declarationSha256": "6fda3f8886b3a956f140632cab9d60ac1a53c31bfa9c3e696b4b4d9a2aed2a22"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/G3WalletProjectionRequest`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/G3WalletProjectionContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/G3WalletProjectionRequest.cs",
+      "declarationSha256": "3cd12ac8907f769a9f97eb514fe79a767a3768a606d77aaa8d21c16baa77768d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/G3WalletProjectionRemoval`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/G3WalletProjectionContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/G3WalletProjectionRemoval.cs",
+      "declarationSha256": "eebec84005f022a17fe0e45462c36f46797071e591f606341ddad5d074c5d453"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/IG3WalletProjectionCodec`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/G3WalletProjectionContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/IG3WalletProjectionCodec.cs",
+      "declarationSha256": "b57da321750b6cdfbcebeef849e4d8fef341418166662a0fcce3132565fad93b"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletCurrency`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletCurrency.cs",
+      "declarationSha256": "1ab80c6cbc9c7eff0c29c402b35207e4b287abdd5165f33eb8a0a0e20c313318"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletConfirmedBalance`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletConfirmedBalance.cs",
+      "declarationSha256": "a0acaa1183a681fb27dff3c3b0f7b8ff00c957e5d358af94a94d3be0c037024a"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletSpendIntent`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletSpendIntent.cs",
+      "declarationSha256": "05d9f274958e2cc2446bc590734e21aa37ec4fdc403f03f8b249f6a2e61b4cdf"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletPendingStatus`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletPendingStatus.cs",
+      "declarationSha256": "fbef46d467e604c51e407d6587c01e5546cac00b4adec5547877d517d96f7051"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/PendingWalletSpend`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/PendingWalletSpend.cs",
+      "declarationSha256": "1df12b9aad3f5e734448af9545a80ff163530d039e2e09fe3f4caa4e4f51da00"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletSnapshot`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletSnapshot.cs",
+      "declarationSha256": "23f77a9ec7091802f6738451e293038b3ccceda8134729ab538e9e7c2fc5655c"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletBalanceRequest`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletBalanceRequest.cs",
+      "declarationSha256": "fb007809d12a766a21427d3f6379ae9433154f33862567b2e9ad77572b7f52a0"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletSpendRequest`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletSpendRequest.cs",
+      "declarationSha256": "291d632a9a259b978e2aa18977406a7f9b9ee6352cda6ab78618757242915112"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletSpendAcceptance`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletSpendAcceptance.cs",
+      "declarationSha256": "c0c9f1fb632aa9b0f8b205c1475d594012b70b8d64197aa9ca97ad85bfa8086f"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletSpendRejection`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletSpendRejection.cs",
+      "declarationSha256": "107138519bff16dfd07de32bd5bc3a972084a7798ef2874f0dee42eb4dc2a782"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletRemoteRead`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletRemoteRead.cs",
+      "declarationSha256": "17d44333b0bd4787534013ab3c030c83ae5407b62b0687cba4d462de40dde722"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletSpendAuthorization`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletSpendAuthorization.cs",
+      "declarationSha256": "caac7059728dc85f994d7faff42f25b803bc471d49d4c6377b3c96741788242f"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/IWalletRemote`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/IWalletRemote.cs",
+      "declarationSha256": "2ed2cfb6336302a4ae3bd3fb971164f793bbd5ace45f2616c3a3d42266fcfa93"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/IWalletStateCodec`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/IWalletStateCodec.cs",
+      "declarationSha256": "e738ce567adc8ae9a5cd8ab46635ad1e5f033a71fc8cd4d135fa47bae9bf2f4d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletConflictException`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletConflictException.cs",
+      "declarationSha256": "2bb6c008401316a872c7feb883f81054d00266c37a72bd2a8f6748e23d50641d"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletCatalogException`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletCatalogException.cs",
+      "declarationSha256": "4f8bf1838d60fcd5ee28f2cda093359cf4ffb6d0a9e60795f49cb42101215283"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletOwnerMismatchException`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletOwnerMismatchException.cs",
+      "declarationSha256": "cac1f69077a7551849b1940cbe4a51968e5f422eccb98a799f104c0cbddfbba1"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletOfflineSpendException`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletOfflineSpendException.cs",
+      "declarationSha256": "b604ffcf164665f92ddfe4d99c3545932b29b25e0c41bf641c80d01640980824"
+    },
+    {
+      "type": "GamePlatform.Features.Contracts/GamePlatform.Features.Contracts.Wallet/WalletValidation`0",
+      "from": "src/GamePlatform.Features.Contracts/Wallet/WalletContracts.cs",
+      "to": "src/GamePlatform.Features.Contracts/Wallet/WalletValidation.cs",
+      "declarationSha256": "a5e1aea7e9b978439104da15d6c83eed08b127a9fbc7274beed8af042d55dd00"
+    },
+    {
+      "type": "GamePlatform.Features.Presentation/GamePlatform.Features.Presentation.Shared/ResultPresentation`0",
+      "from": "src/GamePlatform.Features.Presentation/Shared/PresenterLifetime.cs",
+      "to": "src/GamePlatform.Features.Presentation/Shared/ResultPresentation.cs",
+      "declarationSha256": "2edec991de9e7d4e0a078b18260974edb6948a27aaae121033e599466368f85f"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Accounts/AccountDirectoryScope`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Accounts/AccountDirectory.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Accounts/AccountDirectoryScope.cs",
+      "declarationSha256": "9df6da6a9412014b855788ffec5937748c29b8908fe4c3d92c6ec9d0db47d1ac"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Accounts/AccountPrincipalDescriptor`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Accounts/AccountDirectory.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Accounts/AccountPrincipalDescriptor.cs",
+      "declarationSha256": "3d0627c3529e2f9c5f365d9b8c0e88693bf270eda7d9100672ae7f1a4db92e4d"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Accounts/AccountDirectoryEntry`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Accounts/AccountDirectory.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Accounts/AccountDirectoryEntry.cs",
+      "declarationSha256": "bab0d908728431118923b83401d99b5d376ba67b36c0831cfc3d7db59e368239"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Accounts/IAccountDirectoryStore`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Accounts/AccountDirectory.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Accounts/IAccountDirectoryStore.cs",
+      "declarationSha256": "6c06d948c5f1c9e65252160b27e558c17376b4e9371bcf65f3df5e4ca3601c44"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.FeatureState/DurableFeatureMutation`0",
+      "from": "src/GamePlatform.Storage.Abstractions/FeatureState/DurableFeatureState.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/FeatureState/DurableFeatureMutation.cs",
+      "declarationSha256": "0c07c63b031cafd7f61f70f51f59bff4acad6e42aaf82fae6a26a4940e058a99"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.FeatureState/IDurableFeatureStateStore`0",
+      "from": "src/GamePlatform.Storage.Abstractions/FeatureState/DurableFeatureState.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/FeatureState/IDurableFeatureStateStore.cs",
+      "declarationSha256": "19d0a71f0ef63049471bc9943af9ab6e92026eb796ff7298417a1b76ad225ddb"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Outbox/CommandTerminalOutcome`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Outbox/CommandDelivery.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Outbox/CommandTerminalOutcome.cs",
+      "declarationSha256": "b7fae73f6b378668f3bc61cbe61b9c274b88ff5076eaa1ca4005b812d4431ffc"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Outbox/LeasedCommand`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Outbox/CommandDelivery.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Outbox/LeasedCommand.cs",
+      "declarationSha256": "96e2caec52b7796bcbfdc3c3d101f23eb4e90c2a10aca1d60306e372a47d4f82"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Outbox/ICommandDeliveryStore`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Outbox/CommandDelivery.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Outbox/ICommandDeliveryStore.cs",
+      "declarationSha256": "8cf29106f7a1eb0dc52f8af73569dc83e80c4f9d2fb899bb0b7ae8b6fc1c6ff8"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Outbox/CommandDraft`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Outbox/CommandOutbox.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Outbox/CommandDraft.cs",
+      "declarationSha256": "909564726f42270c86d236fe18c65e024ae1e863f20712da8181a664d60752dd"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Outbox/CommandAdmission`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Outbox/CommandOutbox.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Outbox/CommandAdmission.cs",
+      "declarationSha256": "cbe5e7a9a09db03961a875fe26b4c4786c361dc9cd45109c07cd21ee1d617968"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Outbox/ICommandFingerprint`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Outbox/CommandOutbox.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Outbox/ICommandFingerprint.cs",
+      "declarationSha256": "0f74abe57c6c6eeae094090d7a71d359223dc6f37bb53325901ffac0ad648ecd"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Outbox/IAtomicCommandStore`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Outbox/CommandOutbox.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Outbox/IAtomicCommandStore.cs",
+      "declarationSha256": "55d8ee93c22f8ccb80ab79cc0499b057c71b7be1462def48775ba8ad996f6a08"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Recovery/CommandStreamRecoveryPhase`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Recovery/CommandStreamRecoveryJournal.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Recovery/CommandStreamRecoveryPhase.cs",
+      "declarationSha256": "ce7ecbc993568644130c5b8f1c7b1fbca637377f3f88c109cc733bf5780f5b1f"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Recovery/CommandStreamRecoveryRequest`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Recovery/CommandStreamRecoveryJournal.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Recovery/CommandStreamRecoveryRequest.cs",
+      "declarationSha256": "7b625405f132d92d7daefb6516f361ee39402aa4768201012007b7fb8689df6c"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Recovery/CommandStreamRecoveryRecord`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Recovery/CommandStreamRecoveryJournal.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Recovery/CommandStreamRecoveryRecord.cs",
+      "declarationSha256": "44c0547c8c812f261ece28c36215883ef61c4b71269e0f91eaaca4127e3d66f6"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Recovery/ICommandStreamRecoveryJournal`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Recovery/CommandStreamRecoveryJournal.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Recovery/ICommandStreamRecoveryJournal.cs",
+      "declarationSha256": "ab62d0f8e36a368d176da209856e2532573f84207a01ae48e3790df76a42c592"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/StoredProjectionKind`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/StoredProjectionKind.cs",
+      "declarationSha256": "e5242be39ed67f0607e8fe378059779beece618df47624f46dc8eb910b7552c0"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/StoredProjectionMutation`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/StoredProjectionMutation.cs",
+      "declarationSha256": "1fa485df812240c5ff6953bd8dfface4bcd934325f8403086c67111177a52c5c"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/BootstrapBoundary`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/BootstrapBoundary.cs",
+      "declarationSha256": "7a0da191807519383618c5858ed880f7fd2f9862d1ec3ee34a8bed22c0910e91"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/StagedBootstrapPage`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/StagedBootstrapPage.cs",
+      "declarationSha256": "46956f4db52f3042683b35f8bf1fb4eeb560953801cea6158c75ae3c9731da50"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/StoredPullGroup`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/StoredPullGroup.cs",
+      "declarationSha256": "61e88025522b623f535ecb8104bf82e121f970786ac3f9eddd3b53f6cbadea67"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/IPrivateSyncProjectionProjector`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/IPrivateSyncProjectionProjector.cs",
+      "declarationSha256": "4140f969dfde2d3ccfe7f5b0d719e047284781d00ecca88ece530336b5454198"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/PrivateSyncProjectionObservation`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncProjectionObservation.cs",
+      "declarationSha256": "5ea9f3d5d1e255ed49126abfb643441acd3642ce0c4be2d9f2bd8bc63cb5abbc"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/IObservedPrivateSyncProjectionProjector`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/IObservedPrivateSyncProjectionProjector.cs",
+      "declarationSha256": "0f8bb77ba858fce3f56632977e6d15dff9a79cd1aaedec80c9d0e5b3a0cc1f11"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/StoredPullPage`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/StoredPullPage.cs",
+      "declarationSha256": "ebd537b52afaa89723c77001da3058b4d4117eb0d1d121493e16a0a51d04b87d"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/BootstrapProgress`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/BootstrapProgress.cs",
+      "declarationSha256": "b4c6924321107f53638ca7e97b10e724b059b2f41a35bc21df6bb953b8593426"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/PullCheckpoint`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/PullCheckpoint.cs",
+      "declarationSha256": "0f58a7796787da8c1937e52bce6113291f6782683647bab3fb909d2f00d64a9f"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/StoredTerminalCommand`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/StoredTerminalCommand.cs",
+      "declarationSha256": "cff383d589fab1ccb4496466ef41648e7f8495e191f52619ec3d585d55c84dac"
+    },
+    {
+      "type": "GamePlatform.Storage.Abstractions/GamePlatform.Storage.Abstractions.Sync/IPrivateSyncStore`0",
+      "from": "src/GamePlatform.Storage.Abstractions/Sync/PrivateSyncStorage.cs",
+      "to": "src/GamePlatform.Storage.Abstractions/Sync/IPrivateSyncStore.cs",
+      "declarationSha256": "029889c53386438291f5a1291a3990d005ab4a26fe7ecc795ddc3586228193bb"
+    },
+    {
+      "type": "GamePlatform.Storage.Sqlite/GamePlatform.Storage.Sqlite.Migrations/SqliteExtensionDescriptor`0",
+      "from": "src/GamePlatform.Storage.Sqlite/Migrations/SqliteExtensionMigration.cs",
+      "to": "src/GamePlatform.Storage.Sqlite/Migrations/SqliteExtensionDescriptor.cs",
+      "declarationSha256": "9ba67259fc5258bb798e92fdc21ca283440874939d60240ce1e450b36e5738ba"
+    },
+    {
+      "type": "GamePlatform.Storage.Sqlite/GamePlatform.Storage.Sqlite.Outbox/StreamRecoveryState`0",
+      "from": "src/GamePlatform.Storage.Sqlite/Outbox/SqliteAtomicCommandStore.cs",
+      "to": "src/GamePlatform.Storage.Sqlite/Outbox/StreamRecoveryState.cs",
+      "declarationSha256": "a3e56c31481d3d405fb4f34bec94f399f15cefdd24c6684d169a38f58b9ee522"
+    },
+    {
+      "type": "GamePlatform.Storage.Sqlite/GamePlatform.Storage.Sqlite.Outbox/StreamRecoveryAssessment`0",
+      "from": "src/GamePlatform.Storage.Sqlite/Outbox/SqliteAtomicCommandStore.cs",
+      "to": "src/GamePlatform.Storage.Sqlite/Outbox/StreamRecoveryAssessment.cs",
+      "declarationSha256": "23b184a4deb8cf86af7fb8f175bbb8372183e3bb2e485d0e9ee862751f459fef"
+    },
+    {
+      "type": "GamePlatform.Sync/GamePlatform.Sync.Pull/IG3PrivateProjectionSink`0",
+      "from": "src/GamePlatform.Sync/Pull/G3PrivateSyncProjector.cs",
+      "to": "src/GamePlatform.Sync/Pull/IG3PrivateProjectionSink.cs",
+      "declarationSha256": "c64325f537e5a89cf7fb41ebd30310ba0b525e70f561c397eb0566ab27d55884"
+    },
+    {
+      "type": "GamePlatform.Sync/GamePlatform.Sync.Pull/PrivateSyncResult`0",
+      "from": "src/GamePlatform.Sync/Pull/PrivateSyncCoordinator.cs",
+      "to": "src/GamePlatform.Sync/Pull/PrivateSyncResult.cs",
+      "declarationSha256": "308ac4a90915bdc2803b04a2fa009c71abb9db4c9681b4b0fd2778017323b029"
+    },
+    {
+      "type": "GamePlatform.Sync/GamePlatform.Sync.Push/SendCycleResult`0",
+      "from": "src/GamePlatform.Sync/Push/OrderedCommandSender.cs",
+      "to": "src/GamePlatform.Sync/Push/SendCycleResult.cs",
+      "declarationSha256": "51619150215aab9648beda15ab09f2712917dd48b17e2c8ef1d811b417350305"
+    },
+    {
+      "type": "GamePlatform.Sync/GamePlatform.Sync.Recovery/CommandStreamRecoveryOutcome`0",
+      "from": "src/GamePlatform.Sync/Recovery/CommandStreamRecoveryCoordinator.cs",
+      "to": "src/GamePlatform.Sync/Recovery/CommandStreamRecoveryOutcome.cs",
+      "declarationSha256": "9e85682fb8a0a535ec659acfe01c27f7e0aeba0b71e7683ecee30ede2e25a72e"
+    },
+    {
+      "type": "GamePlatform.Sync/GamePlatform.Sync.Recovery/ICommandStreamRecoveryHost`0",
+      "from": "src/GamePlatform.Sync/Recovery/CommandStreamRecoveryCoordinator.cs",
+      "to": "src/GamePlatform.Sync/Recovery/ICommandStreamRecoveryHost.cs",
+      "declarationSha256": "1f9a0789bb882e4ddd3af2bb06cfd0d34143a1b2d398a13ab6bc86b1be62e7d0"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/PublicPlayer`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/PublicPlayer.cs",
+      "declarationSha256": "990137ece39e3eb9c76e68527eae0f978d764a4fbc071c4f0afd322bc54b5fa5"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/Friend`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/Friend.cs",
+      "declarationSha256": "ec4585ec7dae56c2a117e0d0affa96fd0215e65c59fb9818f9bef49c663d4c03"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/BlockedPlayer`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/BlockedPlayer.cs",
+      "declarationSha256": "74c99e1729c42523c747d9929ff8c791fad7177ce272f28498738b998fe4edee"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendRequest`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendRequest.cs",
+      "declarationSha256": "9948adf428ee6ef938acd6ac1cc1a3534987bb808a5b9d0b5025adbe283deef3"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsResponse`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsResponse.cs",
+      "declarationSha256": "737cab07c69858af0e90a86a51f4a304a3a3dce346e50d67cae10adbaabf27cd"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsValidation`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsValidation.cs",
+      "declarationSha256": "510b7463c728824eca4bff9d97b47585030506efb72a8739f22ceb069b3d3dc2"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsRankingEntry`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingEntry.cs",
+      "declarationSha256": "ac5b782140145e30de9bf0f08fc18507558395ea4dbb1c2bf1cfac988bb1b27e"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsRankingCountrySelection`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingCountrySelection.cs",
+      "declarationSha256": "9d3e5577c95b9e1b744de4dd44d07b6beedaab8ab36a2366ff0b5272ad25c128"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsRankingResponse`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingResponse.cs",
+      "declarationSha256": "25a7aff2b4a6a06f3d3f6831458bd53a649842f1aa04cc0cbb7d9946dbe5f428"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsRankingValidation`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsRankingValidation.cs",
+      "declarationSha256": "093e26fa2d4d131e3b800ecada26fa31209318082040f47a0912c9599518a86d"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsQuery`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsQuery.cs",
+      "declarationSha256": "5db67ba876ef976b15077b89655cb8d475958fb4e0c439234d6f67f07da3372a"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsCommand`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsCommand.cs",
+      "declarationSha256": "ef675192d46676baf8a11d3272849ee9957a726b489d56a7130dcc7db01de147"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Friends/FriendsCommandPayload`0",
+      "from": "src/GamePlatform.Wire.Contracts/Friends/FriendsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Friends/FriendsCommandPayload.cs",
+      "declarationSha256": "b002a60736a2283ac18582e0b41b3d039181312434bfa06cd4c4d76a8f3fcdce"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Leaderboards/LeaderboardEntry`0",
+      "from": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardEntry.cs",
+      "declarationSha256": "b8bf9766867237beab01d6f64fc71ba48336feb9c74b98e5459eb0c18cd65d9f"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Leaderboards/LeaderboardsCountrySelection`0",
+      "from": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsCountrySelection.cs",
+      "declarationSha256": "5608c558048ca649928872318cb807b00e7baa5846d4f60d906e95228bc226d7"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Leaderboards/LeaderboardsResponse`0",
+      "from": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsResponse.cs",
+      "declarationSha256": "31d879a9d6a52255e1f5a3413229a985133a684423fd71732f733523e14b807e"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Leaderboards/LeaderboardsCountryResponse`0",
+      "from": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsCountryResponse.cs",
+      "declarationSha256": "d9dabd397b5806c2b8c37d94d9982901cab677abcb431370cddbfd578098a7ad"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Leaderboards/LeaderboardsValidation`0",
+      "from": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsValidation.cs",
+      "declarationSha256": "164b5786492fa76a0ee800bc3777eef82b92c29ad45abff440696c9520c54ddd"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Leaderboards/LeaderboardsQuery`0",
+      "from": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsQuery.cs",
+      "declarationSha256": "fd4123c2319097b2256ea4905b9d2f5254747221af2b7142b67d87c17f00d645"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Leaderboards/LeaderboardsCountryCommand`0",
+      "from": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Leaderboards/LeaderboardsCountryCommand.cs",
+      "declarationSha256": "1e1c00d3a2ce4dc950fe0c9117772887bbb3d0c3d299bfa631700fcf58df8879"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamSummary`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamSummary.cs",
+      "declarationSha256": "56087f2a5c04a9b6d40cebf50ffd00ab268658009a7d83cce66d34f00f978117"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamMembership`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamMembership.cs",
+      "declarationSha256": "ba03e4eb745654868f2de9eb74f2b8b3d9e26f80cef75b19e6828672dd802f21"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamMember`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamMember.cs",
+      "declarationSha256": "b8cecdefae988b72a423a8f4bc0cd26abc4d0eeaecbf4f9ae73b1c1ab44c9f97"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamMessage`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamMessage.cs",
+      "declarationSha256": "8c99085bf85ab0bc76c317095356358f3a5b0c53e8b79487d34cf018597c91ef"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamJoinRequest`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamJoinRequest.cs",
+      "declarationSha256": "c3b08a235d46c3bad492dc2c88f8686ba9fd1ed50fa912d8476845714e8526a7"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamInvitation`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamInvitation.cs",
+      "declarationSha256": "6e06626a0e6f460697ff338e161124817df911a769e0eb5e1320bdc4aeeead46"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamHelpRequest`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamHelpRequest.cs",
+      "declarationSha256": "7f62698de150486dc8779febbf257276ff9ef6bf1718e455e0fe3140db2a922c"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamsResponse`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsModels.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamsResponse.cs",
+      "declarationSha256": "d2087cd23fdf74eee14640b5fe671f67501d80cafcd4c33040c9b49658a1a84c"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamsQuery`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamsQuery.cs",
+      "declarationSha256": "7f15727ba9527e15e4acefe315cdbfeedb685f3236f37331e8e845323afffa28"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamsCommand`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamsCommand.cs",
+      "declarationSha256": "f4e4918c0210277a429c5597326f20441644f129feda8d50f502fca108bff8a5"
+    },
+    {
+      "type": "GamePlatform.Wire.Contracts/GamePlatform.Wire.Contracts.Teams/TeamsCommandPayload`0",
+      "from": "src/GamePlatform.Wire.Contracts/Teams/TeamsRequests.cs",
+      "to": "src/GamePlatform.Wire.Contracts/Teams/TeamsCommandPayload.cs",
+      "declarationSha256": "b3140c005b7a11de4d042365108faab0abb6806e8ff52bb1b5ea493cb36aef50"
+    },
+    {
+      "type": "GamePlatform.Storage.Sqlite/GamePlatform.Storage.Sqlite.Features.Accounts/SqliteAccountsDirectoryDatabase`0",
+      "from": "src/GamePlatform.Storage.Sqlite/Features/Accounts/SqliteAccountsDirectoryStore.cs",
+      "to": "src/GamePlatform.Storage.Sqlite/Features/Accounts/SqliteAccountsDirectoryDatabase.cs",
+      "declarationSha256": "38cde3a645a361096fcb03b8813f3bfa9d433701aec47538532a63ddcc52ff79"
+    }
+  ],
+  "explicitExceptions": [
+    "src/GamePlatform.Diagnostics.Abstractions/IAppLog.cs",
+    "src/GamePlatform.Features.Contracts/Compatibility/StateRecord.cs",
+    "src/GamePlatform.Features.Contracts/FeatureContracts.cs",
+    "src/GamePlatform.Features/Accounts/AccountsLifecycle.cs",
+    "src/GamePlatform.Features/FeatureStubs.cs",
+    "src/GamePlatform.Storage.Sqlite/Features/Accounts/SqliteAccountsDirectoryMigration.cs",
+    "src/GamePlatform.Storage.Sqlite/Migrations/SqliteMigration.cs",
+    "src/GamePlatform.Wire.Contracts/WireOptional.cs"
+  ],
+  "reorganizedSourceFiles": 59,
+  "unchangedSelectedSourceFiles": [
+    "src/GamePlatform.Storage.Sqlite/Cache/SqliteDurableFeatureStateStore.cs",
+    "src/GamePlatform.Storage.Sqlite/Sync/SqlitePrivateSyncStore.cs"
+  ]
+}

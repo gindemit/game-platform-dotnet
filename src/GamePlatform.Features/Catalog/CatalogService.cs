@@ -7,18 +7,6 @@ using GamePlatform.Features.Shared;
 
 namespace GamePlatform.Features.Catalog
 {
-    /// <summary>Inbound provider seam only; no catalog wire route is implied by this contract.</summary>
-    public interface ICatalogSnapshotProvider
-    {
-        Task<CatalogSnapshot> DownloadAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken);
-    }
-
-    /// <summary>Feature-owned durable projection seam. Production implementations must use real storage.</summary>
-    public interface ICatalogSnapshotStore
-    {
-        Task<CatalogSnapshot?> ReadAsync(CatalogSnapshotRequest request, CancellationToken cancellationToken);
-        Task InstallAsync(CatalogSnapshot snapshot, CancellationToken cancellationToken);
-    }
 
     /// <summary>Validated catalog reader. Visibility is presentation eligibility only, never a value mutation authorization.</summary>
     public sealed class CatalogService : IDisposable

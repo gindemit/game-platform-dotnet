@@ -4,59 +4,6 @@ using System.Collections.ObjectModel;
 
 namespace GamePlatform.Diagnostics.Abstractions
 {
-    /// <summary>A synchronous, borrowed sink. Implementations must not block or retain an unbounded queue.</summary>
-    public interface IStructuredAppLogSink
-    {
-        bool IsEnabled(AppLogLevel level, string category);
-        void Write(AppLogRecord record);
-    }
-
-    /// <summary>Process-local correlation, captured when a scope is constructed. Never supply a provider/user ID.</summary>
-    public sealed class AppLogContext
-    {
-        public AppLogContext(Guid correlationId, long generation)
-        {
-            if (correlationId == Guid.Empty)
-                throw new ArgumentException("Correlation must be nonempty.", nameof(correlationId));
-            if (generation < 0)
-                throw new ArgumentOutOfRangeException(nameof(generation));
-            CorrelationId = correlationId;
-            Generation = generation;
-        }
-
-        public Guid CorrelationId { get; }
-        public long Generation { get; }
-    }
-
-    /// <summary>Immutable sanitized data. Exceptions, arbitrary strings and mutable objects never cross this boundary.</summary>
-    public sealed class AppLogRecord
-    {
-        internal AppLogRecord(AppLogLevel level, string category, string eventName, AppLogContext context,
-            IReadOnlyDictionary<string, object?> fields, bool hasException)
-        {
-            Level = level;
-            Category = category;
-            EventName = eventName;
-            Context = context;
-            Fields = fields;
-            HasException = hasException;
-        }
-
-        public AppLogLevel Level { get; }
-        public string Category { get; }
-        public string EventName { get; }
-        public AppLogContext Context { get; }
-        public IReadOnlyDictionary<string, object?> Fields { get; }
-        public bool HasException { get; }
-    }
-
-    public sealed class NullStructuredAppLogSink : IStructuredAppLogSink
-    {
-        public bool IsEnabled(AppLogLevel level, string category) => false;
-        public void Write(AppLogRecord record)
-        {
-        }
-    }
 
     /// <summary>Best-effort diagnostics. Sink, enumeration and factory failures are contained and never affect business results.</summary>
     public sealed class SafeAppLog : IAppLog

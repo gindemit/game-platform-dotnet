@@ -40,6 +40,11 @@ Some feature services are implemented only at a bounded portable scope, while Qu
 - `upm/com.gindemit.game-platform/` — generated Git UPM payload; do not edit it by hand.
 - `docs/` — architecture, current status, decisions and retained implementation evidence.
 
+Handwritten SDK types normally live in `TypeName.cs` within their owning feature
+folder. See the [file organization rules](src/AGENTS.md#file-organization-for-new-features-and-refactors)
+and the [2026-10-14 cleanup and move map](docs/implementation/sdk-file-layout/RESULTS.md)
+for deliberate exceptions and navigation from older bundled filenames.
+
 ## Current coordinated work
 
 Start at [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md) and the workspace [current campaign checkpoint](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/checkpoint.md). The [SDK handoff](docs/implementation/CAMPAIGN_UPM_HANDOFF.md) records package generation and Unity consumption. The current bounded hosted-dev continuation follows the [selected packet](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/CODEX-OVERNIGHT-HOSTED-DEV-2026-10-04.md); the [retained-dev preflight](integration/HostedDevSmoke/README.md) has no hosted-write command.

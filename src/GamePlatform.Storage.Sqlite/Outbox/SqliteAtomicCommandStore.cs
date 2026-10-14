@@ -13,24 +13,6 @@ namespace GamePlatform.Storage.Sqlite.Outbox
         ProjectionApplied, SequenceAllocated, OutboxInserted
     }
 
-    public enum StreamRecoveryState
-    {
-        Current, LocalGap, ServerAheadOfLocalState
-    }
-
-    public readonly struct StreamRecoveryAssessment
-    {
-        public StreamRecoveryAssessment(StreamRecoveryState state, long localNextSequence, long serverFinalizedThrough)
-        {
-            State = state;
-            LocalNextSequence = localNextSequence;
-            ServerFinalizedThrough = serverFinalizedThrough;
-        }
-        public StreamRecoveryState State { get; }
-        public long LocalNextSequence { get; }
-        public long ServerFinalizedThrough { get; }
-    }
-
     public sealed class SqliteAtomicCommandStore : IAtomicCommandStore
     {
         private readonly SqliteDatabase database;

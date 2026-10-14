@@ -10,10 +10,6 @@ using GamePlatform.Wire.Contracts;
 
 namespace GamePlatform.Transport.Http
 {
-    public enum BackendWireRepresentation
-    {
-        MessagePack, DiagnosticJson
-    }
 
     /// <summary>
     /// Portable semantic bootstrap/pull provider. The injected codec and executor

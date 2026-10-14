@@ -10,31 +10,6 @@ using GamePlatform.Storage.Abstractions;
 using GamePlatform.Storage.Abstractions.FeatureState;
 namespace GamePlatform.Features.Leaderboards
 {
-    public interface ILeaderboardsRemote
-    {
-        Task<RemoteResult<LeaderboardsResponse>> QueryAsync(LeaderboardsQuery query, CancellationToken cancellationToken);
-        Task<RemoteResult<LeaderboardsCountryResponse>> SetCountryAsync(LeaderboardsCountryCommand command, CancellationToken cancellationToken);
-    }
-    public interface ILeaderboardsStateCodec
-    {
-        byte[] EncodeResponse(LeaderboardsResponse value);
-        LeaderboardsResponse DecodeResponse(byte[] bytes);
-        byte[] EncodeCountry(LeaderboardsCountryCommand value);
-        LeaderboardsCountryCommand DecodeCountry(byte[] bytes);
-    }
-    public sealed class LeaderboardsOperationException : InvalidOperationException
-    {
-        public LeaderboardsOperationException(RemoteFailure failure, string resultCode)
-            : base("The leaderboard operation could not be confirmed: " + SafeCode(resultCode))
-        {
-            Failure = failure;
-            ResultCode = SafeCode(resultCode);
-        }
-        public RemoteFailure Failure { get; }
-        public string ResultCode { get; }
-        private static string SafeCode(string value) => !string.IsNullOrEmpty(value) && value.Length <= 96 &&
-            value.All(c => c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' || c == '.') ? value : "leaderboards_unavailable";
-    }
     /// <summary>Account-owned standings reads and explicit durable country retries; never submits scores.</summary>
     public sealed class LeaderboardsService : IDisposable
     {

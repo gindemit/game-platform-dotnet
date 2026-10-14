@@ -7,6 +7,9 @@ Cross-repository goals, queues, CL/INT sequencing and work orders are owned by
 Follow [AGENT_ORCHESTRATOR.md](AGENT_ORCHESTRATOR.md). This repository owns portable
 SDK requirements, source, tests, packages and [agent/provider.json](agent/provider.json).
 Read only the selected ticket, scoped AGENTS and relevant source/tests.
+For handwritten C# file organization, follow `src/AGENTS.md`: named files for
+independently useful types, with explicit exceptions for compact companions,
+implementation helpers and generated/vendor sources.
 
 Use main and preserve unrelated work. Do not reset, stash/discard or commit another
 session's files. Build/package from owned disposable exact-source copies. Serialize

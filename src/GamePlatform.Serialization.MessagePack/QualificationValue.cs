@@ -6,10 +6,6 @@ using System.Text;
 
 namespace GamePlatform.Serialization.MessagePack
 {
-    public enum QualificationValueKind
-    {
-        Null, Boolean, Integer, String, Binary, Array, Object
-    }
 
     /// <summary>Immutable semantic value for explicit desktop protocol qualification. Not a production codec contract.</summary>
     public sealed class QualificationValue
@@ -62,11 +58,5 @@ namespace GamePlatform.Serialization.MessagePack
         internal static QualificationValue OwnedObject(Dictionary<string, QualificationValue> properties) => new QualificationValue(QualificationValueKind.Object, new ReadOnlyDictionary<string, QualificationValue>(properties));
         public IReadOnlyList<QualificationValue> Items => Kind == QualificationValueKind.Array ? (IReadOnlyList<QualificationValue>)value! : throw new InvalidOperationException();
         public IReadOnlyDictionary<string, QualificationValue> Properties => Kind == QualificationValueKind.Object ? (IReadOnlyDictionary<string, QualificationValue>)value! : throw new InvalidOperationException();
-    }
-
-    public sealed class QualificationCodecException : FormatException
-    {
-        public QualificationCodecException(string message) : base(message) { }
-        public QualificationCodecException(string message, Exception inner) : base(message, inner) { }
     }
 }

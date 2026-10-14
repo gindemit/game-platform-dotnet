@@ -10,33 +10,6 @@ using GamePlatform.Storage.Abstractions.FeatureState;
 
 namespace GamePlatform.Features.Teams
 {
-    public interface ITeamsRemote
-    {
-        Task<RemoteResult<TeamsResponse>> QueryAsync(TeamsQuery query, CancellationToken cancellationToken);
-        Task<RemoteResult<TeamsResponse>> ExecuteAsync(TeamsCommand command, CancellationToken cancellationToken);
-    }
-
-    public interface ITeamsStateCodec
-    {
-        byte[] EncodeResponse(TeamsResponse response);
-        TeamsResponse DecodeResponse(byte[] bytes);
-        byte[] EncodeCommand(TeamsCommand command);
-        TeamsCommand DecodeCommand(byte[] bytes);
-    }
-
-    public sealed class TeamsOperationException : InvalidOperationException
-    {
-        public TeamsOperationException(RemoteFailure failure, string resultCode)
-            : base("The Teams operation could not be confirmed: " + SafeCode(resultCode))
-        {
-            Failure = failure;
-            ResultCode = SafeCode(resultCode);
-        }
-        public RemoteFailure Failure { get; }
-        public string ResultCode { get; }
-        private static string SafeCode(string value) => !string.IsNullOrEmpty(value) && value.Length <= 96 &&
-            value.All(c => c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' || c == '.') ? value : "teams_unavailable";
-    }
 
     /// <summary>Account-owned online social operations with a bounded durable stale cache and explicit retry journal.</summary>
     public sealed class TeamsService : IDisposable
