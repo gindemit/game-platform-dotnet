@@ -19,7 +19,7 @@ namespace GamePlatform.Configuration.Client
         {
             try
             {
-                await clock.DelayAsync(TimeSpan.FromSeconds(Math.Max(0, deadline - clock.MonotonicSeconds)), stop.Token).ConfigureAwait(false);
+                await clock.DelayAsync(TimeSpan.FromSeconds(Math.Max(0, deadline - clock.MonotonicSeconds)), stop.Token).ConfigureAwait(true);
                 cancelled.Cancel();
             }
             catch (OperationCanceledException) { }

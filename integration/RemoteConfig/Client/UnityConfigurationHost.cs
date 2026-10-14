@@ -117,8 +117,30 @@ namespace GamePlatform.Configuration.Unity
             }
             return waiting.Completion.Task;
         }
+        [System.Diagnostics.Conditional("RC_TARGET_DIAGNOSTICS")]
+        private void TraceTarget(string phase)
+        {
+#if RC_TARGET_DIAGNOSTICS
+            if (phase == "dispatch")
+                targetDispatches++;
+            if (phase == "callback")
+                targetCallbacks++;
+            // Only counters and fixed phases: never request IDs, scope or payload.
+            if (targetDiagnosticLines++ < 96)
+                Debug.Log("RC_TARGET_HOST_PHASE=" + phase + ";frames=" + targetFrames
+                    + ";dispatches=" + targetDispatches + ";callbacks=" + targetCallbacks);
+#endif
+        }
+#if RC_TARGET_DIAGNOSTICS
+        private int targetFrames, targetDispatches, targetCallbacks, targetDiagnosticLines;
+#endif
         private void Update()
         {
+#if RC_TARGET_DIAGNOSTICS
+            targetFrames++;
+            if (targetFrames == 1 || (targetFrames <= 1800 && targetFrames % 300 == 0))
+                TraceTarget("frame");
+#endif
             lock (sync)
             {
                 monotonic = (long)Time.realtimeSinceStartupAsDouble;
@@ -156,7 +178,7 @@ namespace GamePlatform.Configuration.Unity
             }
             if (!retained)
                 registration.Dispose();
-            actions.Enqueue(() => { if (request.Completion.Task.IsCompleted) return; try { if (gameObject.name != receiverName || GetComponents<UnityConfigurationHost>().Length != 1 || GetComponents<MonoBehaviour>().Length != 1) throw new InvalidOperationException("receiver_ownership_changed"); dispatch(id); } catch (Exception error) { lock (sync) pending.Remove(id); request.Registration.Dispose(); request.Completion.TrySetException(new IOException("host_transport_unavailable", error)); } });
+            actions.Enqueue(() => { if (request.Completion.Task.IsCompleted) return; try { if (gameObject.name != receiverName || GetComponents<UnityConfigurationHost>().Length != 1 || GetComponents<MonoBehaviour>().Length != 1) throw new InvalidOperationException("receiver_ownership_changed"); TraceTarget("dispatch"); dispatch(id); } catch (Exception error) { lock (sync) pending.Remove(id); request.Registration.Dispose(); request.Completion.TrySetException(new IOException("host_transport_unavailable", error)); } });
             return request.Completion.Task;
         }
         private void Cancel(string id)
@@ -182,6 +204,7 @@ namespace GamePlatform.Configuration.Unity
                     return;
                 pending.Remove(id);
             }
+            TraceTarget("callback");
             request.Registration.Dispose();
             request.Completion.TrySetResult(message.Substring(separator + 1));
         }
@@ -229,7 +252,7 @@ namespace GamePlatform.Configuration.Unity
 #if UNITY_ANDROID && !UNITY_EDITOR
             string encoded = await Request(id => android!.Call("get", request.Address.AbsoluteUri, id, receiverName, request.MaximumDecodedBytes, request.ETag ?? string.Empty, request.Immutable), cancellationToken).ConfigureAwait(false);
 #elif UNITY_WEBGL && !UNITY_EDITOR
-            string encoded = await Request(id => GPConfigFetch(hostHandle, request.Address.AbsoluteUri, id, receiverName, request.MaximumDecodedBytes, request.Immutable ? 1 : 0, request.ETag ?? string.Empty), cancellationToken).ConfigureAwait(false);
+            string encoded = await Request(id => GPConfigFetch(hostHandle, request.Address.AbsoluteUri, id, receiverName, request.MaximumDecodedBytes, request.Immutable ? 1 : 0, request.ETag ?? string.Empty), cancellationToken).ConfigureAwait(true);
 #else
             using var message = new HttpRequestMessage(HttpMethod.Get, request.Address);
             if (request.ETag != null)
@@ -266,7 +289,7 @@ namespace GamePlatform.Configuration.Unity
         public async Task<StoreSnapshot?> LoadAsync(CacheNamespace space, CancellationToken cancellationToken)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            byte[]? metadata = await BrowserRead(space.Key, string.Empty, 1048576, cancellationToken).ConfigureAwait(false);
+            byte[]? metadata = await BrowserRead(space.Key, string.Empty, 1048576, cancellationToken).ConfigureAwait(true);
             if (metadata == null)
                 return null;
             var value = CanonicalJson.Parse(metadata);
@@ -278,7 +301,7 @@ namespace GamePlatform.Configuration.Unity
         public async Task<byte[]?> ReadObjectAsync(CacheNamespace space, string representationSha, int maximumDecodedBytes, CancellationToken cancellationToken)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            return await BrowserRead(space.Key, representationSha, maximumDecodedBytes, cancellationToken).ConfigureAwait(false);
+            return await BrowserRead(space.Key, representationSha, maximumDecodedBytes, cancellationToken).ConfigureAwait(true);
 #else
             return await files!.ReadObjectAsync(space, representationSha, maximumDecodedBytes, cancellationToken).ConfigureAwait(false);
 #endif
@@ -289,7 +312,7 @@ namespace GamePlatform.Configuration.Unity
             var packed = new StringBuilder(Convert.ToBase64String(metadata));
             foreach (var item in objects)
                 packed.Append('~').Append(item.Key).Append(':').Append(Convert.ToBase64String(item.Value));
-            string result = await Request(id => GPConfigStoreCommit(hostHandle, space.Key, expectedGeneration.ToString(CultureInfo.InvariantCulture), packed.ToString(), id, receiverName), cancellationToken).ConfigureAwait(false);
+            string result = await Request(id => GPConfigStoreCommit(hostHandle, space.Key, expectedGeneration.ToString(CultureInfo.InvariantCulture), packed.ToString(), id, receiverName), cancellationToken).ConfigureAwait(true);
             int separator = result.IndexOf('|');
             if (separator < 1)
                 return StoreCommitOutcome.Unknown;
@@ -302,7 +325,7 @@ namespace GamePlatform.Configuration.Unity
 #if UNITY_WEBGL && !UNITY_EDITOR
         private async Task<byte[]?> BrowserRead(string space, string sha, int maximum, CancellationToken token)
         {
-            string result = await Request(id => GPConfigStoreRead(hostHandle, space, sha, id, receiverName, maximum), token).ConfigureAwait(false);
+            string result = await Request(id => GPConfigStoreRead(hostHandle, space, sha, id, receiverName, maximum), token).ConfigureAwait(true);
             int separator = result.IndexOf('|');
             if (separator < 0)
                 throw new IOException("bridge_invalid");

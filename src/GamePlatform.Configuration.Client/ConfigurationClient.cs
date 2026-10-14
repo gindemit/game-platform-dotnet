@@ -144,12 +144,12 @@ namespace GamePlatform.Configuration.Client
         private static async Task<T> Wait<T>(Task<T> task, CancellationToken token)
         {
             if (!token.CanBeCanceled)
-                return await task.ConfigureAwait(false);
+                return await task.ConfigureAwait(true);
             var cancellation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             using var registration = token.Register(() => cancellation.TrySetResult(true));
-            if (await Task.WhenAny(task, cancellation.Task).ConfigureAwait(false) != task)
+            if (await Task.WhenAny(task, cancellation.Task).ConfigureAwait(true) != task)
                 token.ThrowIfCancellationRequested();
-            return await task.ConfigureAwait(false);
+            return await task.ConfigureAwait(true);
         }
         private static string Reason(Exception error)
         {
@@ -236,7 +236,7 @@ namespace GamePlatform.Configuration.Client
         }
         private async Task<CacheState> Load(CacheNamespace target, CancellationToken token)
         {
-            var snapshot = await store.LoadAsync(target, token).ConfigureAwait(false);
+            var snapshot = await store.LoadAsync(target, token).ConfigureAwait(true);
             if (snapshot == null)
                 return new CacheState();
             var loaded = ProtocolReader.Cache(snapshot.Metadata, target);
@@ -248,7 +248,7 @@ namespace GamePlatform.Configuration.Client
         }
         private async Task<byte[]> Stored(CacheNamespace target, string sha, int maximum, CancellationToken token)
         {
-            byte[]? result = await store.ReadObjectAsync(target, sha, maximum, token).ConfigureAwait(false);
+            byte[]? result = await store.ReadObjectAsync(target, sha, maximum, token).ConfigureAwait(true);
             if (result == null || result.Length > maximum || CanonicalJson.Sha256(result) != sha)
                 throw new InvalidConfigurationException("stored_integrity");
             return result;
@@ -256,7 +256,7 @@ namespace GamePlatform.Configuration.Client
         private async Task ValidateObservation(CacheNamespace target, JsonValue observation, bool control, CancellationToken token)
         {
             string sha = observation[control ? "representationSha" : "pointerRepresentationSha"].AsString();
-            byte[] raw = await Stored(target, sha, control ? ConfigurationClientPolicy.ControlBytes : ConfigurationLimits.Bytes, token).ConfigureAwait(false);
+            byte[] raw = await Stored(target, sha, control ? ConfigurationClientPolicy.ControlBytes : ConfigurationLimits.Bytes, token).ConfigureAwait(true);
             var document = control ? ProtocolReader.Control(raw, scope).Document : ProtocolReader.Pointer(raw, scope).Document;
             if (CanonicalJson.SemanticSha256(document) != CanonicalJson.SemanticSha256(observation[control ? "document" : "pointer"]))
                 throw new InvalidConfigurationException("stored_integrity");
@@ -266,9 +266,9 @@ namespace GamePlatform.Configuration.Client
             string key = activation["selection"]["featureKey"].AsString();
             var origin = ProtocolReader.Origin(activation["origin"]);
             var selection = ProtocolReader.ReadSelection(activation["selection"]);
-            byte[] manifestBytes = await Stored(space, origin.ManifestRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(false);
+            byte[] manifestBytes = await Stored(space, origin.ManifestRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(true);
             var retainedManifest = ProtocolReader.Manifest(manifestBytes, scope);
-            byte[] selectorBytes = await Stored(space, origin.SelectorRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(false);
+            byte[] selectorBytes = await Stored(space, origin.SelectorRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(true);
             FeatureGraph.VerifyFile(selectorBytes, retainedManifest.Selector, true);
             var retainedSelector = ConfigurationReader.Read(selectorBytes, scope.App, scope.Environment);
             FeatureGraph.ValidateMetadata(retainedManifest, retainedSelector);
@@ -280,7 +280,7 @@ namespace GamePlatform.Configuration.Client
             JsonValue? payload = null;
             foreach (var asset in graph)
             {
-                byte[] content = await Stored(space, asset.File.RepresentationSha, asset.File.DecodedBytes, token).ConfigureAwait(false);
+                byte[] content = await Stored(space, asset.File.RepresentationSha, asset.File.DecodedBytes, token).ConfigureAwait(true);
                 var item = FeatureGraph.Asset(content, scope, asset);
                 if (asset.Reference.Key == key && asset.Reference.Revision == selection.Choice.Revision)
                     payload = item;
@@ -292,21 +292,21 @@ namespace GamePlatform.Configuration.Client
             Alive(true);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, normalLifetime.Token);
             var token = linked.Token;
-            await featureGate.WaitAsync(token).ConfigureAwait(false);
+            await featureGate.WaitAsync(token).ConfigureAwait(true);
             try
             {
-                publicState = await Load(publicSpace, token).ConfigureAwait(false);
+                publicState = await Load(publicSpace, token).ConfigureAwait(true);
                 if (publicState.Control != null)
                 {
                     try
                     {
-                        await ValidateObservation(publicSpace, publicState.Control, true, token).ConfigureAwait(false);
+                        await ValidateObservation(publicSpace, publicState.Control, true, token).ConfigureAwait(true);
                         var value = ProtocolReader.Control(CanonicalJson.Serialize(publicState.Control["document"]), scope);
                         controlMemory.Observe(new OperationalRestrictions(value.Sequence, publicState.Control["representationSha"].AsString(), true, new Dictionary<string, int>(value.Restrictions)), true);
                     }
                     catch (InvalidConfigurationException) { publicState.Control = null; Record("control", "integrity"); }
                 }
-                state = owner.Persistent ? await Load(space, token).ConfigureAwait(false) : new CacheState();
+                state = owner.Persistent ? await Load(space, token).ConfigureAwait(true) : new CacheState();
                 features.Clear();
                 pins.Clear();
                 lock (sync)
@@ -315,17 +315,17 @@ namespace GamePlatform.Configuration.Client
                 {
                     try
                     {
-                        await ValidateObservation(space, state.Normal, false, token).ConfigureAwait(false);
+                        await ValidateObservation(space, state.Normal, false, token).ConfigureAwait(true);
                         var restoredPointer = ProtocolReader.Pointer(CanonicalJson.Serialize(state.Normal["pointer"]), scope);
-                        byte[] manifestBytes = await Stored(space, restoredPointer.Manifest.RepresentationSha, restoredPointer.Manifest.DecodedBytes, token).ConfigureAwait(false);
+                        byte[] manifestBytes = await Stored(space, restoredPointer.Manifest.RepresentationSha, restoredPointer.Manifest.DecodedBytes, token).ConfigureAwait(true);
                         FeatureGraph.VerifyFile(manifestBytes, restoredPointer.Manifest, true);
                         var restoredManifest = ProtocolReader.Manifest(manifestBytes, scope);
-                        byte[] selectorBytes = await Stored(space, restoredManifest.Selector.RepresentationSha, restoredManifest.Selector.DecodedBytes, token).ConfigureAwait(false);
+                        byte[] selectorBytes = await Stored(space, restoredManifest.Selector.RepresentationSha, restoredManifest.Selector.DecodedBytes, token).ConfigureAwait(true);
                         FeatureGraph.VerifyFile(selectorBytes, restoredManifest.Selector, true);
                         var restoredSelector = ConfigurationReader.Read(selectorBytes, scope.App, scope.Environment);
                         FeatureGraph.ValidateMetadata(restoredPointer, restoredManifest, restoredSelector);
                         string pointerSha = state.Normal["pointerRepresentationSha"].AsString();
-                        byte[] pointerRaw = await Stored(space, pointerSha, ConfigurationLimits.Bytes, token).ConfigureAwait(false);
+                        byte[] pointerRaw = await Stored(space, pointerSha, ConfigurationLimits.Bytes, token).ConfigureAwait(true);
                         var retained = new Dictionary<string, byte[]> { [pointerSha] = pointerRaw, [restoredPointer.Manifest.RepresentationSha] = manifestBytes, [restoredManifest.Selector.RepresentationSha] = selectorBytes };
                         lock (sync)
                             releaseView = new ReleaseView(restoredPointer, restoredManifest, restoredSelector, state.Normal, null, retained);
@@ -336,7 +336,7 @@ namespace GamePlatform.Configuration.Client
                 {
                     try
                     {
-                        features[pair.Key] = await RestoreActivation(pair.Value, token).ConfigureAwait(false);
+                        features[pair.Key] = await RestoreActivation(pair.Value, token).ConfigureAwait(true);
                     }
                     catch (InvalidConfigurationException) { Record("restore", "graph_invalid"); }
                 }
@@ -344,7 +344,7 @@ namespace GamePlatform.Configuration.Client
                 {
                     try
                     {
-                        pins[pair.Key] = await RestoreActivation(pair.Value["activation"], token).ConfigureAwait(false);
+                        pins[pair.Key] = await RestoreActivation(pair.Value["activation"], token).ConfigureAwait(true);
                     }
                     catch (InvalidConfigurationException) { Record("restore", "graph_invalid"); }
                 }
@@ -367,11 +367,11 @@ namespace GamePlatform.Configuration.Client
                 try
                 {
                     if (!control)
-                        await assetGate.WaitAsync(timeout.Token).ConfigureAwait(false);
+                        await assetGate.WaitAsync(timeout.Token).ConfigureAwait(true);
                     try
                     {
                         var request = new ConfigurationHttpRequest(policy.Resolve(path, control), maximum, etag, immutable);
-                        response = await transport.FetchAsync(request, timeout.Token).ConfigureAwait(false);
+                        response = await transport.FetchAsync(request, timeout.Token).ConfigureAwait(true);
                         policy.Response(request, response);
                     }
                     finally { if (!control) assetGate.Release(); }
@@ -401,7 +401,7 @@ namespace GamePlatform.Configuration.Client
                 int wait = Math.Max(retryAfter, 2 + (int)(jitter * 4));
                 if (clock.MonotonicSeconds + wait + 5 > (wave.Deadline))
                     throw new System.IO.IOException("wave_exhausted");
-                await clock.DelayAsync(TimeSpan.FromSeconds(wait), token).ConfigureAwait(false);
+                await clock.DelayAsync(TimeSpan.FromSeconds(wait), token).ConfigureAwait(true);
             }
         }
         private double Random()
@@ -427,14 +427,14 @@ namespace GamePlatform.Configuration.Client
             }
             try
             {
-                return await Wait(flight, caller).ConfigureAwait(false);
+                return await Wait(flight, caller).ConfigureAwait(true);
             }
             finally { if (flight.IsCompleted) lock (sync) flights.Remove(reference.RepresentationSha); }
         }
         private async Task<byte[]> DownloadBounded(ImmutableFileReference reference, NormalWave wave)
         {
             using var deadline = new HostDeadline(clock, normalLifetime.Token, wave.Deadline);
-            return await Download(reference, deadline.Token, wave).ConfigureAwait(false);
+            return await Download(reference, deadline.Token, wave).ConfigureAwait(true);
         }
         private void Remember(string sha, byte[] content)
         {
@@ -459,7 +459,7 @@ namespace GamePlatform.Configuration.Client
             {
                 try
                 {
-                    byte[]? cached = await store.ReadObjectAsync(space, reference.RepresentationSha, reference.DecodedBytes, token).ConfigureAwait(false);
+                    byte[]? cached = await store.ReadObjectAsync(space, reference.RepresentationSha, reference.DecodedBytes, token).ConfigureAwait(true);
                     if (cached != null)
                     {
                         FeatureGraph.VerifyFile(cached, reference, false);
@@ -469,7 +469,7 @@ namespace GamePlatform.Configuration.Client
                 }
                 catch (InvalidConfigurationException) { }
             }
-            var response = await Fetch(reference.Path, false, null, true, reference.DecodedBytes, token, true, wave).ConfigureAwait(false);
+            var response = await Fetch(reference.Path, false, null, true, reference.DecodedBytes, token, true, wave).ConfigureAwait(true);
             if (response.Status != 200)
                 throw new System.IO.IOException("immutable_unavailable");
             byte[] content = response.Bytes;
@@ -501,7 +501,7 @@ namespace GamePlatform.Configuration.Client
                 var origin = ProtocolReader.Origin(activation["origin"]);
                 result.Add(origin.ManifestRepresentationSha);
                 result.Add(origin.SelectorRepresentationSha);
-                byte[] content = added.TryGetValue(origin.ManifestRepresentationSha, out var pending) ? pending : await Stored(target, origin.ManifestRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(false);
+                byte[] content = added.TryGetValue(origin.ManifestRepresentationSha, out var pending) ? pending : await Stored(target, origin.ManifestRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(true);
                 var retainedManifest = ProtocolReader.Manifest(content, scope);
                 foreach (var reference in Wire.References(activation["closure"]))
                 {
@@ -517,11 +517,11 @@ namespace GamePlatform.Configuration.Client
         {
             for (int attempt = 0; attempt < 2; attempt++)
             {
-                CacheState current = await Load(target, token).ConfigureAwait(false), candidate = current.Copy();
+                CacheState current = await Load(target, token).ConfigureAwait(true), candidate = current.Copy();
                 mutate(candidate);
                 foreach (var item in added)
                     candidate.Objects[item.Key] = new CachedObject(item.Value.Length, clock.UtcSeconds);
-                var protectedObjects = await Protected(target, candidate, added, token).ConfigureAwait(false);
+                var protectedObjects = await Protected(target, candidate, added, token).ConfigureAwait(true);
                 long protectedBytes = 0, total = 0;
                 foreach (string sha in added.Keys)
                     protectedObjects.Add(sha);
@@ -547,14 +547,14 @@ namespace GamePlatform.Configuration.Client
                 byte[] metadata = ProtocolReader.CacheBytes(candidate, target);
                 token.ThrowIfCancellationRequested();
                 boundary?.Invoke();
-                StoreCommitOutcome outcome = await store.CommitAsync(target, current.Generation, metadata, added, token).ConfigureAwait(false);
+                StoreCommitOutcome outcome = await store.CommitAsync(target, current.Generation, metadata, added, token).ConfigureAwait(true);
                 boundary?.Invoke();
                 token.ThrowIfCancellationRequested();
                 if (outcome == StoreCommitOutcome.Committed)
                     return candidate;
                 if (outcome == StoreCommitOutcome.Unknown)
                 {
-                    var observed = await store.LoadAsync(target, CancellationToken.None).ConfigureAwait(false);
+                    var observed = await store.LoadAsync(target, CancellationToken.None).ConfigureAwait(true);
                     boundary?.Invoke();
                     token.ThrowIfCancellationRequested();
                     if (observed != null && observed.Generation == candidate.Generation && CanonicalJson.Sha256(observed.Metadata) == CanonicalJson.Sha256(metadata))
@@ -593,7 +593,7 @@ namespace GamePlatform.Configuration.Client
             lastNormalAttempt = clock.MonotonicSeconds;
             try
             {
-                var loaded = owner.Persistent ? await Load(space, token).ConfigureAwait(false) : state;
+                var loaded = owner.Persistent ? await Load(space, token).ConfigureAwait(true) : state;
                 JsonValue? previous = loaded.Normal;
                 string? etag = previous == null ? null : Wire.OptionalString(previous["etag"]);
                 bool rawAvailable = false;
@@ -601,25 +601,25 @@ namespace GamePlatform.Configuration.Client
                 {
                     try
                     {
-                        await ValidateObservation(space, previous, false, token).ConfigureAwait(false);
+                        await ValidateObservation(space, previous, false, token).ConfigureAwait(true);
                         rawAvailable = true;
                     }
                     catch (InvalidConfigurationException) { etag = null; }
                 }
-                var response = await Fetch("current.json", false, etag, false, ConfigurationLimits.Bytes, token, true, wave).ConfigureAwait(false);
+                var response = await Fetch("current.json", false, etag, false, ConfigurationLimits.Bytes, token, true, wave).ConfigureAwait(true);
                 byte[] pointerBytes;
                 if (response.Status == 304)
                 {
                     if (!rawAvailable || previous == null)
                     {
                         Record("normal", "no_cached_validator");
-                        response = await Fetch("current.json", false, null, false, ConfigurationLimits.Bytes, token, false, wave).ConfigureAwait(false);
+                        response = await Fetch("current.json", false, null, false, ConfigurationLimits.Bytes, token, false, wave).ConfigureAwait(true);
                         if (response.Status != 200)
                             throw new InvalidConfigurationException("no_cached_validator");
                         pointerBytes = response.Bytes;
                     }
                     else
-                        pointerBytes = await Stored(space, previous["pointerRepresentationSha"].AsString(), ConfigurationLimits.Bytes, token).ConfigureAwait(false);
+                        pointerBytes = await Stored(space, previous["pointerRepresentationSha"].AsString(), ConfigurationLimits.Bytes, token).ConfigureAwait(true);
                 }
                 else
                 {
@@ -631,10 +631,10 @@ namespace GamePlatform.Configuration.Client
                 string pointerSha = CanonicalJson.Sha256(pointerBytes);
                 if (previous != null)
                     Accept(ProtocolReader.Sequence(previous["pointer"]["sequence"], true), previous["pointerRepresentationSha"].AsString(), nextPointer.Sequence, pointerSha);
-                byte[] manifestBytes = await Immutable(nextPointer.Manifest, token, wave).ConfigureAwait(false);
+                byte[] manifestBytes = await Immutable(nextPointer.Manifest, token, wave).ConfigureAwait(true);
                 FeatureGraph.VerifyFile(manifestBytes, nextPointer.Manifest, true);
                 var nextManifest = ProtocolReader.Manifest(manifestBytes, scope);
-                byte[] selectorBytes = await Immutable(nextManifest.Selector, token, wave).ConfigureAwait(false);
+                byte[] selectorBytes = await Immutable(nextManifest.Selector, token, wave).ConfigureAwait(true);
                 FeatureGraph.VerifyFile(selectorBytes, nextManifest.Selector, true);
                 var nextSelector = ConfigurationReader.Read(selectorBytes, scope.App, scope.Environment);
                 FeatureGraph.ValidateMetadata(nextPointer, nextManifest, nextSelector);
@@ -642,7 +642,7 @@ namespace GamePlatform.Configuration.Client
                 var added = new Dictionary<string, byte[]>(StringComparer.Ordinal) { [pointerSha] = pointerBytes, [nextPointer.Manifest.RepresentationSha] = manifestBytes, [nextManifest.Selector.RepresentationSha] = selectorBytes };
                 Alive(true);
                 if (owner.Persistent)
-                    state = await Commit(space, candidate => { if (candidate.Normal != null) Accept(ProtocolReader.Sequence(candidate.Normal["pointer"]["sequence"], true), candidate.Normal["pointerRepresentationSha"].AsString(), nextPointer.Sequence, pointerSha); candidate.Normal = observation; }, added, token).ConfigureAwait(false);
+                    state = await Commit(space, candidate => { if (candidate.Normal != null) Accept(ProtocolReader.Sequence(candidate.Normal["pointer"]["sequence"], true), candidate.Normal["pointerRepresentationSha"].AsString(), nextPointer.Sequence, pointerSha); candidate.Normal = observation; }, added, token).ConfigureAwait(true);
                 else
                 {
                     state.Normal = observation;
@@ -685,7 +685,7 @@ namespace GamePlatform.Configuration.Client
             using var caller = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, normalLifetime.Token);
             using var linked = new HostDeadline(clock, caller.Token, wave.Deadline);
             var token = linked.Token;
-            await featureGate.WaitAsync(token).ConfigureAwait(false);
+            await featureGate.WaitAsync(token).ConfigureAwait(true);
             try
             {
                 Alive(true);
@@ -695,7 +695,7 @@ namespace GamePlatform.Configuration.Client
                     view = releaseView;
                 if (view == null)
                 {
-                    var refresh = await RefreshInWave(wave, token).ConfigureAwait(false);
+                    var refresh = await RefreshInWave(wave, token).ConfigureAwait(true);
                     lock (sync)
                         view = releaseView;
                     if (view == null)
@@ -713,7 +713,7 @@ namespace GamePlatform.Configuration.Client
                 var added = view.Metadata.ToDictionary(p => p.Key, p => (byte[])p.Value.Clone(), StringComparer.Ordinal);
                 JsonValue? payload = null;
                 // At most two ordinary immutable requests are in flight; validate before commit.
-                var content = await Task.WhenAll(graph.Select(a => Immutable(a.File, token, wave))).ConfigureAwait(false);
+                var content = await Task.WhenAll(graph.Select(a => Immutable(a.File, token, wave))).ConfigureAwait(true);
                 for (int i = 0; i < graph.Count; i++)
                 {
                     var item = FeatureGraph.Asset(content[i], scope, graph[i]);
@@ -725,7 +725,7 @@ namespace GamePlatform.Configuration.Client
                 AdmissionBoundary(view, frozenSelection);
                 if (owner.Persistent)
                 {
-                    state = await Commit(space, candidate => { AdmissionBoundary(view, frozenSelection); candidate.Activations[featureKey] = FeatureGraph.Activation(context); }, added, token, () => AdmissionBoundary(view, frozenSelection)).ConfigureAwait(false);
+                    state = await Commit(space, candidate => { AdmissionBoundary(view, frozenSelection); candidate.Activations[featureKey] = FeatureGraph.Activation(context); }, added, token, () => AdmissionBoundary(view, frozenSelection)).ConfigureAwait(true);
                 }
                 AdmissionBoundary(view, frozenSelection);
                 token.ThrowIfCancellationRequested();
@@ -751,10 +751,10 @@ namespace GamePlatform.Configuration.Client
         private async Task<ConfigurationResult> RefreshControls()
         {
             var token = publicLifetime.Token;
-            await controlMemory.Gate.WaitAsync(token).ConfigureAwait(false);
+            await controlMemory.Gate.WaitAsync(token).ConfigureAwait(true);
             try
             {
-                publicState = await Load(publicSpace, token).ConfigureAwait(false);
+                publicState = await Load(publicSpace, token).ConfigureAwait(true);
                 JsonValue? previous = publicState.Control;
                 string? etag = previous == null ? null : Wire.OptionalString(previous["etag"]);
                 bool rawAvailable = false;
@@ -762,21 +762,21 @@ namespace GamePlatform.Configuration.Client
                 {
                     try
                     {
-                        await ValidateObservation(publicSpace, previous, true, token).ConfigureAwait(false);
+                        await ValidateObservation(publicSpace, previous, true, token).ConfigureAwait(true);
                         rawAvailable = true;
                     }
                     catch (InvalidConfigurationException) { etag = null; }
                 }
-                var response = await Fetch("control.json", true, etag, false, ConfigurationClientPolicy.ControlBytes, token, false).ConfigureAwait(false);
+                var response = await Fetch("control.json", true, etag, false, ConfigurationClientPolicy.ControlBytes, token, false).ConfigureAwait(true);
                 byte[] raw;
                 if (response.Status == 304 && rawAvailable && previous != null)
-                    raw = await Stored(publicSpace, previous["representationSha"].AsString(), ConfigurationClientPolicy.ControlBytes, token).ConfigureAwait(false);
+                    raw = await Stored(publicSpace, previous["representationSha"].AsString(), ConfigurationClientPolicy.ControlBytes, token).ConfigureAwait(true);
                 else
                 {
                     if (response.Status == 304)
                     {
                         Record("control", "no_cached_validator");
-                        response = await Fetch("control.json", true, null, false, ConfigurationClientPolicy.ControlBytes, token, false).ConfigureAwait(false);
+                        response = await Fetch("control.json", true, null, false, ConfigurationClientPolicy.ControlBytes, token, false).ConfigureAwait(true);
                     }
                     if (response.Status != 200)
                         throw new System.IO.IOException("control_unavailable");
@@ -794,7 +794,7 @@ namespace GamePlatform.Configuration.Client
                     controlMemory.Observe(new OperationalRestrictions(document.Sequence, sha, false, new Dictionary<string, int>(document.Restrictions)));
                 try
                 {
-                    publicState = await Commit(publicSpace, candidate => { if (candidate.Control != null) Accept(ProtocolReader.Sequence(candidate.Control["document"]["sequence"], true), candidate.Control["representationSha"].AsString(), document.Sequence, sha); candidate.Control = observation; }, added, token).ConfigureAwait(false);
+                    publicState = await Commit(publicSpace, candidate => { if (candidate.Control != null) Accept(ProtocolReader.Sequence(candidate.Control["document"]["sequence"], true), candidate.Control["representationSha"].AsString(), document.Sequence, sha); candidate.Control = observation; }, added, token).ConfigureAwait(true);
                     controlMemory.Observe(new OperationalRestrictions(document.Sequence, sha, true, new Dictionary<string, int>(document.Restrictions)));
                 }
                 catch (InvalidConfigurationException error) when (error.Message == "storage_failure" || error.Message == "protected_capacity" || error.Message == "quota")
@@ -816,13 +816,13 @@ namespace GamePlatform.Configuration.Client
             Alive(true);
             Wire.Uuid(pinId);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, normalLifetime.Token);
-            await featureGate.WaitAsync(linked.Token).ConfigureAwait(false);
+            await featureGate.WaitAsync(linked.Token).ConfigureAwait(true);
             try
             {
                 Alive(true);
                 linked.Token.ThrowIfCancellationRequested();
                 if (owner.Persistent)
-                    await Load(space, linked.Token).ConfigureAwait(false);
+                    await Load(space, linked.Token).ConfigureAwait(true);
                 Alive(true);
                 linked.Token.ThrowIfCancellationRequested();
                 if (pins.TryGetValue(pinId, out var context))
@@ -840,13 +840,13 @@ namespace GamePlatform.Configuration.Client
             if (!owner.Persistent || !context.Durable || context.NamespaceKey != space.Key || context.OwnerGeneration != owner.Generation)
                 return new ConfigurationResult("rejected", "owner_changed", false);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, normalLifetime.Token);
-            await featureGate.WaitAsync(linked.Token).ConfigureAwait(false);
+            await featureGate.WaitAsync(linked.Token).ConfigureAwait(true);
             try
             {
                 Alive(true);
                 linked.Token.ThrowIfCancellationRequested();
                 var pin = Wire.Object(("pinId", JsonValue.String(pinId)), ("activation", FeatureGraph.Activation(context)), ("createdAtSeconds", JsonValue.Integer(clock.UtcSeconds)));
-                state = await Commit(space, candidate => { if (candidate.Pins.TryGetValue(pinId, out var prior)) { if (CanonicalJson.SemanticSha256(prior["activation"]) != CanonicalJson.SemanticSha256(pin["activation"])) throw new InvalidConfigurationException("sequence_conflict"); } else candidate.Pins.Add(pinId, pin); }, new Dictionary<string, byte[]>(), linked.Token).ConfigureAwait(false);
+                state = await Commit(space, candidate => { if (candidate.Pins.TryGetValue(pinId, out var prior)) { if (CanonicalJson.SemanticSha256(prior["activation"]) != CanonicalJson.SemanticSha256(pin["activation"])) throw new InvalidConfigurationException("sequence_conflict"); } else candidate.Pins.Add(pinId, pin); }, new Dictionary<string, byte[]>(), linked.Token).ConfigureAwait(true);
                 Alive(true);
                 pins[pinId] = context;
                 return new ConfigurationResult("available", "activated", true, context);
@@ -865,10 +865,10 @@ namespace GamePlatform.Configuration.Client
             Alive(true);
             Wire.Uuid(pinId);
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, normalLifetime.Token);
-            await featureGate.WaitAsync(linked.Token).ConfigureAwait(false);
+            await featureGate.WaitAsync(linked.Token).ConfigureAwait(true);
             try
             {
-                state = await Commit(space, candidate => candidate.Pins.Remove(pinId), new Dictionary<string, byte[]>(), linked.Token).ConfigureAwait(false);
+                state = await Commit(space, candidate => candidate.Pins.Remove(pinId), new Dictionary<string, byte[]>(), linked.Token).ConfigureAwait(true);
                 Alive(true);
                 pins.Remove(pinId);
                 return true;
@@ -884,9 +884,9 @@ namespace GamePlatform.Configuration.Client
             long now = clock.MonotonicSeconds;
             Task<ConfigurationResult>? control = now >= nextControl ? RefreshControlsAsync(cancellationToken) : null;
             if (!retired && now >= nextNormal && (lastNormalAttempt == long.MinValue || now - lastNormalAttempt >= 60))
-                await RefreshAsync(cancellationToken).ConfigureAwait(false);
+                await RefreshAsync(cancellationToken).ConfigureAwait(true);
             if (control != null)
-                await control.ConfigureAwait(false);
+                await control.ConfigureAwait(true);
         }
     }
 }
