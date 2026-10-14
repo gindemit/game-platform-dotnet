@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "0.1.0-draft",
+  "features": [
+    {"id":"accounts","name":"Accounts","status":"unverified","acceptance":["A05","A07","A12"]},
+    {"id":"profiles","name":"Profiles","status":"unverified","acceptance":["A07"]},
+    {"id":"catalog","name":"Catalog","status":"unverified","acceptance":["A07"]},
+    {"id":"inventory","name":"Inventory","status":"unverified","acceptance":["A06","A07"]},
+    {"id":"wallet","name":"Wallet","status":"unverified","acceptance":["A06"]},
+    {"id":"entitlements","name":"Entitlements","status":"unverified","acceptance":["A06","A07"]},
+    {"id":"reward-fulfillment","name":"RewardFulfillment","status":"unverified","acceptance":["A06","A08"]},
+    {"id":"progression","name":"Progression","status":"unverified","acceptance":["A03","A04","A07"]},
+    {"id":"quests","name":"Quests","status":"stubbed","acceptance":["A06","A08"]},
+    {"id":"achievements","name":"Achievements","status":"stubbed","acceptance":["A06","A08"]},
+    {"id":"store","name":"Store","status":"stubbed","acceptance":["A06","A07"]},
+    {"id":"purchases","name":"Purchases","status":"stubbed","acceptance":["A06","A12"]},
+    {"id":"leaderboards","name":"Leaderboards","status":"stubbed","acceptance":["A07","A11"]},
+    {"id":"teams","name":"Teams","status":"stubbed","acceptance":["A07","A12"]},
+    {"id":"remote-config","name":"RemoteConfig","status":"stubbed","acceptance":["A07"]},
+    {"id":"inbox","name":"Inbox","status":"stubbed","acceptance":["A06","A07","A12"]}
+  ]
+}

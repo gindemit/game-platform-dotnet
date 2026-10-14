@@ -1,0 +1,18 @@
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+  Determining projects to restore...
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Wire.Contracts\GamePlatform.Wire.Contracts.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Sync\GamePlatform.Sync.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Features\GamePlatform.Features.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Transport.Abstractions\GamePlatform.Transport.Abstractions.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Core\GamePlatform.Core.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Storage.Abstractions\GamePlatform.Storage.Abstractions.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Features.Contracts\GamePlatform.Features.Contracts.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Features.Presentation\GamePlatform.Features.Presentation.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Transport.Http\GamePlatform.Transport.Http.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Storage.Sqlite\GamePlatform.Storage.Sqlite.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Backend.Contracts\GamePlatform.Backend.Contracts.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Serialization.MessagePack\GamePlatform.Serialization.MessagePack.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Diagnostics.Abstractions\GamePlatform.Diagnostics.Abstractions.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Navigation\GamePlatform.Navigation.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\src\GamePlatform.Serialization.Json\GamePlatform.Serialization.Json.csproj (in 89 ms).
+  Restored C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\GamePlatform.Tests.csproj (in 224 ms).

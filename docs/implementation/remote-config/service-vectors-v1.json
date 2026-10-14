@@ -1,0 +1,3032 @@
+{
+  "schema": "platform.remote-config.service-vectors.v1",
+  "contractSchemaId": "urn:game-platform:remote-config:service:v1",
+  "examples": {
+    "current": {
+      "schema": "platform.remote-config.current.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "sequence": "7",
+      "issuedAtSeconds": 1791972000,
+      "release": "release-7",
+      "manifest": {
+        "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+        "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+        "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+        "decodedBytes": 2011
+      }
+    },
+    "manifest": {
+      "schema": "platform.remote-config.release.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "release": "release-7",
+      "issuedAtSeconds": 1791972000,
+      "selector": {
+        "path": "selectors/e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f.json",
+        "representationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+        "semanticSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+        "decodedBytes": 1177
+      },
+      "assets": [
+        {
+          "key": "progression",
+          "revision": "A-1",
+          "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07",
+          "path": "assets/75205269654812e9b108b0cb81ab25657d0828de00878797668f49b3e0aae88c.json",
+          "representationSha": "4490fe58fc72f45a7e6de9568c5d635c477214ef4f1bf1c61a9ffdb97cb57797",
+          "decodedBytes": 356,
+          "dependencies": [
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ]
+        },
+        {
+          "key": "progression",
+          "revision": "B-1",
+          "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce",
+          "path": "assets/f47e5b2bbe8b3aab2604e69fec3b94c89d28cd3bfcde30d90e08c8152656bd32.json",
+          "representationSha": "7de50e32b6c727f07a9007c047d8403e9c8fdd95be5202ba5a8945aecd61878f",
+          "decodedBytes": 356,
+          "dependencies": [
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ]
+        },
+        {
+          "key": "shared",
+          "revision": "1",
+          "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01",
+          "path": "assets/4365916f6bb38ff9eb2e47e6ee06c9c769eb1cf7ec06fb4f41964461bd22f05c.json",
+          "representationSha": "c63cb8f0b1cf3bd0aacbc2d1f1eb184f984b23a047e1935bf42e40733c22e91b",
+          "decodedBytes": 235,
+          "dependencies": []
+        }
+      ],
+      "retained": [
+        {
+          "key": "progression",
+          "revision": "A-1",
+          "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07"
+        },
+        {
+          "key": "progression",
+          "revision": "B-1",
+          "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+        },
+        {
+          "key": "shared",
+          "revision": "1",
+          "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+        }
+      ]
+    },
+    "control": {
+      "schema": "platform.remote-config.control.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "sequence": "11",
+      "issuedAtSeconds": 1791972001,
+      "restrictions": [
+        {
+          "key": "analytics.send",
+          "effect": "deny",
+          "ratePermille": null
+        },
+        {
+          "key": "analytics.sample",
+          "effect": "cap",
+          "ratePermille": 100
+        }
+      ]
+    },
+    "cache": {
+      "schema": "platform.remote-config.cache-commit.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "storeGeneration": "3",
+      "owner": {
+        "ownerId": "synthetic-owner",
+        "subjectId": "synthetic-subject-104",
+        "generation": "1"
+      },
+      "normal": {
+        "pointer": {
+          "schema": "platform.remote-config.current.v1",
+          "app": "synthetic",
+          "environment": "local",
+          "sequence": "7",
+          "issuedAtSeconds": 1791972000,
+          "release": "release-7",
+          "manifest": {
+            "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+            "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "decodedBytes": 2011
+          }
+        },
+        "pointerRepresentationSha": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+        "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+        "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+        "etag": "\"synthetic-7\"",
+        "time": {
+          "observedAtSeconds": 1791972002,
+          "anchorAtSeconds": 1791972002,
+          "status": "trusted"
+        }
+      },
+      "control": {
+        "document": {
+          "schema": "platform.remote-config.control.v1",
+          "app": "synthetic",
+          "environment": "local",
+          "sequence": "11",
+          "issuedAtSeconds": 1791972001,
+          "restrictions": [
+            {
+              "key": "analytics.send",
+              "effect": "deny",
+              "ratePermille": null
+            },
+            {
+              "key": "analytics.sample",
+              "effect": "cap",
+              "ratePermille": 100
+            }
+          ]
+        },
+        "representationSha": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+        "etag": "\"synthetic-11\"",
+        "time": {
+          "observedAtSeconds": 1791972002,
+          "anchorAtSeconds": 1791972002,
+          "status": "trusted"
+        }
+      },
+      "objects": [
+        {
+          "representationSha": "c63cb8f0b1cf3bd0aacbc2d1f1eb184f984b23a047e1935bf42e40733c22e91b",
+          "decodedBytes": 235,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "7de50e32b6c727f07a9007c047d8403e9c8fdd95be5202ba5a8945aecd61878f",
+          "decodedBytes": 356,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "decodedBytes": 2011,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+          "decodedBytes": 1177,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+          "decodedBytes": 499,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+          "decodedBytes": 367,
+          "lastUsedAtSeconds": 1791972002
+        }
+      ],
+      "activations": [
+        {
+          "selection": {
+            "featureKey": "progression",
+            "reference": {
+              "key": "progression",
+              "revision": "B-1",
+              "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+            },
+            "variant": "B",
+            "value": true,
+            "reason": "percentage",
+            "ruleId": "experiment-rule",
+            "bucket": 81,
+            "experimentKey": "experiment-1",
+            "experimentVersion": "1",
+            "dependencies": [
+              {
+                "key": "shared",
+                "revision": "1",
+                "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+              }
+            ]
+          },
+          "origin": {
+            "releaseSequence": "7",
+            "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+          },
+          "closure": [
+            {
+              "key": "progression",
+              "revision": "B-1",
+              "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+            },
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ],
+          "durable": true
+        }
+      ],
+      "pins": [
+        {
+          "pinId": "0199e584-6400-7000-8000-000000000001",
+          "activation": {
+            "selection": {
+              "featureKey": "progression",
+              "reference": {
+                "key": "progression",
+                "revision": "B-1",
+                "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+              },
+              "variant": "B",
+              "value": true,
+              "reason": "percentage",
+              "ruleId": "experiment-rule",
+              "bucket": 81,
+              "experimentKey": "experiment-1",
+              "experimentVersion": "1",
+              "dependencies": [
+                {
+                  "key": "shared",
+                  "revision": "1",
+                  "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+                }
+              ]
+            },
+            "origin": {
+              "releaseSequence": "7",
+              "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+              "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+            },
+            "closure": [
+              {
+                "key": "progression",
+                "revision": "B-1",
+                "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+              },
+              {
+                "key": "shared",
+                "revision": "1",
+                "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+              }
+            ],
+            "durable": true
+          },
+          "createdAtSeconds": 1791972002
+        }
+      ]
+    },
+    "operation": {
+      "schema": "platform.remote-config.publish-operation.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "operationId": "0199e584-6400-7000-8000-000000000002",
+      "sequence": "7",
+      "fingerprint": "a1b1a8689c05a1ee4a7dc350a51801a53a2eec617620a7e5dd43c0046b37da6d",
+      "state": "prepared",
+      "manifest": {
+        "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+        "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+        "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+        "decodedBytes": 2011
+      },
+      "expectedActiveProviderVersion": "provider-6",
+      "preparedProviderVersion": null,
+      "observedActiveProviderVersion": "provider-6",
+      "failureReason": null,
+      "updatedAtSeconds": 1791972002
+    },
+    "enrollment": {
+      "schema": "platform.remote-config.enrollment-result.v1",
+      "status": "created",
+      "reason": "created",
+      "record": {
+        "app": "synthetic",
+        "environment": "local",
+        "accountId": "synthetic-account",
+        "subjectId": "synthetic-subject-104",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "experimentKey": "experiment-1",
+        "experimentVersion": "1",
+        "selection": {
+          "featureKey": "progression",
+          "reference": {
+            "key": "progression",
+            "revision": "B-1",
+            "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+          },
+          "variant": "B",
+          "value": true,
+          "reason": "percentage",
+          "ruleId": "experiment-rule",
+          "bucket": 81,
+          "experimentKey": "experiment-1",
+          "experimentVersion": "1",
+          "dependencies": [
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ]
+        },
+        "origin": {
+          "releaseSequence": "7",
+          "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+        },
+        "closure": [
+          {
+            "key": "progression",
+            "revision": "B-1",
+            "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+          },
+          {
+            "key": "shared",
+            "revision": "1",
+            "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+          }
+        ],
+        "enrolledAtSeconds": 1791972002
+      }
+    },
+    "instance": {
+      "schema": "platform.remote-config.instance-result.v1",
+      "status": "created",
+      "reason": "created",
+      "record": {
+        "app": "synthetic",
+        "environment": "local",
+        "accountId": "synthetic-account",
+        "instanceId": "0199e584-6400-7000-8000-000000000004",
+        "occurrenceKey": "trusted-occurrence-42",
+        "featureKey": "progression",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "selection": {
+          "featureKey": "progression",
+          "reference": {
+            "key": "progression",
+            "revision": "B-1",
+            "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+          },
+          "variant": "B",
+          "value": true,
+          "reason": "percentage",
+          "ruleId": "experiment-rule",
+          "bucket": 81,
+          "experimentKey": "experiment-1",
+          "experimentVersion": "1",
+          "dependencies": [
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ]
+        },
+        "origin": {
+          "releaseSequence": "7",
+          "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+        },
+        "closure": [
+          {
+            "key": "progression",
+            "revision": "B-1",
+            "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+          },
+          {
+            "key": "shared",
+            "revision": "1",
+            "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+          }
+        ],
+        "createdAtSeconds": 1791972002
+      }
+    },
+    "nonexperimentInstance": {
+      "schema": "platform.remote-config.instance-result.v1",
+      "status": "created",
+      "reason": "created",
+      "record": {
+        "app": "synthetic",
+        "environment": "local",
+        "accountId": "synthetic-account",
+        "instanceId": "0199e584-6400-7000-8000-000000000005",
+        "occurrenceKey": "trusted-occurrence-43",
+        "featureKey": "progression",
+        "enrollmentId": null,
+        "selection": {
+          "featureKey": "progression",
+          "reference": {
+            "key": "progression",
+            "revision": "A-1",
+            "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07"
+          },
+          "variant": "A",
+          "value": true,
+          "reason": "default",
+          "ruleId": null,
+          "bucket": null,
+          "experimentKey": null,
+          "experimentVersion": null,
+          "dependencies": [
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ]
+        },
+        "origin": {
+          "releaseSequence": "8",
+          "manifestRepresentationSha": "c60477745346605eece61a337b7393d591f4d763a4c8599a64388cf7c9b9ebc0",
+          "selectorRepresentationSha": "5a9662f23aa68158cf033b9108764300a48969b6ae841e78b8d4a9d361bc90c2"
+        },
+        "closure": [
+          {
+            "key": "progression",
+            "revision": "A-1",
+            "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07"
+          },
+          {
+            "key": "shared",
+            "revision": "1",
+            "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+          }
+        ],
+        "createdAtSeconds": 1791972002
+      }
+    },
+    "lifecycle": {
+      "schema": "platform.remote-config.lifecycle-result.v1",
+      "status": "available",
+      "reason": "activated",
+      "durable": true,
+      "featureKey": "progression",
+      "origin": {
+        "releaseSequence": "7",
+        "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+        "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+      }
+    },
+    "publicCache": {
+      "schema": "platform.remote-config.cache-commit.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "storeGeneration": "3",
+      "owner": null,
+      "normal": {
+        "pointer": {
+          "schema": "platform.remote-config.current.v1",
+          "app": "synthetic",
+          "environment": "local",
+          "sequence": "7",
+          "issuedAtSeconds": 1791972000,
+          "release": "release-7",
+          "manifest": {
+            "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+            "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "decodedBytes": 2011
+          }
+        },
+        "pointerRepresentationSha": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+        "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+        "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+        "etag": "\"synthetic-7\"",
+        "time": {
+          "observedAtSeconds": 1791972002,
+          "anchorAtSeconds": 1791972002,
+          "status": "trusted"
+        }
+      },
+      "control": {
+        "document": {
+          "schema": "platform.remote-config.control.v1",
+          "app": "synthetic",
+          "environment": "local",
+          "sequence": "11",
+          "issuedAtSeconds": 1791972001,
+          "restrictions": [
+            {
+              "key": "analytics.send",
+              "effect": "deny",
+              "ratePermille": null
+            },
+            {
+              "key": "analytics.sample",
+              "effect": "cap",
+              "ratePermille": 100
+            }
+          ]
+        },
+        "representationSha": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+        "etag": "\"synthetic-11\"",
+        "time": {
+          "observedAtSeconds": 1791972002,
+          "anchorAtSeconds": 1791972002,
+          "status": "trusted"
+        }
+      },
+      "objects": [
+        {
+          "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "decodedBytes": 2011,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+          "decodedBytes": 1177,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+          "decodedBytes": 499,
+          "lastUsedAtSeconds": 1791972002
+        },
+        {
+          "representationSha": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+          "decodedBytes": 367,
+          "lastUsedAtSeconds": 1791972002
+        }
+      ],
+      "activations": [],
+      "pins": []
+    }
+  },
+  "fixtureDocuments": {
+    "selector": {
+      "schema": "platform.remote-config.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "release": "release-7",
+      "features": [
+        {
+          "key": "progression",
+          "enabled": true,
+          "default": {
+            "revision": "A-1",
+            "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07",
+            "variant": "A",
+            "value": true,
+            "dependencies": [
+              {
+                "key": "shared",
+                "revision": "1",
+                "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+              }
+            ]
+          },
+          "rules": [
+            {
+              "id": "experiment-rule",
+              "conditions": [],
+              "outcome": {
+                "kind": "percentage",
+                "experimentKey": "experiment-1",
+                "experimentVersion": "1",
+                "allocationAlgorithm": "sha1-first7-mod100-v1",
+                "allocations": [
+                  {
+                    "weight": 20,
+                    "choice": {
+                      "revision": "A-1",
+                      "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07",
+                      "variant": "A",
+                      "value": true,
+                      "dependencies": [
+                        {
+                          "key": "shared",
+                          "revision": "1",
+                          "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "weight": 80,
+                    "choice": {
+                      "revision": "B-1",
+                      "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce",
+                      "variant": "B",
+                      "value": true,
+                      "dependencies": [
+                        {
+                          "key": "shared",
+                          "revision": "1",
+                          "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "nonexperimentSelector": {
+      "schema": "platform.remote-config.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "release": "release-nonexperiment",
+      "features": [
+        {
+          "key": "progression",
+          "enabled": true,
+          "default": {
+            "revision": "A-1",
+            "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07",
+            "variant": "A",
+            "value": true,
+            "dependencies": [
+              {
+                "key": "shared",
+                "revision": "1",
+                "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+              }
+            ]
+          },
+          "rules": []
+        }
+      ]
+    },
+    "nonexperimentManifest": {
+      "schema": "platform.remote-config.release.v1",
+      "app": "synthetic",
+      "environment": "local",
+      "release": "release-nonexperiment",
+      "issuedAtSeconds": 1791972000,
+      "selector": {
+        "path": "selectors/5a9662f23aa68158cf033b9108764300a48969b6ae841e78b8d4a9d361bc90c2.json",
+        "representationSha": "5a9662f23aa68158cf033b9108764300a48969b6ae841e78b8d4a9d361bc90c2",
+        "semanticSha": "5a9662f23aa68158cf033b9108764300a48969b6ae841e78b8d4a9d361bc90c2",
+        "decodedBytes": 440
+      },
+      "assets": [
+        {
+          "key": "progression",
+          "revision": "A-1",
+          "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07",
+          "path": "assets/75205269654812e9b108b0cb81ab25657d0828de00878797668f49b3e0aae88c.json",
+          "representationSha": "4490fe58fc72f45a7e6de9568c5d635c477214ef4f1bf1c61a9ffdb97cb57797",
+          "decodedBytes": 356,
+          "dependencies": [
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ]
+        },
+        {
+          "key": "progression",
+          "revision": "B-1",
+          "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce",
+          "path": "assets/f47e5b2bbe8b3aab2604e69fec3b94c89d28cd3bfcde30d90e08c8152656bd32.json",
+          "representationSha": "7de50e32b6c727f07a9007c047d8403e9c8fdd95be5202ba5a8945aecd61878f",
+          "decodedBytes": 356,
+          "dependencies": [
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ]
+        },
+        {
+          "key": "shared",
+          "revision": "1",
+          "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01",
+          "path": "assets/4365916f6bb38ff9eb2e47e6ee06c9c769eb1cf7ec06fb4f41964461bd22f05c.json",
+          "representationSha": "c63cb8f0b1cf3bd0aacbc2d1f1eb184f984b23a047e1935bf42e40733c22e91b",
+          "decodedBytes": 235,
+          "dependencies": []
+        }
+      ],
+      "retained": [
+        {
+          "key": "progression",
+          "revision": "A-1",
+          "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07"
+        },
+        {
+          "key": "progression",
+          "revision": "B-1",
+          "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+        },
+        {
+          "key": "shared",
+          "revision": "1",
+          "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+        }
+      ]
+    },
+    "assets": {
+      "shared": {
+        "schema": "platform.remote-config.asset.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "key": "shared",
+        "revision": "1",
+        "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01",
+        "payload": {
+          "limit": 4
+        },
+        "dependencies": []
+      },
+      "progression.B": {
+        "schema": "platform.remote-config.asset.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "key": "progression",
+        "revision": "B-1",
+        "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce",
+        "payload": {
+          "board": "B"
+        },
+        "dependencies": [
+          {
+            "key": "shared",
+            "revision": "1",
+            "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+          }
+        ]
+      },
+      "progression.A": {
+        "schema": "platform.remote-config.asset.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "key": "progression",
+        "revision": "A-1",
+        "semanticSha": "73a269769b2eb377d34f0db958c3b7110659bd897b7a7f76d219d43f77bb8b07",
+        "payload": {
+          "board": "A"
+        },
+        "dependencies": [
+          {
+            "key": "shared",
+            "revision": "1",
+            "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+          }
+        ]
+      }
+    }
+  },
+  "fixtureRawObservations": {
+    "pointer": "{\n  \"schema\": \"platform.remote-config.current.v1\",\n  \"app\": \"synthetic\",\n  \"environment\": \"local\",\n  \"sequence\": \"7\",\n  \"issuedAtSeconds\": 1791972000,\n  \"release\": \"release-7\",\n  \"manifest\": {\n    \"path\": \"manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json\",\n    \"representationSha\": \"bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f\",\n    \"semanticSha\": \"bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f\",\n    \"decodedBytes\": 2011\n  }\n}\n",
+    "control": "{\n  \"schema\": \"platform.remote-config.control.v1\",\n  \"app\": \"synthetic\",\n  \"environment\": \"local\",\n  \"sequence\": \"11\",\n  \"issuedAtSeconds\": 1791972001,\n  \"restrictions\": [\n    {\n      \"key\": \"analytics.send\",\n      \"effect\": \"deny\",\n      \"ratePermille\": null\n    },\n    {\n      \"key\": \"analytics.sample\",\n      \"effect\": \"cap\",\n      \"ratePermille\": 100\n    }\n  ]\n}\n"
+  },
+  "fixtureOperationInputs": {
+    "enrollment": {
+      "kind": "enrollment",
+      "app": "synthetic",
+      "environment": "local",
+      "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+      "accountId": "synthetic-account",
+      "featureKey": "progression"
+    },
+    "instance": {
+      "kind": "instance",
+      "app": "synthetic",
+      "environment": "local",
+      "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+      "accountId": "synthetic-account",
+      "featureKey": "progression",
+      "occurrenceKey": "trusted-occurrence-42",
+      "enrollmentId": "0199e584-6400-7000-8000-000000000003"
+    }
+  },
+  "fixtureInventory": [
+    {
+      "path": "assets/4365916f6bb38ff9eb2e47e6ee06c9c769eb1cf7ec06fb4f41964461bd22f05c.json",
+      "representationSha": "c63cb8f0b1cf3bd0aacbc2d1f1eb184f984b23a047e1935bf42e40733c22e91b",
+      "decodedBytes": 235
+    },
+    {
+      "path": "assets/75205269654812e9b108b0cb81ab25657d0828de00878797668f49b3e0aae88c.json",
+      "representationSha": "4490fe58fc72f45a7e6de9568c5d635c477214ef4f1bf1c61a9ffdb97cb57797",
+      "decodedBytes": 356
+    },
+    {
+      "path": "assets/f47e5b2bbe8b3aab2604e69fec3b94c89d28cd3bfcde30d90e08c8152656bd32.json",
+      "representationSha": "7de50e32b6c727f07a9007c047d8403e9c8fdd95be5202ba5a8945aecd61878f",
+      "decodedBytes": 356
+    },
+    {
+      "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+      "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+      "decodedBytes": 2011
+    },
+    {
+      "path": "selectors/e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f.json",
+      "representationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+      "decodedBytes": 1177
+    }
+  ],
+  "fixtureContext": {
+    "subjectId": "synthetic-subject-104",
+    "nowSeconds": 1791972002,
+    "attributes": {}
+  },
+  "exampleCanonicalSha256": {
+    "current": "34ae2f718450b74c9128d4f4df16b4666f68543b489171c6d9e23faab8511617",
+    "manifest": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+    "control": "bf6ccd3d21c684bedbecd05dd15b5de52415c28060e6b2283fd189bf22bacfb6",
+    "cache": "ab0b3e4fbb40cc4be4c2d7cbe8586b452dbf445095a1df128810ced84fe72ed3",
+    "operation": "511057863a9ff1fefe2854de6735f75ec18d3d66b3deabfff987b16bda8c3d2f",
+    "enrollment": "227b1f8cbec58f90a141057342de6141efb8e22df7f453b1ce43c964aec4e42f",
+    "instance": "36ab91c70d3e6167c198d79b381684db85b6ca44912edd788280ff449eb7a350",
+    "nonexperimentInstance": "f8dc4ba6e36fb2661c42cf7d32032ac07245513ad46263ebdd42eaad5baac9ea",
+    "lifecycle": "01adc83ec87d5e848763ef65d6f0aef46dd5b3077ab174ba960ed48497a9056e",
+    "publicCache": "b12b6dae088e7f45b10a349e3da9e980ac6c76eb4bf040141147f0d132f0b4bf"
+  },
+  "invalidShapes": [
+    {
+      "id": "unknown-current-field",
+      "candidate": {
+        "schema": "platform.remote-config.current.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "sequence": "7",
+        "issuedAtSeconds": 1791972000,
+        "release": "release-7",
+        "manifest": {
+          "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+          "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "decodedBytes": 2011
+        },
+        "unknown": true
+      },
+      "valid": false
+    },
+    {
+      "id": "numeric-sequence",
+      "candidate": {
+        "schema": "platform.remote-config.current.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "sequence": 7,
+        "issuedAtSeconds": 1791972000,
+        "release": "release-7",
+        "manifest": {
+          "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+          "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "decodedBytes": 2011
+        }
+      },
+      "valid": false
+    },
+    {
+      "id": "leading-zero-sequence",
+      "candidate": {
+        "schema": "platform.remote-config.control.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "sequence": "011",
+        "issuedAtSeconds": 1791972001,
+        "restrictions": [
+          {
+            "key": "analytics.send",
+            "effect": "deny",
+            "ratePermille": null
+          },
+          {
+            "key": "analytics.sample",
+            "effect": "cap",
+            "ratePermille": 100
+          }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "id": "signed64-overflow",
+      "candidate": {
+        "schema": "platform.remote-config.current.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "sequence": "9223372036854775808",
+        "issuedAtSeconds": 1791972000,
+        "release": "release-7",
+        "manifest": {
+          "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+          "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "decodedBytes": 2011
+        }
+      },
+      "valid": false
+    },
+    {
+      "id": "zero-publication-sequence",
+      "candidate": {
+        "schema": "platform.remote-config.current.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "sequence": "0",
+        "issuedAtSeconds": 1791972000,
+        "release": "release-7",
+        "manifest": {
+          "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+          "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "decodedBytes": 2011
+        }
+      },
+      "valid": false
+    },
+    {
+      "id": "control-no-urls",
+      "candidate": {
+        "schema": "platform.remote-config.control.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "sequence": "11",
+        "issuedAtSeconds": 1791972001,
+        "restrictions": [
+          {
+            "key": "analytics.send",
+            "effect": "deny",
+            "ratePermille": null
+          },
+          {
+            "key": "analytics.sample",
+            "effect": "cap",
+            "ratePermille": 100
+          }
+        ],
+        "url": "https://arbitrary.example/"
+      },
+      "valid": false
+    },
+    {
+      "id": "publish-no-invented-state",
+      "candidate": {
+        "schema": "platform.remote-config.publish-operation.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "operationId": "0199e584-6400-7000-8000-000000000002",
+        "sequence": "7",
+        "fingerprint": "a1b1a8689c05a1ee4a7dc350a51801a53a2eec617620a7e5dd43c0046b37da6d",
+        "state": "success",
+        "manifest": {
+          "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+          "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "decodedBytes": 2011
+        },
+        "expectedActiveProviderVersion": "provider-6",
+        "preparedProviderVersion": null,
+        "observedActiveProviderVersion": "provider-6",
+        "failureReason": null,
+        "updatedAtSeconds": 1791972002
+      },
+      "valid": false
+    },
+    {
+      "id": "instance-no-client-revision",
+      "candidate": {
+        "schema": "platform.remote-config.instance-result.v1",
+        "status": "created",
+        "reason": "created",
+        "record": {
+          "app": "synthetic",
+          "environment": "local",
+          "accountId": "synthetic-account",
+          "instanceId": "0199e584-6400-7000-8000-000000000004",
+          "occurrenceKey": "trusted-occurrence-42",
+          "featureKey": "progression",
+          "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+          "selection": {
+            "featureKey": "progression",
+            "reference": {
+              "key": "progression",
+              "revision": "B-1",
+              "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+            },
+            "variant": "B",
+            "value": true,
+            "reason": "percentage",
+            "ruleId": "experiment-rule",
+            "bucket": 81,
+            "experimentKey": "experiment-1",
+            "experimentVersion": "1",
+            "dependencies": [
+              {
+                "key": "shared",
+                "revision": "1",
+                "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+              }
+            ]
+          },
+          "origin": {
+            "releaseSequence": "7",
+            "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+          },
+          "closure": [
+            {
+              "key": "progression",
+              "revision": "B-1",
+              "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+            },
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ],
+          "createdAtSeconds": 1791972002
+        },
+        "revision": "client-selected"
+      },
+      "valid": false
+    },
+    {
+      "id": "percentage-instance-requires-enrollment",
+      "candidate": {
+        "schema": "platform.remote-config.instance-result.v1",
+        "status": "created",
+        "reason": "created",
+        "record": {
+          "app": "synthetic",
+          "environment": "local",
+          "accountId": "synthetic-account",
+          "instanceId": "0199e584-6400-7000-8000-000000000004",
+          "occurrenceKey": "trusted-occurrence-42",
+          "featureKey": "progression",
+          "enrollmentId": null,
+          "selection": {
+            "featureKey": "progression",
+            "reference": {
+              "key": "progression",
+              "revision": "B-1",
+              "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+            },
+            "variant": "B",
+            "value": true,
+            "reason": "percentage",
+            "ruleId": "experiment-rule",
+            "bucket": 81,
+            "experimentKey": "experiment-1",
+            "experimentVersion": "1",
+            "dependencies": [
+              {
+                "key": "shared",
+                "revision": "1",
+                "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+              }
+            ]
+          },
+          "origin": {
+            "releaseSequence": "7",
+            "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+          },
+          "closure": [
+            {
+              "key": "progression",
+              "revision": "B-1",
+              "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+            },
+            {
+              "key": "shared",
+              "revision": "1",
+              "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+            }
+          ],
+          "createdAtSeconds": 1791972002
+        }
+      },
+      "valid": false
+    },
+    {
+      "id": "public-cache-cannot-contain-private-pins",
+      "candidate": {
+        "schema": "platform.remote-config.cache-commit.v1",
+        "app": "synthetic",
+        "environment": "local",
+        "storeGeneration": "3",
+        "owner": null,
+        "normal": {
+          "pointer": {
+            "schema": "platform.remote-config.current.v1",
+            "app": "synthetic",
+            "environment": "local",
+            "sequence": "7",
+            "issuedAtSeconds": 1791972000,
+            "release": "release-7",
+            "manifest": {
+              "path": "manifests/bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f.json",
+              "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+              "semanticSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+              "decodedBytes": 2011
+            }
+          },
+          "pointerRepresentationSha": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+          "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+          "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+          "etag": "\"synthetic-7\"",
+          "time": {
+            "observedAtSeconds": 1791972002,
+            "anchorAtSeconds": 1791972002,
+            "status": "trusted"
+          }
+        },
+        "control": {
+          "document": {
+            "schema": "platform.remote-config.control.v1",
+            "app": "synthetic",
+            "environment": "local",
+            "sequence": "11",
+            "issuedAtSeconds": 1791972001,
+            "restrictions": [
+              {
+                "key": "analytics.send",
+                "effect": "deny",
+                "ratePermille": null
+              },
+              {
+                "key": "analytics.sample",
+                "effect": "cap",
+                "ratePermille": 100
+              }
+            ]
+          },
+          "representationSha": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+          "etag": "\"synthetic-11\"",
+          "time": {
+            "observedAtSeconds": 1791972002,
+            "anchorAtSeconds": 1791972002,
+            "status": "trusted"
+          }
+        },
+        "objects": [
+          {
+            "representationSha": "c63cb8f0b1cf3bd0aacbc2d1f1eb184f984b23a047e1935bf42e40733c22e91b",
+            "decodedBytes": 235,
+            "lastUsedAtSeconds": 1791972002
+          },
+          {
+            "representationSha": "7de50e32b6c727f07a9007c047d8403e9c8fdd95be5202ba5a8945aecd61878f",
+            "decodedBytes": 356,
+            "lastUsedAtSeconds": 1791972002
+          },
+          {
+            "representationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+            "decodedBytes": 2011,
+            "lastUsedAtSeconds": 1791972002
+          },
+          {
+            "representationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f",
+            "decodedBytes": 1177,
+            "lastUsedAtSeconds": 1791972002
+          },
+          {
+            "representationSha": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+            "decodedBytes": 499,
+            "lastUsedAtSeconds": 1791972002
+          },
+          {
+            "representationSha": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+            "decodedBytes": 367,
+            "lastUsedAtSeconds": 1791972002
+          }
+        ],
+        "activations": [
+          {
+            "selection": {
+              "featureKey": "progression",
+              "reference": {
+                "key": "progression",
+                "revision": "B-1",
+                "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+              },
+              "variant": "B",
+              "value": true,
+              "reason": "percentage",
+              "ruleId": "experiment-rule",
+              "bucket": 81,
+              "experimentKey": "experiment-1",
+              "experimentVersion": "1",
+              "dependencies": [
+                {
+                  "key": "shared",
+                  "revision": "1",
+                  "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+                }
+              ]
+            },
+            "origin": {
+              "releaseSequence": "7",
+              "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+              "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+            },
+            "closure": [
+              {
+                "key": "progression",
+                "revision": "B-1",
+                "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+              },
+              {
+                "key": "shared",
+                "revision": "1",
+                "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+              }
+            ],
+            "durable": true
+          }
+        ],
+        "pins": [
+          {
+            "pinId": "0199e584-6400-7000-8000-000000000001",
+            "activation": {
+              "selection": {
+                "featureKey": "progression",
+                "reference": {
+                  "key": "progression",
+                  "revision": "B-1",
+                  "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+                },
+                "variant": "B",
+                "value": true,
+                "reason": "percentage",
+                "ruleId": "experiment-rule",
+                "bucket": 81,
+                "experimentKey": "experiment-1",
+                "experimentVersion": "1",
+                "dependencies": [
+                  {
+                    "key": "shared",
+                    "revision": "1",
+                    "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+                  }
+                ]
+              },
+              "origin": {
+                "releaseSequence": "7",
+                "manifestRepresentationSha": "bb08226eb136e429dc03cf64b1f8909d21f2decac3ef945b830f4d18ab1ef34f",
+                "selectorRepresentationSha": "e9e5887525c57fa6b3e0dd6900b4faefbe23283b61cfd1f940fa5c508850fc6f"
+              },
+              "closure": [
+                {
+                  "key": "progression",
+                  "revision": "B-1",
+                  "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+                },
+                {
+                  "key": "shared",
+                  "revision": "1",
+                  "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+                }
+              ],
+              "durable": true
+            },
+            "createdAtSeconds": 1791972002
+          }
+        ]
+      },
+      "valid": false
+    }
+  ],
+  "vectors": [
+    {
+      "id": "normal-replay",
+      "area": "sequence",
+      "initial": {
+        "channel": "normal",
+        "sequence": "7",
+        "representationSha": "34ae2f718450b74c9128d4f4df16b4666f68543b489171c6d9e23faab8511617"
+      },
+      "action": {
+        "sequence": "7",
+        "representationSha": "34ae2f718450b74c9128d4f4df16b4666f68543b489171c6d9e23faab8511617"
+      },
+      "expected": {
+        "reason": "replay",
+        "replace": false,
+        "refreshObservation": true
+      }
+    },
+    {
+      "id": "normal-lower",
+      "area": "sequence",
+      "initial": {
+        "channel": "normal",
+        "sequence": "7",
+        "representationSha": "34ae2f718450b74c9128d4f4df16b4666f68543b489171c6d9e23faab8511617"
+      },
+      "action": {
+        "sequence": "6",
+        "representationSha": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expected": {
+        "reason": "lower_sequence",
+        "replace": false,
+        "refreshObservation": false
+      }
+    },
+    {
+      "id": "normal-conflict",
+      "area": "sequence",
+      "initial": {
+        "channel": "normal",
+        "sequence": "7",
+        "representationSha": "34ae2f718450b74c9128d4f4df16b4666f68543b489171c6d9e23faab8511617"
+      },
+      "action": {
+        "sequence": "7",
+        "representationSha": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expected": {
+        "reason": "sequence_conflict",
+        "replace": false,
+        "refreshObservation": false
+      }
+    },
+    {
+      "id": "control-replay",
+      "area": "sequence",
+      "initial": {
+        "channel": "control",
+        "sequence": "11",
+        "representationSha": "bf6ccd3d21c684bedbecd05dd15b5de52415c28060e6b2283fd189bf22bacfb6"
+      },
+      "action": {
+        "sequence": "11",
+        "representationSha": "bf6ccd3d21c684bedbecd05dd15b5de52415c28060e6b2283fd189bf22bacfb6"
+      },
+      "expected": {
+        "reason": "replay",
+        "replace": false,
+        "refreshObservation": true
+      }
+    },
+    {
+      "id": "control-lower",
+      "area": "sequence",
+      "initial": {
+        "channel": "control",
+        "sequence": "11",
+        "representationSha": "bf6ccd3d21c684bedbecd05dd15b5de52415c28060e6b2283fd189bf22bacfb6"
+      },
+      "action": {
+        "sequence": "10",
+        "representationSha": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expected": {
+        "reason": "lower_sequence",
+        "replace": false,
+        "refreshObservation": false
+      }
+    },
+    {
+      "id": "control-conflict",
+      "area": "sequence",
+      "initial": {
+        "channel": "control",
+        "sequence": "11",
+        "representationSha": "bf6ccd3d21c684bedbecd05dd15b5de52415c28060e6b2283fd189bf22bacfb6"
+      },
+      "action": {
+        "sequence": "11",
+        "representationSha": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expected": {
+        "reason": "sequence_conflict",
+        "replace": false,
+        "refreshObservation": false
+      }
+    },
+    {
+      "id": "sequence-safeint-plus-one",
+      "area": "sequence",
+      "initial": {
+        "sequence": "9007199254740991"
+      },
+      "action": {
+        "sequence": "9007199254740992"
+      },
+      "expected": {
+        "comparison": "greater",
+        "exactDecimal": "9007199254740992"
+      }
+    },
+    {
+      "id": "sequence-maximum",
+      "area": "sequence",
+      "initial": {
+        "sequence": "9223372036854775806"
+      },
+      "action": {
+        "sequence": "9223372036854775807"
+      },
+      "expected": {
+        "comparison": "greater",
+        "allocationAfter": "overflow"
+      }
+    },
+    {
+      "id": "sequence-overflow",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": "9223372036854775808"
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "sequence-invalid-9",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": "01"
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "sequence-invalid-10",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": "-1"
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "sequence-invalid-11",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": "1e3"
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "sequence-invalid-12",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": " 1"
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "sequence-invalid-13",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": "1.0"
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "sequence-invalid-14",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": ""
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "sequence-invalid-15",
+      "area": "sequence",
+      "initial": {
+        "sequence": "7"
+      },
+      "action": {
+        "sequence": 7
+      },
+      "expected": {
+        "reason": "schema_invalid",
+        "replace": false
+      }
+    },
+    {
+      "id": "lazy-B",
+      "area": "graph",
+      "initial": {
+        "pointer": "current",
+        "metadata": "manifest",
+        "choice": "progression.B"
+      },
+      "action": {
+        "download": [
+          "progression.B",
+          "shared"
+        ]
+      },
+      "expected": {
+        "requestedKeys": [
+          "progression.B",
+          "shared"
+        ],
+        "excludedKeys": [
+          "progression.A",
+          "Store",
+          "Packs"
+        ],
+        "reason": "activated",
+        "atomic": true
+      }
+    },
+    {
+      "id": "graph-metadata-only",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "validated": [
+          "current",
+          "manifest",
+          "selector"
+        ],
+        "availableAssets": []
+      },
+      "expected": {
+        "status": "metadata_only",
+        "exposedFeature": null,
+        "durableActivation": "old-B"
+      }
+    },
+    {
+      "id": "graph-representation",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "representation"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-semantic",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "semantic"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-cycle",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "cycle"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-missing_dependency",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "missing_dependency"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-scope",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "scope"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-unsupported_asset_schema",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "unsupported_asset_schema"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-duplicate_fields",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "duplicate_fields"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-path_escape",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "path_escape"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-declared_size",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "declared_size"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "graph-aggregate_size",
+      "area": "graph",
+      "initial": {
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "aggregate_size"
+      },
+      "expected": {
+        "status": "preserved",
+        "durableActivation": "old-B",
+        "exposeCandidate": false
+      }
+    },
+    {
+      "id": "cache-write",
+      "area": "cache",
+      "initial": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "write"
+      },
+      "expected": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B",
+        "candidateDurable": false
+      }
+    },
+    {
+      "id": "cache-quota",
+      "area": "cache",
+      "initial": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "quota"
+      },
+      "expected": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B",
+        "candidateDurable": false
+      }
+    },
+    {
+      "id": "cache-commit",
+      "area": "cache",
+      "initial": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "commit"
+      },
+      "expected": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B",
+        "candidateDurable": false
+      }
+    },
+    {
+      "id": "cache-process_death_before_commit",
+      "area": "cache",
+      "initial": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "failure": "process_death_before_commit"
+      },
+      "expected": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B",
+        "candidateDurable": false
+      }
+    },
+    {
+      "id": "cache-commit-restart",
+      "area": "cache",
+      "initial": {
+        "storeGeneration": "3",
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "candidate": "new-B",
+        "commitGeneration": "4",
+        "restart": true
+      },
+      "expected": {
+        "storeGeneration": "4",
+        "durableActivation": "new-B",
+        "revalidateBytesAndGraph": true
+      }
+    },
+    {
+      "id": "cache-raw-observation-restart",
+      "area": "cache",
+      "initial": {
+        "record": "cache",
+        "pointerRawObject": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+        "controlRawObject": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+        "rawWhitespaceDiffersFromCanonical": true
+      },
+      "action": {
+        "restart": true
+      },
+      "expected": {
+        "rawObjectsProtected": true,
+        "reconstructFromDto": false,
+        "sequence": "7",
+        "controlSequence": "11",
+        "validatorsMatchOriginalBytes": true
+      }
+    },
+    {
+      "id": "cache-missing-pointer-raw",
+      "area": "cache",
+      "initial": {
+        "record": "cache",
+        "completePinnedGraph": true
+      },
+      "action": {
+        "removeObject": "5f5ae1a6fa3370f3a4381ef118801ebed5008f9972f7ab1100a9e4410ddcedc5",
+        "restart": true,
+        "httpStatus": 304
+      },
+      "expected": {
+        "normalObservationUsable": false,
+        "accept304": false,
+        "reason": "no_cached_validator",
+        "boundedUnconditionalRetry": true,
+        "keepSafePin": true
+      }
+    },
+    {
+      "id": "cache-missing-control-raw",
+      "area": "cache",
+      "initial": {
+        "record": "cache",
+        "priorDenial": "analytics.send"
+      },
+      "action": {
+        "removeObject": "e04ecc2d632d6461221456e906f220d230d3c83406c9eb5fb88ce32db4211237",
+        "restart": true
+      },
+      "expected": {
+        "controlObservationFresh": false,
+        "optionalAnalytics": false,
+        "clearPriorDenial": false,
+        "reconstructFromDto": false
+      }
+    },
+    {
+      "id": "cache-tab-conflict",
+      "area": "cache",
+      "initial": {
+        "storeGeneration": "3"
+      },
+      "action": {
+        "writerA": {
+          "expectedGeneration": "3",
+          "newGeneration": "4"
+        },
+        "writerB": {
+          "expectedGeneration": "3",
+          "newGeneration": "4"
+        }
+      },
+      "expected": {
+        "commits": 1,
+        "loser": "reload_then_retry",
+        "lostUpdate": false
+      }
+    },
+    {
+      "id": "owner-late-result",
+      "area": "cache",
+      "initial": {
+        "ownerGeneration": "1",
+        "durableActivation": "old-B"
+      },
+      "action": {
+        "requestGeneration": "1",
+        "currentGeneration": "2"
+      },
+      "expected": {
+        "reason": "owner_changed",
+        "activate": false,
+        "publicControlPolling": true
+      }
+    },
+    {
+      "id": "owner-switch-preserves-old-pin",
+      "area": "cache",
+      "initial": {
+        "namespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "synthetic-owner",
+          "subjectId": "synthetic-subject-104"
+        },
+        "record": "cache",
+        "pinId": "0199e584-6400-7000-8000-000000000001",
+        "publicControlSequence": "11",
+        "deny": "analytics.send"
+      },
+      "action": {
+        "openNamespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "other-owner",
+          "subjectId": "other-subject"
+        },
+        "newOwnerGeneration": "2"
+      },
+      "expected": {
+        "oldNamespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "synthetic-owner",
+          "subjectId": "synthetic-subject-104"
+        },
+        "oldPinId": "0199e584-6400-7000-8000-000000000001",
+        "oldPinRetained": true,
+        "newNamespacePins": [],
+        "rebindOldPin": false,
+        "publicControlSequence": "11",
+        "analyticsSendAllowed": false,
+        "oldRequestsFenced": true
+      }
+    },
+    {
+      "id": "owner-reopen-same-stable-tuple",
+      "area": "cache",
+      "initial": {
+        "namespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "synthetic-owner",
+          "subjectId": "synthetic-subject-104"
+        },
+        "record": "cache",
+        "ownerGeneration": "1",
+        "pinId": "0199e584-6400-7000-8000-000000000001"
+      },
+      "action": {
+        "openNamespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "synthetic-owner",
+          "subjectId": "synthetic-subject-104"
+        },
+        "newOwnerGeneration": "2"
+      },
+      "expected": {
+        "restoredPinId": "0199e584-6400-7000-8000-000000000001",
+        "ownerGeneration": "2",
+        "ownershipChanged": false,
+        "revalidateGraph": true,
+        "oldRequestsFenced": true
+      }
+    },
+    {
+      "id": "same-owner-changed-subject-new-namespace",
+      "area": "cache",
+      "initial": {
+        "namespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "synthetic-owner",
+          "subjectId": "synthetic-subject-104"
+        },
+        "pinId": "0199e584-6400-7000-8000-000000000001"
+      },
+      "action": {
+        "openNamespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "synthetic-owner",
+          "subjectId": "changed-subject"
+        }
+      },
+      "expected": {
+        "newNamespacePins": [],
+        "oldPinRetained": true,
+        "rebindOldPin": false
+      }
+    },
+    {
+      "id": "shared-eviction-old-owner-pin",
+      "area": "cache",
+      "initial": {
+        "retainedNamespaces": [
+          {
+            "app": "synthetic",
+            "environment": "local",
+            "ownerId": "synthetic-owner",
+            "subjectId": "synthetic-subject-104"
+          },
+          {
+            "app": "synthetic",
+            "environment": "local",
+            "ownerId": "other-owner",
+            "subjectId": "other-subject"
+          }
+        ],
+        "oldNamespaceProtectedRefs": [
+          {
+            "key": "progression",
+            "revision": "B-1",
+            "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+          },
+          {
+            "key": "shared",
+            "revision": "1",
+            "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+          }
+        ],
+        "currentNamespace": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "other-owner",
+          "subjectId": "other-subject"
+        }
+      },
+      "action": {
+        "evictSharedObject": {
+          "key": "progression",
+          "revision": "B-1",
+          "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+        }
+      },
+      "expected": {
+        "evict": false,
+        "reason": "protected_capacity",
+        "oldPinRetained": true
+      }
+    },
+    {
+      "id": "public-namespace-no-private-state",
+      "area": "cache",
+      "initial": {
+        "record": "publicCache",
+        "owner": null,
+        "publicControlSequence": "11"
+      },
+      "action": {
+        "ownerSwitch": {
+          "app": "synthetic",
+          "environment": "local",
+          "ownerId": "other-owner",
+          "subjectId": "other-subject"
+        }
+      },
+      "expected": {
+        "activations": [],
+        "pins": [],
+        "publicControlSequence": "11",
+        "resetControlFloor": false
+      }
+    },
+    {
+      "id": "cache-protected-capacity",
+      "area": "cache",
+      "initial": {
+        "budgetBytes": 33554432,
+        "protectedBytes": 33554433
+      },
+      "action": {
+        "newContentBytes": 1
+      },
+      "expected": {
+        "reason": "protected_capacity",
+        "deleteProtected": false,
+        "admit": false
+      }
+    },
+    {
+      "id": "offline-pinned",
+      "area": "freshness",
+      "initial": {
+        "pin": "B-1",
+        "completeGraph": true,
+        "observationAgeSeconds": 86401
+      },
+      "action": {
+        "offline": true,
+        "newAttempt": false
+      },
+      "expected": {
+        "reason": "offline",
+        "pin": "B-1",
+        "newExperimentAdmission": false,
+        "optionalAnalytics": false
+      }
+    },
+    {
+      "id": "stale-unassigned",
+      "area": "freshness",
+      "initial": {
+        "pin": null,
+        "observationAgeSeconds": 86401
+      },
+      "action": {
+        "newAttempt": true
+      },
+      "expected": {
+        "status": "bundled",
+        "reason": "stale",
+        "newExperimentAdmission": false
+      }
+    },
+    {
+      "id": "freshness-exact-boundary",
+      "area": "freshness",
+      "initial": {
+        "observationAgeSeconds": 86400,
+        "trustedAnchor": true
+      },
+      "action": {
+        "evaluateFreshness": true
+      },
+      "expected": {
+        "fresh": true
+      }
+    },
+    {
+      "id": "clock-rollback",
+      "area": "freshness",
+      "initial": {
+        "anchorAtSeconds": 1791972002
+      },
+      "action": {
+        "nowSeconds": 1791971990
+      },
+      "expected": {
+        "reason": "unknown_time",
+        "keepSafePin": true,
+        "newExperimentAdmission": false,
+        "optionalAnalytics": false
+      }
+    },
+    {
+      "id": "http-304",
+      "area": "freshness",
+      "initial": {
+        "etag": "\"synthetic-7\"",
+        "cachedPointer": true,
+        "sequence": "7"
+      },
+      "action": {
+        "httpStatus": 304
+      },
+      "expected": {
+        "refreshObservation": true,
+        "sequence": "7",
+        "issuedAtChanges": false
+      }
+    },
+    {
+      "id": "http-304-missing",
+      "area": "freshness",
+      "initial": {
+        "etag": "\"synthetic-7\"",
+        "cachedPointer": false
+      },
+      "action": {
+        "httpStatus": 304
+      },
+      "expected": {
+        "reason": "no_cached_validator",
+        "boundedUnconditionalRetry": true
+      }
+    },
+    {
+      "id": "control-deny-write-failure",
+      "area": "control",
+      "initial": {
+        "durableSequence": "11",
+        "analyticsSendAllowed": true
+      },
+      "action": {
+        "sequence": "12",
+        "deny": "analytics.send",
+        "commit": "failure"
+      },
+      "expected": {
+        "memoryDeny": true,
+        "durableSequence": "11",
+        "reportedDurable": false
+      }
+    },
+    {
+      "id": "control-clear-write-failure",
+      "area": "control",
+      "initial": {
+        "durableSequence": "11",
+        "deny": "analytics.send"
+      },
+      "action": {
+        "sequence": "12",
+        "restrictions": [],
+        "commit": "failure"
+      },
+      "expected": {
+        "analyticsSendAllowed": false,
+        "durableSequence": "11",
+        "reportedDurable": false
+      }
+    },
+    {
+      "id": "control-expired-denial",
+      "area": "control",
+      "initial": {
+        "sequence": "11",
+        "deny": "analytics.send"
+      },
+      "action": {
+        "ageSeconds": 86401,
+        "httpStatus": 404
+      },
+      "expected": {
+        "analyticsSendAllowed": false,
+        "sequence": "11"
+      }
+    },
+    {
+      "id": "control-clear-intersection",
+      "area": "control",
+      "initial": {
+        "sequence": "11",
+        "deny": "analytics.send",
+        "consent": false
+      },
+      "action": {
+        "sequence": "12",
+        "restrictions": [],
+        "commit": "success"
+      },
+      "expected": {
+        "sequence": "12",
+        "analyticsSendAllowed": false,
+        "emergencyDenied": false
+      }
+    },
+    {
+      "id": "control-first-run",
+      "area": "control",
+      "initial": {
+        "control": null
+      },
+      "action": {
+        "normalPolicyAllowsAnalytics": true
+      },
+      "expected": {
+        "analyticsAllowed": false,
+        "gameplayAllowed": true
+      }
+    },
+    {
+      "id": "control-cap",
+      "area": "control",
+      "initial": {
+        "normalRatePermille": 400
+      },
+      "action": {
+        "emergencyRatePermille": 100
+      },
+      "expected": {
+        "effectiveRatePermille": 100,
+        "grants": false
+      }
+    },
+    {
+      "id": "enrollment-repeat",
+      "area": "enrollment",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "sameOwner": true,
+        "sameExperiment": true,
+        "operationId": "0199e584-6400-7000-8000-000000000006",
+        "attributesChanged": true
+      },
+      "expected": {
+        "status": "retained",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "reassigned": false
+      }
+    },
+    {
+      "id": "enrollment-different-operation",
+      "area": "enrollment",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "sameOwner": true,
+        "sameExperiment": true,
+        "operationId": "0199e584-6400-7000-8000-000000000007"
+      },
+      "expected": {
+        "status": "retained",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "count": 1
+      }
+    },
+    {
+      "id": "enrollment-pause-new",
+      "area": "enrollment",
+      "initial": {
+        "record": null
+      },
+      "action": {
+        "admitNewEnrollment": false
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "admission_paused",
+        "record": null
+      }
+    },
+    {
+      "id": "enrollment-pause-existing",
+      "area": "enrollment",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "admitNewEnrollment": false
+      },
+      "expected": {
+        "status": "retained",
+        "reason": "existing",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003"
+      }
+    },
+    {
+      "id": "enrollment-wrong-owner",
+      "area": "enrollment",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "accountId": "other-account"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_owner",
+        "leakRecord": false
+      }
+    },
+    {
+      "id": "instance-new-cycle",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment",
+        "instances": [
+          "instance"
+        ]
+      },
+      "action": {
+        "occurrenceKey": "trusted-occurrence-43",
+        "operationId": "0199e584-6400-7000-8000-000000000008"
+      },
+      "expected": {
+        "status": "created",
+        "newInstance": true,
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "enrollmentCount": 1
+      }
+    },
+    {
+      "id": "instance-nonexperiment",
+      "area": "instance",
+      "initial": {
+        "record": null
+      },
+      "action": {
+        "trustedOccurrence": "trusted-occurrence-43",
+        "selection": "default"
+      },
+      "expected": {
+        "status": "created",
+        "enrollmentId": null
+      }
+    },
+    {
+      "id": "instance-percentage-missing-enrollment",
+      "area": "instance",
+      "initial": {
+        "record": null
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": null
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-enrollment-mismatch-scope",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "mismatch": "scope"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-enrollment-mismatch-owner",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "mismatch": "owner"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-enrollment-mismatch-feature",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "mismatch": "feature"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-enrollment-mismatch-experiment_identity",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "mismatch": "experiment_identity"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-enrollment-mismatch-selection",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "mismatch": "selection"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-enrollment-mismatch-origin",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "mismatch": "origin"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-enrollment-mismatch-closure",
+      "area": "instance",
+      "initial": {
+        "record": "enrollment"
+      },
+      "action": {
+        "selection": "percentage",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "mismatch": "closure"
+      },
+      "expected": {
+        "status": "rejected",
+        "reason": "wrong_enrollment",
+        "createInstance": false,
+        "implicitlyEnroll": false
+      }
+    },
+    {
+      "id": "instance-retained-after-release",
+      "area": "instance",
+      "initial": {
+        "record": "instance"
+      },
+      "action": {
+        "currentReleaseSequence": "8",
+        "admitNewInstance": false,
+        "sameOccurrence": true
+      },
+      "expected": {
+        "status": "retained",
+        "instanceId": "0199e584-6400-7000-8000-000000000004",
+        "releaseSequence": "7",
+        "closure": [
+          {
+            "key": "progression",
+            "revision": "B-1",
+            "semanticSha": "726dae5b45f83705b1d98b71a71986b34c1bf31802695c9746b61435ce1152ce"
+          },
+          {
+            "key": "shared",
+            "revision": "1",
+            "semanticSha": "31cb930247617bffb9ef0bce05b5d83f1c9c471a45f59a000375a736ff38fa01"
+          }
+        ]
+      }
+    },
+    {
+      "id": "instance-same-occurrence-new-operation",
+      "area": "instance",
+      "initial": {
+        "record": "instance"
+      },
+      "action": {
+        "occurrenceKey": "trusted-occurrence-42",
+        "operationId": "0199e584-6400-7000-8000-000000000009"
+      },
+      "expected": {
+        "status": "retained",
+        "instanceId": "0199e584-6400-7000-8000-000000000004",
+        "count": 1
+      }
+    },
+    {
+      "id": "operation-body-conflict",
+      "area": "instance",
+      "initial": {
+        "operationId": "0199e584-6400-7000-8000-000000000009",
+        "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "action": {
+        "operationId": "0199e584-6400-7000-8000-000000000009",
+        "fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "expected": {
+        "status": "conflict",
+        "reason": "operation_conflict",
+        "commit": false
+      }
+    },
+    {
+      "id": "instance-transaction-rollback",
+      "area": "instance",
+      "initial": {
+        "count": 0
+      },
+      "action": {
+        "bind": true,
+        "owningFeatureTransaction": "rollback"
+      },
+      "expected": {
+        "count": 0,
+        "commit": false
+      }
+    },
+    {
+      "id": "enrollment-same-operation-refreshed-trust",
+      "area": "enrollment",
+      "initial": {
+        "operationId": "0199e584-6400-7000-8000-000000000011",
+        "stableInputs": {
+          "kind": "enrollment",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression"
+        },
+        "fingerprint": "8433e53371e8f4291d0f4d5eac832ebd47d7ef7b743fe6f0864937389b1b974c",
+        "record": "enrollment"
+      },
+      "action": {
+        "stableInputs": {
+          "kind": "enrollment",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression"
+        },
+        "trustedNowSeconds": 1792058403,
+        "trustedAttributesChanged": true,
+        "releaseSequence": "8",
+        "controlSequence": "12",
+        "admitNew": false
+      },
+      "expected": {
+        "fingerprint": "8433e53371e8f4291d0f4d5eac832ebd47d7ef7b743fe6f0864937389b1b974c",
+        "status": "retained",
+        "reason": "existing",
+        "replayBeforePolicyEvaluation": true,
+        "originalReleaseSequence": "7"
+      }
+    },
+    {
+      "id": "enrollment-same-operation-logical-conflict",
+      "area": "enrollment",
+      "initial": {
+        "stableInputs": {
+          "kind": "enrollment",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression"
+        },
+        "fingerprint": "8433e53371e8f4291d0f4d5eac832ebd47d7ef7b743fe6f0864937389b1b974c",
+        "record": "enrollment"
+      },
+      "action": {
+        "stableInputs": {
+          "kind": "enrollment",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "other-feature"
+        },
+        "fingerprint": "d10faea4bc1d4fec28a1fe95475b12401c68ab0dd09743d3b1ab07bde456252d"
+      },
+      "expected": {
+        "status": "conflict",
+        "reason": "operation_conflict",
+        "replayResult": false
+      }
+    },
+    {
+      "id": "instance-same-operation-refreshed-trust",
+      "area": "instance",
+      "initial": {
+        "operationId": "0199e584-6400-7000-8000-000000000012",
+        "stableInputs": {
+          "kind": "instance",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression",
+          "occurrenceKey": "trusted-occurrence-42",
+          "enrollmentId": "0199e584-6400-7000-8000-000000000003"
+        },
+        "fingerprint": "107f18a5dc761cb6aa281da07e72c961fe1afd9c6066d096b7a87dbcbe17b2ab",
+        "record": "instance"
+      },
+      "action": {
+        "stableInputs": {
+          "kind": "instance",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression",
+          "occurrenceKey": "trusted-occurrence-42",
+          "enrollmentId": "0199e584-6400-7000-8000-000000000003"
+        },
+        "trustedNowSeconds": 1792058403,
+        "trustedAttributesChanged": true,
+        "releaseSequence": "8",
+        "controlSequence": "12",
+        "admitNew": false
+      },
+      "expected": {
+        "fingerprint": "107f18a5dc761cb6aa281da07e72c961fe1afd9c6066d096b7a87dbcbe17b2ab",
+        "status": "retained",
+        "reason": "existing",
+        "replayBeforePolicyEvaluation": true,
+        "originalReleaseSequence": "7"
+      }
+    },
+    {
+      "id": "instance-same-operation-logical-conflict",
+      "area": "instance",
+      "initial": {
+        "stableInputs": {
+          "kind": "instance",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression",
+          "occurrenceKey": "trusted-occurrence-42",
+          "enrollmentId": "0199e584-6400-7000-8000-000000000003"
+        },
+        "fingerprint": "107f18a5dc761cb6aa281da07e72c961fe1afd9c6066d096b7a87dbcbe17b2ab",
+        "record": "instance"
+      },
+      "action": {
+        "stableInputs": {
+          "kind": "instance",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "other-feature",
+          "occurrenceKey": "trusted-occurrence-42",
+          "enrollmentId": "0199e584-6400-7000-8000-000000000003"
+        },
+        "fingerprint": "625e4cc2575f21c635c1367129093ad5d1d15538889fbf6f8c3591baee05f4ce"
+      },
+      "expected": {
+        "status": "conflict",
+        "reason": "operation_conflict",
+        "replayResult": false
+      }
+    },
+    {
+      "id": "instance-association-conflict",
+      "area": "instance",
+      "initial": {
+        "record": "instance",
+        "enrollmentId": "0199e584-6400-7000-8000-000000000003",
+        "occurrenceKey": "trusted-occurrence-42"
+      },
+      "action": {
+        "newOperationId": "0199e584-6400-7000-8000-000000000013",
+        "sameOccurrence": true,
+        "enrollmentId": null
+      },
+      "expected": {
+        "status": "conflict",
+        "reason": "occurrence_conflict",
+        "replaceInstance": false
+      }
+    },
+    {
+      "id": "instance-same-operation-association-conflict",
+      "area": "instance",
+      "initial": {
+        "stableInputs": {
+          "kind": "instance",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression",
+          "occurrenceKey": "trusted-occurrence-42",
+          "enrollmentId": "0199e584-6400-7000-8000-000000000003"
+        },
+        "fingerprint": "107f18a5dc761cb6aa281da07e72c961fe1afd9c6066d096b7a87dbcbe17b2ab"
+      },
+      "action": {
+        "stableInputs": {
+          "kind": "instance",
+          "app": "synthetic",
+          "environment": "local",
+          "canonicalAppId": "0199e584-6400-7000-8000-000000000010",
+          "accountId": "synthetic-account",
+          "featureKey": "progression",
+          "occurrenceKey": "trusted-occurrence-42",
+          "enrollmentId": null
+        },
+        "fingerprint": "77ef775040e2d91c4cdb913238d97f55d1352c9ac1b206be41150b9eedbf5bb0"
+      },
+      "expected": {
+        "status": "conflict",
+        "reason": "operation_conflict",
+        "commit": false
+      }
+    },
+    {
+      "id": "publish-upload-only",
+      "area": "publish",
+      "initial": {
+        "state": "prepared"
+      },
+      "action": {
+        "upload": "provider-7"
+      },
+      "expected": {
+        "state": "uploaded",
+        "active": false
+      }
+    },
+    {
+      "id": "publish-activation-lost-response",
+      "area": "publish",
+      "initial": {
+        "state": "activation_requested",
+        "preparedProviderVersion": "provider-7"
+      },
+      "action": {
+        "providerOutcome": "unknown"
+      },
+      "expected": {
+        "state": "reconciliation_needed",
+        "allocateNewSequence": false,
+        "blindRetryActivation": false
+      }
+    },
+    {
+      "id": "publish-lost-db-ack",
+      "area": "publish",
+      "initial": {
+        "state": "activation_requested",
+        "sequence": "7"
+      },
+      "action": {
+        "providerActiveVersion": "provider-7",
+        "manifestMatches": true,
+        "dbAcknowledgment": "lost"
+      },
+      "expected": {
+        "state": "reconciliation_needed",
+        "externalActive": true,
+        "resumeSameOperation": true
+      }
+    },
+    {
+      "id": "publish-reconcile-active",
+      "area": "publish",
+      "initial": {
+        "state": "reconciliation_needed",
+        "preparedProviderVersion": "provider-7"
+      },
+      "action": {
+        "providerActiveVersion": "provider-7",
+        "manifestMatches": true
+      },
+      "expected": {
+        "state": "active",
+        "sequence": "7",
+        "newUpload": false
+      }
+    },
+    {
+      "id": "publish-reconcile-not-active",
+      "area": "publish",
+      "initial": {
+        "state": "reconciliation_needed",
+        "preparedProviderVersion": "provider-7",
+        "expectedActiveProviderVersion": "provider-6"
+      },
+      "action": {
+        "providerActiveVersion": "provider-6"
+      },
+      "expected": {
+        "state": "uploaded",
+        "resumeSameOperation": true,
+        "newSequence": false
+      }
+    },
+    {
+      "id": "publish-manual-drift",
+      "area": "publish",
+      "initial": {
+        "state": "uploaded",
+        "expectedActiveProviderVersion": "provider-6"
+      },
+      "action": {
+        "providerActiveVersion": "manual-8"
+      },
+      "expected": {
+        "state": "reconciliation_needed",
+        "reason": "provider_drift",
+        "activate": false
+      }
+    },
+    {
+      "id": "publish-same-operation",
+      "area": "publish",
+      "initial": {
+        "operationId": "0199e584-6400-7000-8000-000000000002",
+        "fingerprint": "a1b1a8689c05a1ee4a7dc350a51801a53a2eec617620a7e5dd43c0046b37da6d"
+      },
+      "action": {
+        "operationId": "0199e584-6400-7000-8000-000000000002",
+        "fingerprint": "a1b1a8689c05a1ee4a7dc350a51801a53a2eec617620a7e5dd43c0046b37da6d"
+      },
+      "expected": {
+        "sameSequence": "7",
+        "sameOperation": true
+      }
+    },
+    {
+      "id": "publish-operation-conflict",
+      "area": "publish",
+      "initial": {
+        "operationId": "0199e584-6400-7000-8000-000000000002",
+        "fingerprint": "a1b1a8689c05a1ee4a7dc350a51801a53a2eec617620a7e5dd43c0046b37da6d"
+      },
+      "action": {
+        "operationId": "0199e584-6400-7000-8000-000000000002",
+        "fingerprint": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expected": {
+        "reason": "operation_conflict",
+        "upload": false
+      }
+    },
+    {
+      "id": "publish-forward-rollback",
+      "area": "publish",
+      "initial": {
+        "sequence": "8",
+        "retained": [
+          "A-1",
+          "B-1",
+          "B-2"
+        ]
+      },
+      "action": {
+        "select": "B-1"
+      },
+      "expected": {
+        "sequence": "9",
+        "retained": [
+          "A-1",
+          "B-1",
+          "B-2"
+        ],
+        "deleteUrls": false,
+        "controlSequenceChanges": false
+      }
+    }
+  ]
+}

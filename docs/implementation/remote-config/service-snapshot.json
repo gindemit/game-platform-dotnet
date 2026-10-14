@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "sha256",
+  "contractVersion": "remote-config-service-1.0.0",
+  "files": {
+    "remote-config/service-v1.json": "0d461e3b785e6becdb920d3d6c0da69f13659654f185dd97a3d66475b55f6b2c",
+    "remote-config/service-vectors-v1.json": "1b95b7ed7bc8d549f53d197c56b881d0d3b99c05b73c7f23ef521d386e98a78e",
+    "remote-config/SERVICE.md": "1d569d4e7b62e68f82e640ca77a3c81bb535026507505d30ea3f55ffc43f8e20"
+  }
+}

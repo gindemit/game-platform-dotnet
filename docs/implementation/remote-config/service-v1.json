@@ -1,0 +1,1669 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:game-platform:remote-config:service:v1",
+  "title": "Platform remote configuration service v1 operational DTOs",
+  "description": "Strict structural schemas. SERVICE.md adds mandatory byte, checked signed64, semantic, graph, authority and state invariants; JSON Schema alone is insufficient.",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/current"
+    },
+    {
+      "$ref": "#/definitions/manifest"
+    },
+    {
+      "$ref": "#/definitions/control"
+    },
+    {
+      "$ref": "#/definitions/cache"
+    },
+    {
+      "$ref": "#/definitions/operation"
+    },
+    {
+      "$ref": "#/definitions/enrollment"
+    },
+    {
+      "$ref": "#/definitions/instance"
+    },
+    {
+      "$ref": "#/definitions/lifecycle"
+    }
+  ],
+  "definitions": {
+    "sequence": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,17}|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6]|9223372036854775807)$",
+      "maxLength": 19
+    },
+    "publicationSequence": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/sequence"
+        },
+        {
+          "not": {
+            "const": "0"
+          }
+        }
+      ]
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "revision",
+        "semanticSha"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "semanticSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "representationSha",
+        "semanticSha",
+        "decodedBytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^(assets|selectors|manifests)/[0-9a-f]{64}\\.json$"
+        },
+        "representationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "semanticSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "decodedBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "revision",
+        "semanticSha",
+        "path",
+        "representationSha",
+        "decodedBytes",
+        "dependencies"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "semanticSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^(assets|selectors|manifests)/[0-9a-f]{64}\\.json$"
+        },
+        "representationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "decodedBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/reference"
+          },
+          "maxItems": 64
+        }
+      }
+    },
+    "current": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "app",
+        "environment",
+        "sequence",
+        "issuedAtSeconds",
+        "release",
+        "manifest"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.current.v1"
+        },
+        "app": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "sequence": {
+          "$ref": "#/definitions/publicationSequence"
+        },
+        "issuedAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "manifest": {
+          "$ref": "#/definitions/file"
+        }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "app",
+        "environment",
+        "release",
+        "issuedAtSeconds",
+        "selector",
+        "assets",
+        "retained"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.release.v1"
+        },
+        "app": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "issuedAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "selector": {
+          "$ref": "#/definitions/file"
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/asset"
+          },
+          "maxItems": 4096
+        },
+        "retained": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/reference"
+          },
+          "maxItems": 4096
+        }
+      }
+    },
+    "restriction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "effect",
+        "ratePermille"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "enum": [
+            "analytics.collect",
+            "analytics.send",
+            "analytics.sample",
+            "configuration.newEnrollment",
+            "configuration.newInstance"
+          ]
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "deny",
+            "cap"
+          ]
+        },
+        "ratePermille": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "effect": {
+                "const": "deny"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "ratePermille": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "key": {
+                "const": "analytics.sample"
+              },
+              "ratePermille": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            }
+          }
+        }
+      ]
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "app",
+        "environment",
+        "sequence",
+        "issuedAtSeconds",
+        "restrictions"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.control.v1"
+        },
+        "app": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "sequence": {
+          "$ref": "#/definitions/publicationSequence"
+        },
+        "issuedAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "restrictions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/restriction"
+          },
+          "maxItems": 5
+        }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observedAtSeconds",
+        "anchorAtSeconds",
+        "status"
+      ],
+      "properties": {
+        "observedAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "anchorAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "trusted",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "normalObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pointer",
+        "pointerRepresentationSha",
+        "manifestRepresentationSha",
+        "selectorRepresentationSha",
+        "etag",
+        "time"
+      ],
+      "properties": {
+        "pointer": {
+          "$ref": "#/definitions/current"
+        },
+        "pointerRepresentationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "manifestRepresentationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "selectorRepresentationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "etag": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "time": {
+          "$ref": "#/definitions/anchor"
+        }
+      }
+    },
+    "controlObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document",
+        "representationSha",
+        "etag",
+        "time"
+      ],
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/control"
+        },
+        "representationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "etag": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "time": {
+          "$ref": "#/definitions/anchor"
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ownerId",
+        "subjectId",
+        "generation"
+      ],
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "subjectId": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "generation": {
+          "$ref": "#/definitions/sequence"
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "featureKey",
+        "reference",
+        "variant",
+        "value",
+        "reason",
+        "ruleId",
+        "bucket",
+        "experimentKey",
+        "experimentVersion",
+        "dependencies"
+      ],
+      "properties": {
+        "featureKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "reference": {
+          "$ref": "#/definitions/reference"
+        },
+        "variant": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "maxLength": 4096
+            },
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "disabled",
+            "default",
+            "rule",
+            "percentage"
+          ]
+        },
+        "ruleId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bucket": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 99
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "experimentKey": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "experimentVersion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/reference"
+          },
+          "maxItems": 64
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "reason": {
+                "const": "percentage"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "bucket": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99
+              },
+              "experimentKey": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "experimentVersion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "bucket": {
+                "type": "null"
+              },
+              "experimentKey": {
+                "type": "null"
+              },
+              "experimentVersion": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "reason": {
+                "enum": [
+                  "default",
+                  "disabled"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "ruleId": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "reason": {
+                "const": "rule"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "ruleId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            }
+          }
+        }
+      ]
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "releaseSequence",
+        "manifestRepresentationSha",
+        "selectorRepresentationSha"
+      ],
+      "properties": {
+        "releaseSequence": {
+          "$ref": "#/definitions/publicationSequence"
+        },
+        "manifestRepresentationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "selectorRepresentationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "activation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selection",
+        "origin",
+        "closure",
+        "durable"
+      ],
+      "properties": {
+        "selection": {
+          "$ref": "#/definitions/selection"
+        },
+        "origin": {
+          "$ref": "#/definitions/origin"
+        },
+        "closure": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/reference"
+          },
+          "maxItems": 64
+        },
+        "durable": {
+          "const": true
+        }
+      }
+    },
+    "pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pinId",
+        "activation",
+        "createdAtSeconds"
+      ],
+      "properties": {
+        "pinId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "activation": {
+          "$ref": "#/definitions/activation"
+        },
+        "createdAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "cachedObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "representationSha",
+        "decodedBytes",
+        "lastUsedAtSeconds"
+      ],
+      "properties": {
+        "representationSha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "decodedBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1048576
+        },
+        "lastUsedAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "cache": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "app",
+        "environment",
+        "storeGeneration",
+        "owner",
+        "normal",
+        "control",
+        "objects",
+        "activations",
+        "pins"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.cache-commit.v1"
+        },
+        "app": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "storeGeneration": {
+          "$ref": "#/definitions/sequence"
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/owner"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "normal": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/normalObservation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "control": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/controlObservation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cachedObject"
+          },
+          "maxItems": 4096
+        },
+        "activations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activation"
+          },
+          "maxItems": 64
+        },
+        "pins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pin"
+          },
+          "maxItems": 4096
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "owner": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "activations": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "pins": {
+                "type": "array",
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "app",
+        "environment",
+        "operationId",
+        "sequence",
+        "fingerprint",
+        "state",
+        "manifest",
+        "expectedActiveProviderVersion",
+        "preparedProviderVersion",
+        "observedActiveProviderVersion",
+        "failureReason",
+        "updatedAtSeconds"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.publish-operation.v1"
+        },
+        "app": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "operationId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "sequence": {
+          "$ref": "#/definitions/publicationSequence"
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "prepared",
+            "uploaded",
+            "activation_requested",
+            "active",
+            "reconciliation_needed",
+            "failed"
+          ]
+        },
+        "manifest": {
+          "$ref": "#/definitions/file"
+        },
+        "expectedActiveProviderVersion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "preparedProviderVersion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observedActiveProviderVersion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failureReason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "capacity",
+                "provider_rejected",
+                "provider_drift",
+                "outcome_unknown",
+                "acknowledgment_lost",
+                "inventory_mismatch"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "updatedAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "prepared"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "preparedProviderVersion": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "uploaded",
+                  "activation_requested",
+                  "active"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "preparedProviderVersion": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "prepared",
+                  "uploaded",
+                  "activation_requested",
+                  "active"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "failureReason": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "reconciliation_needed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "failureReason": {
+                "type": "string",
+                "enum": [
+                  "outcome_unknown",
+                  "acknowledgment_lost",
+                  "provider_drift"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "failed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "failureReason": {
+                "type": "string",
+                "enum": [
+                  "capacity",
+                  "provider_rejected",
+                  "inventory_mismatch"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "enrollmentRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "app",
+        "environment",
+        "accountId",
+        "subjectId",
+        "enrollmentId",
+        "experimentKey",
+        "experimentVersion",
+        "selection",
+        "origin",
+        "closure",
+        "enrolledAtSeconds"
+      ],
+      "properties": {
+        "app": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "accountId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "subjectId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "enrollmentId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "experimentKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "experimentVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "selection": {
+          "$ref": "#/definitions/selection"
+        },
+        "origin": {
+          "$ref": "#/definitions/origin"
+        },
+        "closure": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/reference"
+          },
+          "maxItems": 64
+        },
+        "enrolledAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "enrollment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "status",
+        "reason",
+        "record"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.enrollment-result.v1"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "created",
+            "retained",
+            "rejected",
+            "conflict"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "created",
+            "existing",
+            "not_in_experiment",
+            "admission_paused",
+            "stale_policy",
+            "unknown_time",
+            "attributes_invalid",
+            "wrong_owner",
+            "operation_conflict",
+            "definition_conflict"
+          ]
+        },
+        "record": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/enrollmentRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "created"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "created"
+                ]
+              },
+              "record": {
+                "$ref": "#/definitions/enrollmentRecord"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "retained"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "existing"
+                ]
+              },
+              "record": {
+                "$ref": "#/definitions/enrollmentRecord"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "conflict"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "operation_conflict",
+                  "definition_conflict"
+                ]
+              },
+              "record": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "rejected"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "not_in_experiment",
+                  "admission_paused",
+                  "stale_policy",
+                  "unknown_time",
+                  "attributes_invalid",
+                  "wrong_owner"
+                ]
+              },
+              "record": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "instanceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "app",
+        "environment",
+        "accountId",
+        "instanceId",
+        "occurrenceKey",
+        "featureKey",
+        "enrollmentId",
+        "selection",
+        "origin",
+        "closure",
+        "createdAtSeconds"
+      ],
+      "properties": {
+        "app": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "accountId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "instanceId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "occurrenceKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "featureKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "enrollmentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection": {
+          "$ref": "#/definitions/selection"
+        },
+        "origin": {
+          "$ref": "#/definitions/origin"
+        },
+        "closure": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/reference"
+          },
+          "maxItems": 64
+        },
+        "createdAtSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "selection": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "const": "percentage"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "enrollmentId": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "enrollmentId": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "instance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "status",
+        "reason",
+        "record"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.instance-result.v1"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "created",
+            "retained",
+            "rejected",
+            "conflict"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "created",
+            "existing",
+            "admission_paused",
+            "stale_policy",
+            "unknown_time",
+            "attributes_invalid",
+            "wrong_owner",
+            "wrong_enrollment",
+            "operation_conflict",
+            "occurrence_conflict"
+          ]
+        },
+        "record": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/instanceRecord"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "created"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "created"
+                ]
+              },
+              "record": {
+                "$ref": "#/definitions/instanceRecord"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "retained"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "existing"
+                ]
+              },
+              "record": {
+                "$ref": "#/definitions/instanceRecord"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "conflict"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "operation_conflict",
+                  "occurrence_conflict"
+                ]
+              },
+              "record": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "rejected"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "admission_paused",
+                  "stale_policy",
+                  "unknown_time",
+                  "attributes_invalid",
+                  "wrong_owner",
+                  "wrong_enrollment"
+                ]
+              },
+              "record": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "status",
+        "reason",
+        "durable",
+        "featureKey",
+        "origin"
+      ],
+      "properties": {
+        "schema": {
+          "const": "platform.remote-config.lifecycle-result.v1"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "metadata_only",
+            "bundled",
+            "preserved",
+            "rejected",
+            "ephemeral"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "activated",
+            "restored",
+            "fresh",
+            "stale",
+            "offline",
+            "unknown_time",
+            "missing_feature",
+            "not_modified",
+            "replay",
+            "lower_sequence",
+            "sequence_conflict",
+            "scope_mismatch",
+            "schema_invalid",
+            "integrity",
+            "graph_invalid",
+            "bounds",
+            "unavailable",
+            "cancelled",
+            "owner_changed",
+            "storage_failure",
+            "quota",
+            "protected_capacity",
+            "no_cached_validator",
+            "ephemeral_identity"
+          ]
+        },
+        "durable": {
+          "type": "boolean"
+        },
+        "featureKey": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/origin"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

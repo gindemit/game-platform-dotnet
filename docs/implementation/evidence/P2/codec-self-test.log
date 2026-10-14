@@ -1,0 +1,4 @@
+{"mode":"self-test","schemaCases":73,"fingerprintCases":32,"hostileJsonCases":5,"peerInteroperability":"unverified","production":"unavailable"}
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings

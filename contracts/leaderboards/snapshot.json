@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "sha256",
+  "contractVersion": "leaderboards-1.0.0",
+  "files": {
+    "v1/schemas/leaderboards.schema.json": "550d62fa575db0816021145115c2f7933a656c2a025861eee9c161c7b081883b",
+    "leaderboards/fixtures.json": "cab49970ed72478674ecbe99afbf8d0b64e3856d1901a5a1f46554055729fd0c"
+  }
+}

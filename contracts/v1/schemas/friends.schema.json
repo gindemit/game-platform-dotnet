@@ -1,0 +1,1107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/v1/schemas/friends.schema.json",
+  "title": "Authenticated Friends and bounded zero-score friend rankings",
+  "$defs": {
+    "publicCode": {
+      "type": "string",
+      "pattern": "^[0-9ABCDEFGHJKMNPQRSTVWXYZ]{12}$"
+    },
+    "publicPlayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "playerId",
+        "displayName",
+        "avatarKey"
+      ],
+      "properties": {
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "avatarKey": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "friend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "player",
+        "sinceMilliseconds"
+      ],
+      "properties": {
+        "player": {
+          "$ref": "#/$defs/publicPlayer"
+        },
+        "sinceMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "blockedPlayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "player",
+        "blockedAtMilliseconds"
+      ],
+      "properties": {
+        "player": {
+          "$ref": "#/$defs/publicPlayer"
+        },
+        "blockedAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "senderPlayerId",
+        "recipientPlayerId",
+        "status",
+        "createdAtMilliseconds",
+        "expiresAtMilliseconds",
+        "peer"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "senderPlayerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "recipientPlayerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "accepted",
+            "declined",
+            "cancelled",
+            "expired"
+          ]
+        },
+        "createdAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "expiresAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "peer": {
+          "$ref": "#/$defs/publicPlayer"
+        }
+      }
+    },
+    "queryRequest": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "view",
+            "pageSize"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "view": {
+              "const": "mine"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "view",
+            "pageSize"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "view": {
+              "const": "friends"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "view",
+            "pageSize"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "view": {
+              "const": "incoming"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "view",
+            "pageSize"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "view": {
+              "const": "outgoing"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "view",
+            "pageSize"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "view": {
+              "const": "blocked"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "view",
+            "pageSize"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "view": {
+              "const": "suggestions"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "view",
+            "pageSize",
+            "publicCode"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "view": {
+              "const": "lookup"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "publicCode": {
+              "$ref": "#/$defs/publicCode"
+            }
+          }
+        }
+      ]
+    },
+    "commandRequest": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "send"
+            },
+            "payload": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "publicCode"
+                  ],
+                  "properties": {
+                    "publicCode": {
+                      "$ref": "#/$defs/publicCode"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "targetPlayerId"
+                  ],
+                  "properties": {
+                    "targetPlayerId": {
+                      "$ref": "common.schema.json#/$defs/uuid"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "accept"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "common.schema.json#/$defs/uuidV7"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "decline"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "common.schema.json#/$defs/uuidV7"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "cancel"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "requestId"
+              ],
+              "properties": {
+                "requestId": {
+                  "$ref": "common.schema.json#/$defs/uuidV7"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "remove"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "targetPlayerId"
+              ],
+              "properties": {
+                "targetPlayerId": {
+                  "$ref": "common.schema.json#/$defs/uuid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "block"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "targetPlayerId"
+              ],
+              "properties": {
+                "targetPlayerId": {
+                  "$ref": "common.schema.json#/$defs/uuid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "unblock"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "targetPlayerId"
+              ],
+              "properties": {
+                "targetPlayerId": {
+                  "$ref": "common.schema.json#/$defs/uuid"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "protocolVersion",
+            "operationId",
+            "action",
+            "payload"
+          ],
+          "properties": {
+            "protocolVersion": {
+              "const": 1
+            },
+            "operationId": {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            "action": {
+              "const": "set_privacy"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "allowRequests"
+              ],
+              "properties": {
+                "allowRequests": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "appId",
+        "accountId",
+        "playerId",
+        "serverTimeMilliseconds",
+        "cacheExpiresAtMilliseconds",
+        "operationId",
+        "view",
+        "revision",
+        "graphRevision",
+        "myPublicCode",
+        "allowRequests",
+        "friendCount",
+        "incomingCount",
+        "outgoingCount",
+        "friends",
+        "requests",
+        "blockedPlayers",
+        "suggestions",
+        "player",
+        "request",
+        "relationship",
+        "relationshipRequestId",
+        "nextCursor",
+        "resultCode"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "appId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "accountId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "serverTimeMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "cacheExpiresAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "operationId": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "view": {
+          "oneOf": [
+            {
+              "enum": [
+                "mine",
+                "friends",
+                "incoming",
+                "outgoing",
+                "blocked",
+                "suggestions",
+                "lookup"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "graphRevision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "myPublicCode": {
+          "$ref": "#/$defs/publicCode"
+        },
+        "allowRequests": {
+          "type": "boolean"
+        },
+        "friendCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 200
+        },
+        "incomingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "outgoingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "friends": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/friend"
+          }
+        },
+        "requests": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/request"
+          }
+        },
+        "blockedPlayers": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/blockedPlayer"
+          }
+        },
+        "suggestions": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/publicPlayer"
+          }
+        },
+        "player": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/publicPlayer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/request"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "relationship": {
+          "oneOf": [
+            {
+              "enum": [
+                "self",
+                "none",
+                "friend",
+                "outgoing_pending",
+                "incoming_pending"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "relationshipRequestId": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nextCursor": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resultCode": {
+          "oneOf": [
+            {
+              "enum": [
+                "send",
+                "accept",
+                "decline",
+                "cancel",
+                "remove",
+                "block",
+                "unblock",
+                "set_privacy"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "rankingQueryRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "boardId",
+        "limit"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "boardId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "cursor": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        }
+      }
+    },
+    "rankingEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "participantId",
+        "rank",
+        "score",
+        "displayName",
+        "avatarKey",
+        "badgeId",
+        "countryCode"
+      ],
+      "properties": {
+        "participantId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "rank": {
+          "$ref": "common.schema.json#/$defs/positiveInt64"
+        },
+        "score": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "avatarKey": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "badgeId": {
+          "type": "null"
+        },
+        "countryCode": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "rankingQueryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "appId",
+        "accountId",
+        "playerId",
+        "boardId",
+        "participantKind",
+        "scope",
+        "countryCode",
+        "periodId",
+        "periodStart",
+        "periodEnd",
+        "resetAt",
+        "snapshotId",
+        "snapshotCreatedAt",
+        "expiresAt",
+        "serverTime",
+        "scoreAuthority",
+        "graphRevision",
+        "snapshotLimit",
+        "cohortSize",
+        "entries",
+        "nextCursor",
+        "self",
+        "countrySelection"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "appId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "accountId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "boardId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "participantKind": {
+          "const": "player"
+        },
+        "scope": {
+          "const": "friends"
+        },
+        "countryCode": {
+          "type": "null"
+        },
+        "periodId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16
+        },
+        "periodStart": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "periodEnd": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "resetAt": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "snapshotId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "snapshotCreatedAt": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "expiresAt": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "scoreAuthority": {
+          "const": "client_trusted_unvalidated"
+        },
+        "graphRevision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "snapshotLimit": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 201
+        },
+        "cohortSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 201
+        },
+        "entries": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/rankingEntry"
+          }
+        },
+        "nextCursor": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "self": {
+          "$ref": "#/$defs/rankingEntry"
+        },
+        "countrySelection": {
+          "type": "null"
+        }
+      }
+    },
+    "invalidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityType",
+        "entityKey",
+        "revision",
+        "kind"
+      ],
+      "properties": {
+        "entityType": {
+          "const": "friends"
+        },
+        "entityKey": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "playerId"
+          ],
+          "properties": {
+            "playerId": {
+              "$ref": "common.schema.json#/$defs/uuid"
+            }
+          }
+        },
+        "revision": {
+          "$ref": "common.schema.json#/$defs/positiveInt64"
+        },
+        "kind": {
+          "const": "invalidation"
+        }
+      }
+    },
+    "change": {
+      "oneOf": [
+        {
+          "$ref": "projection.schema.json#/$defs/change"
+        },
+        {
+          "$ref": "teams.schema.json#/$defs/invalidation"
+        },
+        {
+          "$ref": "#/$defs/invalidation"
+        }
+      ]
+    },
+    "pullGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feedRevision",
+        "changes"
+      ],
+      "properties": {
+        "feedRevision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "changes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/change"
+          }
+        }
+      }
+    },
+    "pullPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "changes",
+        "nextCursor",
+        "hasMore",
+        "resetRequired",
+        "committedThrough",
+        "serverTime"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "changes": {
+          "type": "array",
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/pullGroup"
+          }
+        },
+        "nextCursor": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "resetRequired": {
+          "const": false
+        },
+        "committedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        }
+      }
+    },
+    "pullResponse": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/pullPage"
+        },
+        {
+          "$ref": "pull.schema.json#/$defs/reset"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,77 @@
+# SDK handoff — campaign recovery and package delivery
+
+## Current delivery — 2026-10-12
+
+Use [SDK current status](../IMPLEMENTATION_STATUS.md) for the current identity and
+acceptance summary. Reviewed source `020695b5ead664f829ed866867100faa87b1f444`
+is delivered as `0.1.0-dev.144`, Git UPM
+`281ce9b6c45682c1caa32cd6ca52a756734cbcff`. Unity's manifest, lock and strict
+import verifier select that delivery. The [October 12 consumer receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/PlatformValidation/2026-10-12-sdk-dev144.md)
+records both WebGL candidates, configured Android shell tests and isolated native
+Android qualification across two physical launches. Its physical evidence is
+native-only; hosted recovery, ordinary-device gameplay and portal certification
+were not rerun by that validation.
+
+Inspect/recover production providers, durable recovery journal and corrected
+successor adoption are implemented and delivered. Unity's reviewed admission
+witness, verified-missing-database recovery host and explicit linker activation
+are integrated. Real joined PostgreSQL/hosted successor recovery, including its
+failure/retry and complete-bootstrap-to-gameplay journey, remains separate from
+the synthetic/native proof. See [recovery implementation and limits](../work/stream-recovery-2026-10-11/IMPLEMENTATION.md)
+and the [consumer recovery receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/StreamRecovery/VALIDATION-2026-10-11.md).
+
+The desktop [Supabase Auth executor](../../src/GamePlatform.Transport.Http/Supabase/BoundedSupabaseAuthHttpExecutor.cs)
+still caps response headers at 16. The [Teams DEV receipt](https://github.com/gindemit/MrSquareUnity/blob/main/Docs/Implementation/DualEdition/2026-10-11-teams-device.md)
+records a real refresh with 20 valid headers rejected before its rotated credential
+could be retained, and leaves that desktop defect unresolved. This requires a
+bounded transport repair and rotation-retention regression; Android's separate
+executor and corrected compression handling have their own passing evidence.
+
+The sections below are dated historical receipts. Their then-current pins and
+pending statements are not the latest consumer inventory. Preserve each result's
+original scope; current delivery does not promote broad P4 or production gates.
+
+## 2026-10-04 hosted-dev status
+
+Latest SDK main/generated UPM is `5d3819d` from source `6915723`; Unity retains `cae1a21` pending new-pin Editor qualification. The currently recorded hosted backend function source is `f317ced` on project `anvbhjteuxaufnqkbhju`, with migrations 001–018 recorded. Hosted request validation was reached by a temporary real JWT, but complete provision/bootstrap and SDK integration have not passed. The Data API disablement evidence includes a conflicting CLI diagnostic, so it remains a recorded caveat. The [retained-dev preflight](../../integration/HostedDevSmoke/README.md) performs only local target/token-claim checks; a run-owned app fixture, exact-ID cleanup and nonauthor review are needed before any hosted write. This status does not move Unity's package pin or earlier acceptance gates.
+
+## 2026-10-03 bounded maintainability delivery
+
+Reviewed C# source commit `9fddbe6` is delivered in canonical Git UPM `cae1a21`, with source and package commits kept separate. Two clean package builds were byte-identical; the bundle manifest SHA-256 is `d1b912d5791fd8aa92eaae26477364a2cb83a07430db4088e01f109745a13bf9` and UPM content manifest SHA-256 is `fb83cea0e81449f20cb9de277238c2f357f464b60fde07203e01ca3b3f2ffc3c`. Fresh nonauthor source and payload reviews passed. The runtime edits are Roslyn-token-preserving formatting in sync and progression; the selected build formatting policy and focused/full SDK tests passed. Unity's updated manifest/lock/import verifier pin `cae1a21`; an isolated Unity Editor resolved it and passed 74/74 focused account-scope EditMode tests. This does not update the earlier WebLite artifact or close IL2CPP, device, portal or physical acceptance. Exact [maintenance evidence](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/evidence/maintainability-2026-10-03.md) and the [current checkpoint](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/checkpoint.md) record limits.
+
+## 2026-10-02 bounded WebLite and shell continuation
+
+Unity main through reviewed `a2ee404` adds local synthetic WebLite analytics, a Player-only size profile, default-off ON-33 shell fault/layout coverage, early durable Next selection and browser adapter corrections. These are game-owned changes; canonical Git UPM `e7c03c5` remains pinned and no SDK runtime input changed. Fresh preanalytics WebLite baseline measured 17,230,826 release bytes. Exact stripped local six-file Player candidate at `a2ee404` measures **10,437,529 bytes (9.954003 MiB)** with Brotli, High stripping, size code generation and Disk Size LTO. Full EditMode passed 590/590 at unchanged C# runtime; corrected full graphical PlayMode passed 158 with 10 configured skips (the preceding two failed new test assertions are retained). Actual local stripped browser plus disposable PostgreSQL completed explicit synthetic resume/restart/Garden 1 completion/Next/reload/reconnect/consent-withdrawal reporting: 11 deduplicated events, 1 completion, 1 restart and 13,976 completed active milliseconds. The same exact muted Player artifact completed 40/40 local Chrome gardens, final Next showed campaign complete, and replay kept 40 completed slots. Actual stripped browser also passed local commit/lost-ack deduplication, bounded queue overflow, denied analytics storage, campaign-save write denial with durable reload, a CDP touch swipe and a local iframe; five fresh first attempts followed by three tier-2 restarts exposed and accepted a tier-1 alternative with new attempt/content. Separate exact-source Review WebLite visibly navigated Gardens 1→2→3. Resize emulation triggered a safe checkpoint/reload with progress intact; responsive layout, Edge/physical mobile, fullscreen/audio output and portal acceptance remain open. Real-player telemetry and public release remain disabled; local Chrome and fixture tests do not establish portal or physical Android acceptance. ON-33 joined real Android fault/physical lifecycle remains open. ON-32 source remains delivered, ON-23 physical acceptance remains open, ordinary Player shell activation remains off, and no exact retained-device lease/configuration has been established. The backend [current continuation](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/NEXT-SESSION-2026-10-01.md) records exact heads, evidence and remaining gates.
+## Earlier 2026-10-02 continuation (historical scope)
+
+Backend `6a36d9e`, SDK `cf34456`, and Unity `06ae309` match fetched remote `main` heads. The qualified Unity runtime source is still `1a069e5`, consuming canonical SDK UPM `e7c03c5`. Unity `4741e39` delivers a read-only Packs preview in the opt-in shell; its reviewed final candidate passed focused EditMode 24/24, full EditMode 587/587 and graphical PlayMode 193 passed/0 failed/10 configured skips, with one opt-in Android APK built. [Exact preview evidence](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/evidence/packs-preview-2026-10-02.json) records hashes and log/XML paths. No SDK runtime payload changed, so no UPM regeneration or SDK test rerun was needed. Explicit same-entry recovery remains implemented and reviewed. The 15 Windows A/B/C runs are complete; cleanup contention is recorded separately from the unproven immediate-relaunch product issue. Configured Android recovery/offline/fault/pending/current-schema and physical shell acceptance remain open. Ordinary shell activation, broad P4 and distribution remain held. See the backend [current continuation](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/NEXT-SESSION-2026-10-01.md).
+
+---
+
+## 2026-10-01 Unity consumption update
+
+Unity main `1a069e5` pins and import-verifies canonical UPM `e7c03c5`; its reviewed default-off Player shell changes no SDK runtime payload, so no package regeneration was needed. The exact Unity source plus this package passed 585/585 full EditMode and 193 passed, 0 failed, 10 skipped full graphical PlayMode. Six Android/WebLite builds succeeded. Backend [test results](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/evidence/test-results-exact-1a069e5-2026-10-01.json) and [artifact manifest](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/evidence/artifact-manifest-exact-1a069e5-2026-10-01.json) pin the evidence. Configured physical Android/live-service and shell acceptance remain open; ordinary shell activation remains held.
+
+---
+
+2026-10-01. GOAL=CAMPAIGN_LOCAL; NEXT=PLAYER_SHELL_FOUNDATION. The owner approved explicit same-account recovery and pre-release schema changes without backward compatibility. Current cross-repository authority is the backend [next session](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/NEXT-SESSION-2026-10-01.md), [storage/schema contract](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/STORAGE-SCHEMA-2026-10-01.md), [checkpoint](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/checkpoint.md), and [board](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/overnight-queue.json). Historical baseline and prior evidence remain at [f653469](https://github.com/gindemit/game-platform-dotnet/blob/f6534690b6f7b7e70e1a4763748a0d54badbcb39/docs/implementation/CAMPAIGN_UPM_HANDOFF.md).
+
+## Implemented SDK source
+
+FU-SAME-ENTRY source is [1244a5b](https://github.com/gindemit/game-platform-dotnet/commit/1244a5b9db022ca5790c530e2af4408107b41f6c). Explicit RecoverAsync now requires the exact existing principal/app/backend directory entry before it can allocate or reserve installation/stream IDs. It checks the retained installation, stream, issued account, and owner binding, and fails closed on absent/incompatible/read-failed entries. Cross-app recovery and a throwing bind CAS were repaired after nonauthor review. Fresh StartAsync still uses its legitimate first-account path. The existing provider-subject, real bootstrap, CAS/generation, and late-cancellation rotated-secret contracts remain in place.
+
+Local full SDK tests passed 728/728; the fresh nonauthor reviewer also ran its focused 50/50 and full 728/728. Source CI [36894160573](https://github.com/gindemit/game-platform-dotnet/actions/runs/36894160573) completed successfully. The recovery invariant is portable; Android root selection remains in Unity, with no JNI or game slot rule added to this SDK.
+
+## Canonical package
+
+Runtime payload changed, so the canonical Git UPM was regenerated from the exact source and committed at [e7c03c5](https://github.com/gindemit/game-platform-dotnet/commit/e7c03c5821cba85b921c23f94f743880871cd057). Two clean source copies produced byte-identical manifests. Bundle manifest SHA-256: `a8efb42cee29a7c0ca4b41791128e261aa1c89d0c87e3c8641fa6ebff463c018`; UPM content manifest SHA-256: `8b1fe479dcf9b13ea5b139089e04b944a95b11c6625934a15a1bc79d2702c1fa`. A fresh nonauthor payload review checked 142 payload files, 23 DLLs and dependency closure, 66 unique GUIDs, native importers, licenses, and both copy manifests. Package CI [36894521015](https://github.com/gindemit/game-platform-dotnet/actions/runs/36894521015) completed successfully. Unity manifest/lock and the import verifier pin this exact delivery; static import verification passed. Unity IL2CPP, device, and campaign acceptance are separate and remain open.
+
+## Windows CL008 investigation
+
+The five interleaved A/B/C workflow cycles ran after confirming no existing dispatch results. A passed 3/5, B 1/5, C 5/5. All six A/B failures were Windows sharing errors in test cleanup after hard kill; no hard-kill assertion failed. Arm C observed transient SHM contention and then release in five of ten phases before reopen. It changes the SHM precondition, so its green runs do not prove immediate product relaunch. The original reopen `disk I/O error` cause and Windows runtime durability are still unproven. Exact run links and artifact observations are in the backend [Windows evidence](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/campaign-2026-09-28/evidence/windows-cl008-2026-10-01.md). Do not replace unchanged hard-kill assertions with cleanup retries or infer product acceptance from macOS/C runs.
+
+## Remaining cross-repository gates
+
+Unity's new game-owned SQLite schema stores independent run kind and campaign slot, with no old-schema loader or reset. Its source tests and Android internal-root/retry work are being integrated separately. The owner requires preservation of retained phone/fixture identities, credentials, and old evidence; unsupported old stores can be rejected non-destructively and new-schema qualification is isolated. FU-RETRY-ENTRY still needs actual GardenRuntimeBridge → gate → run and Android evidence, including failure then another explicit action. The Android root must be physically verified on the selected build, with no external/cache fallback.
+
+FU-CURRENT-DELIVERY is partly complete at SDK source/package scope only. Final Unity build/device/browser acceptance, response-loss/crash/offline matrices, both pending representations, coinstallation, and current-schema restart/update remain open. ON-22/23 may proceed default-off at their real prerequisites; ordinary shell activation needs campaign and shell acceptance. Broad P4 and distribution remain held. Recheck actual remote CI and package identity before using any later descendant; documentation-only descendants need no payload regeneration.

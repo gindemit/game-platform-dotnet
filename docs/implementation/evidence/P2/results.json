@@ -1,0 +1,250 @@
+{
+  "phase": "P2",
+  "epoch": 2,
+  "records": [
+    {
+      "name": "validator-tests",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 5.953,
+      "log": "docs/implementation/evidence/P2/validator-tests.log"
+    },
+    {
+      "name": "schema-generation",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "src/GamePlatform.Serialization.MessagePack/generate-schema.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.094,
+      "log": "docs/implementation/evidence/P2/schema-generation.log"
+    },
+    {
+      "name": "dto-mapper-generation",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "src/GamePlatform.Serialization.MessagePack/generate-dto-mapper.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.094,
+      "log": "docs/implementation/evidence/P2/dto-mapper-generation.log"
+    },
+    {
+      "name": "restore",
+      "argv": [
+        "rtk",
+        "proxy",
+        "dotnet",
+        "restore",
+        "GamePlatform.sln",
+        "--locked-mode"
+      ],
+      "exit_code": 0,
+      "seconds": 0.937,
+      "log": "docs/implementation/evidence/P2/restore.log"
+    },
+    {
+      "name": "build",
+      "argv": [
+        "rtk",
+        "proxy",
+        "dotnet",
+        "build",
+        "GamePlatform.sln",
+        "-c",
+        "Release",
+        "--no-restore"
+      ],
+      "exit_code": 0,
+      "seconds": 1.547,
+      "log": "docs/implementation/evidence/P2/build.log"
+    },
+    {
+      "name": "dotnet-tests",
+      "argv": [
+        "rtk",
+        "proxy",
+        "dotnet",
+        "test",
+        "tests/GamePlatform.Tests",
+        "-c",
+        "Release",
+        "--no-restore",
+        "--no-build",
+        "--logger",
+        "trx;LogFileName=p2.trx",
+        "--results-directory",
+        "C:\\Work\\git\\gindemit\\game-platform-dotnet\\docs\\implementation\\evidence\\P2\\trx"
+      ],
+      "exit_code": 0,
+      "seconds": 1.828,
+      "log": "docs/implementation/evidence/P2/dotnet-tests.log",
+      "tests": {
+        "total": "222",
+        "executed": "222",
+        "passed": "222",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "name": "codec-self-test",
+      "argv": [
+        "rtk",
+        "proxy",
+        "dotnet",
+        "run",
+        "--project",
+        "tests/acceptance/GamePlatform.CodecHarness",
+        "-c",
+        "Release",
+        "--no-build",
+        "--no-restore",
+        "--",
+        "self-test",
+        "--root",
+        "."
+      ],
+      "exit_code": 0,
+      "seconds": 1.016,
+      "log": "docs/implementation/evidence/P2/codec-self-test.log"
+    },
+    {
+      "name": "legacy-consumer",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "tests/GamePlatform.Tests/Compatibility/verify_legacy_consumer.py",
+        "../MrSquareUnity-platform-p1"
+      ],
+      "exit_code": 0,
+      "seconds": 1.828,
+      "log": "docs/implementation/evidence/P2/legacy-consumer.log"
+    },
+    {
+      "name": "packages",
+      "argv": [
+        "rtk",
+        "proxy",
+        "dotnet",
+        "list",
+        "GamePlatform.sln",
+        "package",
+        "--include-transitive"
+      ],
+      "exit_code": 0,
+      "seconds": 1.766,
+      "log": "docs/implementation/evidence/P2/packages.log"
+    },
+    {
+      "name": "architecture",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "scripts/validate.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.125,
+      "log": "docs/implementation/evidence/P2/architecture.log"
+    },
+    {
+      "name": "manifest",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "docs/implementation/validate_manifest.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.094,
+      "log": "docs/implementation/evidence/P2/manifest.log"
+    },
+    {
+      "name": "manifest-tests",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "docs/implementation",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.14,
+      "log": "docs/implementation/evidence/P2/manifest-tests.log"
+    },
+    {
+      "name": "harness-tests",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/acceptance",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.813,
+      "log": "docs/implementation/evidence/P2/harness-tests.log"
+    },
+    {
+      "name": "diff",
+      "argv": [
+        "rtk",
+        "proxy",
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.062,
+      "log": "docs/implementation/evidence/P2/diff.log"
+    }
+  ],
+  "unrun": [
+    "G2 independent peer exchange and live-slice schema review",
+    "A01-A13 whole production acceptance",
+    "live backend journey",
+    "IL2CPP/AOT/device",
+    "provider sandbox"
+  ],
+  "note": "Desktop qualification evidence; Unity import acceptance recorded separately."
+}

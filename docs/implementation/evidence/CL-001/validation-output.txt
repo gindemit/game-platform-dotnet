@@ -1,0 +1,38 @@
+COMMAND: rtk python scripts/validate.py
+EXIT: 0
+Validation passed: 15 projects, 16 evidence-aware feature states, direct/transitive references, runtime packages, module READMEs, and 2 pinned contract files.
+
+COMMAND: rtk python -m unittest discover -s scripts -p 'test_*.py'
+EXIT: 0
+...................
+----------------------------------------------------------------------
+Ran 19 tests in 2.159s
+
+OK
+
+COMMAND: rtk python docs/implementation/validate_manifest.py
+EXIT: 0
+VALID: 52 tasks; 16 feature ledgers; 21 conservative waves
+
+COMMAND: rtk python -m unittest discover -s docs/implementation -p 'test_*.py'
+EXIT: 0
+..............
+----------------------------------------------------------------------
+Ran 14 tests in 0.038s
+
+OK
+
+COMMAND: rtk dotnet restore GamePlatform.sln --locked-mode
+EXIT: 0
+17 projects restored; 0 errors; 0 warnings.
+
+COMMAND: rtk dotnet build tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-restore
+EXIT: 0
+13 projects built; 0 errors; 0 warnings.
+
+COMMAND: rtk proxy dotnet vstest tests/GamePlatform.Tests/bin/Release/net9.0/GamePlatform.Tests.dll --Logger:"trx;LogFileName=cl001.trx" --ResultsDirectory:docs/implementation/evidence/CL-001
+EXIT: 0
+VSTest version 17.13.0 (x64)
+A total of 1 test files matched the specified pattern.
+Passed! - Failed: 0, Passed: 19, Skipped: 0, Total: 19, Duration: 104 ms - GamePlatform.Tests.dll (net9.0)
+Raw machine-readable counters are in cl001.trx.

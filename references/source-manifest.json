@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "gindemit/MrSquareUnity",
+  "sourceCommit": "5c5233edefc8433d61b6c757fd2022bac98f76ba",
+  "historicalStarterBaseline": "eab8d4f106c7506e7eb2a2c841a557fe4de9e48e",
+  "archiveAvailable": false,
+  "inspected": [
+    "Docs/README.md",
+    "Docs/Architecture/README.md",
+    "Docs/Architecture/AssemblyResponsibilities.md",
+    "Docs/Architecture/PlatformRepositories/*",
+    "Docs/Architecture/Decisions/PlatformContracts.md",
+    "Docs/Architecture/Decisions/platform-contracts.json",
+    "Docs/Architecture/Decisions/protocol-examples.json",
+    "Docs/Architecture/Decisions/sqlite-contract.sql",
+    "Docs/Architecture/Client/ApplicationLifecycle.md",
+    "Docs/Architecture/Client/DependencyInjection.md",
+    "Docs/Architecture/Client/ReusableUnityLocalStorageAndSyncArchitecture.md",
+    "Docs/Architecture/Backend/ReusableMultiAppBackendPlatformArchitecture.md",
+    "Assets/Scripts/Platform/PlatformContracts.cs",
+    "Assets/Scripts/Platform/PlatformRuntime.cs",
+    "Assets/Scripts/Platform/FakeProviders.cs",
+    "Assets/Scripts/Platform/MrSquare.Platform.asmdef",
+    "Packages/manifest.json"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "task": "CL-004",
+  "date": "2026-09-20",
+  "source_commit": "83caf64596869fc7a1dc35ac6440e21ac97a7d68",
+  "qualification_correction_commit": "2e46b6f90ed60492d77114c655fb9788d4112e25",
+  "production_adapter_commit": "684ed49c832f203326270546414244bc2adb78e8",
+  "unity_int009_evidence_commit": "ff65dbed550b390c4129f471bf098559be37f5ea",
+  "unity_tested_consumer_commit": "c2335be613fed95a1997f2718679e2f309eba7df",
+  "status": "in_progress",
+  "environment": {
+    "runtime": ".NET desktop",
+    "target": "netstandard2.1/C# 9 adapter; net9.0 test host",
+    "device": null,
+    "unity": null
+  },
+  "verification": {
+    "desktop_candidate_and_production_interface": 9,
+    "serialization": 171,
+    "codec_http_boundary": 46,
+    "full_dotnet": 351,
+    "schema_cases": 73,
+    "fingerprint_cases": 32,
+    "hostile_json_cases": 5,
+    "script_tests": 48,
+    "manifest_tests": 14,
+    "projects": 18,
+    "warnings": 0,
+    "errors": 0
+  },
+  "dependency": {
+    "MessagePack": "3.1.8",
+    "lockfiles_unchanged": true,
+    "new_runtime_dependency": false
+  },
+  "production_iwirecodec": "available_bounded_reviewed_catalog",
+  "android_aot_corpus": {
+    "runtime": "Unity 6000.5.3f1 Android ARM64 IL2CPP high stripping physical device",
+    "launches": 2,
+    "diagnostics": "34 accepted, 39 rejected",
+    "exchange": "34 TypeScript-consumed, 34 C#-produced",
+    "fingerprints": "24 accepted, 8 rejected",
+    "raw_probes": "14 accepted, 18 rejected"
+  },
+  "promotion_bundle_manifest_sha256": "34febc70a5cc0b1b01f05075b3c26c75e131acc055511c038b033cd40e726893",
+  "unrun": [
+    "concrete HTTP executor/host",
+    "live backend transcript",
+    "independent review",
+    "G3"
+  ]
+}

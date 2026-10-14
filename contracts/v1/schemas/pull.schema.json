@@ -1,0 +1,10 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://contracts.gindemit.invalid/v1/schemas/pull.schema.json","$defs":{
+    "request":{"type":"object","additionalProperties":false,"required":["protocolVersion","cursor","maxBytes"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"cursor":{"$ref":"common.schema.json#/$defs/opaqueToken"},"maxBytes":{"type":"integer","minimum":131072,"maximum":262144}}},
+    "change":{"$ref":"projection.schema.json#/$defs/change"},
+    "group":{"type":"object","additionalProperties":false,"required":["feedRevision","changes"],"properties":{"feedRevision":{"$ref":"common.schema.json#/$defs/nonNegativeInt64"},"changes":{"type":"array","minItems":1,"maxItems":1024,"items":{"$ref":"#/$defs/change"}}}},
+    "page":{"type":"object","additionalProperties":false,"required":["protocolVersion","changes","nextCursor","hasMore","resetRequired","committedThrough","serverTime"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"changes":{"type":"array","maxItems":1024,"items":{"$ref":"#/$defs/group"}},"nextCursor":{"$ref":"common.schema.json#/$defs/opaqueToken"},"hasMore":{"type":"boolean"},"resetRequired":{"const":false},"committedThrough":{"$ref":"common.schema.json#/$defs/nonNegativeInt64"},"serverTime":{"$ref":"common.schema.json#/$defs/timestamp"}}},
+    "reset":{"type":"object","additionalProperties":false,"required":["protocolVersion","changes","nextCursor","hasMore","resetRequired","reason","serverTime"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"changes":{"type":"array","maxItems":0},"nextCursor":{"type":"null"},"hasMore":{"const":false},"resetRequired":{"const":true},"reason":{"enum":["history_expired","visibility_changed","log_epoch_changed","cursor_invalidated"]},"serverTime":{"$ref":"common.schema.json#/$defs/timestamp"}}},
+    "response":{"oneOf":[{"$ref":"#/$defs/page"},{"$ref":"#/$defs/reset"}]}
+  }
+}

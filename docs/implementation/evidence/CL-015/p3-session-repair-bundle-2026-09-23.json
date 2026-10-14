@@ -1,0 +1,25 @@
+{
+  "status": "local_unpublished_bundle_verified_import_pending",
+  "sourceCommit": "5859de58efee3cf6e9804a77afee060b48195d92",
+  "manifestSha256": "8a90c5c62c27cf5ed3fa7146fc5d0989fef693f1ef8967cb531094ce30b4a394",
+  "buildWorktree": "C:/Work/git/gindemit/game-platform-dotnet-p3-package",
+  "bundlePath": "artifacts/sdk",
+  "bundleFiles": 99,
+  "managedAssemblies": 23,
+  "nativeTargets": 3,
+  "sourceDirty": false,
+  "buildSkipped": false,
+  "published": false,
+  "commands": [
+    { "command": "rtk proxy python scripts/package-sdk.py", "result": "exit 0; 23 managed assemblies, 3 native targets, zero build warnings/errors; no publication" },
+    { "command": "rtk proxy python scripts/package-sdk.py --verify", "result": "exit 0; inventory, hashes, closure, licenses, native targets and AOT metadata verified" },
+    { "command": "rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --filter FullyQualifiedName~SupabaseAnonymousAuthLifecycleTests --no-restore", "result": "exit 0; 13 passed" },
+    { "command": "rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --filter FullyQualifiedName~Cl007P3ExtensionMigrationTests --no-restore", "result": "exit 0; 9 passed" },
+    { "command": "rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --filter FullyQualifiedName~Cl007SqliteExecutorTests --no-restore", "result": "exit 0; 8 passed" }
+  ],
+  "limitations": [
+    "This is a local bundle for exact P3 Unity import, not package publication or external distribution.",
+    "Unity import, EditMode execution, Android Java/Keystore, IL2CPP, device TLS and the real game journey are not established by this bundle verification.",
+    "The imported Unity bundle at the start of this repair still identified SDK source 73cf2feb84734d453a138573c4ffbc6ffc9a2e1b; its runtime contract does not include the new RecoveryRequired subject validation."
+  ]
+}

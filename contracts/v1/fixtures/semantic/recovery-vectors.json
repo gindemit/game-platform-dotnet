@@ -1,0 +1,364 @@
+{
+  "fixtureSchemaVersion": 2,
+  "status": "specification_examples_not_service_or_durability_tests",
+  "cases": [
+    {
+      "id": "absent_is_not_noncommit",
+      "kind": "receipt",
+      "input": {
+        "authorized": true,
+        "operationConflict": false,
+        "sequenceConflict": false,
+        "retainedTerminal": false,
+        "sequence": "155",
+        "finalizedThrough": "154"
+      },
+      "expected": "absent_at_read_retry_original"
+    },
+    {
+      "id": "missing_permanent_result",
+      "kind": "receipt",
+      "input": {
+        "authorized": true,
+        "operationConflict": false,
+        "sequenceConflict": false,
+        "retainedTerminal": false,
+        "sequence": "155",
+        "finalizedThrough": "155"
+      },
+      "expected": "receipt_integrity_unavailable"
+    },
+    {
+      "id": "permanent_result_after_feed_cleanup",
+      "kind": "receipt",
+      "input": {
+        "authorized": true,
+        "operationConflict": false,
+        "sequenceConflict": false,
+        "retainedTerminal": true,
+        "sequence": "155",
+        "finalizedThrough": "999"
+      },
+      "expected": "return_permanent_terminal_result"
+    },
+    {
+      "id": "changed_body",
+      "kind": "receipt",
+      "input": {
+        "authorized": true,
+        "operationConflict": true,
+        "sequenceConflict": false,
+        "retainedTerminal": true,
+        "sequence": "155",
+        "finalizedThrough": "154"
+      },
+      "expected": "operation_identity_conflict"
+    },
+    {
+      "id": "clone_sequence_collision",
+      "kind": "receipt",
+      "input": {
+        "authorized": true,
+        "operationConflict": false,
+        "sequenceConflict": true,
+        "retainedTerminal": false,
+        "sequence": "155",
+        "finalizedThrough": "154"
+      },
+      "expected": "stream_sequence_conflict"
+    },
+    {
+      "id": "cross_account_receipt",
+      "kind": "receipt",
+      "input": {
+        "authorized": false,
+        "operationConflict": false,
+        "sequenceConflict": false,
+        "retainedTerminal": true,
+        "sequence": "155",
+        "finalizedThrough": "154"
+      },
+      "expected": "authorization_failure_no_result"
+    },
+    {
+      "id": "rotation_drained",
+      "kind": "rotation",
+      "input": {
+        "authorized": true,
+        "recordedRequest": "none",
+        "pendingCount": 0,
+        "tokenExpired": false,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "155",
+        "successorInUse": false
+      },
+      "expected": "atomic_retire_and_register"
+    },
+    {
+      "id": "rotation_pending",
+      "kind": "rotation",
+      "input": {
+        "authorized": true,
+        "recordedRequest": "none",
+        "pendingCount": 1,
+        "tokenExpired": false,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "155",
+        "successorInUse": false
+      },
+      "expected": "client_must_reconcile_original_pending"
+    },
+    {
+      "id": "rotation_stale_watermark",
+      "kind": "rotation",
+      "input": {
+        "authorized": true,
+        "recordedRequest": "none",
+        "pendingCount": 0,
+        "tokenExpired": false,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "156",
+        "successorInUse": false
+      },
+      "expected": "stream_changed"
+    },
+    {
+      "id": "rotation_expired_before_commit",
+      "kind": "rotation",
+      "input": {
+        "authorized": true,
+        "recordedRequest": "none",
+        "pendingCount": 0,
+        "tokenExpired": true,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "155",
+        "successorInUse": false
+      },
+      "expected": "inspection_expired_no_rotation"
+    },
+    {
+      "id": "rotation_response_loss_token_expired",
+      "kind": "rotation",
+      "input": {
+        "authorized": true,
+        "recordedRequest": "same",
+        "pendingCount": 0,
+        "tokenExpired": true,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "999",
+        "successorInUse": false
+      },
+      "expected": "return_recorded_recovery_response"
+    },
+    {
+      "id": "rotation_id_reused",
+      "kind": "rotation",
+      "input": {
+        "authorized": true,
+        "recordedRequest": "different",
+        "pendingCount": 0,
+        "tokenExpired": false,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "155",
+        "successorInUse": false
+      },
+      "expected": "recovery_identity_conflict"
+    },
+    {
+      "id": "rotation_successor_collision",
+      "kind": "rotation",
+      "input": {
+        "authorized": true,
+        "recordedRequest": "none",
+        "pendingCount": 0,
+        "tokenExpired": false,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "155",
+        "successorInUse": true
+      },
+      "expected": "stream_binding_conflict"
+    },
+    {
+      "id": "rotation_revoked_after_commit",
+      "kind": "rotation",
+      "input": {
+        "authorized": false,
+        "recordedRequest": "same",
+        "pendingCount": 0,
+        "tokenExpired": false,
+        "expectedFinalizedThrough": "155",
+        "currentFinalizedThrough": "155",
+        "successorInUse": false
+      },
+      "expected": "authorization_failure_no_result"
+    },
+    {
+      "id": "bootstrap_pending_preserved",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": true,
+        "sameSnapshot": true,
+        "knownRequiredCollections": true,
+        "matchingReceiptsThroughF": true,
+        "finalizedThrough": "154",
+        "highestAssigned": "156",
+        "localNextSequence": "157"
+      },
+      "expected": "atomic_install_preserving_pending_next_157"
+    },
+    {
+      "id": "bootstrap_first_online",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": true,
+        "sameSnapshot": true,
+        "knownRequiredCollections": true,
+        "matchingReceiptsThroughF": true,
+        "finalizedThrough": "0",
+        "highestAssigned": "0",
+        "localNextSequence": "1"
+      },
+      "expected": "atomic_install_preserving_pending_next_1"
+    },
+    {
+      "id": "bootstrap_interrupted",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": false,
+        "sameSnapshot": true,
+        "knownRequiredCollections": true,
+        "matchingReceiptsThroughF": true,
+        "finalizedThrough": "154",
+        "highestAssigned": "156",
+        "localNextSequence": "157"
+      },
+      "expected": "preserve_previous_ready_checkpoint_and_pending"
+    },
+    {
+      "id": "bootstrap_mixed_H",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": true,
+        "sameSnapshot": false,
+        "knownRequiredCollections": true,
+        "matchingReceiptsThroughF": true,
+        "finalizedThrough": "154",
+        "highestAssigned": "156",
+        "localNextSequence": "157"
+      },
+      "expected": "preserve_previous_ready_checkpoint_and_pending"
+    },
+    {
+      "id": "bootstrap_unknown_collection",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": true,
+        "sameSnapshot": true,
+        "knownRequiredCollections": false,
+        "matchingReceiptsThroughF": true,
+        "finalizedThrough": "154",
+        "highestAssigned": "156",
+        "localNextSequence": "157"
+      },
+      "expected": "preserve_previous_ready_checkpoint_and_pending"
+    },
+    {
+      "id": "bootstrap_receipt_conflict",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": true,
+        "sameSnapshot": true,
+        "knownRequiredCollections": true,
+        "matchingReceiptsThroughF": false,
+        "finalizedThrough": "154",
+        "highestAssigned": "156",
+        "localNextSequence": "157"
+      },
+      "expected": "block_reconciliation_preserve_pending"
+    },
+    {
+      "id": "bootstrap_allocator_gap",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": true,
+        "sameSnapshot": true,
+        "knownRequiredCollections": true,
+        "matchingReceiptsThroughF": true,
+        "finalizedThrough": "154",
+        "highestAssigned": "156",
+        "localNextSequence": "160"
+      },
+      "expected": "gap_recovery_no_identity_reuse"
+    },
+    {
+      "id": "bootstrap_int64_exhausted",
+      "kind": "bootstrap",
+      "input": {
+        "authorized": true,
+        "allPages": true,
+        "sameSnapshot": true,
+        "knownRequiredCollections": true,
+        "matchingReceiptsThroughF": true,
+        "finalizedThrough": "9223372036854775807",
+        "highestAssigned": "156",
+        "localNextSequence": "157"
+      },
+      "expected": "atomic_install_preserving_pending_next_exhausted"
+    },
+    {
+      "id": "accepted_after_H",
+      "kind": "overlay",
+      "input": {
+        "authorized": true,
+        "terminal": "accepted",
+        "sequence": "155",
+        "snapshotFinalizedThrough": "154",
+        "orderedPullIncorporated": false
+      },
+      "expected": "retain_overlay_receipt_is_not_checkpoint"
+    },
+    {
+      "id": "accepted_before_H",
+      "kind": "overlay",
+      "input": {
+        "authorized": true,
+        "terminal": "accepted",
+        "sequence": "155",
+        "snapshotFinalizedThrough": "155",
+        "orderedPullIncorporated": false
+      },
+      "expected": "remove_overlay_authority_incorporated"
+    },
+    {
+      "id": "accepted_pulled_after_H",
+      "kind": "overlay",
+      "input": {
+        "authorized": true,
+        "terminal": "accepted",
+        "sequence": "155",
+        "snapshotFinalizedThrough": "154",
+        "orderedPullIncorporated": true
+      },
+      "expected": "remove_overlay_authority_incorporated"
+    },
+    {
+      "id": "terminal_rejected",
+      "kind": "overlay",
+      "input": {
+        "authorized": true,
+        "terminal": "terminal_rejected",
+        "sequence": "155",
+        "snapshotFinalizedThrough": "154",
+        "orderedPullIncorporated": false
+      },
+      "expected": "remove_rebuild_overlay"
+    }
+  ]
+}

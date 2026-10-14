@@ -1,0 +1,2 @@
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+warning: in the working copy of 'docs/implementation/execution-manifest.json', CRLF will be replaced by LF the next time Git touches it

@@ -1,0 +1,27 @@
+# Reviewed backend protocol snapshot
+
+P3 same-phase checkpoint **0.4.0-g3-schema-checkpoint.1** is mirrored exactly
+from backend `0518ad5cc54f5c6b71bfa19819476197242cfc5c`: 98 pins, preserving all
+G1 and G2 files. It adds only the v2 reward-receipt authority label and the exact
+reuse/exclusion mappings needed before G3 feature implementation. Generated C#
+carriers were the only delivery at this checkpoint. Runtime codecs, HTTP,
+feature behavior, interoperability and bounded Unity/G3 evidence were delivered
+later and are tracked in [current status](../docs/IMPLEMENTATION_STATUS.md); they
+do not alter this immutable mirror's identity.
+
+G2 additive schema **0.3.0-live-slice-schema.1** is mirrored from backend `0c3473e165ce73479c349b8fba2394274a2a833e`: 94 exact pins, preserving all 90 G1 files. [Semantics and field mappings](live-slice/semantics.json) approve only the read-only reward receipt; feature DTO/codec/runtime implementation was pending at that mirror checkpoint. Frozen core corpus/version remains unchanged.
+
+Current G1-reviewed schema: **0.2.0-core-schema.1**, canonical commit
+`0109936f0ebf232924cec70adb79c4f790b604bc`. Ninety exact canonical artifacts are
+pinned by snapshot.json; the original two policy/primitive files are unchanged.
+The complete copy tool validates every source digest/path before writing and
+publishes the snapshot last. Core schema approval does not certify codecs,
+DTO implementation, game integration or runtime interoperability.
+The M0 description below is historical. Current review and all C#/TS mappings:
+[G1 epoch 2](../docs/implementation/evidence/CL-003/G1-epoch2/README.md).
+
+Protocol version: `0.1.0-draft`. The canonical files are owned by the sibling `game-platform-backend` repository. This directory is an exact reviewed byte mirror, not an independently editable protocol.
+
+`snapshot.json` pins `platform-policy.json` and `v1/primitive-vectors.json` with SHA-256. Run `python scripts/validate.py` to verify local pins. A protocol change begins in the backend, receives compatibility/version review, then is copied explicitly with `scripts/sync-contracts.py --source <backend-root>` and repinned with `scripts/pin-contracts.py --write`. Never silently accept unexpected drift or depend on a moving peer branch in local CI.
+
+M0 contains logical policy and primitive vectors only. It does not contain or prove a MessagePack implementation, cross-language bytes, semantic fingerprint implementation or deployed API.

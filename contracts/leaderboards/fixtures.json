@@ -1,0 +1,52 @@
+{
+  "contractVersion": "leaderboards-1.0.0",
+  "fixtures": [
+    {
+      "name": "global-query",
+      "schema": "queryRequest",
+      "value": {
+        "boardId": "players-monthly",
+        "scope": "global",
+        "limit": 50
+      }
+    },
+    {
+      "name": "country-selection",
+      "schema": "countryRequest",
+      "value": {
+        "operationId": "019a17aa-1000-7000-8000-000000000001",
+        "boardId": "players-monthly",
+        "participantKind": "player",
+        "countryCode": "DE"
+      }
+    },
+    {
+      "name": "empty-response",
+      "schema": "queryResponse",
+      "value": {
+        "boardId": "players-monthly",
+        "participantKind": "player",
+        "scope": "global",
+        "countryCode": null,
+        "periodId": "2026-10",
+        "periodStart": "1790812800000",
+        "periodEnd": "1793491200000",
+        "resetAt": "1793491200000",
+        "snapshotCreatedAt": "1791712800000",
+        "expiresAt": "1791713100000",
+        "serverTime": "1791712800000",
+        "snapshotId": "019a17aa-1000-7000-8000-000000000001",
+        "scoreAuthority": "client_trusted_unvalidated",
+        "entries": [],
+        "nextCursor": null,
+        "self": null,
+        "snapshotLimit": 500,
+        "countrySelection": {
+          "currentCountryCode": null,
+          "pendingCountryCode": null,
+          "pendingEffectiveAt": null
+        }
+      }
+    }
+  ]
+}

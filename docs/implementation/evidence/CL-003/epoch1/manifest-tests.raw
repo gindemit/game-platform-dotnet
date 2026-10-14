@@ -1,0 +1,12 @@
+ARGV: ["rtk", "proxy", "python", "-m", "unittest", "discover", "-s", "docs/implementation", "-p", "test_*.py"]
+STDOUT:
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+..............
+----------------------------------------------------------------------
+Ran 14 tests in 0.038s
+
+OK
+
+EXIT: 0

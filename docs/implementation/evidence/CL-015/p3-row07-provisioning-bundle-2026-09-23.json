@@ -1,0 +1,23 @@
+{
+  "status": "local_unpublished_bundle_verified_import_pending",
+  "sourceCommit": "e75ebced43bf888b28fdbf0627a9caadcadb466d",
+  "manifestSha256": "5194c900fe06816105e99ef429eb5e0605fab4865436d2e9140e1cd52d135ee9",
+  "bundlePath": "artifacts/sdk",
+  "bundleFiles": 100,
+  "managedAssemblies": 23,
+  "nativeTargets": 3,
+  "sourceDirty": false,
+  "buildSkipped": false,
+  "published": false,
+  "commands": [
+    { "command": "rtk proxy dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --filter FullyQualifiedName~Cl101AccountsLifecycleTests --no-restore", "result": "worker exit 0; 18 passed, 0 failed at e75ebce" },
+    { "command": "rtk proxy python scripts/package-sdk.py", "result": "coordinator exit 0; 23 managed assemblies, 3 native targets, zero build warnings/errors; no publication" },
+    { "command": "rtk proxy python scripts/package-sdk.py --verify", "result": "coordinator exit 0; inventory, hashes, closure, licenses, native targets and AOT metadata verified" }
+  ],
+  "review": "Independent Sol /root/p3_coordinator/review05 accepted bounded SDK source seam e75ebce after rejecting 2f9e587 for Stop lock and factory failure; personally ran git diff --check and inspected immutable source/tests, no runtime tests.",
+  "limitations": [
+    "This is a local bundle for exact P3 Unity import, not package publication or external distribution.",
+    "Unity account/bootstrap composition, Editor/PlayMode, Android and real game/backend acceptance remain unrun.",
+    "Directory, remote and scope adapter exceptions outside the new factory path require fail-closed host composition."
+  ]
+}

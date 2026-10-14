@@ -1,0 +1,50 @@
+{
+  "task": "CL-009",
+  "date": "2026-09-20",
+  "source_commit": "7955e2d39b164d9a427e64c4c2903c620b114298",
+  "scope": "portable-retained-command-receipt-http-provider",
+  "status": "in_progress",
+  "commands": [
+    {
+      "command": "rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-restore --filter FullyQualifiedName~Cl009CommandReceiptHttpProviderTests",
+      "exit_code": 0,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "warnings": 0
+    },
+    {
+      "command": "rtk dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj -c Release --no-restore --filter FullyQualifiedName~Cl009CommandReceiptHttpProviderTests|FullyQualifiedName~Cl009OrderedCommandSenderTests|FullyQualifiedName~Cl010PrivateSyncHttpProviderTests",
+      "exit_code": 0,
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0,
+      "warnings": 0
+    },
+    {
+      "command": "rtk python scripts/validate.py",
+      "exit_code": 0,
+      "summary": "15 projects, 16 evidence-aware feature states, references, packages, module READMEs and contract pins passed"
+    }
+  ],
+  "proved": [
+    "frozen authenticated receipt route and negotiation",
+    "app/account/installation and retained command identity binding",
+    "canonical version-1 SHA-256 fingerprint mapping",
+    "accepted and terminal-rejected receipt mapping",
+    "authorized absence only below observed finalized watermark",
+    "one coordinated authentication refresh with identical request body",
+    "bounded media, correlation, envelope and terminal-result validation",
+    "qualification codec compatibility through test-only port bridge"
+  ],
+  "unrun": [
+    "push HTTP provider",
+    "sender receipt reconciliation after uncertain delivery",
+    "production codec and concrete HTTP executor/host composition",
+    "real backend transcript and peer faults",
+    "batching, backoff and blocked-auth persistence",
+    "process kill, Unity, AOT and device acceptance",
+    "independent A03/A07/A12 review",
+    "G3"
+  ]
+}

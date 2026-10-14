@@ -1,0 +1,40 @@
+{
+  "protocolVersion": 1,
+  "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+  "operations": [
+    {
+      "operationId": "019952d1-0000-7000-8000-000000000003",
+      "installationId": "00112233-4455-4677-8899-aabbccddeeff",
+      "sequence": "155",
+      "type": "gameplay.session.completed",
+      "schemaVersion": 1,
+      "clientCreatedAt": 1789555200000,
+      "payload": {
+        "contentId": "level-102",
+        "contentVersion": 3,
+        "mode": "pocket-bloom",
+        "difficulty": "preview",
+        "success": true,
+        "score": "1",
+        "validation": {
+          "scheme": "opaque-reference",
+          "reference": "synthetic-validation-reference"
+        },
+        "extension": {
+          "schema": "example.pocket-bloom.completion",
+          "version": 1,
+          "value": {
+            "board": "small"
+          }
+        },
+        "session": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "durationTicks": "12500",
+        "ticksPerSecond": 1000,
+        "metrics": {
+          "moves": "12",
+          "bonus": "-1"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+Test run for C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 17.13.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+WARNING: Overwriting results file: C:\Work\git\gindemit\game-platform-dotnet\docs\implementation\evidence\P2\trx\p2.trx
+Results File: C:\Work\git\gindemit\game-platform-dotnet\docs\implementation\evidence\P2\trx\p2.trx
+
+Passed!  - Failed:     0, Passed:   222, Skipped:     0, Total:   222, Duration: 485 ms - GamePlatform.Tests.dll (net9.0)
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings

@@ -1,0 +1,23 @@
+{
+  "status": "local_unpublished_bundle_verified_import_pending",
+  "sourceCommit": "f6ab8bc9f85f6372bab07db79bca1b035447ffe4",
+  "manifestSha256": "dd81cbcdf7f43927b45c9bd48b52f9eb1cb5b58539cb0d65987cff594e3a8ba3",
+  "bundlePath": "artifacts/sdk",
+  "bundleFiles": 100,
+  "managedAssemblies": 23,
+  "nativeTargets": 3,
+  "sourceDirty": false,
+  "buildSkipped": false,
+  "published": false,
+  "commands": [
+    { "command": "rtk proxy dotnet test tests/GamePlatform.Tests/GamePlatform.Tests.csproj --filter FullyQualifiedName~Cl010PrivateSyncTests --verbosity quiet", "result": "Sol specialist exit 0; 28 passed, 0 failed at f6ab8bc" },
+    { "command": "rtk proxy python scripts/package-sdk.py", "result": "coordinator exit 0; 23 managed assemblies, 3 native targets, zero build warnings/errors; no publication" },
+    { "command": "rtk proxy python scripts/package-sdk.py --verify", "result": "coordinator exit 0; inventory, hashes, closure, licenses, native targets and AOT metadata verified" }
+  ],
+  "review": "Independent Sol /root/p3_coordinator/review05 accepted bounded profile envelope seam f6ab8bc; personally inspected immutable source/test diff and ran git diff --check, no tests.",
+  "limitations": [
+    "This is a local bundle for exact P3 Unity import, not package publication or external distribution.",
+    "Unity still imports executable SDK b56bb0e until this exact bundle is imported and independently reviewed.",
+    "Unity typed bootstrap sink, row 07 runtime, Editor/PlayMode, Android and shared G3 journey remain unrun."
+  ]
+}

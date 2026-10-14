@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "0.1.0-draft",
+  "uuidVectors": [
+    {
+      "name": "uuid_v4_existing_compatible",
+      "text": "00112233-4455-4677-8899-aabbccddeeff",
+      "rfcBytesHex": "00112233445546778899aabbccddeeff",
+      "version": 4,
+      "variant": "rfc4122"
+    },
+    {
+      "name": "uuid_v7_new_policy",
+      "text": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+      "rfcBytesHex": "01890f3e7a6b7c8d9e0f102030405060",
+      "version": 7,
+      "variant": "rfc4122"
+    }
+  ],
+  "signedInt64Vectors": [
+    {"name":"minimum","decimal":"-9223372036854775808","messagePackHex":"d38000000000000000"},
+    {"name":"negative_one_compact","decimal":"-1","messagePackHex":"ff"},
+    {"name":"zero_compact","decimal":"0","messagePackHex":"00"},
+    {"name":"safe_integer_max","decimal":"9007199254740991","messagePackHex":"cf001fffffffffffff"},
+    {"name":"maximum","decimal":"9223372036854775807","messagePackHex":"cf7fffffffffffffff"}
+  ],
+  "timestampVectors": [
+    {"name":"minimum","unixMilliseconds":0},
+    {"name":"maximum","unixMilliseconds":253402300799999}
+  ],
+  "invalid": [
+    {"name":"uuid_wrong_length","value":"00112233"},
+    {"name":"uuid_wrong_variant","value":"00112233-4455-4677-0899-aabbccddeeff"},
+    {"name":"unsafe_rounded_number","value":"9007199254740993","representation":"javascript_number"},
+    {"name":"signed_overflow","value":"9223372036854775808"},
+    {"name":"timestamp_overflow","value":253402300800000}
+  ]
+}
+

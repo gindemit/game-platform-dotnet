@@ -1,0 +1,13 @@
+{
+  "protocolVersion": 1,
+  "streamState": {
+    "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+    "installationId": "00112233-4455-4677-8899-aabbccddeeff",
+    "finalizedThrough": "154",
+    "nextSequence": "155",
+    "state": "active"
+  },
+  "inspectionToken": "AAAAAAAAAAAAAAAAA",
+  "expiresAt": 1789555501000,
+  "serverTime": 1789555201000
+}

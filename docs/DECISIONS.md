@@ -1,0 +1,16 @@
+# Accepted decisions
+
+- Game-neutral SDK; MrSquare is the first real consumer, with early Core/Features.Contracts import implemented and full live-game adoption still pending.
+- Preserve one canonical declaration per responsibility. The deliberately extracted ID/result/state/outcome/progress contracts now belong to GamePlatform.Core and GamePlatform.Features.Contracts; preserve remaining MrSquare.Platform responsibilities until their own coordinated migration. Do not recreate the removed duplicate contracts.
+- New distributed IDs are UUIDv7; preserve existing provider IDs. MessagePack UUID bytes are RFC-order bin16.
+- C# `long` carries exact signed-64 values. Diagnostic JSON uses decimal strings; timestamps are bounded Unix milliseconds.
+- First account-owned launch provisions online and atomically installs a complete bootstrap before Ready.
+- Local projection, sequence allocation and immutable outbox insertion share one transaction.
+- One committed private-player feed uses app-authorized opaque cursors; push acknowledgement is not a pull checkpoint. Schema-declared opaque tokens use MessagePack bin12..3072 and canonical unpadded base64url only in diagnostic JSON.
+- Application use cases own transactions; RewardFulfillment borrows them and uses operation plus business-source idempotency.
+- The architecture supports both client-side and server-side rewards. The initial MrSquare policy uses client-side rewards by default; its optional bounded server-side test path accepts a client-reported completion under explicit client trust without gameplay/session validation, then uses the normal authorized Wallet/receipt/operation-and-source-idempotency flow for one nonpremium `test.coin`. A future game-owned validator may strengthen this boundary; TypeScript replay logic and the existing .NET game DLL are not required now.
+- Domain, wire and SQL types remain distinct. Portable async defaults to Task; Unity concerns stay outside.
+- Legacy MrSquare gameplay saves are intentionally **not migrated**. There are no production users whose pre-platform PlayerPrefs/checkpoints need preservation. Old gameplay progress/difficulty/checkpoints are ignored by account-owned startup; obsolete staging/import code is removed, and fresh platform/game-owned SQLite state begins from provisioning/bootstrap. No historical replay or reward grant exists.
+- The backend owns the canonical protocol. The current G1-approved core mirror is `0.2.0-core-schema.1`, canonical commit `0109936f0ebf232924cec70adb79c4f790b604bc`, with 90 hash-pinned artifacts. `0.1.0-draft` is historical provenance, not the current core-operation baseline. Future changes require reviewed canonical deltas and exact mirrors; execution-branch coordination state records the authorized version.
+
+Schema approval, codec implementation, C#/TypeScript interoperability, Unity import and native/device/live-game acceptance are separate evidence boundaries. The initial outcome/content policy is accepted only for the explicitly unvalidated casual test tier. The former `DEC-LEGACY-TRUST` question is resolved by the owner as **no legacy migration**. Read [implementation status](IMPLEMENTATION_STATUS.md) for current SDK/package/consumer scope and [AGENT_ORCHESTRATOR.md](../AGENT_ORCHESTRATOR.md) for current cross-repository routing; dated G1/G2/G3 reviews remain historical evidence.

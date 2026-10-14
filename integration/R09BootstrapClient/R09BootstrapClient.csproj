@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/GamePlatform.Core/GamePlatform.Core.csproj" />
+    <ProjectReference Include="../../src/GamePlatform.Storage.Sqlite/GamePlatform.Storage.Sqlite.csproj" />
+    <ProjectReference Include="../../src/GamePlatform.Sync/GamePlatform.Sync.csproj" />
+    <ProjectReference Include="../../src/GamePlatform.Transport.Http/GamePlatform.Transport.Http.csproj" />
+    <ProjectReference Include="../../src/GamePlatform.Serialization.MessagePack/GamePlatform.Serialization.MessagePack.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('../../artifacts/acquisition/unity-sqlite-net/Plugins/lib/macos/libgilzoide-sqlite-net.dylib')">
+    <None Include="../../artifacts/acquisition/unity-sqlite-net/Plugins/lib/macos/libgilzoide-sqlite-net.dylib"
+          Link="libgilzoide-sqlite-net.dylib" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

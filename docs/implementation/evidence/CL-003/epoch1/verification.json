@@ -1,0 +1,111 @@
+{
+  "scope": "CL-003 P1 epoch 1 diagnostic schema and review tooling; G1 remains blocked",
+  "python": "3.10.4",
+  "jsonschema": "4.17.3",
+  "commands": [
+    {
+      "name": "review-tool-tests",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "docs/implementation/evidence/CL-003",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "raw": "docs/implementation/evidence/CL-003/epoch1/review-tool-tests.raw"
+    },
+    {
+      "name": "manifest",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "docs/implementation/validate_manifest.py"
+      ],
+      "exit_code": 0,
+      "raw": "docs/implementation/evidence/CL-003/epoch1/manifest.raw"
+    },
+    {
+      "name": "manifest-tests",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "docs/implementation",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "raw": "docs/implementation/evidence/CL-003/epoch1/manifest-tests.raw"
+    },
+    {
+      "name": "architecture",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "scripts/validate.py"
+      ],
+      "exit_code": 0,
+      "raw": "docs/implementation/evidence/CL-003/epoch1/architecture.raw"
+    },
+    {
+      "name": "architecture-tests",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "raw": "docs/implementation/evidence/CL-003/epoch1/architecture-tests.raw"
+    },
+    {
+      "name": "candidate",
+      "argv": [
+        "rtk",
+        "proxy",
+        "python",
+        "docs/implementation/evidence/CL-003/review_candidate.py",
+        "--backend",
+        "../game-platform-backend",
+        "--commit",
+        "c6aa77054ec63c0ae46fe2113d3add994bf382fb",
+        "--output",
+        "docs/implementation/evidence/CL-003/epoch1/candidate-review.json"
+      ],
+      "exit_code": 0,
+      "raw": "docs/implementation/evidence/CL-003/epoch1/candidate.raw"
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "rtk",
+        "proxy",
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "raw": "docs/implementation/evidence/CL-003/epoch1/diff-check.raw"
+    }
+  ],
+  "runtime_suites": "not rerun; no runtime source changed"
+}

@@ -1,0 +1,8 @@
+ARGV: ["rtk", "proxy", "python", "docs/implementation/evidence/CL-003/review_candidate.py", "--backend", "../game-platform-backend", "--commit", "c6aa77054ec63c0ae46fe2113d3add994bf382fb", "--output", "docs/implementation/evidence/CL-003/epoch1/candidate-review.json"]
+STDOUT:
+259 field rows; 49/49 candidate schema cases; 16/16 client boundary cases passed
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+
+EXIT: 0

@@ -1,0 +1,1539 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/v1/schemas/teams.schema.json",
+  "title": "Teams online social operations and additive private invalidation",
+  "$defs": {
+    "role": {
+      "enum": [
+        "leader",
+        "co_leader",
+        "officer",
+        "member"
+      ]
+    },
+    "joinPolicy": {
+      "enum": [
+        "open",
+        "request",
+        "closed"
+      ]
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description",
+        "badgeId",
+        "language",
+        "joinPolicy",
+        "requiredLevel",
+        "capacity"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 24
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 140
+        },
+        "badgeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 16
+        },
+        "joinPolicy": {
+          "$ref": "#/$defs/joinPolicy"
+        },
+        "requiredLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "capacity": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 100
+        }
+      }
+    },
+    "team": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "teamId",
+        "name",
+        "description",
+        "badgeId",
+        "language",
+        "joinPolicy",
+        "requiredLevel",
+        "capacity",
+        "memberCount",
+        "revision",
+        "createdAtMilliseconds"
+      ],
+      "properties": {
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 24
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 140
+        },
+        "badgeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 16
+        },
+        "joinPolicy": {
+          "$ref": "#/$defs/joinPolicy"
+        },
+        "requiredLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "capacity": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 100
+        },
+        "memberCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "revision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "createdAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "teamId",
+        "playerId",
+        "role",
+        "joinedAtMilliseconds",
+        "helpCount"
+      ],
+      "properties": {
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "joinedAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "helpCount": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "teamId",
+        "playerId",
+        "role",
+        "joinedAtMilliseconds",
+        "helpCount",
+        "displayName",
+        "avatarKey",
+        "mutedUntilMilliseconds"
+      ],
+      "properties": {
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "joinedAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "helpCount": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "avatarKey": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mutedUntilMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messageId",
+        "playerId",
+        "displayName",
+        "text",
+        "kind",
+        "createdAtMilliseconds",
+        "deleted"
+      ],
+      "properties": {
+        "messageId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "text": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "system"
+          ]
+        },
+        "createdAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "deleted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "teamId",
+        "playerId",
+        "displayName",
+        "status",
+        "createdAtMilliseconds"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "accepted",
+            "rejected",
+            "cancelled"
+          ]
+        },
+        "createdAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "invite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inviteId",
+        "teamId",
+        "playerId",
+        "inviterPlayerId",
+        "status",
+        "createdAtMilliseconds",
+        "expiresAtMilliseconds"
+      ],
+      "properties": {
+        "inviteId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "inviterPlayerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "accepted",
+            "rejected",
+            "expired"
+          ]
+        },
+        "createdAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "expiresAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "teamId",
+        "playerId",
+        "displayName",
+        "currentCount",
+        "requiredCount",
+        "createdAtMilliseconds",
+        "expiresAtMilliseconds",
+        "contributedByMe",
+        "status"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "currentCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "requiredCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "createdAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "expiresAtMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "contributedByMe": {
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "completed",
+            "expired"
+          ]
+        }
+      }
+    },
+    "queryRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "view"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "view": {
+          "enum": [
+            "discover",
+            "mine",
+            "team",
+            "members",
+            "messages",
+            "requests",
+            "invites",
+            "help"
+          ]
+        },
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "search": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 64
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "pageSize": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      }
+    },
+    "commandPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 24
+        },
+        "description": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 140
+        },
+        "badgeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 48
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 16
+        },
+        "joinPolicy": {
+          "$ref": "#/$defs/joinPolicy"
+        },
+        "requiredLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "capacity": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 100
+        },
+        "targetPlayerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "inviteId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "role": {
+          "$ref": "#/$defs/role"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "messageId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "requestId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "durationMinutes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10080
+        }
+      }
+    },
+    "commandRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "operationId",
+        "action",
+        "payload"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "operationId": {
+          "$ref": "common.schema.json#/$defs/uuidV7"
+        },
+        "action": {
+          "enum": [
+            "create",
+            "edit",
+            "join",
+            "request_join",
+            "cancel_request",
+            "leave",
+            "request_help",
+            "invite",
+            "accept_request",
+            "reject_request",
+            "kick",
+            "ban",
+            "unban",
+            "transfer",
+            "block_member",
+            "unblock_member",
+            "accept_invite",
+            "reject_invite",
+            "set_role",
+            "send_message",
+            "delete_message",
+            "report_message",
+            "give_help",
+            "mute_member"
+          ]
+        },
+        "teamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "expectedRevision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "payload": {
+          "$ref": "#/$defs/commandPayload"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "create"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "#/$defs/settings"
+              },
+              "teamId": false,
+              "expectedRevision": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "edit"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "#/$defs/settings"
+              }
+            },
+            "required": [
+              "teamId",
+              "expectedRevision"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "join"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {}
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "request_join"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {}
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "cancel_request"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {}
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "leave"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {}
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "request_help"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {}
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "invite"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "accept_request"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "reject_request"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "kick"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId",
+              "expectedRevision"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "ban"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId",
+              "expectedRevision"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "unban"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId",
+              "expectedRevision"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "transfer"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId",
+              "expectedRevision"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "block_member"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "unblock_member"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "accept_invite"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "inviteId"
+                ],
+                "properties": {
+                  "inviteId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "reject_invite"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "inviteId"
+                ],
+                "properties": {
+                  "inviteId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "set_role"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId",
+                  "role"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  },
+                  "role": {
+                    "$ref": "#/$defs/role"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId",
+              "expectedRevision"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "send_message"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "delete_message"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "messageId"
+                ],
+                "properties": {
+                  "messageId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "report_message"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "messageId",
+                  "reason"
+                ],
+                "properties": {
+                  "messageId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 140
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "give_help"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "requestId"
+                ],
+                "properties": {
+                  "requestId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "mute_member"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "targetPlayerId",
+                  "durationMinutes"
+                ],
+                "properties": {
+                  "targetPlayerId": {
+                    "$ref": "common.schema.json#/$defs/uuid"
+                  },
+                  "durationMinutes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10080
+                  }
+                }
+              }
+            },
+            "required": [
+              "teamId",
+              "expectedRevision"
+            ]
+          }
+        }
+      ]
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "appId",
+        "accountId",
+        "playerId",
+        "serverTimeMilliseconds",
+        "operationId",
+        "revision",
+        "team",
+        "membership",
+        "teams",
+        "members",
+        "messages",
+        "requests",
+        "invites",
+        "helpRequests",
+        "nextCursor",
+        "resultCode"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "const": 1
+        },
+        "appId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "accountId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "playerId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "serverTimeMilliseconds": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "operationId": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/uuidV7"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "team": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/team"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "membership": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/membership"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "teams": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/team"
+          }
+        },
+        "members": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/member"
+          }
+        },
+        "messages": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/message"
+          }
+        },
+        "requests": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/request"
+          }
+        },
+        "invites": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/invite"
+          }
+        },
+        "helpRequests": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "$ref": "#/$defs/help"
+          }
+        },
+        "nextCursor": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resultCode": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "invalidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityType",
+        "entityKey",
+        "revision",
+        "kind"
+      ],
+      "properties": {
+        "entityType": {
+          "const": "teams"
+        },
+        "entityKey": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "teamId"
+          ],
+          "properties": {
+            "teamId": {
+              "$ref": "common.schema.json#/$defs/uuid"
+            }
+          }
+        },
+        "revision": {
+          "$ref": "common.schema.json#/$defs/positiveInt64"
+        },
+        "kind": {
+          "const": "invalidation"
+        }
+      }
+    },
+    "pullChange": {
+      "oneOf": [
+        {
+          "$ref": "projection.schema.json#/$defs/change"
+        },
+        {
+          "$ref": "#/$defs/invalidation"
+        }
+      ]
+    },
+    "pullGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feedRevision",
+        "changes"
+      ],
+      "properties": {
+        "feedRevision": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "changes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/pullChange"
+          }
+        }
+      }
+    },
+    "pullPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "changes",
+        "nextCursor",
+        "hasMore",
+        "resetRequired",
+        "committedThrough",
+        "serverTime"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "changes": {
+          "type": "array",
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/pullGroup"
+          }
+        },
+        "nextCursor": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "resetRequired": {
+          "const": false
+        },
+        "committedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        }
+      }
+    },
+    "pullResponse": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/pullPage"
+        },
+        {
+          "$ref": "pull.schema.json#/$defs/reset"
+        }
+      ]
+    }
+  }
+}

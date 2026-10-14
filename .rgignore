@@ -1,0 +1,5 @@
+# Cold history is excluded from default discovery, not from explicit reads/tests.
+/docs/archive/
+/docs/implementation/evidence/
+/docs/implementation/coordination/gates/
+/references/

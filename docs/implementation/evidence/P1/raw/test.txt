@@ -1,0 +1,9 @@
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+Test run for C:\Work\git\gindemit\game-platform-dotnet\tests\GamePlatform.Tests\bin\Release\net9.0\GamePlatform.Tests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 17.13.0 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: C:\Work\git\gindemit\game-platform-dotnet\docs\implementation\evidence\P1\raw\p1.trx
+
+Passed!  - Failed:     0, Passed:    31, Skipped:     0, Total:    31, Duration: 30 ms - GamePlatform.Tests.dll (net9.0)

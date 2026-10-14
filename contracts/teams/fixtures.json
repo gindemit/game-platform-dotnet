@@ -1,0 +1,71 @@
+{
+  "protocol": "teams-1.0.0",
+  "fixtures": [
+    {
+      "name": "discover",
+      "schema": "schemas/teams.schema.json#/$defs/queryRequest",
+      "diagnostic": {
+        "protocolVersion": 1,
+        "view": "discover",
+        "pageSize": 30
+      },
+      "messagePackHex": "83af70726f746f636f6c56657273696f6ecf0000000000000001a476696577a8646973636f766572a87061676553697a65cf000000000000001e"
+    },
+    {
+      "name": "send-message",
+      "schema": "schemas/teams.schema.json#/$defs/commandRequest",
+      "diagnostic": {
+        "protocolVersion": 1,
+        "operationId": "0199f9a0-1000-7000-8000-000000000005",
+        "action": "send_message",
+        "teamId": "0199f9a0-1000-7000-8000-000000000004",
+        "payload": {
+          "text": "Hello gardeners 🌼"
+        }
+      },
+      "messagePackHex": "85af70726f746f636f6c56657273696f6ecf0000000000000001ab6f7065726174696f6e4964c4100199f9a0100070008000000000000005a6616374696f6eac73656e645f6d657373616765a67465616d4964c4100199f9a0100070008000000000000004a77061796c6f616481a474657874b448656c6c6f2067617264656e65727320f09f8cbc"
+    },
+    {
+      "name": "mine-response",
+      "schema": "schemas/teams.schema.json#/$defs/response",
+      "diagnostic": {
+        "protocolVersion": 1,
+        "appId": "0199f9a0-1000-7000-8000-000000000001",
+        "accountId": "0199f9a0-1000-7000-8000-000000000002",
+        "playerId": "0199f9a0-1000-7000-8000-000000000003",
+        "serverTimeMilliseconds": "1791676800000",
+        "operationId": null,
+        "revision": "7",
+        "team": {
+          "teamId": "0199f9a0-1000-7000-8000-000000000004",
+          "name": "Bloom Together",
+          "description": "A place to grow",
+          "badgeId": "daisy",
+          "language": "en",
+          "joinPolicy": "open",
+          "requiredLevel": 0,
+          "capacity": 30,
+          "memberCount": 1,
+          "revision": "7",
+          "createdAtMilliseconds": "1791676800000"
+        },
+        "membership": {
+          "teamId": "0199f9a0-1000-7000-8000-000000000004",
+          "playerId": "0199f9a0-1000-7000-8000-000000000003",
+          "role": "leader",
+          "joinedAtMilliseconds": "1791676800000",
+          "helpCount": "9007199254740993"
+        },
+        "teams": [],
+        "members": [],
+        "messages": [],
+        "requests": [],
+        "invites": [],
+        "helpRequests": [],
+        "nextCursor": null,
+        "resultCode": null
+      },
+      "messagePackHex": "de0011af70726f746f636f6c56657273696f6ecf0000000000000001a56170704964c4100199f9a0100070008000000000000001a96163636f756e744964c4100199f9a0100070008000000000000002a8706c617965724964c4100199f9a0100070008000000000000003b673657276657254696d654d696c6c697365636f6e6473cf000001a128425c00ab6f7065726174696f6e4964c0a87265766973696f6ecf0000000000000007a47465616d8ba67465616d4964c4100199f9a0100070008000000000000004a46e616d65ae426c6f6f6d20546f676574686572ab6465736372697074696f6eaf4120706c61636520746f2067726f77a762616467654964a56461697379a86c616e6775616765a2656eaa6a6f696e506f6c696379a46f70656ead72657175697265644c6576656ccf0000000000000000a86361706163697479cf000000000000001eab6d656d626572436f756e74cf0000000000000001a87265766973696f6ecf0000000000000007b56372656174656441744d696c6c697365636f6e6473cf000001a128425c00aa6d656d6265727368697085a67465616d4964c4100199f9a0100070008000000000000004a8706c617965724964c4100199f9a0100070008000000000000003a4726f6c65a66c6561646572b46a6f696e656441744d696c6c697365636f6e6473cf000001a128425c00a968656c70436f756e74cf0020000000000001a57465616d7390a76d656d6265727390a86d6573736167657390a8726571756573747390a7696e766974657390ac68656c70526571756573747390aa6e657874437572736f72c0aa726573756c74436f6465c0"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configuration client adapter qualification</title>
+<style>body{font:16px system-ui;max-width:1000px;margin:32px auto;padding:0 20px;background:#f5f5f3;color:#171717}button{font:inherit;padding:10px 14px;margin:5px;border:1px solid #888;background:white;border-radius:4px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;border:1px solid #ddd;padding:16px}iframe{width:100%;height:110px;border:1px solid #aaa}</style>
+<h1>Shipping browser adapter tests</h1>
+<p>This page calls the shipped fetch/IndexedDB adapter. It is separate from portable C# and Unity qualification.</p>
+<p id="origins">Loading owned origins…</p>
+<div>
+<button id="seed">Seed actual IndexedDB</button><button id="restore">Restore exact raw bytes</button>
+<button id="generation-fence">Check owner generation fence</button>
+<button id="transport">Cross-origin B/shared fetch</button><button id="abort">Abort before commit</button>
+<button id="quota">Inject quota failure</button><button id="denial">Opaque-origin storage denial</button>
+<button id="open-peer">Open second tab</button><button id="arm-race">Arm same-generation race</button>
+<button id="run-race">Run two-tab race</button><button id="merge-retry">Reload and merge losing pin</button>
+<button id="clear">Clear qualification namespace</button>
+</div>
+<pre id="results" aria-live="polite">starting</pre><div id="sandbox"></div>
+<script>var LibraryManager={library:{}};function mergeInto(a,b){Object.assign(a,b)}function SendMessage(){throw Error('This harness calls the shipped adapter methods directly')}</script>
+<script src="configuration-client.jslib"></script><script>var GPConfigurationClient=LibraryManager.library.$GPConfigurationClient</script>
+<script src="browser-tests.js"></script></html>

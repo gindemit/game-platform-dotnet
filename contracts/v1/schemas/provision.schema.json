@@ -1,0 +1,6 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://contracts.gindemit.invalid/v1/schemas/provision.schema.json","$defs":{
+    "request":{"type":"object","additionalProperties":false,"required":["protocolVersion","installationId","clientStreamId"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"installationId":{"$ref":"common.schema.json#/$defs/uuid"},"clientStreamId":{"$ref":"common.schema.json#/$defs/uuidV7"}}},
+    "response":{"type":"object","additionalProperties":false,"required":["protocolVersion","account","membership","clientStreamId","nextSequence","serverTime"],"properties":{"protocolVersion":{"$ref":"common.schema.json#/$defs/protocolVersion"},"account":{"$ref":"common.schema.json#/$defs/account"},"membership":{"$ref":"common.schema.json#/$defs/membership"},"clientStreamId":{"$ref":"common.schema.json#/$defs/uuid"},"nextSequence":{"$ref":"common.schema.json#/$defs/positiveInt64"},"serverTime":{"$ref":"common.schema.json#/$defs/timestamp"}}}
+  }
+}

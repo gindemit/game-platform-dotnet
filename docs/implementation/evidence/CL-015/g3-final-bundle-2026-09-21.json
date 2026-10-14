@@ -1,0 +1,64 @@
+{
+  "task": "CL-015",
+  "date": "2026-09-21",
+  "artifactSourceCommit": "73cf2feb84734d453a138573c4ffbc6ffc9a2e1b",
+  "artifactPath": "C:/Work/git/gindemit/game-platform-dotnet-g3bundle-final-20260921/artifacts/sdk",
+  "manifestSha256": "14562ae0b16985d8a5de5c04a3374fd3f06e83289496810ba516afa7b3e6201e",
+  "sourceClean": true,
+  "buildSkipped": false,
+  "published": false,
+  "inventory": {
+    "sdkProjects": 15,
+    "managedAssemblies": 23,
+    "messagePackRuntimeAssemblies": 8,
+    "messagePackPackageRecords": 9,
+    "nativeTargets": 3,
+    "pinvokeDeclarations": 38,
+    "filesIncludingManifest": 100
+  },
+  "includedPublicTypes": {
+    "cl101": [
+      "GamePlatform.Features.Accounts.AccountsLifecycleService",
+      "GamePlatform.Features.Accounts.AccountsLifecycleSnapshot",
+      "GamePlatform.Transport.Http.Supabase.BoundedSupabaseAuthHttpExecutor",
+      "GamePlatform.Transport.Http.Supabase.ISupabaseAnonymousSessionStore",
+      "GamePlatform.Transport.Http.Supabase.SupabaseAnonymousAuthLifecycle",
+      "GamePlatform.Transport.Http.Supabase.SupabaseAuthConfiguration"
+    ],
+    "cl107": [
+      "GamePlatform.Features.RewardFulfillment.DurableRewardReceiptCorrelation",
+      "GamePlatform.Features.RewardFulfillment.RewardFulfillmentService"
+    ]
+  },
+  "verification": {
+    "packageTests": "29/29",
+    "sdkReleaseTests": "503/503",
+    "architectureContractValidation": "passed",
+    "validatorTests": "19/19",
+    "executionManifestTests": "14/14",
+    "lockedReleasePackageBuild": "passed; 0 warnings; 0 errors",
+    "ordinaryBundleVerification": "passed",
+    "independentCleanClones": 2,
+    "manifestsByteEqual": true,
+    "completeArtifactsByteEqual": true,
+    "reproductionSummary": "C:/Work/git/gindemit/sdk-bundle-evidence-final-g3-20260921/reproducibility-summary.json"
+  },
+  "unrun": [
+    "Hosted TLS Supabase Auth and compatible backend HTTPS execution",
+    "Unity separate auth executor and secure-store CAS bridge",
+    "Unity import/compilation, IL2CPP and managed stripping",
+    "APK inspection and physical Android device execution of this refreshed bundle",
+    "macOS SQLite native execution",
+    "BE-025/INT-010 offline-restart-reconnect one-authoritative-test.coin journey and G3"
+  ],
+  "commands": [
+    "python -m unittest discover -s scripts -p test_packaging.py",
+    "python scripts/package-sdk.py",
+    "python scripts/package-sdk.py --verify",
+    "dotnet test GamePlatform.sln -c Release --no-build --no-restore --nologo",
+    "python scripts/validate.py",
+    "python scripts/test_validation.py",
+    "python -m unittest discover -s docs/implementation -p test_*.py",
+    "python scripts/verify-package-reproducibility.py --source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-final-20260921 --revision 73cf2feb84734d453a138573c4ffbc6ffc9a2e1b --sqlite-source C:/Work/git/gindemit/game-platform-dotnet-g3bundle-final-20260921/artifacts/acquisition/unity-sqlite-net --evidence-output C:/Work/git/gindemit/sdk-bundle-evidence-final-g3-20260921"
+  ]
+}

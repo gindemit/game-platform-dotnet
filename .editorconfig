@@ -1,0 +1,26 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+csharp_new_line_before_open_brace = all
+csharp_preserve_single_line_statements = false
+# Keep simple auto-properties such as public string Name { get; } compact.
+# This preserves existing compact blocks; it does not collapse expanded code.
+csharp_preserve_single_line_blocks = true
+dotnet_diagnostic.IDE0055.severity = warning
+
+# Generated contracts and third-party source retain their owning layout.
+[*.g.cs]
+generated_code = true
+dotnet_diagnostic.IDE0055.severity = none
+
+[src/GamePlatform.Storage.Sqlite/Vendor/SQLite.cs]
+generated_code = true
+dotnet_diagnostic.IDE0055.severity = none

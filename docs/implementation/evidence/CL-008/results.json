@@ -1,0 +1,27 @@
+{
+  "task": "CL-008",
+  "date": "2026-09-19",
+  "source_commit": "4de294141ea7d0f6cf062b8ce736ea0ce89fa112",
+  "scope": "windows-x64-real-native",
+  "status": "in_progress",
+  "counts": {
+    "cl008_native_tests": 8,
+    "full_dotnet_tests": 252,
+    "script_tests": 33,
+    "manifest_tests": 14,
+    "projects_restored": 18,
+    "projects_built": 18,
+    "warnings": 0,
+    "errors": 0
+  },
+  "process_termination": {
+    "precommit": "projection, sequence and outbox all absent after reopen",
+    "postcommit": "projection, sequence and outbox all present after reopen"
+  },
+  "unrun": [
+    "real disk-full and corruption injection",
+    "terminal result and finalized-through persistence",
+    "authorized server-side stream rotation",
+    "Unity and physical device"
+  ]
+}

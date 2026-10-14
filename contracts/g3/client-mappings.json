@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "0.4.0-g3-schema-checkpoint.1",
+  "mappings": [
+    {
+      "schema": "reward-receipt.schema.json#/$defs/request",
+      "csharp": "G3RewardReceiptRequest",
+      "fields": {
+        "operationId": "Guid; MessagePack bin16 RFC order; diagnostic lowercase UUID"
+      }
+    },
+    {
+      "schema": "reward-receipt.schema.json#/$defs/response/oneOf/0",
+      "csharp": "G3RewardReceiptNotFoundResponse",
+      "fields": {
+        "protocolVersion": "constant int32 1",
+        "schemaVersion": "constant int32 2",
+        "operationId": "Guid",
+        "status": "constant not_found"
+      }
+    },
+    {
+      "schema": "reward-receipt.schema.json#/$defs/response/oneOf/1",
+      "csharp": "G3RewardReceiptCompletionResponse",
+      "fields": {
+        "protocolVersion": "constant int32 1",
+        "schemaVersion": "constant int32 2",
+        "operationId": "Guid",
+        "status": "constant completion_recorded",
+        "outcomeAuthority": "constant client_trusted_unvalidated",
+        "reward": "required nullable LiveSliceRewardReceipt; absent invalid, null committed without server grant"
+      }
+    },
+    {
+      "schema": "live-slice/receipt.schema.json#/$defs/receipt",
+      "csharp": "LiveSliceRewardReceipt",
+      "fields": {
+        "grantId": "Guid UUIDv7",
+        "originatingOperationId": "Guid",
+        "feedRevision": "long checked signed64",
+        "recordedAt": "long bounded Unix milliseconds",
+        "source": "LiveSliceRewardSource",
+        "planId": "string semantic key",
+        "planVersion": "int32",
+        "lines": "IReadOnlyList<ILiveSliceRewardLine>, 1..64"
+      }
+    }
+  ],
+  "reusedCore": {
+    "completionCommand": "GameplayCompletionCommand",
+    "progressionProjection": "ProjectionProgressionSnapshot / ProjectionProgressionChange",
+    "walletProjection": "ProjectionWalletSnapshot / ProjectionWalletChange",
+    "visibilityGeneration": "BootstrapStartResponse.VisibilityGeneration and opaque pull cursor binding"
+  },
+  "unknownHandling": "reject unknown fields, branches, status, outcomeAuthority and schema version before constructing DTOs"
+}

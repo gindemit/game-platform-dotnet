@@ -1,0 +1,1280 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "purchase-command",
+      "definition": "purchaseCommand",
+      "valid": true,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": 1,
+        "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+      }
+    },
+    {
+      "id": "claim-command",
+      "definition": "claimCommand",
+      "valid": true,
+      "value": {
+        "questId": "test.quest.first-clear",
+        "occurrenceKey": "test.quest.first-clear:occ-1"
+      }
+    },
+    {
+      "id": "purchase-client-price",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": 1,
+        "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+        "price": {
+          "currencyId": "test.coin",
+          "quantity": "1"
+        }
+      }
+    },
+    {
+      "id": "purchase-client-discount",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": 1,
+        "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+        "discount": "100"
+      }
+    },
+    {
+      "id": "purchase-missing-key",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": 1
+      }
+    },
+    {
+      "id": "purchase-key-not-v7",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": 1,
+        "purchaseKey": "01890f3e-7a6b-4c8d-9e0f-1020304050c0"
+      }
+    },
+    {
+      "id": "purchase-offer-version-zero",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": 0,
+        "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+      }
+    },
+    {
+      "id": "purchase-offer-version-string",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": "1",
+        "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+      }
+    },
+    {
+      "id": "purchase-offer-null",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": null,
+        "offerVersion": 1,
+        "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+      }
+    },
+    {
+      "id": "claim-client-reward",
+      "definition": "claimCommand",
+      "valid": false,
+      "value": {
+        "questId": "test.quest.first-clear",
+        "occurrenceKey": "test.quest.first-clear:occ-1",
+        "reward": [
+          {
+            "lineIndex": 0,
+            "definitionVersion": 1,
+            "kind": "currency",
+            "currencyId": "test.gem",
+            "quantity": "5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "claim-missing-occurrence",
+      "definition": "claimCommand",
+      "valid": false,
+      "value": {
+        "questId": "test.quest.first-clear"
+      }
+    },
+    {
+      "id": "claim-occurrence-bad-key",
+      "definition": "claimCommand",
+      "valid": false,
+      "value": {
+        "questId": "test.quest.first-clear",
+        "occurrenceKey": "occ 1"
+      }
+    },
+    {
+      "id": "push-request-purchase-and-claim",
+      "definition": "request",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "operations": [
+          {
+            "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+            "installationId": "01890f3e-7a6b-7c8d-9e0f-1020304050a0",
+            "sequence": "1",
+            "type": "store.offer.purchase",
+            "schemaVersion": 1,
+            "clientCreatedAt": 1758800000000,
+            "payload": {
+              "offerId": "test.offer.starter",
+              "offerVersion": 1,
+              "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+            }
+          },
+          {
+            "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+            "installationId": "01890f3e-7a6b-7c8d-9e0f-1020304050a0",
+            "sequence": "2",
+            "type": "quest.claim",
+            "schemaVersion": 1,
+            "clientCreatedAt": 1758800000000,
+            "payload": {
+              "questId": "test.quest.first-clear",
+              "occurrenceKey": "test.quest.first-clear:occ-1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "operation-type-payload-mismatch",
+      "definition": "operation",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "installationId": "01890f3e-7a6b-7c8d-9e0f-1020304050a0",
+        "sequence": "1",
+        "type": "store.offer.purchase",
+        "schemaVersion": 1,
+        "clientCreatedAt": 1758800000000,
+        "payload": {
+          "questId": "test.quest.first-clear",
+          "occurrenceKey": "test.quest.first-clear:occ-1"
+        }
+      }
+    },
+    {
+      "id": "operation-schema-version-2",
+      "definition": "operation",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "installationId": "01890f3e-7a6b-7c8d-9e0f-1020304050a0",
+        "sequence": "1",
+        "type": "quest.claim",
+        "schemaVersion": 2,
+        "clientCreatedAt": 1758800000000,
+        "payload": {
+          "questId": "test.quest.first-clear",
+          "occurrenceKey": "test.quest.first-clear:occ-1"
+        }
+      }
+    },
+    {
+      "id": "operation-unknown-type",
+      "definition": "operation",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "installationId": "01890f3e-7a6b-7c8d-9e0f-1020304050a0",
+        "sequence": "1",
+        "type": "store.offer.refund",
+        "schemaVersion": 1,
+        "clientCreatedAt": 1758800000000,
+        "payload": {
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+        }
+      }
+    },
+    {
+      "id": "v1-push-rejects-store-type",
+      "definition": "operation",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "installationId": "01890f3e-7a6b-7c8d-9e0f-1020304050a0",
+        "sequence": "1",
+        "type": "store.offer.purchase",
+        "schemaVersion": 1,
+        "clientCreatedAt": 1758800000000,
+        "payload": {
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+        }
+      },
+      "schema": "v1-push"
+    },
+    {
+      "id": "accepted-purchase",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "10"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "accepted-purchase-reused-by-second-operation",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+        "sequence": "2",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "10"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "accepted-claim",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "quest_claimed",
+          "claimId": "01890f3e-7a6b-7c8d-9e0f-1020304050e0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "questId": "test.quest.first-clear",
+          "occurrenceKey": "test.quest.first-clear:occ-1",
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "accepted-purchase-max-quantity",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "9223372036854775807",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "9223372036854775807"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "9223372036854775807"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "legacy-gameplay-accepted-still-valid",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "0",
+        "result": {
+          "kind": "gameplay_completion_recorded",
+          "completionRecorded": true
+        }
+      }
+    },
+    {
+      "id": "terminal-insufficient-balance",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+        "sequence": "2",
+        "status": "terminal_rejected",
+        "error": {
+          "code": "store_insufficient_balance",
+          "category": "conflict",
+          "message": "fixture rejection",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "id": "terminal-offer-version-mismatch",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+        "sequence": "2",
+        "status": "terminal_rejected",
+        "error": {
+          "code": "store_offer_version_mismatch",
+          "category": "conflict",
+          "message": "fixture rejection",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "id": "terminal-quest-not-claimable",
+      "definition": "result",
+      "valid": true,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+        "sequence": "2",
+        "status": "terminal_rejected",
+        "error": {
+          "code": "quest_not_claimable",
+          "category": "conflict",
+          "message": "fixture rejection",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "id": "terminal-rejection-retryable-true",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+        "sequence": "2",
+        "status": "terminal_rejected",
+        "error": {
+          "code": "store_insufficient_balance",
+          "category": "conflict",
+          "message": "x",
+          "retryable": true
+        }
+      }
+    },
+    {
+      "id": "purchase-empty-lines",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "10"
+          },
+          "lines": []
+        }
+      }
+    },
+    {
+      "id": "purchase-zero-debit",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "0"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "purchase-negative-debit",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "-10"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "purchase-debit-over-signed64",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "9223372036854775808"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "purchase-debit-json-number",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": 10
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "purchase-missing-debit",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "purchase-unordered-lines",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "10"
+          },
+          "lines": [
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            },
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "purchase-entitlement-line",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "10"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "entitlement",
+              "entitlementId": "test.vip",
+              "expiresAt": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "claim-with-debit",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "quest_claimed",
+          "claimId": "01890f3e-7a6b-7c8d-9e0f-1020304050e0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "questId": "test.quest.first-clear",
+          "occurrenceKey": "test.quest.first-clear:occ-1",
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "3"
+            }
+          ],
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "1"
+          }
+        }
+      }
+    },
+    {
+      "id": "accepted-zero-feed-revision",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "0",
+        "result": {
+          "kind": "quest_claimed",
+          "claimId": "01890f3e-7a6b-7c8d-9e0f-1020304050e0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "questId": "test.quest.first-clear",
+          "occurrenceKey": "test.quest.first-clear:occ-1",
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "accepted-unknown-kind",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "quest_claimed_v2",
+          "claimId": "01890f3e-7a6b-7c8d-9e0f-1020304050e0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "questId": "test.quest.first-clear",
+          "occurrenceKey": "test.quest.first-clear:occ-1",
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "push-response",
+      "definition": "response",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "operationResults": [
+          {
+            "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+            "sequence": "1",
+            "status": "accepted",
+            "feedRevision": "42",
+            "result": {
+              "kind": "store_offer_purchased",
+              "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+              "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+              "offerId": "test.offer.starter",
+              "offerVersion": 1,
+              "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+              "debit": {
+                "currencyId": "test.coin",
+                "quantity": "10"
+              },
+              "lines": [
+                {
+                  "lineIndex": 0,
+                  "definitionVersion": 1,
+                  "kind": "item_stack",
+                  "itemId": "test.item.hat",
+                  "quantity": "1"
+                },
+                {
+                  "lineIndex": 1,
+                  "definitionVersion": 1,
+                  "kind": "currency",
+                  "currencyId": "test.gem",
+                  "quantity": "5"
+                }
+              ]
+            }
+          },
+          {
+            "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+            "sequence": "2",
+            "status": "terminal_rejected",
+            "error": {
+              "code": "store_insufficient_balance",
+              "category": "conflict",
+              "message": "fixture rejection",
+              "retryable": false
+            }
+          }
+        ],
+        "finalizedThrough": "2",
+        "serverTime": 1758800000001
+      }
+    },
+    {
+      "id": "push-response-unknown-field",
+      "definition": "response",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "operationResults": [
+          {
+            "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+            "sequence": "1",
+            "status": "accepted",
+            "feedRevision": "42",
+            "result": {
+              "kind": "store_offer_purchased",
+              "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+              "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+              "offerId": "test.offer.starter",
+              "offerVersion": 1,
+              "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+              "debit": {
+                "currencyId": "test.coin",
+                "quantity": "10"
+              },
+              "lines": [
+                {
+                  "lineIndex": 0,
+                  "definitionVersion": 1,
+                  "kind": "item_stack",
+                  "itemId": "test.item.hat",
+                  "quantity": "1"
+                },
+                {
+                  "lineIndex": 1,
+                  "definitionVersion": 1,
+                  "kind": "currency",
+                  "currencyId": "test.gem",
+                  "quantity": "5"
+                }
+              ]
+            }
+          }
+        ],
+        "finalizedThrough": "1",
+        "serverTime": 1758800000001,
+        "balances": []
+      }
+    },
+    {
+      "id": "purchase-offer-version-over-int32",
+      "definition": "purchaseCommand",
+      "valid": false,
+      "value": {
+        "offerId": "test.offer.starter",
+        "offerVersion": 2147483648,
+        "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0"
+      }
+    },
+    {
+      "id": "purchase-line-index-gap",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "store_offer_purchased",
+          "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "offerId": "test.offer.starter",
+          "offerVersion": 1,
+          "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+          "debit": {
+            "currencyId": "test.coin",
+            "quantity": "10"
+          },
+          "lines": [
+            {
+              "lineIndex": 0,
+              "definitionVersion": 1,
+              "kind": "item_stack",
+              "itemId": "test.item.hat",
+              "quantity": "1"
+            },
+            {
+              "lineIndex": 2,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "claim-lines-start-at-one",
+      "definition": "result",
+      "valid": false,
+      "value": {
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "sequence": "1",
+        "status": "accepted",
+        "feedRevision": "42",
+        "result": {
+          "kind": "quest_claimed",
+          "claimId": "01890f3e-7a6b-7c8d-9e0f-1020304050e0",
+          "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "questId": "test.quest.first-clear",
+          "occurrenceKey": "test.quest.first-clear:occ-1",
+          "lines": [
+            {
+              "lineIndex": 1,
+              "definitionVersion": 1,
+              "kind": "currency",
+              "currencyId": "test.gem",
+              "quantity": "3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "receipt-found-purchase",
+      "definition": "receiptResponse",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": true,
+        "result": {
+          "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "sequence": "1",
+          "status": "accepted",
+          "feedRevision": "42",
+          "result": {
+            "kind": "store_offer_purchased",
+            "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+            "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+            "offerId": "test.offer.starter",
+            "offerVersion": 1,
+            "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+            "debit": {
+              "currencyId": "test.coin",
+              "quantity": "10"
+            },
+            "lines": [
+              {
+                "lineIndex": 0,
+                "definitionVersion": 1,
+                "kind": "item_stack",
+                "itemId": "test.item.hat",
+                "quantity": "1"
+              },
+              {
+                "lineIndex": 1,
+                "definitionVersion": 1,
+                "kind": "currency",
+                "currencyId": "test.gem",
+                "quantity": "5"
+              }
+            ]
+          }
+        },
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "receipt-found-claim",
+      "definition": "receiptResponse",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": true,
+        "result": {
+          "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "sequence": "1",
+          "status": "accepted",
+          "feedRevision": "42",
+          "result": {
+            "kind": "quest_claimed",
+            "claimId": "01890f3e-7a6b-7c8d-9e0f-1020304050e0",
+            "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+            "questId": "test.quest.first-clear",
+            "occurrenceKey": "test.quest.first-clear:occ-1",
+            "lines": [
+              {
+                "lineIndex": 0,
+                "definitionVersion": 1,
+                "kind": "currency",
+                "currencyId": "test.gem",
+                "quantity": "3"
+              }
+            ]
+          }
+        },
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "receipt-found-legacy-gameplay",
+      "definition": "receiptResponse",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": true,
+        "result": {
+          "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "sequence": "1",
+          "status": "accepted",
+          "feedRevision": "0",
+          "result": {
+            "kind": "gameplay_completion_recorded",
+            "completionRecorded": true
+          }
+        },
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "receipt-found-store-rejection",
+      "definition": "receiptResponse",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": true,
+        "result": {
+          "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+          "sequence": "2",
+          "status": "terminal_rejected",
+          "error": {
+            "code": "store_insufficient_balance",
+            "category": "conflict",
+            "message": "fixture rejection",
+            "retryable": false
+          }
+        },
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405070",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "receipt-not-found",
+      "definition": "receiptResponse",
+      "valid": true,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": false,
+        "result": null,
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "receipt-found-null-result",
+      "definition": "receiptResponse",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": true,
+        "result": null,
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "receipt-not-found-with-result",
+      "definition": "receiptResponse",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": false,
+        "result": {
+          "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "sequence": "1",
+          "status": "accepted",
+          "feedRevision": "42",
+          "result": {
+            "kind": "store_offer_purchased",
+            "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+            "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+            "offerId": "test.offer.starter",
+            "offerVersion": 1,
+            "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+            "debit": {
+              "currencyId": "test.coin",
+              "quantity": "10"
+            },
+            "lines": [
+              {
+                "lineIndex": 0,
+                "definitionVersion": 1,
+                "kind": "item_stack",
+                "itemId": "test.item.hat",
+                "quantity": "1"
+              },
+              {
+                "lineIndex": 1,
+                "definitionVersion": 1,
+                "kind": "currency",
+                "currencyId": "test.gem",
+                "quantity": "5"
+              }
+            ]
+          }
+        },
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "receipt-waiting-result",
+      "definition": "receiptResponse",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": true,
+        "result": {
+          "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "sequence": "1",
+          "status": "waiting_for_sequence",
+          "expectedSequence": "1"
+        },
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      }
+    },
+    {
+      "id": "v1-receipt-rejects-purchase-result",
+      "definition": "receiptResponse",
+      "valid": false,
+      "value": {
+        "protocolVersion": 1,
+        "clientStreamId": "01890f3e-7a6b-7c8d-9e0f-1020304050b0",
+        "found": true,
+        "result": {
+          "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+          "sequence": "1",
+          "status": "accepted",
+          "feedRevision": "42",
+          "result": {
+            "kind": "store_offer_purchased",
+            "purchaseId": "01890f3e-7a6b-7c8d-9e0f-1020304050d0",
+            "originatingOperationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+            "offerId": "test.offer.starter",
+            "offerVersion": 1,
+            "purchaseKey": "01890f3e-7a6b-7c8d-9e0f-1020304050c0",
+            "debit": {
+              "currencyId": "test.coin",
+              "quantity": "10"
+            },
+            "lines": [
+              {
+                "lineIndex": 0,
+                "definitionVersion": 1,
+                "kind": "item_stack",
+                "itemId": "test.item.hat",
+                "quantity": "1"
+              },
+              {
+                "lineIndex": 1,
+                "definitionVersion": 1,
+                "kind": "currency",
+                "currencyId": "test.gem",
+                "quantity": "5"
+              }
+            ]
+          }
+        },
+        "serverTime": 1758800000002,
+        "operationId": "01890f3e-7a6b-7c8d-9e0f-102030405060",
+        "observedFinalizedThrough": "2"
+      },
+      "schema": "v1-recovery"
+    }
+  ]
+}

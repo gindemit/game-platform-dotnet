@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.gindemit.invalid/v1/schemas/bootstrap.schema.json",
+  "$defs": {
+    "collection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "schemaVersion",
+        "required"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "profile",
+            "progression",
+            "inventory",
+            "wallet",
+            "entitlements"
+          ]
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "required": {
+          "const": true
+        }
+      }
+    },
+    "startResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "account",
+        "membership",
+        "snapshotSession",
+        "committedThrough",
+        "visibilityGeneration",
+        "logEpoch",
+        "collections",
+        "firstPageToken",
+        "expiresAt",
+        "serverTime",
+        "streamState"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "account": {
+          "$ref": "common.schema.json#/$defs/account"
+        },
+        "membership": {
+          "$ref": "common.schema.json#/$defs/membership"
+        },
+        "snapshotSession": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "committedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "visibilityGeneration": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "logEpoch": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        "collections": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/collection"
+          },
+          "allOf": [
+            {
+              "contains": {
+                "properties": {
+                  "name": {
+                    "const": "profile"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "contains": {
+                "properties": {
+                  "name": {
+                    "const": "progression"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "contains": {
+                "properties": {
+                  "name": {
+                    "const": "inventory"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "contains": {
+                "properties": {
+                  "name": {
+                    "const": "wallet"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            {
+              "contains": {
+                "properties": {
+                  "name": {
+                    "const": "entitlements"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          ]
+        },
+        "firstPageToken": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "expiresAt": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "streamState": {
+          "$ref": "common.schema.json#/$defs/streamState"
+        }
+      }
+    },
+    "pageRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "snapshotSession",
+        "pageToken",
+        "maxBytes"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "snapshotSession": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "pageToken": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "maxBytes": {
+          "type": "integer",
+          "minimum": 65536,
+          "maximum": 262144
+        }
+      }
+    },
+    "entity": {
+      "$ref": "projection.schema.json#/$defs/snapshotEntity"
+    },
+    "pageResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocolVersion",
+        "snapshotSession",
+        "committedThrough",
+        "entities",
+        "hasMore",
+        "nextPageToken",
+        "initialPullCursor",
+        "serverTime"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "common.schema.json#/$defs/protocolVersion"
+        },
+        "snapshotSession": {
+          "$ref": "common.schema.json#/$defs/opaqueToken"
+        },
+        "committedThrough": {
+          "$ref": "common.schema.json#/$defs/nonNegativeInt64"
+        },
+        "entities": {
+          "type": "array",
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/entity"
+          }
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "nextPageToken": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "initialPullCursor": {
+          "oneOf": [
+            {
+              "$ref": "common.schema.json#/$defs/opaqueToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "serverTime": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "hasMore": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "nextPageToken": {
+                "$ref": "common.schema.json#/$defs/opaqueToken"
+              },
+              "initialPullCursor": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "nextPageToken": {
+                "type": "null"
+              },
+              "initialPullCursor": {
+                "$ref": "common.schema.json#/$defs/opaqueToken"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "startQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clientStreamId"
+      ],
+      "properties": {
+        "clientStreamId": {
+          "$ref": "common.schema.json#/$defs/uuid"
+        }
+      }
+    }
+  }
+}

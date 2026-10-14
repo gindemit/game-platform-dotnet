@@ -1,0 +1,170 @@
+{
+  "version": "0.5.0-a06-store-quest-schema.1",
+  "status": "same_phase_schema_checkpoint_runtime_unverified",
+  "route": {
+    "operation": "pushCommands (unchanged POST /v1/apps/{appId}/sync/push)",
+    "request": "store-quest.schema.json#/$defs/request",
+    "response": "store-quest.schema.json#/$defs/response",
+    "selection": "a peer uses these schemas only with trusted capability composition; the v1 push schema is unchanged and still rejects both types",
+    "receiptLookup": {
+      "operation": "getReceipt (unchanged POST /v1/apps/{appId}/sync/receipts/lookup)",
+      "response": "store-quest.schema.json#/$defs/receiptResponse",
+      "selection": "same capabilities as push; a found result may be any v1 or A06 accepted result or a terminal rejection, and legacy results remain valid"
+    }
+  },
+  "commandTypes": [
+    {
+      "type": "store.offer.purchase",
+      "schemaVersion": 1,
+      "payloadSchema": "store-quest.schema.json#/$defs/purchaseCommand",
+      "capability": "store.offer.purchase.v1",
+      "unsupportedPolicy": "upgrade_required_nonterminal",
+      "businessSource": {
+        "kind": "store.purchase",
+        "key": "store.purchase:{purchaseKey}",
+        "scope": "backendNamespace + authenticated app + authenticated platform user",
+        "payloadBinding": [
+          "offerId",
+          "offerVersion"
+        ]
+      },
+      "acceptedResult": "store-quest.schema.json#/$defs/purchaseResult",
+      "rejectionCodes": [
+        "store_offer_not_found",
+        "store_offer_version_mismatch",
+        "store_offer_unavailable",
+        "store_insufficient_balance",
+        "store_purchase_limit_reached",
+        "store_purchase_key_conflict",
+        "value_limit_exceeded"
+      ],
+      "fingerprintVectors": [
+        "purchase_text",
+        "purchase_messagepack_bin16",
+        "purchase_key_changed",
+        "purchase_uppercase_key_rejected",
+        "purchase_bin15_key_rejected"
+      ]
+    },
+    {
+      "type": "quest.claim",
+      "schemaVersion": 1,
+      "payloadSchema": "store-quest.schema.json#/$defs/claimCommand",
+      "capability": "quest.claim.v1",
+      "unsupportedPolicy": "upgrade_required_nonterminal",
+      "businessSource": {
+        "kind": "quest.claim",
+        "key": "quest.claim:{occurrenceKey}",
+        "scope": "backendNamespace + authenticated app + authenticated platform user",
+        "payloadBinding": [
+          "questId"
+        ]
+      },
+      "acceptedResult": "store-quest.schema.json#/$defs/claimResult",
+      "rejectionCodes": [
+        "quest_not_found",
+        "quest_not_claimable",
+        "value_limit_exceeded"
+      ],
+      "fingerprintVectors": [
+        "claim_text"
+      ]
+    }
+  ],
+  "registry": "contracts/v1/operations.json is a pinned G1 artifact; these entries are the additive registry for the two types and do not edit it",
+  "rejectionCodes": {
+    "store_offer_not_found": {
+      "category": "validation",
+      "meaning": "offerId is unknown or not bound to the authenticated app; never reveals another app's offer"
+    },
+    "store_offer_version_mismatch": {
+      "category": "conflict",
+      "meaning": "offerVersion is not the offer's current purchasable version"
+    },
+    "store_offer_unavailable": {
+      "category": "conflict",
+      "meaning": "the offer version exists but is retired or not purchasable for this player"
+    },
+    "store_insufficient_balance": {
+      "category": "conflict",
+      "meaning": "confirmed balance of the price currency is below the server price at commit"
+    },
+    "store_purchase_limit_reached": {
+      "category": "conflict",
+      "meaning": "the server purchase limit for this player and offer is already consumed at commit"
+    },
+    "store_purchase_key_conflict": {
+      "category": "conflict",
+      "meaning": "purchaseKey already committed a purchase with a different offerId or offerVersion"
+    },
+    "quest_not_found": {
+      "category": "validation",
+      "meaning": "questId is unknown or not bound to the authenticated app"
+    },
+    "quest_not_claimable": {
+      "category": "conflict",
+      "meaning": "occurrenceKey is not a completed, unexpired occurrence of questId issued to this player"
+    },
+    "value_limit_exceeded": {
+      "category": "conflict",
+      "meaning": "a grant line would exceed the checked signed64 maximum; nothing commits"
+    },
+    "all": "terminal_rejected with retryable=false in the unchanged G1 error envelope; a terminal rejection commits no value, source reservation or feed change"
+  },
+  "idempotency": {
+    "operation": "the same operationId returns the stored immutable result (G1)",
+    "sameSource": "another operationId for a committed source with the same payloadBinding is accepted with the originating result: same purchaseId/claimId, lines, feedRevision and originatingOperationId, and no second debit, grant or feed change",
+    "changedBinding": "another operationId reusing purchaseKey with a different offerId/offerVersion is store_purchase_key_conflict; a questId that does not own occurrenceKey is quest_not_claimable",
+    "noAlreadyClaimedCode": "a claimed occurrence returns the originating claim rather than a rejection",
+    "concurrency": "commands for one player serialize on the private feed head; of concurrent operations for one source exactly one commits the value effect",
+    "purchaseKey": "client-generated UUIDv7 per purchase intent, persisted in the pending command before first send; a separate legitimate purchase uses a new key",
+    "order": "after operation identity replay, look up the committed business source first; an existing source returns the originating result or the binding conflict before any offer, quest, balance or limit check"
+  },
+  "fingerprint": {
+    "version": 1,
+    "semanticEncoding": "unchanged gindemit-canonical-command-v1 framing and included fields",
+    "schema": "normalization is directed by store-quest.schema.json#/$defs/operation instead of the v1 push operation",
+    "purchaseKey": "a canonical lowercase UUID text or exactly 16 RFC-order MessagePack binary bytes normalizes to canonical lowercase UUID text with the string tag; other text or binary lengths are rejected before hashing",
+    "otherFields": "offerId, questId and occurrenceKey are strings; offerVersion is an integer tag",
+    "vectors": "fingerprint-vectors.json",
+    "runtime": "the frozen backend fingerprinter is bound to the v1 operation schema and cannot compute these vectors unchanged; cross-runtime computation is unverified"
+  },
+  "valueEffects": {
+    "purchase": "debit the server-pinned price (currencyId, quantity) of offerId@offerVersion, then apply the server reward plan lines of that version in lineIndex order; the client never supplies price, discount, reward or quantity",
+    "claim": "apply the server reward lines of the occurrence in lineIndex order; no debit",
+    "lines": "reuse live-slice receipt currencyLine (wallet) and stackLine (inventory); entitlement lines are excluded",
+    "projection": "one atomic feed group at feedRevision carrying the resulting v1 walletUpsert/inventoryUpsert per changed entity; a debit and grant of one currency net into one upsert; no projection schema change",
+    "balances": "wallet balance and inventory quantity stay checked nonnegative signed64; result quantities are historical and never mutate client state directly, bootstrap/pull owns confirmed value"
+  },
+  "atomicity": {
+    "unit": "debit, purchase or claim record, every grant line, operation result and feed group commit in one server transaction",
+    "faults": "a fault after the debit or after any single grant line rolls back everything; no partial value, record or feed change is observable",
+    "clientOutcome": "a rolled-back attempt surfaces as retryable (G1 envelope, retryable=true) or a transport failure; retrying the same operationId executes once"
+  },
+  "authorization": [
+    "derive account only from verified authentication",
+    "offer, quest and occurrence must be bound to the authenticated app and, for occurrences, issued to the authenticated player",
+    "authorization failures never enumerate another account's or app's offers, occurrences, purchases or claims"
+  ],
+  "runtimeMappings": {
+    "uuids": "operationId, originatingOperationId, purchaseId, claimId, purchaseKey are bin16 RFC order in MessagePack, lowercase text in JSON",
+    "signed64": "debit and line quantity, feedRevision are C# long / TS bigint, decimal strings in JSON",
+    "int32": "offerVersion, lineIndex, definitionVersion",
+    "unknown": "unknown fields, kinds, codes and schema versions fail closed"
+  },
+  "exclusions": [
+    "no real-money purchase, store receipt validation or payment provider",
+    "no new REST route; offer listing, quest listing and claim status reads are not exposed",
+    "no objective engine or quest progress evaluation; a claimable occurrence is trusted server state",
+    "no rotation, scheduling, eligibility rules or availability windows beyond the server claimable/purchasable decision",
+    "no entitlement grant lines",
+    "no runtime codec, endpoint, migration or feature implementation",
+    "no A06 or G3 acceptance"
+  ],
+  "compatibility": {
+    "preserved": "all 90 core, 4 G2 live-slice and 4 G3 checkpoint artifacts remain byte-identical",
+    "legacyClients": "clients on the v1 push schema never send the new types; servers without the capability return upgrade_required_nonterminal",
+    "fingerprint": "unchanged gindemit-canonical-command-v1; payload fields are included generically",
+    "runtimeInteroperability": "unverified"
+  }
+}

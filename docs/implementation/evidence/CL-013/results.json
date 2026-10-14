@@ -1,0 +1,65 @@
+{
+  "artifactSourceCommit": "5dfac45875fa4b829e9e04729938eb4a984e1db5",
+  "captureSourceCommit": "a07aa0afe476ff6c35a5b767fabc45627a8d4b9c",
+  "manifestSha256": "acfbf1f679b79186cf074ca6e9dc9917835dad86ff7d54af134825eb4ee092be",
+  "manifestsByteEqual": true,
+  "fileInventoryEqual": true,
+  "allFileHashesRecheckedInBothBundles": true,
+  "fileCountPerBundle": 33,
+  "assemblyCountPerBundle": 14,
+  "buildConfiguration": {
+    "configuration": "Release",
+    "pathMap": "/_/",
+    "sdkVersion": "9.0.203",
+    "buildSkipped": false
+  },
+  "excludedProjects": {
+    "GamePlatform.Serialization.MessagePack": "qualification_only; complete transitive license/native/AOT bundle remains CL-015"
+  },
+  "buildRuns": {
+    "command": [
+      "rtk",
+      "proxy",
+      "python",
+      "scripts/package-sdk.py"
+    ],
+    "count": 2,
+    "sourceCommit": "5dfac45875fa4b829e9e04729938eb4a984e1db5",
+    "evidenceKind": "author_observation_plus_retained_output",
+    "rawBuildStdoutArchived": false,
+    "note": "Both original clean Rebuild commands exited zero in the agent transcript; their stdout was not saved to disk. Archived original manifests and all original output file hashes were independently rechecked at capture time. No build or artifact mutation was performed while archiving."
+  },
+  "verificationRuns": [
+    {
+      "command": [
+        "rtk",
+        "proxy",
+        "python",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts",
+        "-p",
+        "test_packaging.py"
+      ],
+      "exitCode": 0,
+      "log": "packaging-tests.txt"
+    },
+    {
+      "command": [
+        "rtk",
+        "proxy",
+        "python",
+        "scripts/package-sdk.py",
+        "--verify"
+      ],
+      "exitCode": 0,
+      "log": "bundle-verification.txt"
+    }
+  ],
+  "packagingTestsPassed": 11,
+  "productionCodec": "unavailable",
+  "nativeLibraries": "absent",
+  "aotDevice": "unverified"
+}

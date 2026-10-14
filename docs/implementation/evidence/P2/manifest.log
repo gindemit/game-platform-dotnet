@@ -1,0 +1,4 @@
+VALID: 52 tasks; 16 feature ledgers; 21 conservative waves
+
+STDERR:
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Preserve Unity serialized references when Assets/Plugins/GamePlatform is replaced by the Git UPM package.",
+  "entries": {
+    "GamePlatform.Core.dll": {
+      "bundleGuid": "a45392e189e6d6ab8c50f63897a0ab38",
+      "consumerGuid": "68b7ad586b1f56d6a838a26b7ff2333f"
+    },
+    "GamePlatform.Features.Contracts.dll": {
+      "bundleGuid": "61da7f58b6db832e72af01880b4ad8fd",
+      "consumerGuid": "827c6f3773525912a40a393e14fa0406"
+    }
+  }
+}
