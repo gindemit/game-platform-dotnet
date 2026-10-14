@@ -49,10 +49,23 @@ No network, clocks, pollers, cache, account store, exposure emission, telemetry,
 dynamic code or provider IO is part of evaluation. Read/activation do not fetch.
 The separate optional [configuration lifecycle](CLIENT.md) supplies asynchronous
 selected-graph verification, durable cache/pins and independent emergency polling
-around this pure core. Backend services and game composition have separate scopes;
-the existing RemoteConfig feature facade is still unavailable. Historical core
+around this pure core. Backend services and game composition have separate scopes.
+The lifecycle preserves the caller's execution context for single-threaded hosts;
+the core remains synchronous and unchanged by that scheduling repair.
+The existing RemoteConfig feature facade is still unavailable. Historical core
 runtime/size evidence stays in the workspace RC-TARGETS receipt; new lifecycle
 source, adapters and target qualification use the remote-config-service receipts.
+
+The 2026-10-14 task source `2aeef858` records reviewed scheduling changes on
+published parent439272a; validation uses immutableSDK495 plus the reviewed overlay; owning gates pass 75 Python/998 .NET
+tests, with nine pre-existing joined-recovery skips. Ordinary local packaging
+contains 23 managed/three native payloads and excludes both configuration
+projects. Historical CI154/dev.154 provenance is not a new delivery claim.
+Separate target qualification uses frozen SDK557 plus exactly three reviewed
+source overlays, preserving this core's source and corpus. Independently
+reproduced core/client DLLs and all eight passing targets are recorded in
+[CLIENT.md](CLIENT.md). Android growth exceeds the size objective; WebGL growth
+meets it. Native joined runtime5 is accepted locally; actual C# browser2 lifecycle, durable cached state after actual reload and two-host CAS retry are locally reviewed; the automatic PlayerPrefs reload-marker dispatch remains unproven. No game repin, live, device or game activation is authorized.
 
 Standalone validation from a disposable source copy:
 
@@ -68,3 +81,8 @@ malformed UTF-8/JSON, unknown/negative/verified/fresh context, weight edges,
 immutable models, generation/pin preservation, dependency rejection and500 random
 restricted JSON structures against independent framework System.Text.Json.
 System.Text.Json and xUnit/test SDK remain test-only; no test assembly ships.
+
+Final local browser review: `rc-s5-repaired-browser-results-review.json`,
+SHA256 `12742f6d6955de28a2b3c999b4f201ea74a77bbe51486ebafdfd845ea3f1cc0e`, in the workspace service packet. Two-origin read success
+and source credentials=omit are recorded; browser server receipts do not archive
+request credentials/CORS header fields. Native HTTP header observations are separate.

@@ -74,7 +74,7 @@
       "path": "docs/IMPLEMENTATION_STATUS.md",
       "heading": "# SDK current status",
       "title": "SDK current status",
-      "summary": "Optional configuration lifecycle local source/package evidence, dev.150 consumer identity and historical acceptance limits.",
+      "summary": "Reviewed configuration caller-context repair: 75 Python/998 .NET local gates, eight matched targets and native join; actual C# lifecycle/reload/CAS locally reviewed; automatic reload-marker dispatch unproven, Android size objective exceeded, no game repin or live/device activation. Historical delivery/consumer evidence remains dated.",
       "kind": "status",
       "authority": "current_evidence",
       "topics": [
@@ -339,7 +339,7 @@
       "path": "docs/implementation/remote-config/CLIENT.md",
       "heading": "# Optional configuration lifecycle",
       "title": "Optional configuration lifecycle and host adapters",
-      "summary": "Scoped async selected graphs, durable pins, independent controls and exact native/browser boundaries; target/live/game gates remain separate.",
+      "summary": "Caller-context-preserving selected graphs, durable pins and independent controls; reviewed SDK557 repair overlay reproduced, eight targets/native join accepted locally, actual C# lifecycle/reload/CAS locally reviewed; automatic reload-marker dispatch unproven. Android size objective exceeded; live/device/game held.",
       "kind": "requirement",
       "authority": "binding",
       "topics": [
