@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "com.gindemit.game-platform",
-  "version": "0.1.0-draft",
+  "version": "0.1.0-dev.163",
   "sourceCommit": "a62dea2b4146aa1438a872d1260b88ab668c784f",
   "sourceBundleManifestSha256": "929b00ce4ddfbbb64cc591e622ad1cd1fd5a57cb96b372e3643f051bd35238a0",
   "preservedManagedGuids": {
@@ -716,8 +716,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 389,
-      "sha256": "c732638ff51d220dddb78d9984ded341ae50f1b116d0dce5263edc65b0acc207"
+      "bytes": 391,
+      "sha256": "2d54da248ce72e7f10c270534e52a125e2ff54060272aa71629775e69d9fd653"
     },
     {
       "path": "package.json.meta",
