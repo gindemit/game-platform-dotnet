@@ -32,6 +32,7 @@ namespace GamePlatform.Transport.Http
             Friends = new FriendsHttpProvider(appId, accountId, configuration, executor, auth, refresh);
             Leaderboards = new LeaderboardsHttpProvider(appId, accountId, configuration, executor, auth, refresh);
             PublicProfiles = new PublicProfileHttpProvider(appId, accountId, configuration, executor, auth, refresh);
+            Daily = new DailyHttpProvider(appId, accountId, configuration, executor, auth, refresh);
             CommandPush = new CommandPushHttpProvider(appId, accountId, configuration, executor, codec, auth, refresh, storeQuest);
             CommandReceipts = new CommandReceiptHttpProvider(appId, accountId, installationId, configuration, executor, codec, auth, refresh,
                 BackendWireRepresentation.MessagePack, storeQuest);
@@ -45,6 +46,7 @@ namespace GamePlatform.Transport.Http
         public FriendsHttpProvider Friends { get; }
         public LeaderboardsHttpProvider Leaderboards { get; }
         public PublicProfileHttpProvider PublicProfiles { get; }
+        public DailyHttpProvider Daily { get; }
         public ICommandRemote CommandPush { get; }
         public ICommandReceiptRemote CommandReceipts { get; }
         public ICommandStreamRecoveryRemote CommandStreamRecovery { get; }

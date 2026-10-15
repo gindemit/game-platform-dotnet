@@ -67,7 +67,8 @@
             "profile.patch",
             "gameplay.session.completed",
             "store.offer.purchase",
-            "quest.claim"
+            "quest.claim",
+            "daily.claim"
           ]
         },
         "schemaVersion": {
@@ -141,6 +142,22 @@
             "properties": {
               "payload": {
                 "$ref": "#/$defs/claimCommand"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "daily.claim"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "https://contracts.gindemit.invalid/v1/schemas/daily.schema.json#/$defs/claimCommand"
               }
             }
           }
@@ -318,6 +335,9 @@
             },
             {
               "$ref": "#/$defs/claimResult"
+            },
+            {
+              "$ref": "https://contracts.gindemit.invalid/v1/schemas/daily.schema.json#/$defs/claimResult"
             }
           ]
         }

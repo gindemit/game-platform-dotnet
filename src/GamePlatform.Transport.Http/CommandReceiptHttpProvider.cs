@@ -169,7 +169,7 @@ namespace GamePlatform.Transport.Http
         }
 
         private bool IsStoreQuestKind(string operationKind) =>
-            storeQuest != null && (operationKind == "store.offer.purchase" || operationKind == "quest.claim");
+            storeQuest != null && (operationKind == "store.offer.purchase" || operationKind == "quest.claim" || operationKind == "daily.claim");
 
         private async Task<Attempt> SendAuthenticatedAsync(byte[] body, CancellationToken cancellationToken)
         {

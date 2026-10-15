@@ -62,7 +62,8 @@ namespace GamePlatform.Serialization.MessagePack
         }
 
         private static bool IsStoreQuest(string operationKind) =>
-            string.Equals(operationKind, "store.offer.purchase", StringComparison.Ordinal) || string.Equals(operationKind, "quest.claim", StringComparison.Ordinal);
+            string.Equals(operationKind, "store.offer.purchase", StringComparison.Ordinal) || string.Equals(operationKind, "quest.claim", StringComparison.Ordinal) ||
+            string.Equals(operationKind, "daily.claim", StringComparison.Ordinal);
 
         private string PayloadSchema(string operationKind)
         {
@@ -70,6 +71,8 @@ namespace GamePlatform.Serialization.MessagePack
                 return "a06/store-quest.schema.json#/$defs/purchaseCommand";
             if (storeQuest && string.Equals(operationKind, "quest.claim", StringComparison.Ordinal))
                 return "a06/store-quest.schema.json#/$defs/claimCommand";
+            if (storeQuest && string.Equals(operationKind, "daily.claim", StringComparison.Ordinal))
+                return "daily.schema.json#/$defs/claimCommand";
             if (string.Equals(operationKind, "profile.patch", StringComparison.Ordinal))
                 return "profile.schema.json#/$defs/patchCommand";
             if (string.Equals(operationKind, "gameplay.session.completed", StringComparison.Ordinal))
