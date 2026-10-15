@@ -161,8 +161,12 @@
       "gameplatform.navigation": {
         "type": "Project",
         "dependencies": {
-          "GamePlatform.Core": "[0.1.0-draft, )"
+          "GamePlatform.Core": "[0.1.0-draft, )",
+          "GamePlatform.Navigation.Kernel": "[0.1.0-draft, )"
         }
+      },
+      "gameplatform.navigation.kernel": {
+        "type": "Project"
       },
       "gameplatform.serialization.json": {
         "type": "Project",

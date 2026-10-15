@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
 </PropertyGroup>
 
-  <ItemGroup><ProjectReference Include="../GamePlatform.Core/GamePlatform.Core.csproj" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../GamePlatform.Core/GamePlatform.Core.csproj" />
+    <ProjectReference Include="../GamePlatform.Navigation.Kernel/GamePlatform.Navigation.Kernel.csproj" />
+  </ItemGroup>
 
 </Project>
