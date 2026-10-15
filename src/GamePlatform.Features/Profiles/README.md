@@ -35,3 +35,6 @@ The existing parameterless `ProfilesFeature` remains the explicit unavailable le
 placeholder; hosts must construct the scoped service only after real account readiness.
 See `docs/implementation/evidence/CL-102/README.md` for the exact desktop SQLite and
 injected-remote evidence and remaining A07/INT-008 work.
+
+`PublicProfileService` reads another player's public profile through `IPublicProfileRemote`
+and keeps the last confirmed read per subject in durable namespace `profiles.public`.

@@ -135,6 +135,9 @@ namespace GamePlatform.Transport.Http
                     case "quest.claim" when storeQuest != null:
                         payload = storeQuest.DecodeClaimCommand(semanticBody);
                         break;
+                    case "daily.claim" when storeQuest != null:
+                        payload = storeQuest.DecodeDailyClaimCommand(semanticBody);
+                        break;
                     default:
                         return false;
                 }
@@ -288,7 +291,7 @@ namespace GamePlatform.Transport.Http
         }
 
         private bool IsStoreQuestKind(string operationKind) =>
-            storeQuest != null && (operationKind == "store.offer.purchase" || operationKind == "quest.claim");
+            storeQuest != null && (operationKind == "store.offer.purchase" || operationKind == "quest.claim" || operationKind == "daily.claim");
 
         private static bool TryRetryAfter(CommonError error, HttpResponseData response, out TimeSpan? retryAfter)
         {

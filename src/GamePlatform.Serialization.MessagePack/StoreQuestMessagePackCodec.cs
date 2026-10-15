@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using GamePlatform.Wire.Contracts;
+using GamePlatform.Wire.Contracts.Daily;
 using K = GamePlatform.Serialization.MessagePack.QualificationValueKind;
 using V = GamePlatform.Serialization.MessagePack.QualificationValue;
 
@@ -27,6 +28,10 @@ namespace GamePlatform.Serialization.MessagePack
         public byte[] EncodeClaimCommand(QuestClaimCommand value) => codec.Encode(Schema + "claimCommand", WritePayload(value));
 
         public QuestClaimCommand DecodeClaimCommand(byte[] bytes) => ReadClaim(codec.Decode(Schema + "claimCommand", bytes));
+
+        public byte[] EncodeDailyClaimCommand(DailyClaimCommand value) => codec.Encode("daily.schema.json#/$defs/claimCommand", DailyMessagePackCodec.WriteClaimCommand(value));
+
+        public DailyClaimCommand DecodeDailyClaimCommand(byte[] bytes) => DailyMessagePackCodec.ReadClaimCommand(codec.Decode("daily.schema.json#/$defs/claimCommand", bytes));
 
         public byte[] EncodePushRequest(PushRequest value)
         {
@@ -96,14 +101,17 @@ namespace GamePlatform.Serialization.MessagePack
 
         private IPushResult ReadResult(V value) => IsStoreQuestAccepted(value) ? ReadAccepted(value) : typed.FromDiagnostic<IPushResult>(value);
 
-        private static bool IsStoreQuest(IPushAcceptedResult result) => result is StoreOfferPurchasedResult || result is QuestClaimedResult;
+        /// <summary>
+        /// The A06 superset family: store purchase, quest claim and daily claim.
+        /// </summary>
+        private static bool IsStoreQuest(IPushAcceptedResult result) => result is StoreOfferPurchasedResult || result is QuestClaimedResult || result is DailyClaimedResult;
 
         private static bool IsStoreQuestAccepted(V value)
         {
             if (!value.Properties.TryGetValue("status", out var status) || status.StringValue != "accepted")
                 return false;
             var kind = value.Properties["result"].Properties["kind"].StringValue;
-            return kind == "store_offer_purchased" || kind == "quest_claimed";
+            return kind == "store_offer_purchased" || kind == "quest_claimed" || kind == "daily_claimed";
         }
 
         private static V WriteAccepted(PushAccepted value) => Obj(("operationId", Uuid(value.OperationId)), ("sequence", Wide(value.Sequence)), ("status", V.String("accepted")),
@@ -126,6 +134,8 @@ namespace GamePlatform.Serialization.MessagePack
                 case QuestClaimedResult item:
                     return Obj(("kind", V.String("quest_claimed")), ("claimId", Uuid(item.ClaimId)), ("originatingOperationId", Uuid(item.OriginatingOperationId)),
                         ("questId", V.String(item.QuestId)), ("occurrenceKey", V.String(item.OccurrenceKey)), ("lines", Lines(item.Lines)));
+                case DailyClaimedResult item:
+                    return DailyMessagePackCodec.WriteClaimResult(item);
                 default:
                     throw new QualificationCodecException("Unsupported A06 accepted result implementation.");
             }
@@ -134,6 +144,8 @@ namespace GamePlatform.Serialization.MessagePack
         private static IPushAcceptedResult ReadAcceptedResult(V value)
         {
             var p = value.Properties;
+            if (p["kind"].StringValue == "daily_claimed")
+                return DailyMessagePackCodec.ReadClaimResult(value);
             var lines = p["lines"].Items.Select(G3RewardReceiptMessagePackCodec.ReadLine).ToArray();
             if (p["kind"].StringValue == "quest_claimed")
                 return new QuestClaimedResult(ReadUuid(p["claimId"]), ReadUuid(p["originatingOperationId"]), p["questId"].StringValue, p["occurrenceKey"].StringValue, lines);
@@ -151,6 +163,7 @@ namespace GamePlatform.Serialization.MessagePack
             var p = value.Properties;
             var type = p["type"].StringValue;
             IPushPayload payload = type == "store.offer.purchase" ? ReadPurchase(p["payload"]) : type == "quest.claim" ? (IPushPayload)ReadClaim(p["payload"])
+                : type == "daily.claim" ? DailyMessagePackCodec.ReadClaimCommand(p["payload"])
                 : throw new QualificationCodecException("Only A06 operations are mapped by this codec.");
             return new PushOperation(ReadUuid(p["operationId"]), ReadUuid(p["installationId"]), ReadWide(p["sequence"]), type, p["clientCreatedAt"].IntegerValue, payload);
         }
@@ -163,6 +176,8 @@ namespace GamePlatform.Serialization.MessagePack
                     return Obj(("offerId", V.String(item.OfferId)), ("offerVersion", V.Integer(item.OfferVersion)), ("purchaseKey", Uuid(item.PurchaseKey)));
                 case QuestClaimCommand item:
                     return Obj(("questId", V.String(item.QuestId)), ("occurrenceKey", V.String(item.OccurrenceKey)));
+                case DailyClaimCommand item:
+                    return DailyMessagePackCodec.WriteClaimCommand(item);
                 default:
                     throw new QualificationCodecException("Only A06 payloads are mapped by this codec.");
             }

@@ -25,6 +25,19 @@ class ValidationTests(unittest.TestCase):
             path.write_text(json.dumps(manifest), encoding="utf-8")
             self.assertIn("unexpected Friends contract path: ../outside", validate.validate(root))
 
+    def test_profiles_hash_drift_and_extra_pin_are_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_repository(Path(tmp))
+            path = root / "contracts/v1/schemas/profiles.schema.json"
+            path.write_bytes(path.read_bytes() + b"\n")
+            manifest_path = root / "contracts/profiles/snapshot.json"
+            manifest = validate.read_json(manifest_path)
+            manifest["files"]["v1/schemas/profile.schema.json"] = "0" * 64
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            errors = validate.validate(root)
+            self.assertIn("Profiles contract hash mismatch: v1/schemas/profiles.schema.json", errors)
+            self.assertIn("incomplete Profiles contract pins", errors)
+
     def test_project_inventory_has_seventeen_with_optional_client(self): self.assertEqual(17, len(validate.PROJECTS))
     def test_feature_inventory_has_sixteen(self): self.assertEqual(16, len(validate.FEATURES))
 

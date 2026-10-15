@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "sha256",
+  "contractVersion": "daily-1.0.0",
+  "files": {
+    "v1/schemas/daily.schema.json": "6a4de3979768da3d670c7a982a78eb36a9ac8a6ace41726a2e288892481e1906"
+  }
+}

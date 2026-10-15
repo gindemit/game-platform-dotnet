@@ -284,6 +284,18 @@ def validate(root: Path) -> list[str]:
             errors.append("incomplete Friends contract pins")
     except (OSError, KeyError, json.JSONDecodeError) as exc:
         errors.append(f"Friends contract validation failed: {exc}")
+    try:
+        profiles = read_json(root / "contracts/profiles/snapshot.json")
+        if profiles.get("contractVersion") != "profiles-public-1.0.0" or profiles.get("algorithm") != "sha256":
+            errors.append("unexpected Profiles contract manifest")
+        if set(profiles["files"]) != {"v1/schemas/profiles.schema.json"}:
+            errors.append("incomplete Profiles contract pins")
+        for relative, expected in profiles["files"].items():
+            contract = root / "contracts" / relative
+            if not contract.is_file(): errors.append(f"missing Profiles contract: {relative}")
+            elif sha256(contract) != expected: errors.append(f"Profiles contract hash mismatch: {relative}")
+    except (OSError, KeyError, json.JSONDecodeError) as exc:
+        errors.append(f"Profiles contract validation failed: {exc}")
     return errors
 
 
