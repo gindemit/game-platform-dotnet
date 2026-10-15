@@ -14,13 +14,13 @@ namespace GamePlatform.Serialization.MessagePack
         private readonly QualificationMessagePackCodec codec = new QualificationMessagePackCodec();
         public byte[] EncodeStatusRequest() => codec.Encode(Schema + "statusRequest", Obj());
         public byte[] EncodeStatusResponse(DailyStatusResponse value) => codec.Encode(Schema + "statusResponse", Obj(
-            ("utcDate", V.String(value.UtcDate)), ("nextUtcDayAt", V.Integer(value.NextUtcDayAt)), ("eligible", V.Boolean(value.Eligible)),
+            ("serverTime", V.Integer(value.ServerTime)), ("utcDate", V.String(value.UtcDate)), ("nextUtcDayAt", V.Integer(value.NextUtcDayAt)), ("eligible", V.Boolean(value.Eligible)),
             ("cycleDay", V.Integer(value.CycleDay)), ("policyVersion", V.Integer(value.PolicyVersion)),
             ("reward", V.Array(value.Reward.Select(Planned))), ("history", V.Array(value.History.Select(Entry)))));
         public DailyStatusResponse DecodeStatusResponse(byte[] bytes)
         {
             var p = codec.Decode(Schema + "statusResponse", bytes).Properties;
-            return new DailyStatusResponse(p["utcDate"].StringValue, p["nextUtcDayAt"].IntegerValue, p["eligible"].BooleanValue,
+            return new DailyStatusResponse(p["utcDate"].StringValue, p["nextUtcDayAt"].IntegerValue, p["serverTime"].IntegerValue, p["eligible"].BooleanValue,
                 checked((int)p["cycleDay"].IntegerValue), checked((int)p["policyVersion"].IntegerValue),
                 p["reward"].Items.Select(ReadPlanned).ToArray(), p["history"].Items.Select(ReadEntry).ToArray());
         }

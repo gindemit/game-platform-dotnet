@@ -101,6 +101,9 @@ namespace GamePlatform.Serialization.MessagePack
 
         private IPushResult ReadResult(V value) => IsStoreQuestAccepted(value) ? ReadAccepted(value) : typed.FromDiagnostic<IPushResult>(value);
 
+        /// <summary>
+        /// The A06 superset family: store purchase, quest claim and daily claim.
+        /// </summary>
         private static bool IsStoreQuest(IPushAcceptedResult result) => result is StoreOfferPurchasedResult || result is QuestClaimedResult || result is DailyClaimedResult;
 
         private static bool IsStoreQuestAccepted(V value)

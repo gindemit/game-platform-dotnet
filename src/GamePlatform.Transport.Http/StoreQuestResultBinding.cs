@@ -7,6 +7,9 @@ namespace GamePlatform.Transport.Http
 {
     internal static class StoreQuestResultBinding
     {
+        /// <summary>
+        /// The A06 superset family: store purchase, quest claim and daily claim.
+        /// </summary>
         internal static bool IsStoreQuestResult(IPushAcceptedResult result) => result is StoreOfferPurchasedResult || result is QuestClaimedResult || result is DailyClaimedResult;
 
         internal static bool Matches(StoreQuestMessagePackCodec codec, RemoteCommand command, IPushAcceptedResult result)

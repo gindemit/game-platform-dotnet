@@ -4,11 +4,12 @@ namespace GamePlatform.Wire.Contracts.Daily
 {
     public sealed class DailyStatusResponse
     {
-        public DailyStatusResponse(string utcDate, long nextUtcDayAt, bool eligible, int cycleDay, int policyVersion,
+        public DailyStatusResponse(string utcDate, long nextUtcDayAt, long serverTime, bool eligible, int cycleDay, int policyVersion,
             IReadOnlyList<DailyPlannedLine> reward, IReadOnlyList<DailyHistoryEntry> history)
         {
             UtcDate = utcDate ?? throw new ArgumentNullException(nameof(utcDate));
             NextUtcDayAt = nextUtcDayAt;
+            ServerTime = serverTime;
             Eligible = eligible;
             CycleDay = cycleDay;
             PolicyVersion = policyVersion;
@@ -17,6 +18,7 @@ namespace GamePlatform.Wire.Contracts.Daily
         }
         public string UtcDate { get; }
         public long NextUtcDayAt { get; }
+        public long ServerTime { get; }
         public bool Eligible { get; }
         public int CycleDay { get; }
         public int PolicyVersion { get; }

@@ -22,7 +22,7 @@ namespace GamePlatform.Tests.Transport
             var executor = new Executor((_, count) => count == 1 ? new HttpResponseData(401, new Dictionary<string, string>(), Array.Empty<byte>()) : Reply());
             var result = await Provider(executor, auth, refresh).StatusAsync(CancellationToken.None);
             Assert.True(result.IsSuccess);
-            Assert.Equal(("2026-10-15", true, 3), (result.Value!.UtcDate, result.Value.Eligible, result.Value.CycleDay));
+            Assert.Equal(("2026-10-15", true, 3, 1_792_060_800_000), (result.Value!.UtcDate, result.Value.Eligible, result.Value.CycleDay, result.Value.ServerTimeMilliseconds));
             Assert.Equal(1, auth.Refreshes);
             Assert.EndsWith("/daily/status", executor.Requests[0].Uri);
             Assert.Equal(new byte[] { 0x80 }, executor.Requests[1].CopyBody());

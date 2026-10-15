@@ -48,6 +48,17 @@ namespace GamePlatform.Tests.Transport
             Assert.Equal((ClaimId, "2026-10-15", 3, 2, 25L), (entry.ClaimId, entry.UtcDate, entry.CycleDay, entry.PolicyVersion, entry.Lines[0].Quantity));
         }
 
+        [Fact]
+        public async Task DailyClaimedOriginatingFromAnotherInstallationIsBoundByDate()
+        {
+            var other = new DailyClaimedResult(ClaimId, Guid.Parse("019952d1-0000-7000-8000-0000000000ee"), "2026-10-15", 3, 2, new ILiveSliceRewardLine[] { new LiveSliceCurrencyRewardLine(0, 1, "coins", 25) });
+            var executor = new RoutedExecutor(push: () => Response(storeQuest.EncodePushResponse(new PushResponse(Stream.Value, new IPushResult[] { new PushAccepted(Operation.Value, 155, 42, other) }, 155, 1_789_555_201_000))));
+            var sent = await Providers(executor, true).ForAccount(App, Account, Installation).CommandPush.SendAsync(Command(Fingerprint()), CancellationToken.None);
+            Assert.True(sent.IsSuccess);
+            Assert.Equal(RemoteCommandStatus.Accepted, sent.Value!.Status);
+            Assert.Equal(ClaimId, new DailyFeatureCodec().DecodeAcceptedResult(sent.Value.Result!).ClaimId);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

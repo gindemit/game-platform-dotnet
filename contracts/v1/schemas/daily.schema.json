@@ -58,8 +58,9 @@
     "statusResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["utcDate", "nextUtcDayAt", "eligible", "cycleDay", "policyVersion", "reward", "history"],
+      "required": ["serverTime", "utcDate", "nextUtcDayAt", "eligible", "cycleDay", "policyVersion", "reward", "history"],
       "properties": {
+        "serverTime": { "$ref": "common.schema.json#/$defs/timestamp" },
         "utcDate": { "$ref": "#/$defs/utcDate" },
         "nextUtcDayAt": { "$ref": "common.schema.json#/$defs/timestamp" },
         "eligible": { "type": "boolean" },

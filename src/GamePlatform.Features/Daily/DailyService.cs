@@ -145,7 +145,7 @@ namespace GamePlatform.Features.Daily
             var history = new List<DailyClaimEntry> { entry };
             history.AddRange(status.History.Where(h => h.UtcDate != entry.UtcDate).Take(6));
             bool today = entry.UtcDate == status.UtcDate;
-            return new DailyStatus(status.UtcDate, status.NextUtcDayAtMilliseconds, !today && status.Eligible, today ? entry.CycleDay : status.CycleDay,
+            return new DailyStatus(status.UtcDate, status.NextUtcDayAtMilliseconds, status.ServerTimeMilliseconds, !today && status.Eligible, today ? entry.CycleDay : status.CycleDay,
                 status.PolicyVersion, status.Reward, history);
         }
         private async Task<CommandAdmission> AdmitAsync(DailyStatus status, CancellationToken cancellationToken)

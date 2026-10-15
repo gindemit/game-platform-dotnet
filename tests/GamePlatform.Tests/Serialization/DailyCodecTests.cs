@@ -19,7 +19,7 @@ namespace GamePlatform.Tests.Serialization
             var bytes = codec.EncodeStatus(value);
             var decoded = codec.DecodeStatus(bytes);
             Assert.Equal(9_007_199_254_740_993, decoded.Reward[0].Quantity);
-            Assert.Equal(("2026-10-15", true, 3, 2, 1_792_147_200_000), (decoded.UtcDate, decoded.Eligible, decoded.CycleDay, decoded.PolicyVersion, decoded.NextUtcDayAtMilliseconds));
+            Assert.Equal(("2026-10-15", true, 3, 2, 1_792_147_200_000, 1_792_060_800_000), (decoded.UtcDate, decoded.Eligible, decoded.CycleDay, decoded.PolicyVersion, decoded.NextUtcDayAtMilliseconds, decoded.ServerTimeMilliseconds));
             Assert.Equal(("currency", "coins", 9_007_199_254_740_993), (decoded.History[0].Lines[0].Kind, decoded.History[0].Lines[0].ResourceId, decoded.History[0].Lines[0].Quantity));
             Assert.Equal(bytes, codec.EncodeStatus(decoded));
             Assert.Throws<QualificationCodecException>(() => codec.DecodeStatus(bytes.Concat(new byte[] { 0 }).ToArray()));

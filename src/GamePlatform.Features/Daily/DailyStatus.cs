@@ -5,11 +5,13 @@ namespace GamePlatform.Features.Daily
     /// <summary>Server-owned claim status for the account's current UTC day.</summary>
     public sealed class DailyStatus
     {
-        public DailyStatus(string utcDate, long nextUtcDayAtMilliseconds, bool eligible, int cycleDay, int policyVersion,
+        public DailyStatus(string utcDate, long nextUtcDayAtMilliseconds, long serverTimeMilliseconds, bool eligible, int cycleDay, int policyVersion,
             IReadOnlyList<DailyPlannedLine> reward, IReadOnlyList<DailyClaimEntry> history)
         {
             if (nextUtcDayAtMilliseconds < 0 || nextUtcDayAtMilliseconds > 253_402_300_799_999L)
                 throw new ArgumentOutOfRangeException(nameof(nextUtcDayAtMilliseconds));
+            if (serverTimeMilliseconds < 0 || serverTimeMilliseconds > 253_402_300_799_999L)
+                throw new ArgumentOutOfRangeException(nameof(serverTimeMilliseconds));
             if (reward == null)
                 throw new ArgumentNullException(nameof(reward));
             if (reward.Count < 1 || reward.Count > 64)
@@ -20,6 +22,7 @@ namespace GamePlatform.Features.Daily
                 throw new ArgumentOutOfRangeException(nameof(history));
             UtcDate = DailyValidation.UtcDate(utcDate, nameof(utcDate));
             NextUtcDayAtMilliseconds = nextUtcDayAtMilliseconds;
+            ServerTimeMilliseconds = serverTimeMilliseconds;
             Eligible = eligible;
             CycleDay = DailyValidation.CycleDay(cycleDay, nameof(cycleDay));
             PolicyVersion = DailyValidation.PolicyVersion(policyVersion, nameof(policyVersion));
@@ -28,6 +31,7 @@ namespace GamePlatform.Features.Daily
         }
         public string UtcDate { get; }
         public long NextUtcDayAtMilliseconds { get; }
+        public long ServerTimeMilliseconds { get; }
         public bool Eligible { get; }
         public int CycleDay { get; }
         public int PolicyVersion { get; }

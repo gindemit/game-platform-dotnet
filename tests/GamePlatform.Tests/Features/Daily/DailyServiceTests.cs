@@ -32,7 +32,7 @@ namespace GamePlatform.Tests.Features.Daily
         internal static ScopedOwnerContext Owner(long generation = 1, Guid? account = null) =>
             new ScopedOwnerContext(new OwnerScope(new BackendNamespace("daily-test"), new AppId(App), new PlatformUserId(account ?? Account)), new SemanticId("private"), generation);
         internal static DailyStatus Status(string utcDate = "2026-10-15", bool eligible = true, int cycleDay = 3, int policyVersion = 2, DailyClaimEntry[]? history = null) =>
-            new DailyStatus(utcDate, Oct16, eligible, cycleDay, policyVersion, new[] { new DailyPlannedLine("currency", "coins", 9_007_199_254_740_993) }, history ?? Array.Empty<DailyClaimEntry>());
+            new DailyStatus(utcDate, Oct16, Oct15, eligible, cycleDay, policyVersion, new[] { new DailyPlannedLine("currency", "coins", 9_007_199_254_740_993) }, history ?? Array.Empty<DailyClaimEntry>());
         internal static DailyClaimEntry Entry(string utcDate = "2026-10-15", int cycleDay = 3, Guid? claimId = null) =>
             new DailyClaimEntry(utcDate, cycleDay, claimId ?? ClaimId, 2, new[] { new DailyReceiptLine(0, 1, "currency", "coins", 9_007_199_254_740_993) });
         private static DailyService Service(Database db, IDailyRemote? remote, long generation = 1, long now = Oct15, ScopedOwnerContext? owner = null) =>
@@ -152,6 +152,18 @@ namespace GamePlatform.Tests.Features.Daily
             var again = await service.RecordConfirmedAsync(Owner(), Entry(), CancellationToken.None);
             Assert.Equal(2, again.Value!.History.Count);
             Assert.Equal(3, await db.Scalar<long>("SELECT revision FROM gp_feature_state WHERE entity_key = 'status'"));
+        }
+
+        [Fact]
+        public async Task ConfirmedReceiptForAnEarlierDateKeepsTodaysEligibilityAndPrependsHistory()
+        {
+            await using var db = await Database.Open();
+            using var service = Service(db, new Remote { Status = Status(utcDate: "2026-10-16", cycleDay: 4) });
+            await service.ReadAsync(Owner(), CancellationToken.None);
+            var recorded = await service.RecordConfirmedAsync(Owner(), Entry("2026-10-15", 3), CancellationToken.None);
+            Assert.True(recorded.Value!.Eligible);
+            Assert.Equal(("2026-10-16", 4), (recorded.Value.UtcDate, recorded.Value.CycleDay));
+            Assert.Equal(("2026-10-15", 3, ClaimId), (recorded.Value.History[0].UtcDate, recorded.Value.History[0].CycleDay, recorded.Value.History[0].ClaimId));
         }
 
         [Fact]

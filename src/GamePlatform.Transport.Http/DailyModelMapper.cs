@@ -7,9 +7,9 @@ namespace GamePlatform.Transport.Http
 {
     internal static class DailyModelMapper
     {
-        internal static DailyStatus ToDomain(W.DailyStatusResponse value) => new DailyStatus(value.UtcDate, value.NextUtcDayAt, value.Eligible, value.CycleDay, value.PolicyVersion,
+        internal static DailyStatus ToDomain(W.DailyStatusResponse value) => new DailyStatus(value.UtcDate, value.NextUtcDayAt, value.ServerTime, value.Eligible, value.CycleDay, value.PolicyVersion,
             value.Reward.Select(line => new DailyPlannedLine(line.Kind, line.ResourceId, line.Quantity)).ToArray(), value.History.Select(ToDomain).ToArray());
-        internal static W.DailyStatusResponse ToWire(DailyStatus value) => new W.DailyStatusResponse(value.UtcDate, value.NextUtcDayAtMilliseconds, value.Eligible, value.CycleDay, value.PolicyVersion,
+        internal static W.DailyStatusResponse ToWire(DailyStatus value) => new W.DailyStatusResponse(value.UtcDate, value.NextUtcDayAtMilliseconds, value.ServerTimeMilliseconds, value.Eligible, value.CycleDay, value.PolicyVersion,
             value.Reward.Select(line => new W.DailyPlannedLine(line.Kind, line.ResourceId, line.Quantity)).ToArray(),
             value.History.Select(entry => new W.DailyHistoryEntry(entry.UtcDate, entry.CycleDay, entry.ClaimId, entry.PolicyVersion, entry.Lines.Select(ToWire).ToArray())).ToArray());
         internal static DailyClaimEntry ToDomain(W.DailyHistoryEntry value) => new DailyClaimEntry(value.UtcDate, value.CycleDay, value.ClaimId, value.PolicyVersion, value.Lines.Select(ToDomain).ToArray());
