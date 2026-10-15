@@ -4,6 +4,9 @@
     ".NETStandard,Version=v2.1": {
       "gameplatform.core": {
         "type": "Project"
+      },
+      "gameplatform.navigation.kernel": {
+        "type": "Project"
       }
     }
   }
