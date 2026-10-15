@@ -45,7 +45,7 @@ namespace GamePlatform.Tests.Serialization
         {
             var codec = new PublicProfileMessagePackCodec();
             Assert.Equal(PublicProfileServiceTests.Subject, codec.DecodeQuery(codec.EncodeQuery(PublicProfileServiceTests.Subject)));
-            Assert.Throws<QualificationCodecException>(() => new QualificationMessagePackCodec().Encode("profile.schema.json#/$defs/publicQueryRequest", V.Object(new[] {
+            Assert.Throws<QualificationCodecException>(() => new QualificationMessagePackCodec().Encode("profiles.schema.json#/$defs/publicQueryRequest", V.Object(new[] {
                 new KeyValuePair<string, V>("protocolVersion", V.Integer(1)), new KeyValuePair<string, V>("playerId", V.String(PublicProfileServiceTests.Subject.ToString("D"))),
                 new KeyValuePair<string, V>("accountId", V.String(PublicProfileServiceTests.Subject.ToString("D"))) })));
         }

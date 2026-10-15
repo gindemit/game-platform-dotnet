@@ -13,7 +13,7 @@ namespace GamePlatform.Serialization.MessagePack
     /// </summary>
     public sealed class PublicProfileMessagePackCodec
     {
-        private const string Schema = "profile.schema.json#/$defs/";
+        private const string Schema = "profiles.schema.json#/$defs/";
         private readonly QualificationMessagePackCodec codec = new QualificationMessagePackCodec();
 
         public byte[] EncodeQuery(Guid playerId) => codec.Encode(Schema + "publicQueryRequest", Obj(("protocolVersion", V.Integer(1)), ("playerId", Id(playerId))));

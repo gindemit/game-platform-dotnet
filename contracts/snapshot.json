@@ -11,7 +11,7 @@
     "v1/schemas/common.schema.json": "ee0196dd9adae91c621048ef8dfd66db5e56e892410da74948b195cb6d0d02b2",
     "v1/schemas/error.schema.json": "6856fdfb984f1616a00d6be1208b506fcaf4696069fe267e0526fbd2546227ed",
     "v1/schemas/gameplay.schema.json": "3f1b3242e8817b529303b79ed4177769c0ddda0304d268f7947c1543d546368e",
-    "v1/schemas/profile.schema.json": "6cd17c93d2e32802b44cd1f9c328943c4b96a8468527988eb029ea3ec9748094",
+    "v1/schemas/profile.schema.json": "13f012ae923ba4080a2b98049c9d66f6dd72ff8a582dd7b1a250e0d35c292a7c",
     "v1/schemas/provision.schema.json": "6b8b8a7671e65dd313988c3462fbd3f378a2df4e30b7854937c80d79d687719b",
     "v1/schemas/projection.schema.json": "a70ce394af28221395b19b1efbc496568e1c6bf72c5116d2bccb359b824dadf0",
     "v1/schemas/pull.schema.json": "19fe5c36aef3b76f1921c8c7080079e62e531e56ec18b15dc8ef381be2e9eea3",

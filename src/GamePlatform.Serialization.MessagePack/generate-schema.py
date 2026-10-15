@@ -18,6 +18,7 @@ pins = json.loads((root/'contracts/snapshot.json').read_text(encoding='utf-8'))[
 pins.update(json.loads((root/'contracts/teams/snapshot.json').read_text(encoding='utf-8'))['files'])
 pins.update(json.loads((root/'contracts/leaderboards/snapshot.json').read_text(encoding='utf-8'))['files'])
 pins.update(json.loads((root/'contracts/friends/snapshot.json').read_text(encoding='utf-8'))['files'])
+pins.update(json.loads((root/'contracts/profiles/snapshot.json').read_text(encoding='utf-8'))['files'])
 paths = [*sorted((root/'contracts/v1/schemas').glob('*.json')),
          root/'contracts/live-slice/receipt.schema.json',
          root/'contracts/g3/reward-receipt.schema.json',

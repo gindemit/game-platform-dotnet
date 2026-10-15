@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "sha256",
+  "contractVersion": "profiles-public-1.0.0",
+  "files": {
+    "v1/schemas/profiles.schema.json": "8b1f75331a37ab4da280ed73a3d8b5de27f38432ccb07af2c9e8f08fa7e905eb"
+  }
+}
