@@ -14,7 +14,7 @@ PROJECTS = {
     "GamePlatform.Configuration.Client",
     "GamePlatform.Core", "GamePlatform.Diagnostics.Abstractions", "GamePlatform.Features.Contracts",
     "GamePlatform.Backend.Contracts", "GamePlatform.Storage.Abstractions", "GamePlatform.Features",
-    "GamePlatform.Sync", "GamePlatform.Navigation", "GamePlatform.Features.Presentation",
+    "GamePlatform.Sync", "GamePlatform.Navigation.Kernel", "GamePlatform.Navigation", "GamePlatform.Features.Presentation",
     "GamePlatform.Wire.Contracts", "GamePlatform.Transport.Abstractions", "GamePlatform.Transport.Http",
     "GamePlatform.Storage.Sqlite", "GamePlatform.Serialization.MessagePack", "GamePlatform.Serialization.Json",
 }

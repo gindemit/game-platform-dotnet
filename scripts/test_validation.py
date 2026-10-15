@@ -38,7 +38,9 @@ class ValidationTests(unittest.TestCase):
             self.assertIn("Profiles contract hash mismatch: v1/schemas/profiles.schema.json", errors)
             self.assertIn("incomplete Profiles contract pins", errors)
 
-    def test_project_inventory_has_seventeen_with_optional_client(self): self.assertEqual(17, len(validate.PROJECTS))
+    def test_project_inventory_has_eighteen_with_optional_client_and_navigation_kernel(self):
+        self.assertEqual(18, len(validate.PROJECTS))
+        self.assertIn('GamePlatform.Navigation.Kernel', validate.PROJECTS)
     def test_feature_inventory_has_sixteen(self): self.assertEqual(16, len(validate.FEATURES))
 
     def test_optional_client_cannot_depend_on_account_storage_or_runtime_packages(self):
