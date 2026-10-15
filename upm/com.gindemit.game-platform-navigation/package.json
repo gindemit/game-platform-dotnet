@@ -1,0 +1,7 @@
+{
+  "name": "com.gindemit.game-platform-navigation",
+  "version": "0.1.0",
+  "displayName": "Game Platform Navigation Kernel",
+  "unity": "6000.0",
+  "description": "Optional dependency-free navigation, entry, tutorial and prompt contracts. No mobile SDK."
+}
