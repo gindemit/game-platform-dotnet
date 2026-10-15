@@ -1,0 +1,144 @@
+{
+  "sourceRevision": "bfca8279c6af813e072a8fbdad76d703737b3274",
+  "sourceRoot": "src/GamePlatform.Navigation.Kernel/",
+  "files": [
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/AssemblyInfo.cs",
+      "path": "Runtime/AssemblyInfo.cs",
+      "sha256": "625b28a999bb0062723325a068c791f5362a7ad237ce83f967f95bba5c2bea9e"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/EntryId.cs",
+      "path": "Runtime/EntryId.cs",
+      "sha256": "d57de7d56b05999c1e28535028cc62aa2c8e4210aebe6f9b66594338e7760c12"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/FlowId.cs",
+      "path": "Runtime/FlowId.cs",
+      "sha256": "f39daa326b5f5ebc4e723c69272424ef886519bef032a675d070661af84739d6"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Entries/FeatureEntryDeduplicator.cs",
+      "path": "Runtime/Flows/Entries/FeatureEntryDeduplicator.cs",
+      "sha256": "911a4f24d2cf47db1db704d8f8537d85ed7212deb00d3f37502f26a71960c79c"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Entries/FeatureEntryResolution.cs",
+      "path": "Runtime/Flows/Entries/FeatureEntryResolution.cs",
+      "sha256": "1bc5a670e4f4160d17bd7b3f409884d0cb2bd4d3a2e9f145c41470b7ce79f808"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Prompts/PromptClaim.cs",
+      "path": "Runtime/Flows/Prompts/PromptClaim.cs",
+      "sha256": "cf8344763a11b8d9f65f3f32a018f0b9f7bd701a522ef357fe663325a54e998b"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Prompts/PromptEnqueueOutcome.cs",
+      "path": "Runtime/Flows/Prompts/PromptEnqueueOutcome.cs",
+      "sha256": "1e18048d80c6c0829f1cca8a926a95bd899c7985047de463afd1e3966dd99f72"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Prompts/PromptRequest.cs",
+      "path": "Runtime/Flows/Prompts/PromptRequest.cs",
+      "sha256": "c59fe902a0f68024e3e9f517b9bd511801b3d2d03512337d6f0970d1b9b4a28b"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Prompts/PromptScheduler.cs",
+      "path": "Runtime/Flows/Prompts/PromptScheduler.cs",
+      "sha256": "ea5364f8891cb74f604d345ad49a1f0dd86c20d2c452f5fdeaca1c6de897f04d"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Prompts/PromptSchedulingContext.cs",
+      "path": "Runtime/Flows/Prompts/PromptSchedulingContext.cs",
+      "sha256": "29c76c939be167948b53e2111c2ed81ae8cf931b938b0046e5f71160f62728ef"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/ITutorialCheckpointStore.cs",
+      "path": "Runtime/Flows/Tutorial/ITutorialCheckpointStore.cs",
+      "sha256": "ec7f519640dad8a24885a8c0fb97f1c9b6268ca13a6791d33361c98dfa5d74a3"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialCheckpoint.cs",
+      "path": "Runtime/Flows/Tutorial/TutorialCheckpoint.cs",
+      "sha256": "1a0a22f052167422969f1ad116abe945dd713b58b9531fc2ba909cd1c372f7bb"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialCheckpointIdentity.cs",
+      "path": "Runtime/Flows/Tutorial/TutorialCheckpointIdentity.cs",
+      "sha256": "51fd1cd32379a26dc178492712e832a64718489be9adae3fc6b57fa026836e03"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialCheckpointSaveResult.cs",
+      "path": "Runtime/Flows/Tutorial/TutorialCheckpointSaveResult.cs",
+      "sha256": "b734cc40fcf3336174776578fd6cc18d9d8617c150a47c80dcaa25db5b067960"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialFlow.cs",
+      "path": "Runtime/Flows/Tutorial/TutorialFlow.cs",
+      "sha256": "330a6fbe07262b925dff2a51e671bceac3c7bbb2ee7b7b2ad74d3938256fa484"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialFlowOutcome.cs",
+      "path": "Runtime/Flows/Tutorial/TutorialFlowOutcome.cs",
+      "sha256": "789cc4c6c5256019e261036d4ddc777b81228d0d115553ecb9ed729c9cea9de4"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialFlowResult.cs",
+      "path": "Runtime/Flows/Tutorial/TutorialFlowResult.cs",
+      "sha256": "3f4f4c02caa5b7393ac96bd62d5a727e3f82030e4c6ba2a88f186ba8774df8a6"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationAdmission.cs",
+      "path": "Runtime/NavigationAdmission.cs",
+      "sha256": "e4c7644d89a7f9309149aa83394f15d6c36a4fb5df41fe9f5757be90404e29f8"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationChildResult.cs",
+      "path": "Runtime/NavigationChildResult.cs",
+      "sha256": "2402640fb549bb474da20a14042cceee6b9b556d80111a8a53bc02bb506e8872"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationDefinition.cs",
+      "path": "Runtime/NavigationDefinition.cs",
+      "sha256": "6cd55e1a9f3f06045448170aed1aa5c39560658ff6ffc167713afec304954224"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationEntry.cs",
+      "path": "Runtime/NavigationEntry.cs",
+      "sha256": "f78b487ea606e0d4a27b4beba27aadbd72a23e78607a09ea48ebb3e0a554adff"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationEntrySnapshot.cs",
+      "path": "Runtime/NavigationEntrySnapshot.cs",
+      "sha256": "f570d3cff811d68b83d4ae0274a0e53fd84da35c117cf026c64532d2c17d880f"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationKernel.cs",
+      "path": "Runtime/NavigationKernel.cs",
+      "sha256": "bc0e71aa158239aaa5758c2042abc20ac6097e239bb26abd2ebbd7bcacdb7c7c"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationOpenResult.cs",
+      "path": "Runtime/NavigationOpenResult.cs",
+      "sha256": "379ce71f805201aba7484ccd0e6e09b6f41a972e6739a9d07cc49ae6bfa061b5"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationOutcome.cs",
+      "path": "Runtime/NavigationOutcome.cs",
+      "sha256": "1adc817f659fc871ba357c283d9e21ebef0facb3651338b55a0faabcd7bcf869"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationRequest.cs",
+      "path": "Runtime/NavigationRequest.cs",
+      "sha256": "544580ea76de8e2835c21d0912d558e6b760b9d2b579aafce7848eff417e2586"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/NavigationSnapshot.cs",
+      "path": "Runtime/NavigationSnapshot.cs",
+      "sha256": "8a8e188608430bf89411a54785e2a0f441a0c6e9a7cea8898064825a9d7a2bd8"
+    }
+  ],
+  "delivery": "source",
+  "dependencies": [],
+  "compatibility": "Do not install alongside a full SDK payload containing GamePlatform.Navigation.Kernel.dll."
+}

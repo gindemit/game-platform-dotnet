@@ -1,0 +1,11 @@
+{
+  "name": "GamePlatform.Navigation.Kernel",
+  "rootNamespace": "GamePlatform.Navigation.Kernel",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}
