@@ -10,8 +10,9 @@ spec=importlib.util.spec_from_file_location('configuration_client_stage',ROOT/'i
 spec=importlib.util.spec_from_file_location('client_package',ROOT/'scripts/package-sdk.py');package=importlib.util.module_from_spec(spec);spec.loader.exec_module(package)
 
 class ClientStagingTests(unittest.TestCase):
-    def test_both_optional_assemblies_are_excluded_without_changing_regular_inventory(self):
-        projects=package.regular_runtime_projects(ROOT);self.assertEqual(15,len(projects));self.assertFalse(stage.NAMES & {p.stem for p in projects})
+    def test_both_configuration_assemblies_are_excluded_from_regular_navigation_bundle(self):
+        projects=package.regular_runtime_projects(ROOT);self.assertEqual(16,len(projects));self.assertFalse(stage.NAMES & {p.stem for p in projects})
+        self.assertIn('GamePlatform.Navigation.Kernel', {p.stem for p in projects})
     def test_hash_bound_closure_and_owned_sources_stage_without_replacement(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);paths=[];proof={'assemblies':[],'assemblySha256':{}}

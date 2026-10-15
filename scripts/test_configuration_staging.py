@@ -22,9 +22,10 @@ PACKAGE = module(ROOT / 'scripts/package-sdk.py', 'config_package')
 class ConfigurationStagingTests(unittest.TestCase):
     def test_optional_project_excluded_from_regular_payload(self):
         projects = PACKAGE.regular_runtime_projects(ROOT)
-        self.assertEqual(len(projects), 15)
+        self.assertEqual(len(projects), 16)
         self.assertNotIn('GamePlatform.Configuration', {project.stem for project in projects})
         self.assertIn('GamePlatform.Storage.Sqlite', {project.stem for project in projects})
+        self.assertIn('GamePlatform.Navigation.Kernel', {project.stem for project in projects})
 
     def test_stage_has_only_optional_dll_and_android_webgl_import_policy(self):
         with tempfile.TemporaryDirectory() as directory:
