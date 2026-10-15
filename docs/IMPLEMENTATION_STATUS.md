@@ -212,6 +212,20 @@ behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
 
+Current consumer update, 2026-10-15: the requested analytics qualification now
+pins Git UPM dev.162, `a26d478b05f99e46ba7f36787dcb54d5edae5a53`, generated from
+existing canonical remote source `8e4821a9ada89b8f1814e5423bf9b75a90e92f80`.
+This supplies existing Profile types missing from the previous consumer package;
+it introduces no native analytics SDK feature. SDK source validation passed
+1,030 tests with nine skips, plus 76 tooling tests; all 142 package files and
+stable importer metadata passed independent review and consumer import checks.
+Current Editor compilation passes. The game-owned native uploader and its
+compiled/device/cloud qualifications have separate [execution receipts](https://github.com/gindemit/game-platform-workspace/blob/main/docs/work/remote-config-service/ANALYTICS-DEV-DEPLOY-2026-10-15-RESULTS.md).
+Earlier package/device results below retain their exact dated scope. The original
+local SDK checkout's divergent unrelated commits are preserved; the generated
+package was built and pushed from a clean exact remote-main disposable checkout.
+
+
 Current FIN-ANDROID consumer on 2026-10-12: manifest, lock and verifier select
 `aa80f9dd48794b32e66391aba5cdfa53c347580c` (`0.1.0-dev.150`), generated from
 source `6ad5efeb0f700a6acc3c262be319a94fac161274`. Configured Dev physical
