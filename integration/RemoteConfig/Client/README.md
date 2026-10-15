@@ -51,3 +51,10 @@ stage-client.py stages only inspected core/client assemblies and these owned ada
 sources into a fresh isolated package. The regular SDK export excludes both optional
 assemblies. Unity build, real browser execution and physical device qualification need
 their separately coordinated leases; staging never edits an existing game/project.
+
+Staging also emits the dedicated `GamePlatform.Configuration.Unity` assembly
+definition with fixed importer identity and explicit references to only the two
+optional DLLs. It is available to Editor, Android and WebGL consumers without
+depending on the ordinary mobile SDK. Consumers with overrideReferences enabled
+must reference this host assembly and both optional DLLs explicitly. Its presence
+does not establish Unity import or platform runtime acceptance.

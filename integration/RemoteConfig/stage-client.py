@@ -10,6 +10,8 @@ HERE=Path(__file__).resolve().parent
 spec=importlib.util.spec_from_file_location('configuration_core_stage',HERE/'stage.py');core=importlib.util.module_from_spec(spec);spec.loader.exec_module(core)
 NAMES={'GamePlatform.Configuration','GamePlatform.Configuration.Client'}
 CLIENT_GUID='a2d3e48556fb4620bb9371b401dd520b'
+HOST_ASSEMBLY='GamePlatform.Configuration.Unity'
+HOST_GUID='6f064fe8ae8747fc89d6032a1a29bb63'
 
 def stage(assemblies,metadata,output):
     paths={Path(path).stem:Path(path).resolve() for path in assemblies};metadata=Path(metadata).resolve();output=Path(output).resolve()
@@ -36,6 +38,14 @@ def stage(assemblies,metadata,output):
         source=HERE/'Client'/name
         if not source.is_file():raise ValueError('adapter_source_missing:'+name)
         target=output/relative;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,target)
+    host=output/'Runtime/Unity'/f'{HOST_ASSEMBLY}.asmdef'
+    host.write_text(json.dumps({'name':HOST_ASSEMBLY,'rootNamespace':HOST_ASSEMBLY,
+        'references':[],'includePlatforms':['Editor','Android','WebGL'],
+        'excludePlatforms':[],'overrideReferences':True,
+        'precompiledReferences':[name+'.dll' for name in sorted(NAMES)],
+        'autoReferenced':True,'noEngineReferences':False},indent=2)+'\n',encoding='utf-8')
+    (host.parent/(host.name+'.meta')).write_text(
+        f'fileFormatVersion: 2\nguid: {HOST_GUID}\nAssemblyDefinitionImporter:\n  externalObjects: {{}}\n  userData:\n  assetBundleName:\n  assetBundleVariant:\n',encoding='utf-8')
     (output/'package.json').write_text(json.dumps({'name':'com.gindemit.game-platform.configuration.client','version':'0.1.0-local','displayName':'Game Platform Configuration Client (isolated)','unity':'6000.5','description':'Optional standalone lifecycle and host adapters; no account/mobile SDK dependency.'},indent=2)+'\n',encoding='utf-8')
     inventory={'schemaVersion':1,'runtimeThirdPartyPackages':0,'assemblies':{name:{'bytes':path.stat().st_size,'sha256':hashes[name]} for name,path in sorted(paths.items())},'metadataSha256':hashlib.sha256(metadata.read_bytes()).hexdigest(),'files':{path.relative_to(output).as_posix():hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(output.rglob('*')) if path.is_file()},'platforms':['Editor','Android','WebGL'],'runtimeQualification':'separate; Java/build is not physical JNI evidence'}
     (output/'inventory.json').write_text(json.dumps(inventory,indent=2)+'\n',encoding='utf-8');return inventory
