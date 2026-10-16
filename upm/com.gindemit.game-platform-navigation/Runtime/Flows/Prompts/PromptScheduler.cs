@@ -43,6 +43,7 @@ namespace GamePlatform.Navigation.Kernel.Flows
         /// <summary>
         /// Claims the highest-priority eligible request, breaking ties by insertion order. Revalidation runs
         /// outside the scheduler lock; deferral and expiry never count as completion.
+        /// A claimed prompt retains exclusive presentation ownership past expiry until release or resolution.
         /// </summary>
         public bool TryClaimNext(DateTimeOffset now, PromptSchedulingContext context,
             Func<PromptRequest, PromptSchedulingContext, bool> revalidate, out PromptClaim? claim)
@@ -70,6 +71,8 @@ namespace GamePlatform.Navigation.Kernel.Flows
                     continue;
                 lock (_gate)
                 {
+                    if (_items.Any(item => item.IsClaimed))
+                        return false;
                     QueueItem? current = _items.FirstOrDefault(item => item.QueueId == candidate.QueueId);
                     if (current == null || current.IsClaimed || current.Request.ExpiresAt <= now)
                         continue;
@@ -116,7 +119,7 @@ namespace GamePlatform.Navigation.Kernel.Flows
         private void RemoveExpired(DateTimeOffset now)
         {
             lock (_gate)
-                _items.RemoveAll(item => item.Request.ExpiresAt <= now);
+                _items.RemoveAll(item => !item.IsClaimed && item.Request.ExpiresAt <= now);
         }
 
         private sealed class QueueItem
