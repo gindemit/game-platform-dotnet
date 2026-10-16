@@ -57,8 +57,10 @@ namespace GamePlatform.Tests.Navigation
                 kernel.SelectRootAsync(Request("root"));
                 var admission = new TaskCompletionSource<NavigationAdmissionOutcome>();
                 using var cancellation = new CancellationTokenSource();
-                Task<NavigationOpenResult<string>> opening = kernel.PushAsync(Request("joined"), (_, _) => admission.Task);
-                Task<NavigationOpenResult<string>> joined = kernel.PushAsync(Request("joined"), cancellationToken: cancellation.Token);
+                var definition = new NavigationDefinition<string, string>("joined", multiplicity: NavigationMultiplicity.ReuseMatching);
+                var request = new NavigationRequest<string, string>(definition, "same", "same");
+                Task<NavigationOpenResult<string>> opening = kernel.PushAsync(request, (_, _) => admission.Task);
+                Task<NavigationOpenResult<string>> joined = kernel.PushAsync(request, cancellationToken: cancellation.Token);
                 NavigationOutcome? joinedOutcome = null;
                 async Task ObserveJoin()
                 {
