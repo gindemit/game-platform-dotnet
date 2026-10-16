@@ -86,19 +86,7 @@ namespace GamePlatform.Navigation.Kernel.Flows
                 if (admission == null)
                     throw new InvalidOperationException("Entry admission returned no task.");
 
-                var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                using (scopeLifetime.Register(() => cancelled.TrySetResult(true)))
-                {
-                    Task winner = await Task.WhenAny(admission, cancelled.Task);
-                    if (!ReferenceEquals(winner, admission))
-                    {
-                        RemovePending(key, pending);
-                        pending.Completion.TrySetCanceled(scopeLifetime);
-                        _ = ObserveLateAdmissionAsync(admission);
-                        return;
-                    }
-                }
-
+                await CancellationObservation.WaitAsync(admission, scopeLifetime);
                 THandle handle = await admission;
                 if (handle == null)
                     throw new InvalidOperationException("Entry admission returned no handle.");
@@ -131,33 +119,12 @@ namespace GamePlatform.Navigation.Kernel.Flows
             }
         }
 
-        private static async Task ObserveLateAdmissionAsync(Task admission)
-        {
-            try
-            {
-                await admission;
-            }
-            catch
-            {
-                // Cancellation already settled callers; observe late provider failures.
-            }
-        }
-
         private static async Task<THandle> WaitForCallerAsync(Task<THandle> admission, CancellationToken cancellationToken)
         {
             if (!cancellationToken.CanBeCanceled)
                 return await admission;
-            var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (cancellationToken.Register(() => cancelled.TrySetResult(true)))
-            {
-                Task winner = await Task.WhenAny(admission, cancelled.Task);
-                if (!ReferenceEquals(winner, admission))
-                {
-                    _ = ObserveLateAdmissionAsync(admission);
-                    throw new OperationCanceledException(cancellationToken);
-                }
-                return await admission;
-            }
+            await CancellationObservation.WaitAsync(admission, cancellationToken);
+            return await admission;
         }
 
         private sealed class PendingAdmission

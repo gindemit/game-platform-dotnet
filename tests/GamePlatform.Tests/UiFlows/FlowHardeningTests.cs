@@ -332,6 +332,110 @@ namespace GamePlatform.Tests.UiFlows
             return scheduler;
         }
 
+        [Fact]
+        public void CancellableJoinCanReceiveSourceSuccessOnTheCallerContext()
+        {
+            WithContext(context =>
+            {
+                var entries = new FeatureEntryDeduplicator<object>();
+                var provider = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                using var caller = new CancellationTokenSource();
+                object? current = null;
+                Task<FeatureEntryResolution<object>> owner = entries.ResolveAsync("live-token", _ => current,
+                    (_, _) => provider.Task, CancellationToken.None);
+                Task<FeatureEntryResolution<object>> joined = entries.ResolveAsync("live-token", _ => current,
+                    (_, _) => throw new InvalidOperationException("Duplicate admission"), CancellationToken.None, caller.Token);
+                async Task Observe()
+                {
+                    FeatureEntryResolution<object> result = await joined;
+                    Assert.Same(context, SynchronizationContext.Current);
+                    Assert.Same(current, result.Handle);
+                    Assert.Equal(FeatureEntryResolutionKind.JoinedPendingAdmission, result.Kind);
+                }
+                Task observed = Observe();
+                Assert.False(observed.IsCompleted);
+                current = new object();
+                provider.SetResult(current);
+                context.PumpUntil(Task.WhenAll(owner, observed));
+                observed.GetAwaiter().GetResult();
+                Assert.False(caller.IsCancellationRequested);
+            });
+        }
+
+        [Fact]
+        public void CancelledJoinObserverCanReenterWithoutCancellingSharedWork()
+        {
+            WithContext(context =>
+            {
+                var entries = new FeatureEntryDeduplicator<object>();
+                var provider = new TaskCompletionSource<object>();
+                using var scope = new CancellationTokenSource();
+                using var caller = new CancellationTokenSource();
+                Task<FeatureEntryResolution<object>> owner = entries.ResolveAsync("shared", _ => null,
+                    (_, _) => provider.Task, scope.Token);
+                Task<FeatureEntryResolution<object>> joined = entries.ResolveAsync("shared", _ => null,
+                    (_, _) => throw new InvalidOperationException("Duplicate admission"), scope.Token, caller.Token);
+                async Task Observe()
+                {
+                    bool cancelled = false;
+                    try { await joined; }
+                    catch (OperationCanceledException error)
+                    {
+                        cancelled = true;
+                        Assert.Equal(caller.Token, error.CancellationToken);
+                    }
+                    Assert.True(cancelled);
+                    Assert.Same(context, SynchronizationContext.Current);
+                    var handle = new object();
+                    FeatureEntryResolution<object> reentered = await entries.ResolveAsync("other", _ => null,
+                        (_, _) => Task.FromResult(handle), scope.Token);
+                    Assert.Same(handle, reentered.Handle);
+                    Assert.False(owner.IsCompleted);
+                }
+                Task observed = Observe();
+                caller.Cancel();
+                context.PumpUntil(observed);
+                observed.GetAwaiter().GetResult();
+                Assert.False(scope.IsCancellationRequested);
+                provider.SetResult(new object());
+                context.PumpUntil(owner);
+                Assert.True(owner.IsCompletedSuccessfully);
+            });
+        }
+
+        [Fact]
+        public void TutorialCancellationReentryCannotOvertakeTheUnfinishedStore()
+        {
+            WithContext(context =>
+            {
+                var read = new TaskCompletionSource<TutorialCheckpoint?>();
+                var store = new Store { Load = () => read.Task,
+                    Save = checkpoint => Task.FromResult(TutorialCheckpointSaveResult.Acknowledge(checkpoint)) };
+                using var flow = new TutorialFlow(Identity(), store, () => true);
+                using var caller = new CancellationTokenSource();
+                Task<TutorialFlowResult> loading = flow.LoadAsync(caller.Token);
+                var queued = new TaskCompletionSource<bool>();
+                async Task Observe()
+                {
+                    Assert.Equal(TutorialFlowOutcome.Cancelled, (await loading).Outcome);
+                    Assert.Same(context, SynchronizationContext.Current);
+                    Task<TutorialFlowResult> saving = flow.SaveCheckpointAsync("reentered");
+                    queued.SetResult(true);
+                    Assert.Equal(TutorialFlowOutcome.Acknowledged, (await saving).Outcome);
+                }
+                Task observed = Observe();
+                caller.Cancel();
+                context.PumpUntil(queued.Task);
+                Assert.Equal(0, store.SaveCalls);
+                Assert.False(observed.IsCompleted);
+                read.SetResult(null);
+                context.PumpUntil(observed);
+                observed.GetAwaiter().GetResult();
+                Assert.Equal("reentered", flow.Checkpoint!.StepKey);
+                Assert.False(flow.IsCompleted);
+            });
+        }
+
         private static TutorialCheckpointIdentity Identity() => new TutorialCheckpointIdentity("intro", "v1", TutorialScopeKind.Account, "fixture");
 
         private static void WithContext(Action<PumpContext> action)
