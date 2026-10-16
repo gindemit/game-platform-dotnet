@@ -1,6 +1,6 @@
 # Optional navigation kernel
 
-Generated from canonical SDK src at `bfca8279c6af813e072a8fbdad76d703737b3274`.
+Generated from canonical SDK src at `be3369205e0438ad1569d2bc72051e7bd42161f4`.
 
 Install this Git subdirectory at a full commit SHA and explicitly reference
 `GamePlatform.Navigation.Kernel` from a consuming asmdef. It includes no Unity,
