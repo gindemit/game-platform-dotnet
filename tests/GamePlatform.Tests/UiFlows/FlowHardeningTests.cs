@@ -10,6 +10,21 @@ namespace GamePlatform.Tests.UiFlows
     public sealed class FlowHardeningTests
     {
         [Fact]
+        public async Task TutorialDisposedReentrantlyOrBeforeOperationReturnsRetired()
+        {
+            var store = new Store();
+            var flow = new TutorialFlow(Identity(), store, () => true);
+            store.Load = () =>
+            {
+                flow.Dispose();
+                return Task.FromResult<TutorialCheckpoint?>(null);
+            };
+            Assert.Equal(TutorialFlowOutcome.Retired, (await flow.LoadAsync()).Outcome);
+            Assert.Equal(TutorialFlowOutcome.Retired, (await flow.LoadAsync()).Outcome);
+            Assert.Equal(TutorialFlowOutcome.Retired, (await flow.CompleteAsync("final")).Outcome);
+        }
+
+        [Fact]
         public void ReentrantPromptClaimCannotClaimASecondItem()
         {
             var scheduler = Prompts();
@@ -164,7 +179,7 @@ namespace GamePlatform.Tests.UiFlows
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(true, true)]
-        public void TutorialCancellationSettlesBeforeNoncooperativeStoreAndObservesLateFailure(bool retire, bool loading)
+        public void TutorialCancellationSettlesBeforeNoncooperativeStoreAndExercisesLateFailure(bool retire, bool loading)
         {
             WithContext(context =>
             {
@@ -188,10 +203,11 @@ namespace GamePlatform.Tests.UiFlows
                     Assert.Equal(loading ? 0 : 1, store.SaveCalls);
                 }
                 var drained = new TaskCompletionSource<bool>();
-                // This store callback supplies a deterministic sentinel behind the core's fault continuation.
+                // Exercise late faults; the sentinel pumps queued work, not an assertion that all
+                // asynchronously scheduled private observers have drained.
                 if (loading)
                     read.SetException(new InvalidOperationException("late read"));
-                else
+                if (!loading || !retire)
                     write.SetException(new InvalidOperationException("late write"));
                 context.Post(_ => drained.SetResult(true), null);
                 context.PumpUntil(drained.Task);
@@ -246,6 +262,68 @@ namespace GamePlatform.Tests.UiFlows
             });
         }
 
+        [Fact]
+        public void CancelledSaveAcknowledgementCannotCompleteTutorialAndNextWriteWaits()
+        {
+            WithContext(context =>
+            {
+                var pending = new TaskCompletionSource<TutorialCheckpointSaveResult>();
+                var store = new Store { Save = _ => pending.Task };
+                using var flow = new TutorialFlow(Identity(), store, () => true);
+                using var caller = new CancellationTokenSource();
+                var saving = flow.CompleteAsync("final", caller.Token);
+                var old = store.Requested!;
+                caller.Cancel();
+                context.PumpUntil(saving);
+                Assert.Equal(TutorialFlowOutcome.Cancelled, saving.GetAwaiter().GetResult().Outcome);
+                store.Save = checkpoint => Task.FromResult(TutorialCheckpointSaveResult.Acknowledge(checkpoint));
+                var next = flow.SaveCheckpointAsync("next");
+                Assert.Equal(1, store.SaveCalls);
+                pending.SetResult(TutorialCheckpointSaveResult.Acknowledge(old));
+                context.PumpUntil(next);
+                Assert.Equal(TutorialFlowOutcome.Acknowledged, next.GetAwaiter().GetResult().Outcome);
+                Assert.Equal("next", flow.Checkpoint!.StepKey);
+                Assert.False(flow.IsCompleted);
+                Assert.Equal(2, store.SaveCalls);
+            });
+        }
+
+        [Fact]
+        public void SuccessfulPendingJoinAndScopeReplacementUseTheCorrectReservation()
+        {
+            WithContext(context =>
+            {
+                var entries = new FeatureEntryDeduplicator<object>();
+                var oldProvider = new TaskCompletionSource<object>();
+                using var oldScope = new CancellationTokenSource();
+                object? current = null;
+                var owner = entries.ResolveAsync("generation:key", _ => current, (_, _) => oldProvider.Task, oldScope.Token);
+                var joined = entries.ResolveAsync("generation:key", _ => current, (_, _) => throw new Exception(), oldScope.Token);
+                var handle = new object();
+                current = handle;
+                oldProvider.SetResult(handle);
+                context.PumpUntil(Task.WhenAll(owner, joined));
+                Assert.Same(handle, joined.GetAwaiter().GetResult().Handle);
+                Assert.Equal(FeatureEntryResolutionKind.JoinedPendingAdmission, joined.GetAwaiter().GetResult().Kind);
+
+                current = null;
+                oldProvider = new TaskCompletionSource<object>();
+                var retired = entries.ResolveAsync("generation:key", _ => current, (_, _) => oldProvider.Task, oldScope.Token);
+                oldScope.Cancel();
+                var freshProvider = new TaskCompletionSource<object>();
+                var fresh = entries.ResolveAsync("generation:key", _ => current, (_, _) => freshProvider.Task, CancellationToken.None);
+                context.PumpUntil(retired);
+                Assert.True(retired.IsCanceled);
+                oldProvider.SetException(new InvalidOperationException("old provider"));
+                var newJoin = entries.ResolveAsync("generation:key", _ => current, (_, _) => throw new Exception(), CancellationToken.None);
+                current = new object();
+                freshProvider.SetResult(current);
+                context.PumpUntil(Task.WhenAll(fresh, newJoin));
+                Assert.Same(current, newJoin.GetAwaiter().GetResult().Handle);
+                Assert.Equal(FeatureEntryResolutionKind.JoinedPendingAdmission, newJoin.GetAwaiter().GetResult().Kind);
+            });
+        }
+
         private static PromptScheduler Prompts()
         {
             var scheduler = new PromptScheduler();
@@ -259,14 +337,14 @@ namespace GamePlatform.Tests.UiFlows
         private static void WithContext(Action<PumpContext> action)
         {
             SynchronizationContext? previous = SynchronizationContext.Current;
-            using var context = new PumpContext();
+            var context = new PumpContext();
             SynchronizationContext.SetSynchronizationContext(context);
             try
             { action(context); }
             finally { SynchronizationContext.SetSynchronizationContext(previous); }
         }
 
-        private sealed class PumpContext : SynchronizationContext, IDisposable
+        private sealed class PumpContext : SynchronizationContext
         {
             private readonly BlockingCollection<Action> _callbacks = new BlockingCollection<Action>();
             public override void Post(SendOrPostCallback callback, object? state) => _callbacks.Add(() => callback(state));
@@ -278,7 +356,8 @@ namespace GamePlatform.Tests.UiFlows
                     callback!();
                 }
             }
-            public void Dispose() => _callbacks.Dispose();
+            // A detached observer may legitimately post after the public operation settles.
+            // Keep the queue available until the context is collected, like the real host context.
         }
 
         private sealed class Store : ITutorialCheckpointStore

@@ -20,11 +20,11 @@ namespace GamePlatform.Tests.UiFlows
             Task<FeatureEntryResolution<Handle>> first = deduplicator.ResolveAsync("profile:scope:A", _ => current, admit, CancellationToken.None);
             Task<FeatureEntryResolution<Handle>> second = deduplicator.ResolveAsync("profile:scope:A", _ => current, admit, CancellationToken.None);
             Assert.Equal(1, calls);
+            current = handle;
             admitted.SetResult(handle);
 
             Assert.Equal(FeatureEntryResolutionKind.Admitted, (await first).Kind);
             Assert.Equal(FeatureEntryResolutionKind.JoinedPendingAdmission, (await second).Kind);
-            current = handle;
             FeatureEntryResolution<Handle> reused = await deduplicator.ResolveAsync("profile:scope:A", _ => current,
                 (_, _) => throw new InvalidOperationException("A current entry should be reused."), CancellationToken.None);
             Assert.Equal(FeatureEntryResolutionKind.ReusedCurrent, reused.Kind);
