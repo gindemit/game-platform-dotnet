@@ -149,25 +149,16 @@ namespace GamePlatform.Navigation.Kernel.Flows
         {
             using (CancellationTokenSource linked = Link(caller))
             {
-                var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                using (linked.Token.Register(() => cancelled.TrySetResult(true)))
+                try
                 {
-                    Task winner = await Task.WhenAny(operation, cancelled.Task);
-                    if (!ReferenceEquals(winner, operation) || linked.IsCancellationRequested)
-                    {
-                        _ = ObserveLateOperationAsync(operation);
-                        return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled);
-                    }
-                    return await operation;
+                    await CancellationObservation.WaitAsync(operation, linked.Token);
                 }
+                catch (OperationCanceledException)
+                { return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled); }
+                if (linked.IsCancellationRequested)
+                    return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled);
+                return await operation;
             }
-        }
-
-        private static async Task ObserveLateOperationAsync(Task operation)
-        {
-            try
-            { await operation; }
-            catch { /* The canceled observer cannot receive the late store failure. */ }
         }
 
         private CancellationTokenSource Link(CancellationToken caller) =>

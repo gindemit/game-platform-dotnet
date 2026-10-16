@@ -1,11 +1,16 @@
 {
-  "sourceRevision": "0f12ca38aa73e197607dd2fd7b20cf4231b5727d",
+  "sourceRevision": "bff772cbf328a30d99c8ecfbc795769001ce4bae",
   "sourceRoot": "src/GamePlatform.Navigation.Kernel/",
   "files": [
     {
       "source": "src/GamePlatform.Navigation.Kernel/AssemblyInfo.cs",
       "path": "Runtime/AssemblyInfo.cs",
       "sha256": "625b28a999bb0062723325a068c791f5362a7ad237ce83f967f95bba5c2bea9e"
+    },
+    {
+      "source": "src/GamePlatform.Navigation.Kernel/CancellationObservation.cs",
+      "path": "Runtime/CancellationObservation.cs",
+      "sha256": "7fab02b0dd156181d11f9153a67e3deb41bb94fb3d424124c78d444bddbdea1d"
     },
     {
       "source": "src/GamePlatform.Navigation.Kernel/EntryId.cs",
@@ -20,7 +25,7 @@
     {
       "source": "src/GamePlatform.Navigation.Kernel/Flows/Entries/FeatureEntryDeduplicator.cs",
       "path": "Runtime/Flows/Entries/FeatureEntryDeduplicator.cs",
-      "sha256": "e244cd7b0165740c3248392b1257d890bf7acff7b21e70c26361df6c81df7c7a"
+      "sha256": "4b79ab71d4698183209eeb4d0f751c737781be3fc06e81bd0e4482958c589f17"
     },
     {
       "source": "src/GamePlatform.Navigation.Kernel/Flows/Entries/FeatureEntryResolution.cs",
@@ -75,7 +80,7 @@
     {
       "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialFlow.cs",
       "path": "Runtime/Flows/Tutorial/TutorialFlow.cs",
-      "sha256": "0690839eea4a5b752c32b4e9279934f40f8520083f9cbff931e0d33ee0b2c826"
+      "sha256": "412c5ba6d2cab5431d341465844ed4791d9552d3765fb363c5b06726879eaac0"
     },
     {
       "source": "src/GamePlatform.Navigation.Kernel/Flows/Tutorial/TutorialFlowOutcome.cs",
@@ -115,7 +120,7 @@
     {
       "source": "src/GamePlatform.Navigation.Kernel/NavigationKernel.cs",
       "path": "Runtime/NavigationKernel.cs",
-      "sha256": "89908ec7cb9aa51490ffc1ed28cafa8fbeb7122595b171c86c266c8f26873309"
+      "sha256": "28956fbb848dce2633beb50003250086ec860cfd3c1d5de147370222f1186338"
     },
     {
       "source": "src/GamePlatform.Navigation.Kernel/NavigationOpenResult.cs",
