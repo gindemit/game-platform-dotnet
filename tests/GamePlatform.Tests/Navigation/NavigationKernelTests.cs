@@ -37,7 +37,7 @@ namespace GamePlatform.Tests.Navigation
                 admission.SetResult(NavigationAdmissionOutcome.Available);
                 context.PumpUntil(opening);
                 Assert.True(opening.IsCompletedSuccessfully);
-                Assert.Equal(1, kernel.Snapshot.Entries.Count);
+                Assert.Single(kernel.Snapshot.Entries);
                 Assert.Same(context, committedOn);
             }
             finally { SynchronizationContext.SetSynchronizationContext(previous); }
@@ -60,14 +60,17 @@ namespace GamePlatform.Tests.Navigation
                 Task<NavigationOpenResult<string>> opening = kernel.PushAsync(Request("joined"), (_, _) => admission.Task);
                 Task<NavigationOpenResult<string>> joined = kernel.PushAsync(Request("joined"), cancellationToken: cancellation.Token);
                 NavigationOutcome? joinedOutcome = null;
-                async Task ObserveJoin() { joinedOutcome = (await joined).Outcome; }
+                async Task ObserveJoin()
+                {
+                    joinedOutcome = (await joined).Outcome;
+                }
                 Task observed = ObserveJoin();
                 if (cancelJoin)
                 {
                     cancellation.Cancel();
                     context.PumpUntil(observed);
                     Assert.Equal(Outcome.Cancelled, joinedOutcome);
-                    Assert.Equal(1, kernel.Snapshot.Pending.Count);
+                    Assert.Single(kernel.Snapshot.Pending);
                 }
                 admission.SetResult(NavigationAdmissionOutcome.Available);
                 context.PumpUntil(Task.WhenAll(opening, observed));
