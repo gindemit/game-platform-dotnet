@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,47 @@ namespace GamePlatform.Tests.Navigation
         private static readonly NavigationDefinition<string, bool> Modal = new NavigationDefinition<string, bool>("confirmation", NavigationPresentation.Modal);
         private static NavigationRequest<string, string> Request(string argument) => new NavigationRequest<string, string>(Screen, argument);
         private static NavigationRequest<string, bool> Dialog(string argument) => new NavigationRequest<string, bool>(Modal, argument);
+
+        [Fact]
+        public void AsynchronousAdmissionCommitsOnTheCallingSynchronizationContext()
+        {
+            SynchronizationContext? previous = SynchronizationContext.Current;
+            using var context = new PumpContext();
+            SynchronizationContext.SetSynchronizationContext(context);
+            try
+            {
+                using var kernel = new NavigationKernel("single-threaded-host");
+                var admission = new TaskCompletionSource<NavigationAdmissionOutcome>();
+                SynchronizationContext? committedOn = null;
+                kernel.SnapshotChanged += snapshot =>
+                {
+                    if (snapshot.Pending.Count == 0 && snapshot.Entries.Count == 1)
+                        committedOn = SynchronizationContext.Current;
+                };
+                Task<NavigationOpenResult<string>> opening = kernel.SelectRootAsync(Request("async"), (_, _) => admission.Task);
+                Assert.False(opening.IsCompleted);
+                admission.SetResult(NavigationAdmissionOutcome.Available);
+                context.PumpUntil(opening);
+                Assert.Equal(Outcome.Applied, opening.GetAwaiter().GetResult().Outcome);
+                Assert.Same(context, committedOn);
+            }
+            finally { SynchronizationContext.SetSynchronizationContext(previous); }
+        }
+
+        private sealed class PumpContext : SynchronizationContext, IDisposable
+        {
+            private readonly BlockingCollection<Action> callbacks = new BlockingCollection<Action>();
+            public override void Post(SendOrPostCallback callback, object? state) => callbacks.Add(() => callback(state));
+            public void PumpUntil(Task task)
+            {
+                while (!task.IsCompleted)
+                {
+                    Assert.True(callbacks.TryTake(out Action? callback, TimeSpan.FromSeconds(5)), "No caller-context continuation was posted.");
+                    callback!();
+                }
+            }
+            public void Dispose() => callbacks.Dispose();
+        }
 
         [Fact]
         public async Task RepeatedTypesRestoreExactCallerChainAndSnapshotsRemainStable()
