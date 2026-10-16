@@ -36,8 +36,44 @@ namespace GamePlatform.Tests.Navigation
                 Assert.False(opening.IsCompleted);
                 admission.SetResult(NavigationAdmissionOutcome.Available);
                 context.PumpUntil(opening);
-                Assert.Equal(Outcome.Applied, opening.GetAwaiter().GetResult().Outcome);
+                Assert.True(opening.IsCompletedSuccessfully);
+                Assert.Equal(1, kernel.Snapshot.Entries.Count);
                 Assert.Same(context, committedOn);
+            }
+            finally { SynchronizationContext.SetSynchronizationContext(previous); }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void PendingJoinAndCancellationSettleWhileTheHostContextIsPumped(bool cancelJoin)
+        {
+            SynchronizationContext? previous = SynchronizationContext.Current;
+            using var context = new PumpContext();
+            SynchronizationContext.SetSynchronizationContext(context);
+            try
+            {
+                using var kernel = new NavigationKernel("single-threaded-host");
+                kernel.SelectRootAsync(Request("root"));
+                var admission = new TaskCompletionSource<NavigationAdmissionOutcome>();
+                using var cancellation = new CancellationTokenSource();
+                Task<NavigationOpenResult<string>> opening = kernel.PushAsync(Request("joined"), (_, _) => admission.Task);
+                Task<NavigationOpenResult<string>> joined = kernel.PushAsync(Request("joined"), cancellationToken: cancellation.Token);
+                NavigationOutcome? joinedOutcome = null;
+                async Task ObserveJoin() { joinedOutcome = (await joined).Outcome; }
+                Task observed = ObserveJoin();
+                if (cancelJoin)
+                {
+                    cancellation.Cancel();
+                    context.PumpUntil(observed);
+                    Assert.Equal(Outcome.Cancelled, joinedOutcome);
+                    Assert.Equal(1, kernel.Snapshot.Pending.Count);
+                }
+                admission.SetResult(NavigationAdmissionOutcome.Available);
+                context.PumpUntil(Task.WhenAll(opening, observed));
+                Assert.Equal(cancelJoin ? Outcome.Cancelled : Outcome.Reused, joinedOutcome);
+                Assert.Equal(2, kernel.Snapshot.Entries.Count);
+                Assert.Empty(kernel.Snapshot.Pending);
             }
             finally { SynchronizationContext.SetSynchronizationContext(previous); }
         }
