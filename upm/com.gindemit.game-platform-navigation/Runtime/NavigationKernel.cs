@@ -130,8 +130,9 @@ namespace GamePlatform.Navigation.Kernel
             Dispatch(effects);
             if (immediate != null)
                 return immediate;
+            // Admission and observers belong to the caller context, including single-threaded hosts.
             if (joined != null)
-                return await JoinAsync<TResult>(joined, cancellationToken).ConfigureAwait(false);
+                return await JoinAsync<TResult>(joined, cancellationToken);
             var active = opening!;
             var admitted = NavigationAdmissionOutcome.Available;
             var failure = NavigationOutcome.Applied;
@@ -143,18 +144,18 @@ namespace GamePlatform.Navigation.Kernel
                     if (work == null)
                         throw new InvalidOperationException("Admission returned no task.");
                     if (legacy)
-                        admitted = await work.ConfigureAwait(false);
+                        admitted = await work;
                     else
                     {
                         var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                         using (active.Request.Token.Register(() => cancelled.TrySetResult(true)))
                         {
-                            if (await Task.WhenAny(work, cancelled.Task).ConfigureAwait(false) != work)
+                            if (await Task.WhenAny(work, cancelled.Task) != work)
                             {
                                 Observe(work);
                                 throw new OperationCanceledException(active.Request.Token);
                             }
-                            admitted = await work.ConfigureAwait(false);
+                            admitted = await work;
                         }
                     }
                 }
@@ -417,9 +418,9 @@ namespace GamePlatform.Navigation.Kernel
             var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             using (token.Register(() => cancelled.TrySetResult(true)))
             {
-                if (await Task.WhenAny(opening.Completion.Task, cancelled.Task).ConfigureAwait(false) != opening.Completion.Task || token.IsCancellationRequested)
+                if (await Task.WhenAny(opening.Completion.Task, cancelled.Task) != opening.Completion.Task || token.IsCancellationRequested)
                     return Rejected<TResult>(NavigationOutcome.Cancelled);
-                var outcome = await opening.Completion.Task.ConfigureAwait(false);
+                var outcome = await opening.Completion.Task;
                 return new NavigationOpenResult<TResult>(outcome == NavigationOutcome.Applied ? NavigationOutcome.Reused : outcome,
                     outcome == NavigationOutcome.Applied ? opening.Record.Entry : null, ((Promise<TResult>)opening.Record.Promise).Task);
             }

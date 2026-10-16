@@ -1,5 +1,5 @@
 {
-  "sourceRevision": "bfca8279c6af813e072a8fbdad76d703737b3274",
+  "sourceRevision": "be3369205e0438ad1569d2bc72051e7bd42161f4",
   "sourceRoot": "src/GamePlatform.Navigation.Kernel/",
   "files": [
     {
@@ -115,7 +115,7 @@
     {
       "source": "src/GamePlatform.Navigation.Kernel/NavigationKernel.cs",
       "path": "Runtime/NavigationKernel.cs",
-      "sha256": "bc0e71aa158239aaa5758c2042abc20ac6097e239bb26abd2ebbd7bcacdb7c7c"
+      "sha256": "89908ec7cb9aa51490ffc1ed28cafa8fbeb7122595b171c86c266c8f26873309"
     },
     {
       "source": "src/GamePlatform.Navigation.Kernel/NavigationOpenResult.cs",
