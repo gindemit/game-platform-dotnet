@@ -113,7 +113,7 @@ class PackageTests(unittest.TestCase):
                 elif case == 'missing':
                     del packages['System.Memory']
                 elif case == 'version':
-                    packages['MessagePack']['resolved'] = '3.1.9'
+                    packages['MessagePack']['resolved'] = '3.1.10'
                 elif case == 'hash':
                     packages['MessagePack']['contentHash'] = 'different'
                 elif case == 'missing_hash':
