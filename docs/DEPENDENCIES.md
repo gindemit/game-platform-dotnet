@@ -1,6 +1,23 @@
 # Dependencies
 
-The P2 MessagePack qualification adapter pins MessagePack-CSharp 3.1.8 and its
+## October 17 local audit-repair candidate
+
+The [reviewed preparation order](https://github.com/gindemit/game-platform-workspace/blob/main/plans/UI-FRAMEWORK-SDK-AUDIT-2026-10-17.md)
+selects 3.1.9 for the existing MessagePack NU1902 failure. The
+[maintainer advisory](https://github.com/MessagePack-CSharp/MessagePack-CSharp/security/advisories/GHSA-qhrr-8q5h-9q3h)
+lists this patched version; no application exploit is claimed. Only the central
+version and MessagePack-family entries in six locks change. Audit/warning policy,
+wire schema/resolvers, optional navigation source payload and Unity's full mobile
+pin remain unchanged. Historical 3.1.8 qualification remains dated evidence.
+
+Normal solution locked restore passes on the local candidate. Full solution,
+codec/schema and deterministic packaging checks are still pending. This candidate
+is not published: a successful main push would enable the existing automatic full
+SDK dev-tag release, requiring separately named owner publication authority after
+concrete validation and independent review. No workflow bypass or live harness
+execution is selected.
+
+The current MessagePack adapter pins MessagePack-CSharp 3.1.9 and its
 exact transitive closure in generated lockfiles. Other runtime projects remain
 package-free. See [the dependency review](implementation/dependencies/CL-004-messagepack.md).
 Test packages are centrally pinned in `Directory.Packages.props`.
