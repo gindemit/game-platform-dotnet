@@ -22,8 +22,8 @@ def regular_runtime_projects(root):
             if project.stem not in OPTIONAL_PROJECTS]
 
 MESSAGEPACK_PACKAGES = {
-    'MessagePack': '3.1.8', 'MessagePack.Annotations': '3.1.8',
-    'MessagePackAnalyzer': '3.1.8', 'Microsoft.NET.StringTools': '17.11.4',
+    'MessagePack': '3.1.9', 'MessagePack.Annotations': '3.1.9',
+    'MessagePackAnalyzer': '3.1.9', 'Microsoft.NET.StringTools': '17.11.4',
     'System.Buffers': '4.5.1', 'System.Collections.Immutable': '8.0.0',
     'System.Memory': '4.5.5', 'System.Numerics.Vectors': '4.4.0',
     'System.Runtime.CompilerServices.Unsafe': '6.0.0',
