@@ -378,7 +378,8 @@ namespace GamePlatform.Tests.UiFlows
                 async Task Observe()
                 {
                     bool cancelled = false;
-                    try { await joined; }
+                    try
+                    { await joined; }
                     catch (OperationCanceledException error)
                     {
                         cancelled = true;
@@ -409,8 +410,11 @@ namespace GamePlatform.Tests.UiFlows
             WithContext(context =>
             {
                 var read = new TaskCompletionSource<TutorialCheckpoint?>();
-                var store = new Store { Load = () => read.Task,
-                    Save = checkpoint => Task.FromResult(TutorialCheckpointSaveResult.Acknowledge(checkpoint)) };
+                var store = new Store
+                {
+                    Load = () => read.Task,
+                    Save = checkpoint => Task.FromResult(TutorialCheckpointSaveResult.Acknowledge(checkpoint))
+                };
                 using var flow = new TutorialFlow(Identity(), store, () => true);
                 using var caller = new CancellationTokenSource();
                 Task<TutorialFlowResult> loading = flow.LoadAsync(caller.Token);
