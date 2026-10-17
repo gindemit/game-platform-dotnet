@@ -5,17 +5,38 @@
 The [reviewed preparation order](https://github.com/gindemit/game-platform-workspace/blob/main/plans/UI-FRAMEWORK-SDK-AUDIT-2026-10-17.md)
 selects 3.1.9 for the existing MessagePack NU1902 failure. The
 [maintainer advisory](https://github.com/MessagePack-CSharp/MessagePack-CSharp/security/advisories/GHSA-qhrr-8q5h-9q3h)
-lists this patched version; no application exploit is claimed. Only the central
-version and MessagePack-family entries in six locks change. Audit/warning policy,
-wire schema/resolvers, optional navigation source payload and Unity's full mobile
-pin remain unchanged. Historical 3.1.8 qualification remains dated evidence.
+lists this patched version; no application exploit is claimed. The central
+version and MessagePack-family entries in six locks change. The packaging
+allowlist matches 3.1.9; one negative test uses synthetic unreviewed 3.1.10 and
+four prior flow-test formatting diagnostics are repaired without token changes.
+Audit/warning policy, wire schema/resolvers, optional navigation source payload
+and Unity's full mobile pin remain unchanged. Historical 3.1.8 qualification
+remains dated evidence.
 
-Normal solution locked restore passes on the local candidate. Full solution,
-codec/schema and deterministic packaging checks are still pending. This candidate
-is not published: a successful main push would enable the existing automatic full
-SDK dev-tag release, requiring separately named owner publication authority after
-concrete validation and independent review. No workflow bypass or live harness
-execution is selected.
+Canonical candidate `74dca6773718c6a201e03a8df5c9b1468187b99b` passes normal
+locked restore, full solution formatting and Release build (zero warnings/errors),
+1,118 solution tests with zero failures and nine explicit recovery skips,
+18-project validation, schema regeneration check and all 76 tooling tests.
+Local codec self-test passes 73 schema, 32 fingerprint and five hostile JSON cases;
+six codec CLI rejection tests pass. This is local codec evidence, not peer or
+live-service acceptance. Earlier formatter/build and stale-fixture failures are
+retained outside the repository.
+
+Two full bundles built from a clean exact-source copy are byte-identical across
+all 103 files plus manifest (24 managed assemblies, three native targets).
+Bundle manifest SHA-256 is
+`b8b016faca4001a461b79e25b7796b6d6ba4e32114ba4aeb235d7e8936608fbe`.
+Two default local-draft UPM exports are likewise identical (145 inventoried files);
+manifest SHA-256 is
+`0f8195e4e88c0a102875f72c1cfa9b9624f6f34431d98888cf5e992a912af96e`.
+Strict bundle/UPM verification passes after each generation; sourceDirty=false,
+buildSkipped=false. These artifacts are not published or imported into Unity.
+
+A successful main push would enable the existing automatic full SDK dev-tag
+release, requiring separately named owner publication authority after independent
+review. No workflow bypass or live harness execution is selected. Remote CI and
+Unity/IL2CPP/device qualification of this patched full mobile package remain
+unrun; the existing optional navigation source package remains unchanged.
 
 The current MessagePack adapter pins MessagePack-CSharp 3.1.9 and its
 exact transitive closure in generated lockfiles. Other runtime projects remain
