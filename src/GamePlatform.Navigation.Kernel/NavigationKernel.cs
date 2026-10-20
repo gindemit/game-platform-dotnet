@@ -147,16 +147,8 @@ namespace GamePlatform.Navigation.Kernel
                         admitted = await work;
                     else
                     {
-                        var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                        using (active.Request.Token.Register(() => cancelled.TrySetResult(true)))
-                        {
-                            if (await Task.WhenAny(work, cancelled.Task) != work)
-                            {
-                                Observe(work);
-                                throw new OperationCanceledException(active.Request.Token);
-                            }
-                            admitted = await work;
-                        }
+                        await CancellationObservation.WaitAsync(work, active.Request.Token);
+                        admitted = await work;
                     }
                 }
             }
@@ -415,15 +407,14 @@ namespace GamePlatform.Navigation.Kernel
 
         private static async Task<NavigationOpenResult<TResult>> JoinAsync<TResult>(Pending opening, CancellationToken token)
         {
-            var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (token.Register(() => cancelled.TrySetResult(true)))
-            {
-                if (await Task.WhenAny(opening.Completion.Task, cancelled.Task) != opening.Completion.Task || token.IsCancellationRequested)
-                    return Rejected<TResult>(NavigationOutcome.Cancelled);
-                var outcome = await opening.Completion.Task;
-                return new NavigationOpenResult<TResult>(outcome == NavigationOutcome.Applied ? NavigationOutcome.Reused : outcome,
-                    outcome == NavigationOutcome.Applied ? opening.Record.Entry : null, ((Promise<TResult>)opening.Record.Promise).Task);
-            }
+            try
+            { await CancellationObservation.WaitAsync(opening.Completion.Task, token); }
+            catch (OperationCanceledException) { return Rejected<TResult>(NavigationOutcome.Cancelled); }
+            if (token.IsCancellationRequested)
+                return Rejected<TResult>(NavigationOutcome.Cancelled);
+            var outcome = await opening.Completion.Task;
+            return new NavigationOpenResult<TResult>(outcome == NavigationOutcome.Applied ? NavigationOutcome.Reused : outcome,
+                outcome == NavigationOutcome.Applied ? opening.Record.Entry : null, ((Promise<TResult>)opening.Record.Promise).Task);
         }
 
         private void CloseRecord(Record record, List<Action> effects)
@@ -514,8 +505,6 @@ namespace GamePlatform.Navigation.Kernel
         }
         private static void Cancel(CancellationTokenSource source) { try { source.Cancel(); } catch (AggregateException) { } catch (ObjectDisposedException) { } }
         private static void CancelAndDispose(CancellationTokenSource source) { Cancel(source); source.Dispose(); }
-        private static void Observe(Task work) => _ = work.ContinueWith(t => { _ = t.Exception; }, CancellationToken.None,
-            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         private static EntryId NextEntry() => new EntryId(Interlocked.Increment(ref entrySequence));
         private static FlowId NextFlow() => new FlowId(Interlocked.Increment(ref flowSequence));
         private static NavigationOpenResult<TResult> Rejected<TResult>(NavigationOutcome outcome) =>

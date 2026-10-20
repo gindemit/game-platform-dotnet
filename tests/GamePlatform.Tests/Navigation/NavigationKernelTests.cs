@@ -99,6 +99,38 @@ namespace GamePlatform.Tests.Navigation
         }
 
         [Fact]
+        public void CancelledAdmissionObserverCanReenterBeforeLateProviderFault()
+        {
+            SynchronizationContext? previous = SynchronizationContext.Current;
+            using var context = new PumpContext();
+            SynchronizationContext.SetSynchronizationContext(context);
+            try
+            {
+                using var kernel = new NavigationKernel("reentrant-cancellation");
+                kernel.SelectRootAsync(Request("root"));
+                var provider = new TaskCompletionSource<NavigationAdmissionOutcome>();
+                using var caller = new CancellationTokenSource();
+                Task<NavigationOpenResult<string>> opening = kernel.PushAsync(Request("pending"),
+                    (_, _) => provider.Task, caller.Token);
+                async Task Observe()
+                {
+                    Assert.Equal(Outcome.Cancelled, (await opening).Outcome);
+                    Assert.Same(context, SynchronizationContext.Current);
+                    Assert.Empty(kernel.Snapshot.Pending);
+                    Assert.Equal(Outcome.Applied, (await kernel.PushAsync(Request("replacement"))).Outcome);
+                }
+                Task observed = Observe();
+                caller.Cancel();
+                context.PumpUntil(observed);
+                Assert.True(observed.IsCompletedSuccessfully, observed.Exception?.ToString());
+                provider.SetException(new InvalidOperationException("Late noncooperative provider"));
+                Assert.Equal("replacement", kernel.Snapshot.Current!.Entry.GetArguments<string>());
+                Assert.Empty(kernel.Snapshot.Pending);
+            }
+            finally { SynchronizationContext.SetSynchronizationContext(previous); }
+        }
+
+        [Fact]
         public async Task RepeatedTypesRestoreExactCallerChainAndSnapshotsRemainStable()
         {
             using var kernel = new NavigationKernel("account", generation: 7);

@@ -7,12 +7,15 @@ namespace GamePlatform.Navigation.Kernel.Flows
     /// <summary>
     /// Serializes checkpoint operations and publishes state only after a matching store acknowledgement.
     /// ScopeCurrent must reflect the owning account/event generation; Retire fences late stores that ignore cancellation.
+    /// All awaits preserve the caller context. Cancellation settles observation promptly, but an ignored store
+    /// keeps the operation gate until it settles, so a later write cannot overtake it. Late faults are observed.
     /// </summary>
     public sealed class TutorialFlow : IDisposable
     {
         private readonly ITutorialCheckpointStore _store;
         private readonly Func<bool> _scopeCurrent;
         private readonly CancellationTokenSource _lifetime;
+        private readonly CancellationToken _lifetimeToken;
         private readonly SemaphoreSlim _operations = new SemaphoreSlim(1, 1);
         private readonly object _stateGate = new object();
         private TutorialCheckpoint? _checkpoint;
@@ -25,6 +28,7 @@ namespace GamePlatform.Navigation.Kernel.Flows
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _scopeCurrent = scopeCurrent ?? throw new ArgumentNullException(nameof(scopeCurrent));
             _lifetime = CancellationTokenSource.CreateLinkedTokenSource(scopeLifetime);
+            _lifetimeToken = _lifetime.Token;
         }
 
         public TutorialCheckpointIdentity Identity { get; }
@@ -32,20 +36,23 @@ namespace GamePlatform.Navigation.Kernel.Flows
         public bool IsCompleted => Checkpoint?.IsCompleted == true;
 
         /// <summary>Loads the last persisted safe point. No checkpoint means the tutorial may start at its first step.</summary>
-        public async Task<TutorialFlowResult> LoadAsync(CancellationToken cancellationToken = default)
+        public Task<TutorialFlowResult> LoadAsync(CancellationToken cancellationToken = default) =>
+            ObserveAsync(LoadCoreAsync(cancellationToken), cancellationToken);
+
+        private async Task<TutorialFlowResult> LoadCoreAsync(CancellationToken cancellationToken)
         {
             if (!IsCurrent())
                 return Result(TutorialFlowOutcome.Retired);
             using (CancellationTokenSource linked = Link(cancellationToken))
             {
                 try
-                { await _operations.WaitAsync(linked.Token).ConfigureAwait(false); }
+                { await _operations.WaitAsync(linked.Token); }
                 catch (OperationCanceledException) { return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled); }
                 try
                 {
                     if (!IsCurrent())
                         return Result(TutorialFlowOutcome.Retired);
-                    TutorialCheckpoint? loaded = await _store.LoadAsync(Identity, linked.Token).ConfigureAwait(false);
+                    TutorialCheckpoint? loaded = await _store.LoadAsync(Identity, linked.Token);
                     if (linked.IsCancellationRequested)
                         return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled);
                     if (!IsCurrent())
@@ -53,7 +60,12 @@ namespace GamePlatform.Navigation.Kernel.Flows
                     if (loaded != null && !Identity.Equals(loaded.Identity))
                         throw new InvalidOperationException("The checkpoint store returned a different tutorial identity.");
                     lock (_stateGate)
+                    {
+                        if (_retired || linked.IsCancellationRequested)
+                            return new TutorialFlowResult(_retired || _lifetime.IsCancellationRequested
+                                ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled, _checkpoint);
                         _checkpoint = loaded;
+                    }
                     return new TutorialFlowResult(loaded == null ? TutorialFlowOutcome.NoCheckpoint : TutorialFlowOutcome.Acknowledged, loaded);
                 }
                 catch (OperationCanceledException) { return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled); }
@@ -87,7 +99,10 @@ namespace GamePlatform.Navigation.Kernel.Flows
             catch (AggregateException) { /* A throwing observer cannot prevent this scope from staying retired. */ }
         }
 
-        private async Task<TutorialFlowResult> SaveAsync(string stepKey, TutorialCheckpointState state, CancellationToken cancellationToken)
+        private Task<TutorialFlowResult> SaveAsync(string stepKey, TutorialCheckpointState state, CancellationToken cancellationToken) =>
+            ObserveAsync(SaveCoreAsync(stepKey, state, cancellationToken), cancellationToken);
+
+        private async Task<TutorialFlowResult> SaveCoreAsync(string stepKey, TutorialCheckpointState state, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(stepKey))
                 throw new ArgumentException("A step key is required.", nameof(stepKey));
@@ -96,7 +111,7 @@ namespace GamePlatform.Navigation.Kernel.Flows
             using (CancellationTokenSource linked = Link(cancellationToken))
             {
                 try
-                { await _operations.WaitAsync(linked.Token).ConfigureAwait(false); }
+                { await _operations.WaitAsync(linked.Token); }
                 catch (OperationCanceledException) { return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled); }
                 try
                 {
@@ -107,7 +122,7 @@ namespace GamePlatform.Navigation.Kernel.Flows
                         return Result(TutorialFlowOutcome.Rejected);
                     long revision = before == null ? 1 : checked(before.Revision + 1);
                     var candidate = new TutorialCheckpoint(Identity, stepKey, state, revision);
-                    TutorialCheckpointSaveResult saved = await _store.SaveAsync(candidate, linked.Token).ConfigureAwait(false);
+                    TutorialCheckpointSaveResult saved = await _store.SaveAsync(candidate, linked.Token);
                     if (linked.IsCancellationRequested)
                         return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled);
                     if (!IsCurrent())
@@ -118,8 +133,9 @@ namespace GamePlatform.Navigation.Kernel.Flows
                         return Result(TutorialFlowOutcome.Stale);
                     lock (_stateGate)
                     {
-                        if (_retired)
-                            return new TutorialFlowResult(TutorialFlowOutcome.Retired, _checkpoint);
+                        if (_retired || linked.IsCancellationRequested)
+                            return new TutorialFlowResult(_retired || _lifetime.IsCancellationRequested
+                                ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled, _checkpoint);
                         _checkpoint = saved.Checkpoint;
                         return new TutorialFlowResult(TutorialFlowOutcome.Acknowledged, _checkpoint);
                     }
@@ -129,8 +145,24 @@ namespace GamePlatform.Navigation.Kernel.Flows
             }
         }
 
+        private async Task<TutorialFlowResult> ObserveAsync(Task<TutorialFlowResult> operation, CancellationToken caller)
+        {
+            using (CancellationTokenSource linked = Link(caller))
+            {
+                try
+                {
+                    await CancellationObservation.WaitAsync(operation, linked.Token);
+                }
+                catch (OperationCanceledException)
+                { return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled); }
+                if (linked.IsCancellationRequested)
+                    return Result(IsRetired() ? TutorialFlowOutcome.Retired : TutorialFlowOutcome.Cancelled);
+                return await operation;
+            }
+        }
+
         private CancellationTokenSource Link(CancellationToken caller) =>
-            CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token, caller);
+            CancellationTokenSource.CreateLinkedTokenSource(_lifetimeToken, caller);
         private bool IsRetired()
         {
             lock (_stateGate)

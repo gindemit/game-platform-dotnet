@@ -9,6 +9,7 @@ namespace GamePlatform.Navigation.Kernel.Flows
     /// Coalesces concurrent requests by caller-supplied key. It owns no navigation history;
     /// keys must include the relevant scope and delegates query/admit through the owning kernel.
     /// Caller cancellation stops only that caller's wait. The supplied scope token owns shared admission.
+    /// All awaits, including cancellation and late-fault observation, preserve the calling context.
     /// </summary>
     public sealed class FeatureEntryDeduplicator<THandle> where THandle : class
     {
@@ -33,62 +34,60 @@ namespace GamePlatform.Navigation.Kernel.Flows
             if (admit == null)
                 throw new ArgumentNullException(nameof(admit));
             callerCancellation.ThrowIfCancellationRequested();
-
-            THandle? current = findCurrent(key);
-            if (current != null)
-                return new FeatureEntryResolution<THandle>(FeatureEntryResolutionKind.ReusedCurrent, current);
+            scopeLifetime.ThrowIfCancellationRequested();
 
             PendingAdmission pending;
             bool ownsAdmission;
             lock (_gate)
             {
-                if (_pending.TryGetValue(key, out PendingAdmission? existing))
+                if (_pending.TryGetValue(key, out PendingAdmission? existing) && !existing.ScopeLifetime.IsCancellationRequested)
                 {
                     pending = existing;
                     ownsAdmission = false;
                 }
                 else
                 {
-                    pending = new PendingAdmission();
-                    _pending.Add(key, pending);
+                    pending = new PendingAdmission(scopeLifetime);
+                    _pending[key] = pending;
                     ownsAdmission = true;
                 }
             }
 
             // Delegate may synchronously throw or re-enter the owner. It must run outside _gate.
             if (ownsAdmission)
-                _ = CompleteAdmissionAsync(key, pending, admit, scopeLifetime);
-            THandle handle = await WaitForCallerAsync(pending.Completion.Task, callerCancellation).ConfigureAwait(false);
-            return new FeatureEntryResolution<THandle>(ownsAdmission ? FeatureEntryResolutionKind.Admitted : FeatureEntryResolutionKind.JoinedPendingAdmission, handle);
+                _ = CompleteAdmissionAsync(key, pending, findCurrent, admit, scopeLifetime);
+            THandle handle = await WaitForCallerAsync(pending.Completion.Task, callerCancellation);
+            callerCancellation.ThrowIfCancellationRequested();
+            scopeLifetime.ThrowIfCancellationRequested();
+            return new FeatureEntryResolution<THandle>(ownsAdmission ? pending.Kind : FeatureEntryResolutionKind.JoinedPendingAdmission, handle);
         }
 
         private async Task CompleteAdmissionAsync(string key, PendingAdmission pending,
+            Func<string, THandle?> findCurrent,
             Func<string, CancellationToken, Task<THandle>> admit, CancellationToken scopeLifetime)
         {
             Task<THandle>? admission = null;
             try
             {
                 scopeLifetime.ThrowIfCancellationRequested();
+                // Reserve before querying: an old no-current observation must never outlive its reservation.
+                THandle? current = findCurrent(key);
+                scopeLifetime.ThrowIfCancellationRequested();
+                if (current != null)
+                {
+                    pending.Kind = FeatureEntryResolutionKind.ReusedCurrent;
+                    RemovePending(key, pending);
+                    pending.Completion.TrySetResult(current);
+                    return;
+                }
                 // Invoke the owner outside _gate. A provider may throw synchronously or ignore
                 // cancellation; neither case may leave all coalesced callers waiting on it.
                 admission = admit(key, scopeLifetime);
                 if (admission == null)
                     throw new InvalidOperationException("Entry admission returned no task.");
 
-                var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                using (scopeLifetime.Register(() => cancelled.TrySetResult(true)))
-                {
-                    Task winner = await Task.WhenAny(admission, cancelled.Task).ConfigureAwait(false);
-                    if (!ReferenceEquals(winner, admission))
-                    {
-                        RemovePending(key, pending);
-                        pending.Completion.TrySetCanceled(scopeLifetime);
-                        ObserveLateAdmission(admission);
-                        return;
-                    }
-                }
-
-                THandle handle = await admission.ConfigureAwait(false);
+                await CancellationObservation.WaitAsync(admission, scopeLifetime);
+                THandle handle = await admission;
                 if (handle == null)
                     throw new InvalidOperationException("Entry admission returned no handle.");
                 scopeLifetime.ThrowIfCancellationRequested();
@@ -120,34 +119,19 @@ namespace GamePlatform.Navigation.Kernel.Flows
             }
         }
 
-        private static async void ObserveLateAdmission(Task admission)
-        {
-            try
-            {
-                await admission.ConfigureAwait(false);
-            }
-            catch
-            {
-                // Cancellation already settled callers; observe late provider failures.
-            }
-        }
-
         private static async Task<THandle> WaitForCallerAsync(Task<THandle> admission, CancellationToken cancellationToken)
         {
             if (!cancellationToken.CanBeCanceled)
-                return await admission.ConfigureAwait(false);
-            var cancelled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (cancellationToken.Register(() => cancelled.TrySetResult(true)))
-            {
-                Task winner = await Task.WhenAny(admission, cancelled.Task).ConfigureAwait(false);
-                if (!ReferenceEquals(winner, admission))
-                    throw new OperationCanceledException(cancellationToken);
-                return await admission.ConfigureAwait(false);
-            }
+                return await admission;
+            await CancellationObservation.WaitAsync(admission, cancellationToken);
+            return await admission;
         }
 
         private sealed class PendingAdmission
         {
+            public PendingAdmission(CancellationToken scopeLifetime) { ScopeLifetime = scopeLifetime; }
+            public CancellationToken ScopeLifetime { get; }
+            public FeatureEntryResolutionKind Kind { get; set; } = FeatureEntryResolutionKind.Admitted;
             public TaskCompletionSource<THandle> Completion { get; } = new TaskCompletionSource<THandle>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
     }
