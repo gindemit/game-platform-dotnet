@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>MessagePack.Annotations</id>
-    <version>3.1.8</version>
+    <version>3.1.9</version>
     <title>MessagePack annotations for C#</title>
     <authors>neuecc,aarnott</authors>
     <license type="expression">MIT</license>
@@ -11,7 +11,7 @@
     <description>Attributes and interfaces for .NET types serializable with MessagePack.</description>
     <copyright>© Yoshifumi Kawai and contributors. All rights reserved.</copyright>
     <tags>MsgPack MessagePack Serialization Formatter Serializer Unity Xamarin</tags>
-    <repository type="git" url="https://github.com/MessagePack-CSharp/MessagePack-CSharp" commit="9f80a327ae139203c1e48fa678f95cf45e878963" />
+    <repository type="git" url="https://github.com/MessagePack-CSharp/MessagePack-CSharp" branch="refs/heads/master" commit="aa16e71ae548645050f0a6798874540f3149681b" />
     <dependencies>
       <group targetFramework=".NETStandard2.0" />
     </dependencies>
