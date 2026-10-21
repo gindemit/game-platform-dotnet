@@ -226,6 +226,12 @@ behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
 
+Current identity reconciliation, 2026-10-21: the canonical Unity manifest/lock
+select SDK `0.1.0-dev.172`, Git UPM
+`cf8b14138ff6db6934db1573e91a98ffd9895387`. This supersedes the older consumer pins
+below for current identity only. It does not extend historical runtime acceptance
+to the combined atlas/UI source or regenerate the SDK package.
+
 Current consumer update, 2026-10-15: the requested analytics qualification now
 pins Git UPM dev.162, `a26d478b05f99e46ba7f36787dcb54d5edae5a53`, generated from
 existing canonical remote source `8e4821a9ada89b8f1814e5423bf9b75a90e92f80`.
