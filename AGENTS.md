@@ -1,5 +1,15 @@
 # SDK agent instructions
 
+## Single working checkout — 2026-10-21
+
+The owner selected `C:/Work/git/gindemit/game-platform-dotnet` on `main` as the
+sole working checkout. Follow workspace `plans/REPOSITORY-CONSOLIDATION-2026-10-21.md`.
+Commit/push each coherent reviewed step, including explicitly unfinished work.
+This supersedes older disposable source-checkout and local-until-final-validation
+push instructions. Serialize work/checks in this checkout with external evidence
+and ignored outputs; do not recreate retired source clones. Generated packages,
+runtime qualification, publication and deployment remain separate outcomes.
+
 ## Local entry
 
 Cross-repository goals, queues, CL/INT sequencing and work orders are owned by

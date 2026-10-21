@@ -1,5 +1,19 @@
 # SDK current status
 
+## Canonical checkout and current consumer identity — 2026-10-21
+
+The owner selected one working checkout on `main` at
+`C:/Work/git/gindemit/game-platform-dotnet`, with frequent reviewed source pushes.
+Historical branches/package builds are preserved as recovery history rather than
+parallel working copies. This is source consolidation, not a new SDK release.
+
+The canonical Unity manifest and lock currently select generated SDK
+`0.1.0-dev.172`, Git UPM delivery
+`cf8b14138ff6db6934db1573e91a98ffd9895387`. Navigation remains pinned separately to
+`f5be3035e43efa1e1ee517693e6219292d6803e5`. This records actual consumer identity;
+it does not extend older runtime/device acceptance to the newly combined Unity
+atlas/UI source. No generated SDK payload or consumer pin changes in this update.
+
 ## 2026-10-14 configuration scheduling repair and local target checkpoint
 
 Task source `2aeef858` commits the reviewed caller-context repair on published
