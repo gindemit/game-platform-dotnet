@@ -38,6 +38,25 @@ namespace GamePlatform.Configuration.Client.Tests
             Assert.Equal("B", (await current.GetPinnedAsync(Pin)).Feature!.Selection.Choice.Variant);
         }
         [Fact]
+        public async Task Repinning_an_identical_pin_keeps_the_store_generation()
+        {
+            var fixture = new Fixture();
+            using var directory = new OwnedDirectory();
+            var store = new FileConfigurationStore(directory.Path);
+            using var client = fixture.Client(new FixtureTransport(fixture), store, new TestClock());
+            var context = (await client.GetFeatureAsync("progression")).Feature!;
+            await client.PinAsync(context, Pin);
+            var space = new CacheNamespace(fixture.Scope, fixture.Owner);
+            var before = (await store.LoadAsync(space, CancellationToken.None))!;
+            var again = await client.PinAsync(context, Pin);
+            Assert.Equal("available", again.Status);
+            Assert.Same(context, again.Feature);
+            var after = (await store.LoadAsync(space, CancellationToken.None))!;
+            Assert.Equal(before.Generation, after.Generation);
+            Assert.Equal(before.Metadata, after.Metadata);
+            Assert.Equal("B", (await client.GetPinnedAsync(Pin)).Feature!.Selection.Choice.Variant);
+        }
+        [Fact]
         public async Task Same_generation_pin_storage_failure_preserves_valid_existing_context_without_claiming_new_pin()
         {
             var fixture = new Fixture();

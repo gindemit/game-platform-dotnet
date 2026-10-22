@@ -478,7 +478,9 @@ namespace GamePlatform.Configuration.Client
                 pins.Add(state.Pins[key]);
             var owner = space.Owner == null ? JsonValue.Null : Wire.Object(("ownerId", JsonValue.String(space.Owner.OwnerId)), ("subjectId", JsonValue.String(space.Owner.SubjectId)), ("generation", Wire.Decimal(space.Owner.Generation)));
             byte[] bytes = CanonicalJson.Serialize(Wire.Object(("schema", JsonValue.String("platform.remote-config.cache-commit.v1")), ("app", JsonValue.String(space.Scope.App)), ("environment", JsonValue.String(space.Scope.Environment)), ("storeGeneration", Wire.Decimal(state.Generation)), ("owner", owner), ("normal", state.Normal ?? JsonValue.Null), ("control", state.Control ?? JsonValue.Null), ("objects", JsonValue.Array(objects)), ("activations", JsonValue.Array(activations)), ("pins", JsonValue.Array(pins))));
+#if DEBUG
             Cache(bytes, space);
+#endif
             return bytes;
         }
     }

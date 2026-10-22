@@ -846,6 +846,11 @@ namespace GamePlatform.Configuration.Client
                 Alive(true);
                 linked.Token.ThrowIfCancellationRequested();
                 var pin = Wire.Object(("pinId", JsonValue.String(pinId)), ("activation", FeatureGraph.Activation(context)), ("createdAtSeconds", JsonValue.Integer(clock.UtcSeconds)));
+                if (state.Pins.TryGetValue(pinId, out var stored) && CanonicalJson.SemanticSha256(stored["activation"]) == CanonicalJson.SemanticSha256(pin["activation"]))
+                {
+                    pins[pinId] = context;
+                    return new ConfigurationResult("available", "activated", true, context);
+                }
                 state = await Commit(space, candidate => { if (candidate.Pins.TryGetValue(pinId, out var prior)) { if (CanonicalJson.SemanticSha256(prior["activation"]) != CanonicalJson.SemanticSha256(pin["activation"])) throw new InvalidConfigurationException("sequence_conflict"); } else candidate.Pins.Add(pinId, pin); }, new Dictionary<string, byte[]>(), linked.Token).ConfigureAwait(true);
                 Alive(true);
                 pins[pinId] = context;
