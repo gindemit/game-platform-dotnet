@@ -495,14 +495,21 @@ namespace GamePlatform.Configuration.Client
             }
             if (candidate.Control != null)
                 result.Add(candidate.Control["representationSha"].AsString());
+            // Pins commonly share an immutable manifest. Decode each unique representation once
+            // per retention pass; every activation still validates its own complete closure below.
+            var manifests = new Dictionary<string, ReleaseManifest>(StringComparer.Ordinal);
             var activations = candidate.Activations.Values.Concat(candidate.Pins.Values.Select(v => v["activation"]));
             foreach (var activation in activations)
             {
                 var origin = ProtocolReader.Origin(activation["origin"]);
                 result.Add(origin.ManifestRepresentationSha);
                 result.Add(origin.SelectorRepresentationSha);
-                byte[] content = added.TryGetValue(origin.ManifestRepresentationSha, out var pending) ? pending : await Stored(target, origin.ManifestRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(true);
-                var retainedManifest = ProtocolReader.Manifest(content, scope);
+                if (!manifests.TryGetValue(origin.ManifestRepresentationSha, out var retainedManifest))
+                {
+                    byte[] content = added.TryGetValue(origin.ManifestRepresentationSha, out var pending) ? pending : await Stored(target, origin.ManifestRepresentationSha, ConfigurationLimits.Bytes, token).ConfigureAwait(true);
+                    retainedManifest = ProtocolReader.Manifest(content, scope);
+                    manifests.Add(origin.ManifestRepresentationSha, retainedManifest);
+                }
                 foreach (var reference in Wire.References(activation["closure"]))
                 {
                     var asset = retainedManifest.Assets.FirstOrDefault(a => Wire.Same(a.Reference, reference));
