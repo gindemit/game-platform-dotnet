@@ -15,6 +15,7 @@
     <type fullname="GamePlatform.Storage.Sqlite.Recovery.SqliteCommandStreamRecoveryJournal/JournalRow" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Recovery.SqliteCommandStreamRecoveryJournal/DirectoryRow" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Recovery.SqliteRecoveryCommandStore/CommandRow" preserve="all" />
+    <type fullname="GamePlatform.Storage.Sqlite.Outbox.SqliteStorePurchaseRecordReader/Row" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow" preserve="all" />
     <type fullname="GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/TerminalCommandRow" preserve="all" />
   </assembly>
