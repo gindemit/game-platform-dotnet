@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GamePlatform.Core;
 using GamePlatform.Storage.Abstractions.FeatureState;
 using GamePlatform.Storage.Abstractions.Outbox;
+using GamePlatform.Storage.Abstractions;
 
 namespace GamePlatform.Features.Shared
 {
@@ -35,7 +36,8 @@ namespace GamePlatform.Features.Shared
             this.ids = ids ?? throw new ArgumentNullException(nameof(ids));
         }
 
-        internal async Task<CommandAdmission> AdmitAsync(string businessSource, string operationKind, byte[] body, CancellationToken cancellationToken)
+        internal async Task<CommandAdmission> AdmitAsync(string businessSource, string operationKind, byte[] body, CancellationToken cancellationToken,
+            Action<ILocalStorageTransaction, long, OperationId>? stage = null)
         {
             await mutation.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
@@ -44,8 +46,11 @@ namespace GamePlatform.Features.Shared
                 var operationId = new OperationId(retained == null ? ids.NewId() : new Guid(retained.CopyPayload()));
                 var draft = new CommandDraft(owner.Owner, operationId, streamId, operationKind, 1, 1, body);
                 return await commands.CommitAsync(businessSource, draft, (transaction, localRevision) =>
+                {
                     state.Upsert(transaction, new DurableFeatureMutation(owner, featureNamespace, businessSource, localRevision, 0,
-                        operationId.Value.ToByteArray(), Array.Empty<byte>())), cancellationToken).ConfigureAwait(false);
+                        operationId.Value.ToByteArray(), Array.Empty<byte>()));
+                    stage?.Invoke(transaction, localRevision, operationId);
+                }, cancellationToken).ConfigureAwait(false);
             }
             finally
             {

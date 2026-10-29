@@ -8,11 +8,13 @@ using GamePlatform.Features.Quests;
 using GamePlatform.Features.Store;
 using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Storage.Abstractions;
+using GamePlatform.Storage.Abstractions.Outbox;
 using GamePlatform.Storage.Sqlite.Cache;
 using GamePlatform.Storage.Sqlite.Executor;
 using GamePlatform.Storage.Sqlite.Migrations;
 using GamePlatform.Storage.Sqlite.Outbox;
 using GamePlatform.Transport.Http;
+using GamePlatform.Wire.Contracts;
 
 namespace GamePlatform.Tests.Features.StoreQuest
 {
@@ -33,6 +35,96 @@ namespace GamePlatform.Tests.Features.StoreQuest
         private readonly UuidV7Generator ids = new UuidV7Generator(new FixedClock(), new CryptographicUuidRandomSource());
 
         public StoreQuestServiceTests() => Directory.CreateDirectory(directory);
+
+        [Fact]
+        public async Task UnboundLegacyPurchaseIsVisibleButNeverClaimsDelivery()
+        {
+            var database = await OpenReady();
+            var admission = await Store(database).PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
+            var result = new StoreOfferPurchasedResult(ids.NewId(), admission.OperationId.Value, "test.offer.starter", 1,
+                PurchaseKey, new StoreOfferDebit("test.coin", 10), new ILiveSliceRewardLine[] { new LiveSliceCurrencyRewardLine(0, 1, "test.coin", 1) });
+            var terminal = new StoreQuestMessagePackCodec().EncodeResult(new PushAccepted(admission.OperationId.Value, admission.Sequence, 42, result));
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                var session = (SqliteTransactionSession)transaction;
+                session.Execute("INSERT INTO gp_sync_state VALUES (1,?,1,?,42,NULL,1,?)", Stream.ToString(), new byte[] { 1 }, ids.NewId().ToString("D"));
+                session.Execute("UPDATE gp_outbox SET delivery_state='accepted', terminal_result=? WHERE operation_id=?", terminal, admission.OperationId.ToString());
+                return true;
+            }, CancellationToken.None);
+            using var observer = new StorePurchaseObserver(Context, new SqliteStorePurchaseRecordReader(database, Scope,
+                new SqliteDurableFeatureStateStore(database, Scope)), new StorePurchaseObservationCodec());
+            Assert.Equal("AcceptedAwaitingProjection", Assert.Single(await observer.ReadAsync(Context, CancellationToken.None)).Status);
+        }
+
+        [Fact]
+        public async Task BoundPurchaseSurvivesRestartAndOnlyConfirmsCompatibleInstalledCheckpoint()
+        {
+            var database = await OpenReady();
+            var epoch = Guid.Parse("0199f9a0-0000-7000-8000-000000000006");
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_sync_state VALUES (1,?,1,?,0,NULL,1,?)", Stream.ToString(), new byte[] { 1 }, epoch.ToString("D"));
+                return true;
+            }, CancellationToken.None);
+            var featureState = new SqliteDurableFeatureStateStore(database, Scope);
+            using var service = new StoreService(Context, Stream, featureState, Commands(database), bodies, ids, new SqliteStorePurchaseAdmissionBinding(featureState));
+            var admission = await service.PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None);
+            var result = new StoreOfferPurchasedResult(ids.NewId(), admission.OperationId.Value, "test.offer.starter", 1,
+                PurchaseKey, new StoreOfferDebit("test.coin", 10), new ILiveSliceRewardLine[] {
+                    new LiveSliceCurrencyRewardLine(0, 1, "test.coin", 5),
+                    new LiveSliceCurrencyRewardLine(1, 1, "test.coin", 5) });
+            var terminal = new StoreQuestMessagePackCodec().EncodeResult(new PushAccepted(admission.OperationId.Value, admission.Sequence, 42, result));
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("UPDATE gp_outbox SET delivery_state='accepted', terminal_result=? WHERE operation_id=?", terminal, admission.OperationId.ToString());
+                return true;
+            }, CancellationToken.None);
+            await database.DisposeAsync(TimeSpan.FromSeconds(10));
+            var reopened = await OpenReady(seed: false);
+            var freshOwner = new ScopedOwnerContext(Owner, new SemanticId("private"), 2);
+            using var observer = new StorePurchaseObserver(freshOwner, new SqliteStorePurchaseRecordReader(reopened, Scope,
+                new SqliteDurableFeatureStateStore(reopened, Scope)), new StorePurchaseObservationCodec());
+            Assert.Equal("AcceptedAwaitingProjection", Assert.Single(await observer.ReadAsync(freshOwner, CancellationToken.None)).Status);
+            await reopened.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("UPDATE gp_sync_state SET committed_through=42");
+                return true;
+            }, CancellationToken.None);
+            Assert.Equal("Delivered", Assert.Single(await observer.ReadAsync(freshOwner, CancellationToken.None)).Status);
+            await reopened.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("UPDATE gp_sync_state SET visibility_generation=2");
+                return true;
+            }, CancellationToken.None);
+            Assert.Equal("AcceptedAwaitingProjection", Assert.Single(await observer.ReadAsync(freshOwner, CancellationToken.None)).Status);
+            await reopened.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("UPDATE gp_sync_state SET visibility_generation=1");
+                ((SqliteTransactionSession)transaction).Execute("UPDATE gp_sync_state SET log_epoch=?", ids.NewId().ToString("D"));
+                return true;
+            }, CancellationToken.None);
+            Assert.Equal("AcceptedAwaitingProjection", Assert.Single(await observer.ReadAsync(freshOwner, CancellationToken.None)).Status);
+        }
+
+        [Fact]
+        public async Task BindingFailureRollsBackAdmissionAndSequence()
+        {
+            var database = await OpenReady();
+            using var store = new StoreService(Context, Stream, new SqliteDurableFeatureStateStore(database, Scope),
+                Commands(database), bodies, ids, new FailingBinding());
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => store.PurchaseAsync("test.offer.starter", 1, PurchaseKey, CancellationToken.None));
+
+            Assert.Equal(0, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_outbox"));
+            Assert.Equal(0, await Scalar<long>(database, "SELECT COUNT(*) FROM gp_feature_state"));
+            Assert.Equal(1, await Scalar<long>(database, "SELECT next_sequence FROM gp_stream_state"));
+        }
+
+        private sealed class FailingBinding : IStorePurchaseAdmissionBinding
+        {
+            public void Stage(ILocalStorageTransaction transaction, ScopedOwnerContext owner, OperationId operationId, long localRevision) =>
+                throw new InvalidOperationException("binding failure");
+        }
 
         [Fact]
         public async Task RepeatingAPurchaseKeyKeepsOneDurableCommandIdentity()

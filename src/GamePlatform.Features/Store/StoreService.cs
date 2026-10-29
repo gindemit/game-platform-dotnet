@@ -15,11 +15,15 @@ namespace GamePlatform.Features.Store
     {
         private readonly SourcedCommandAdmitter admitter;
         private readonly IStorePurchaseCommandCodec codec;
+        private readonly ScopedOwnerContext owner;
+        private readonly IStorePurchaseAdmissionBinding? binding;
 
         public StoreService(ScopedOwnerContext owner, ClientStreamId streamId, IDurableFeatureStateStore state, IAtomicCommandStore commands,
-            IStorePurchaseCommandCodec codec, UuidV7Generator ids)
+            IStorePurchaseCommandCodec codec, UuidV7Generator ids, IStorePurchaseAdmissionBinding? binding = null)
         {
             this.codec = codec ?? throw new ArgumentNullException(nameof(codec));
+            this.owner = owner;
+            this.binding = binding;
             admitter = new SourcedCommandAdmitter(owner, streamId, "store", state, commands, ids);
         }
 
@@ -39,7 +43,8 @@ namespace GamePlatform.Features.Store
             if (key[14] != '7' || !UuidIdentity.IsValid(purchaseKey))
                 throw new ArgumentException("The purchase key must be a UUIDv7.", nameof(purchaseKey));
             var body = codec.EncodePurchaseCommand(offerId, offerVersion, purchaseKey);
-            return admitter.AdmitAsync("store.purchase:" + key, "store.offer.purchase", body, cancellationToken);
+            return admitter.AdmitAsync("store.purchase:" + key, "store.offer.purchase", body, cancellationToken,
+                binding == null ? null : (transaction, revision, operation) => binding.Stage(transaction, owner, operation, revision));
         }
 
         public void Dispose() => admitter.Dispose();
