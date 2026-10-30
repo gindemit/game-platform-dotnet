@@ -7,7 +7,18 @@ The owner selected one working checkout on `main` at
 Historical branches/package builds are preserved as recovery history rather than
 parallel working copies. This is source consolidation, not a new SDK release.
 
-The canonical Unity manifest and lock currently select generated SDK
+The current release-readiness integration selects generated SDK `0.1.0-draft`,
+Git UPM delivery `6ed8a17642996f7d5752552c752bacacbe8230e8`, built from source
+`7a9ab9d3d533a097fa0c53481ffce84074dd61cb`. Full SDK validation passed 1,038 tests
+with nine historical skips. Two clean canonical builds and exports reproduced
+identical bytes. Unity import verified 145 payload files, 24 managed assemblies
+and 38 P/Invokes. The package manifest SHA-256 is
+`9b1938d87dacf98d3297c85afc07a91b550fdb69fbac267dd88627f720fc8e16`.
+This adds permanent native entitlements, typed commerce projection and bounded
+protected-record paging. Current Unity/device/provider qualification remains
+separate from this source/package receipt.
+
+The preceding Store integration selected generated SDK
 `0.1.0-draft`, Git UPM delivery
 `5719dcf45c917665941b39ee4178b698191bf99c`, built from source
 `91606432df1c15bc43e5cce2251b1173031e8e81`. Package and source bundle manifest
@@ -242,7 +253,14 @@ behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
 
-Current Store consumer update, 2026-10-30: the canonical Unity manifest/lock now
+Current release-readiness consumer, 2026-10-30: the Unity manifest/lock selects
+Git UPM `6ed8a17642996f7d5752552c752bacacbe8230e8` (`0.1.0-draft`), generated from
+reviewed source `7a9ab9d3d533a097fa0c53481ffce84074dd61cb`. The import check passed
+145 payload hashes, 24 managed assemblies and 38 P/Invokes. Full SDK tests passed
+1,038 with nine historical skips. Native Unity, device and real Play acceptance
+remain separately reported in the release-readiness receipt.
+
+Preceding Store consumer update, 2026-10-30: the canonical Unity manifest/lock then
 select Git UPM `5719dcf45c917665941b39ee4178b698191bf99c` (`0.1.0-draft`),
 generated from native purchase source `91606432df1c15bc43e5cce2251b1173031e8e81`.
 The preceding virtual Store package `048bfb0a228f015be93caa2897fb513aa5620e15`
