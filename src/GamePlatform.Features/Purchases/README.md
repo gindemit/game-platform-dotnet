@@ -10,8 +10,9 @@ host supplies an actual native bridge and authenticated protected-proof store;
 neither fake implementation nor native device support is implied by these
 contracts. It reserves proof capacity and persists intent and launch marker
 before opening a sheet. The visible price must match fresh provider details.
-Known callbacks keep an independent protected token identity and submit against
-their exact reserved intent; out-of-band tokens use a separate recovery key.
+Callbacks without an independently trusted attempt association use their own
+protected token identity and recovery key, even when their SKU matches a sheet.
+Previously authenticated durable associations remain valid on replay.
 Call recovery and intent refresh on startup and resume; no constructor starts
 background work. Server acceptance never applies value locally: delivery requires
 the same installed private-feed visibility and epoch at the authorized checkpoint.

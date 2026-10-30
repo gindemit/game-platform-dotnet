@@ -123,16 +123,17 @@ namespace GamePlatform.Features.Purchases
                 await store.MarkLaunchRequestedAsync(owner, intentKey, linked.Token).ConfigureAwait(false);
                 Ensure(requested);
                 var result = await bridge.LaunchAsync(new NativeLaunchRequest(intent.PackageName, intent.StoreProductId, intent.CustomerBinding, matching[0], intentKey), linked.Token).ConfigureAwait(false);
+                bool attributed = result.Proof == null;
                 if (result.Proof != null)
                 {
-                    var matches = result.Proof.PackageName == product.PackageName && result.Proof.StoreProductId == product.StoreProductId;
-                    var record = await store.ProtectAndCommitAsync(owner, result.Proof, ids.NewId(), matches ? intentKey : (Guid?)null, CancellationToken.None).ConfigureAwait(false);
+                    var record = await store.ProtectAndCommitAsync(owner, result.Proof, ids.NewId(), null, CancellationToken.None).ConfigureAwait(false);
+                    attributed = record.ReservedAttemptKey == intentKey;
                     Ensure(requested);
                     await SubmitAsync(record, requested, linked.Token).ConfigureAwait(false);
                 }
                 Ensure(requested);
                 linked.Token.ThrowIfCancellationRequested();
-                return new NativeStartOutcome(intentKey, result.Proof != null &&
+                return new NativeStartOutcome(intentKey, !attributed || result.Proof != null &&
                     (result.Proof.PackageName != product.PackageName || result.Proof.StoreProductId != product.StoreProductId)
                         ? NativeLaunchStatus.Unresolved : result.Status);
             }
@@ -202,10 +203,10 @@ namespace GamePlatform.Features.Purchases
                 if (result.Proof != null)
                 {
                     var matches = result.Proof.PackageName == intent.PackageName && result.Proof.StoreProductId == intent.StoreProductId;
-                    var record = await store.ProtectAndCommitAsync(owner, result.Proof, ids.NewId(), matches ? intentKey : (Guid?)null, CancellationToken.None).ConfigureAwait(false);
+                    var record = await store.ProtectAndCommitAsync(owner, result.Proof, ids.NewId(), null, CancellationToken.None).ConfigureAwait(false);
                     Ensure(requested);
                     await SubmitAsync(record, requested, linked.Token).ConfigureAwait(false);
-                    if (!matches)
+                    if (!matches || record.ReservedAttemptKey != intentKey)
                         return new NativeStartOutcome(intentKey, NativeLaunchStatus.Unresolved);
                 }
                 Ensure(requested);

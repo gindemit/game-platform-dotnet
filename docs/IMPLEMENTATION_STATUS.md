@@ -9,12 +9,15 @@ parallel working copies. This is source consolidation, not a new SDK release.
 
 The canonical Unity manifest and lock currently select generated SDK
 `0.1.0-draft`, Git UPM delivery
-`048bfb0a228f015be93caa2897fb513aa5620e15`, built from source
-`0fb22fb1d9eb4c3cd300f82a53ba5bf50bdf43da`. Package and source bundle manifest
-hashes begin `44e4e5d8` and `68c7cf67`, respectively. Consumer import
-verification covered 145 files, 24 managed assemblies and 38 P/Invokes; the
-virtual Store EditMode suite passed 15/15. The game commit and native layout gate
-remain pending; native purchase lifecycle implementation is ongoing. Navigation remains pinned separately to
+`0c68319288d7413db432290ae3ccdba89e4bdc1e`, built from source
+`3edc51834388f95e7a6c4bcca45b232dc681dd7a`. Package and source bundle manifest
+hashes begin `e8633e14` and `de1d8fa0`, respectively. Native consumer import and
+Android integration validation remain in progress. The preceding virtual Store
+package `048bfb0a228f015be93caa2897fb513aa5620e15` passed import verification
+covering 145 files, 24 managed assemblies and 38 P/Invokes. Its assembled account
+and Store EditMode suite passed 101/101; game delivery is
+`f0f84ae0a2e158a8f726aaaf9cfc5e70141715a5`. Final extended native layout acceptance
+is pending. Navigation remains pinned separately to
 `f5be3035e43efa1e1ee517693e6219292d6803e5`. This records actual consumer identity;
 it does not extend older runtime/device acceptance to the newly combined Unity
 atlas/UI source.
@@ -230,6 +233,14 @@ original scope; Dev deployment does not establish authenticated hosted Teams
 behavior or physical acceptance of this payload.
 
 ## 2026-10-05 consumer identity reconciliation
+
+Current Store consumer update, 2026-10-30: the canonical Unity manifest/lock now
+select Git UPM `0c68319288d7413db432290ae3ccdba89e4bdc1e` (`0.1.0-draft`),
+generated from native purchase source `3edc51834388f95e7a6c4bcca45b232dc681dd7a`.
+The preceding virtual Store package `048bfb0a228f015be93caa2897fb513aa5620e15`
+passed exact consumer import checks and the assembled 101-test account/Store
+EditMode suite. Native package import and Android integration are in progress;
+this pin update does not imply physical Billing/Keystore or live store acceptance.
 
 Current identity reconciliation, 2026-10-21: the canonical Unity manifest/lock
 select SDK `0.1.0-dev.172`, Git UPM

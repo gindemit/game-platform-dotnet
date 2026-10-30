@@ -24,12 +24,12 @@ namespace GamePlatform.Tests.Features.Purchases
             using var coordinator = new NativePurchaseCoordinator(Owner, new TestRemote(steps), bridge, store, new Checkpoint(),
                 new UuidV7Generator(new Clock(), new CryptographicUuidRandomSource()));
             var result = await coordinator.StartAsync(Owner, Product, Price, CancellationToken.None);
-            Assert.Equal(NativeLaunchStatus.Pending, result.Status);
+            Assert.Equal(NativeLaunchStatus.Unresolved, result.Status);
             Assert.Single(store.Records);
             Assert.Contains("submit", steps);
         }
         [Fact]
-        public async Task VerifiedLivePurchaseAllowsAnotherIntent()
+        public async Task SameSkuCallbackDoesNotProveItBelongsToCurrentIntent()
         {
             var steps = new List<string>();
             var store = new TestStore(steps);
@@ -38,8 +38,11 @@ namespace GamePlatform.Tests.Features.Purchases
             using var coordinator = new NativePurchaseCoordinator(Owner, remote, bridge, store, new Checkpoint(),
                 new UuidV7Generator(new Clock(), new CryptographicUuidRandomSource()));
             var first = await coordinator.StartAsync(Owner, Product, Price, CancellationToken.None);
+            Assert.Equal(NativeLaunchStatus.Unresolved, first.Status);
+            Assert.Null(Assert.Single(store.Records).ReservedAttemptKey);
             bridge.ReturnPending = true;
-            var second = await coordinator.StartAsync(Owner, Product, Price, CancellationToken.None);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.StartAsync(Owner, Product, Price, CancellationToken.None));
+            var second = await coordinator.StartAsync(Owner, Product, Price, CancellationToken.None, true);
             Assert.NotEqual(first.IntentKey, second.IntentKey);
         }
         [Fact]
@@ -184,8 +187,8 @@ namespace GamePlatform.Tests.Features.Purchases
             var store = new TestStore(steps);
             using var coordinator = Create(steps, store);
             var result = await coordinator.StartAsync(Owner, Product, new NativeStoreProduct("test.package", "test.sku", "$1.00"), CancellationToken.None);
-            Assert.Equal(NativeLaunchStatus.Proof, result.Status);
-            Assert.Equal(new[] { "reserve", "intent", "commit", "launch-marker", "launch", "protect", "submit", "commit" }, steps);
+            Assert.Equal(NativeLaunchStatus.Unresolved, result.Status);
+            Assert.Equal(new[] { "reserve", "intent", "commit", "launch-marker", "launch", "protect", "submit" }, steps);
             Assert.Single(store.Records);
         }
         [Fact]
