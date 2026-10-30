@@ -9,15 +9,23 @@ parallel working copies. This is source consolidation, not a new SDK release.
 
 The canonical Unity manifest and lock currently select generated SDK
 `0.1.0-draft`, Git UPM delivery
-`0c68319288d7413db432290ae3ccdba89e4bdc1e`, built from source
-`3edc51834388f95e7a6c4bcca45b232dc681dd7a`. Package and source bundle manifest
-hashes begin `e8633e14` and `de1d8fa0`, respectively. Native consumer import and
-Android integration validation remain in progress. The preceding virtual Store
+`5719dcf45c917665941b39ee4178b698191bf99c`, built from source
+`91606432df1c15bc43e5cce2251b1173031e8e81`. Package and source bundle manifest
+hashes begin `6d857a82` and `76bfd491`, respectively. Native consumer import passed
+145 file hashes, 24 managed assemblies and 38 P/Invokes. Native game integration
+`db96a14be157242f1b887728efb87d9e846da30a` passed 128 assembled Unity tests and
+the full 22-case native layout gate; the final JNI dispatcher refinement passed
+10 focused Unity cases. After resource/font repairs, the full 22-case layout gate
+passed again. Game `4bd60dc02dca2eac8e6d686b3e2efd98c734a62f` then built an
+Android ARM64 IL2CPP Development APK successfully; packaged Billing/SDK native
+entries were verified. No account startup configuration was staged and the APK
+was not installed. Physical/provider qualification remains separate.
+The preceding virtual Store
 package `048bfb0a228f015be93caa2897fb513aa5620e15` passed import verification
 covering 145 files, 24 managed assemblies and 38 P/Invokes. Its assembled account
 and Store EditMode suite passed 101/101; game delivery is
 `f0f84ae0a2e158a8f726aaaf9cfc5e70141715a5`. Final extended native layout acceptance
-is pending. Navigation remains pinned separately to
+passed at the bounded native Editor scope above. Navigation remains pinned separately to
 `f5be3035e43efa1e1ee517693e6219292d6803e5`. This records actual consumer identity;
 it does not extend older runtime/device acceptance to the newly combined Unity
 atlas/UI source.
@@ -235,11 +243,12 @@ behavior or physical acceptance of this payload.
 ## 2026-10-05 consumer identity reconciliation
 
 Current Store consumer update, 2026-10-30: the canonical Unity manifest/lock now
-select Git UPM `0c68319288d7413db432290ae3ccdba89e4bdc1e` (`0.1.0-draft`),
-generated from native purchase source `3edc51834388f95e7a6c4bcca45b232dc681dd7a`.
+select Git UPM `5719dcf45c917665941b39ee4178b698191bf99c` (`0.1.0-draft`),
+generated from native purchase source `91606432df1c15bc43e5cce2251b1173031e8e81`.
 The preceding virtual Store package `048bfb0a228f015be93caa2897fb513aa5620e15`
 passed exact consumer import checks and the assembled 101-test account/Store
-EditMode suite. Native package import and Android integration are in progress;
+EditMode suite. Native package import and the bounded Unity integration/layout
+checks above passed, followed by the Android IL2CPP build and packaging checks above;
 this pin update does not imply physical Billing/Keystore or live store acceptance.
 
 Current identity reconciliation, 2026-10-21: the canonical Unity manifest/lock
