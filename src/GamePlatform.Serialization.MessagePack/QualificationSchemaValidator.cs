@@ -99,6 +99,8 @@ namespace GamePlatform.Serialization.MessagePack
                 return "g3/reward-receipt.schema.json";
             if (file == "https://contracts.gindemit.invalid/a06/store-quest.1.schema.json")
                 return "a06/store-quest.schema.json";
+            if (file == "https://contracts.gindemit.invalid/native-purchases/schema.json")
+                return "native-purchases/schema.json";
             return file;
         }
         private static bool Matches(V schema, string file, V value)

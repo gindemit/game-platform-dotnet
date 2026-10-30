@@ -20,10 +20,12 @@ pins.update(json.loads((root/'contracts/leaderboards/snapshot.json').read_text(e
 pins.update(json.loads((root/'contracts/friends/snapshot.json').read_text(encoding='utf-8'))['files'])
 pins.update(json.loads((root/'contracts/profiles/snapshot.json').read_text(encoding='utf-8'))['files'])
 pins.update(json.loads((root/'contracts/daily/snapshot.json').read_text(encoding='utf-8'))['files'])
+pins.update(json.loads((root/'contracts/native-purchases/snapshot.json').read_text(encoding='utf-8'))['files'])
 paths = [*sorted((root/'contracts/v1/schemas').glob('*.json')),
          root/'contracts/live-slice/receipt.schema.json',
          root/'contracts/g3/reward-receipt.schema.json',
-         root/'contracts/a06/store-quest.schema.json']
+         root/'contracts/a06/store-quest.schema.json',
+         root/'contracts/native-purchases/schema.json']
 for path in paths:
     if hashlib.sha256(path.read_bytes()).hexdigest() != pins[path.relative_to(root/'contracts').as_posix()]:
         raise SystemExit(f'Schema pin mismatch: {path.name}')

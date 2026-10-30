@@ -8,11 +8,16 @@ Historical branches/package builds are preserved as recovery history rather than
 parallel working copies. This is source consolidation, not a new SDK release.
 
 The canonical Unity manifest and lock currently select generated SDK
-`0.1.0-dev.172`, Git UPM delivery
-`cf8b14138ff6db6934db1573e91a98ffd9895387`. Navigation remains pinned separately to
+`0.1.0-draft`, Git UPM delivery
+`048bfb0a228f015be93caa2897fb513aa5620e15`, built from source
+`0fb22fb1d9eb4c3cd300f82a53ba5bf50bdf43da`. Package and source bundle manifest
+hashes begin `44e4e5d8` and `68c7cf67`, respectively. Consumer import
+verification covered 145 files, 24 managed assemblies and 38 P/Invokes; the
+virtual Store EditMode suite passed 15/15. The game commit and native layout gate
+remain pending; native purchase lifecycle implementation is ongoing. Navigation remains pinned separately to
 `f5be3035e43efa1e1ee517693e6219292d6803e5`. This records actual consumer identity;
 it does not extend older runtime/device acceptance to the newly combined Unity
-atlas/UI source. No generated SDK payload or consumer pin changes in this update.
+atlas/UI source.
 
 ## 2026-10-14 configuration scheduling repair and local target checkpoint
 

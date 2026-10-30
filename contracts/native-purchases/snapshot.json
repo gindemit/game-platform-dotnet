@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "native-purchases-1.0.0",
+  "algorithm": "sha256",
+  "files": {
+    "native-purchases/schema.json": "a959fd271714e759bb5db7bdcd3555b4798e54988d8f68c60356acfdad7685da",
+    "native-purchases/fixtures.json": "8a39b56adad65da217dc7830611e829025c0adf07768a8c694604228dedaf0c2"
+  }
+}

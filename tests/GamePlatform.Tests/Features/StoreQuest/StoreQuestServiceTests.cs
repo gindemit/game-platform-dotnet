@@ -13,6 +13,7 @@ using GamePlatform.Storage.Sqlite.Cache;
 using GamePlatform.Storage.Sqlite.Executor;
 using GamePlatform.Storage.Sqlite.Migrations;
 using GamePlatform.Storage.Sqlite.Outbox;
+using GamePlatform.Storage.Sqlite.Sync;
 using GamePlatform.Transport.Http;
 using GamePlatform.Wire.Contracts;
 
@@ -35,6 +36,30 @@ namespace GamePlatform.Tests.Features.StoreQuest
         private readonly UuidV7Generator ids = new UuidV7Generator(new FixedClock(), new CryptographicUuidRandomSource());
 
         public StoreQuestServiceTests() => Directory.CreateDirectory(directory);
+
+        [Fact]
+        public async Task NativeCheckpointRequiresReadyPrivateViewAndNoStagedBootstrap()
+        {
+            var database = await OpenReady();
+            var reader = new SqliteNativeInstalledCheckpointReader(database, Scope);
+            Assert.Null(await reader.ReadAsync(Context, CancellationToken.None));
+            var epoch = Guid.Parse("0199f9a0-0000-7000-8000-000000000006");
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_sync_state VALUES (1,?,1,?,42,NULL,3,?)", Stream.ToString(), new byte[] { 1 }, epoch.ToString("D"));
+                return true;
+            }, CancellationToken.None);
+            var checkpoint = await reader.ReadAsync(Context, CancellationToken.None);
+            Assert.NotNull(checkpoint);
+            Assert.Equal((42L, 3L, epoch), (checkpoint!.CommittedThrough, checkpoint.VisibilityGeneration, checkpoint.LogEpoch));
+            await Assert.ThrowsAsync<StorageException>(() => reader.ReadAsync(new ScopedOwnerContext(Owner, new SemanticId("other"), 1), CancellationToken.None));
+            await database.ExecuteAsync(Scope, transaction =>
+            {
+                ((SqliteTransactionSession)transaction).Execute("INSERT INTO gp_bootstrap_state VALUES (1,?,'active',0,1,?,?,42,3,?,1,'profile')", Stream.ToString(), new byte[] { 1 }, new byte[] { 2 }, epoch.ToString("D"));
+                return true;
+            }, CancellationToken.None);
+            Assert.Null(await reader.ReadAsync(Context, CancellationToken.None));
+        }
 
         [Fact]
         public async Task UnboundLegacyPurchaseIsVisibleButNeverClaimsDelivery()
