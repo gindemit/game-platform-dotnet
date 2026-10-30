@@ -10,8 +10,7 @@ namespace GamePlatform.Sync.Pull
 
     /// <summary>
     /// Decodes raw, already-authorized projection bytes into frozen typed DTOs inside the cursor transaction.
-    /// Inventory and entitlement collections must remain empty for G3 because their frozen rows lack the richer
-    /// catalog/origin fields required by CL-104/106; non-empty rows fail closed instead of being fabricated.
+    /// Commerce sinks install the exact frozen stack/entitlement representation without inventing richer feature metadata.
     /// </summary>
     public sealed class G3PrivateSyncProjector : IObservedPrivateSyncProjectionProjector
     {
@@ -48,6 +47,8 @@ namespace GamePlatform.Sync.Pull
             ProjectionProfileSnapshot? profile = null;
             var progression = new List<ProjectionProgressionSnapshot>();
             var wallet = new List<ProjectionWalletSnapshot>();
+            var inventory = new List<ProjectionInventorySnapshot>();
+            var entitlements = new List<ProjectionEntitlementSnapshot>();
             foreach (var mutation in snapshot)
             {
                 if (mutation == null || mutation.Kind != StoredProjectionKind.Upsert)
@@ -69,22 +70,32 @@ namespace GamePlatform.Sync.Pull
                         Match(mutation, item.Collection, item.EntityKey.CurrencyId, item.Revision);
                         wallet.Add(item);
                         break;
-                    case ProjectionInventorySnapshot:
-                    case ProjectionEntitlementSnapshot:
-                        throw new InvalidOperationException("G3 inventory and entitlement collections must remain authoritatively empty.");
+                    case ProjectionInventorySnapshot item:
+                        Match(mutation, item.Collection, item.EntityKey.ItemId, item.Revision);
+                        inventory.Add(item);
+                        break;
+                    case ProjectionEntitlementSnapshot item:
+                        Match(mutation, item.Collection, item.EntityKey.EntitlementId, item.Revision);
+                        entitlements.Add(item);
+                        break;
                     default:
                         throw new InvalidOperationException("The G3 snapshot entity is unsupported.");
                 }
             }
-            sink.ReplaceSnapshot(transaction, observation, profile, progression.AsReadOnly(), wallet.AsReadOnly());
+            if (sink is ICommercePrivateProjectionSink commerce)
+                commerce.ReplaceCommerceSnapshot(transaction, observation, profile, progression.AsReadOnly(), wallet.AsReadOnly(), inventory.AsReadOnly(), entitlements.AsReadOnly());
+            else if (inventory.Count != 0 || entitlements.Count != 0)
+                throw new InvalidOperationException("The projection sink does not support commerce snapshots.");
+            else
+                sink.ReplaceSnapshot(transaction, observation, profile, progression.AsReadOnly(), wallet.AsReadOnly());
         }
 
         private IProjectionChange DecodeChange(StoredProjectionMutation mutation)
         {
             if (mutation == null)
                 throw new ArgumentNullException(nameof(mutation));
-            if (mutation.Collection == "inventory" || mutation.Collection == "entitlements")
-                throw new InvalidOperationException("G3 inventory and entitlement collections must remain authoritatively empty.");
+            if ((mutation.Collection == "inventory" || mutation.Collection == "entitlements") && !(sink is ICommercePrivateProjectionSink))
+                throw new InvalidOperationException("The projection sink does not support commerce changes.");
             IProjectionChange value;
             if (mutation.Kind == StoredProjectionKind.Upsert)
                 value = codec.Decode<IProjectionChange>(mutation.CopyPayload());
@@ -105,6 +116,10 @@ namespace GamePlatform.Sync.Pull
                     return new ProjectionProgressionRemoval(new ProjectionProgressionKey(value.EntityKey), value.Revision, kind);
                 case "wallet":
                     return new ProjectionWalletRemoval(new ProjectionWalletKey(value.EntityKey), value.Revision, kind);
+                case "inventory":
+                    return new ProjectionInventoryRemoval(new ProjectionInventoryKey(value.EntityKey), value.Revision, kind);
+                case "entitlements":
+                    return new ProjectionEntitlementRemoval(new ProjectionEntitlementKey(value.EntityKey), value.Revision, kind);
                 case "teams" when kind == "invalidation":
                     return new GamePlatform.Wire.Contracts.Teams.TeamsProjectionInvalidation(Guid.Parse(value.EntityKey), value.Revision);
                 case "friends" when kind == "invalidation":
@@ -127,6 +142,12 @@ namespace GamePlatform.Sync.Pull
                 case ProjectionWalletUpsert item:
                     Match(raw, item.EntityType, item.EntityKey.CurrencyId, item.Revision);
                     break;
+                case ProjectionInventoryUpsert item:
+                    Match(raw, item.EntityType, item.EntityKey.ItemId, item.Revision);
+                    break;
+                case ProjectionEntitlementUpsert item:
+                    Match(raw, item.EntityType, item.EntityKey.EntitlementId, item.Revision);
+                    break;
                 case ProjectionProfileRemovalValue item:
                     Match(raw, item.EntityType, item.EntityKey.Profile, item.Revision);
                     break;
@@ -135,6 +156,12 @@ namespace GamePlatform.Sync.Pull
                     break;
                 case ProjectionWalletRemoval item:
                     Match(raw, item.EntityType, item.EntityKey.CurrencyId, item.Revision);
+                    break;
+                case ProjectionInventoryRemoval item:
+                    Match(raw, item.EntityType, item.EntityKey.ItemId, item.Revision);
+                    break;
+                case ProjectionEntitlementRemoval item:
+                    Match(raw, item.EntityType, item.EntityKey.EntitlementId, item.Revision);
                     break;
                 case GamePlatform.Wire.Contracts.Teams.TeamsProjectionInvalidation item:
                     Match(raw, item.EntityType, item.TeamId.ToString("D"), item.Revision);

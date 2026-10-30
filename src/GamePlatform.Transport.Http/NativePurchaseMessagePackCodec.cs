@@ -31,7 +31,7 @@ namespace GamePlatform.Transport.Http
                 var p = value.Properties;
                 return new NativeProduct(p["productId"].StringValue, checked((int)p["productVersion"].IntegerValue),
                     p["packageName"].StringValue, p["storeProductId"].StringValue, p["environment"].StringValue,
-                    p["contents"].Items.Select(Line).ToArray());
+                    p["contents"].Items.Select(Line).ToArray(), p["productType"].StringValue);
             }).ToArray();
             for (int i = 1; i < result.Length; i++)
                 if (string.CompareOrdinal(result[i - 1].ProductId, result[i].ProductId) >= 0)
@@ -76,12 +76,20 @@ namespace GamePlatform.Transport.Http
                 p["source"].StringValue, p["launchAllowed"].BooleanValue, p["state"].StringValue,
                 p["reason"].Kind == K.Null ? null : p["reason"].StringValue, p["finishState"].StringValue,
                 revision, visibility, epoch, grant, charge, Array.AsReadOnly(lines), originalRevision, originatingIntent,
-                p["retryAfterMilliseconds"].Kind == K.Null ? (int?)null : checked((int)p["retryAfterMilliseconds"].IntegerValue));
+                p["retryAfterMilliseconds"].Kind == K.Null ? (int?)null : checked((int)p["retryAfterMilliseconds"].IntegerValue), p["productType"].StringValue);
         }
         private static NativeContentLine Line(V value)
         {
             var p = value.Properties;
             var kind = p["kind"].StringValue;
+            if (kind == "entitlement")
+            {
+                if (p["expiresAt"].Kind != K.Null)
+                    throw new FormatException("Only permanent native entitlements are supported.");
+                return new NativeEntitlementContentLine(p["entitlementId"].StringValue,
+                    p.TryGetValue("lineIndex", out var entitlementIndex) ? checked((int)entitlementIndex.IntegerValue) : (int?)null,
+                    p.TryGetValue("definitionVersion", out var entitlementDefinition) ? checked((int)entitlementDefinition.IntegerValue) : (int?)null);
+            }
             return new NativeContentLine(kind, p[kind == "currency" ? "currencyId" : "itemId"].StringValue, Wide(p["quantity"]),
                 p.TryGetValue("lineIndex", out var index) ? checked((int)index.IntegerValue) : (int?)null,
                 p.TryGetValue("definitionVersion", out var definition) ? checked((int)definition.IntegerValue) : (int?)null);

@@ -487,6 +487,42 @@ namespace GamePlatform.Tests.Sync.Pull
         }
 
         [Fact]
+        public async Task CommerceProjectionInstallsFrozenSnapshotsAndRevocationWithCursorRollback()
+        {
+            using var files = new TemporaryDatabase();
+            var db = await Open(files.Path);
+            var codec = new MessagePackWireCodec();
+            var sink = new CommerceSink();
+            var store = new SqlitePrivateSyncStore(db, Scope, new G3PrivateSyncProjector(codec, sink), _ => { });
+            await store.BeginBootstrapAsync(Boundary(5, Token(1)), CancellationToken.None);
+            var inventory = new ProjectionInventorySnapshot(new ProjectionInventoryKey("test.booster"), 1, new ProjectionInventoryData(2));
+            var entitlement = new ProjectionEntitlementSnapshot(new ProjectionEntitlementKey("ads.no_unsolicited"), 1, new ProjectionEntitlementData(true, null));
+            await store.StageBootstrapPageAsync(new StagedBootstrapPage(Token(1), Token(1), 5, new[] {
+                new StoredProjectionMutation("inventory", "test.booster", 1, StoredProjectionKind.Upsert, codec.Encode<IProjectionSnapshotEntity>(inventory)),
+                new StoredProjectionMutation("entitlements", "ads.no_unsolicited", 1, StoredProjectionKind.Upsert, codec.Encode<IProjectionSnapshotEntity>(entitlement))
+            }, false, null, Token(3), 1000), CancellationToken.None);
+            Assert.Equal(2, Assert.Single(sink.Inventory).Data.Quantity);
+            Assert.True(Assert.Single(sink.Entitlements).Data.Active);
+            var revoke = new ProjectionEntitlementUpsert(new ProjectionEntitlementKey("ads.no_unsolicited"), 2, new ProjectionEntitlementData(false, null));
+            await store.ApplyPullPageAsync(new StoredPullPage(6, new[] { new StoredPullGroup(6, new[] {
+                new StoredProjectionMutation("entitlements", "ads.no_unsolicited", 2, StoredProjectionKind.Upsert, codec.Encode<IProjectionChange>(revoke))
+            }) }, Token(4), false, 1001), CancellationToken.None);
+            Assert.False(Assert.IsType<ProjectionEntitlementUpsert>(Assert.Single(sink.GroupChanges)).Data.Active);
+            sink.ThrowOnGroup = true;
+            await Assert.ThrowsAsync<InvalidOperationException>(() => store.ApplyPullPageAsync(new StoredPullPage(7, new[] { new StoredPullGroup(7, new[] {
+                new StoredProjectionMutation("entitlements", "ads.no_unsolicited", 3, StoredProjectionKind.RemoveFromView, Array.Empty<byte>())
+            }) }, Token(5), false, 1002), CancellationToken.None));
+            Assert.Equal(6, (await store.GetPullCheckpointAsync(CancellationToken.None)).CommittedThrough);
+            Assert.Equal("visible", await Text(db, "SELECT state FROM gp_confirmed_projection WHERE collection='entitlements'"));
+            sink.ThrowOnGroup = false;
+            await store.ApplyPullPageAsync(new StoredPullPage(7, new[] { new StoredPullGroup(7, new[] {
+                new StoredProjectionMutation("entitlements", "ads.no_unsolicited", 3, StoredProjectionKind.Invalidation, Array.Empty<byte>())
+            }) }, Token(5), false, 1002), CancellationToken.None);
+            Assert.Equal("invalidation", Assert.IsType<ProjectionEntitlementRemoval>(Assert.Single(sink.GroupChanges)).Kind);
+            await Dispose(db);
+        }
+
+        [Fact]
         public async Task G3FriendsInvalidationReachesTypedSinkAtomicallyWithPrivateCursor()
         {
             using var files = new TemporaryDatabase();
@@ -646,7 +682,7 @@ namespace GamePlatform.Tests.Sync.Pull
                 ServerTimes.Add(observation.ServerTimeMilliseconds);
             }
         }
-        private sealed class G3Sink : IG3PrivateProjectionSink
+        private class G3Sink : IG3PrivateProjectionSink
         {
             public bool ThrowOnGroup { get; set; }
             public PrivateSyncProjectionObservation SnapshotObservation { get; private set; }
@@ -667,6 +703,20 @@ namespace GamePlatform.Tests.Sync.Pull
                 GroupRevision = feedRevision;
                 GroupObservation = observation;
                 GroupChanges = changes;
+            }
+        }
+        private sealed class CommerceSink : G3Sink, ICommercePrivateProjectionSink
+        {
+            public IReadOnlyList<ProjectionInventorySnapshot> Inventory { get; private set; } = Array.Empty<ProjectionInventorySnapshot>();
+            public IReadOnlyList<ProjectionEntitlementSnapshot> Entitlements { get; private set; } = Array.Empty<ProjectionEntitlementSnapshot>();
+            public void ReplaceCommerceSnapshot(ILocalStorageTransaction transaction, PrivateSyncProjectionObservation observation,
+                ProjectionProfileSnapshot? profile, IReadOnlyList<ProjectionProgressionSnapshot> progression,
+                IReadOnlyList<ProjectionWalletSnapshot> wallet, IReadOnlyList<ProjectionInventorySnapshot> inventory,
+                IReadOnlyList<ProjectionEntitlementSnapshot> entitlements)
+            {
+                ReplaceSnapshot(transaction, observation, profile, progression, wallet);
+                Inventory = inventory;
+                Entitlements = entitlements;
             }
         }
         private sealed class WritingProjector : IPrivateSyncProjectionProjector

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Core;
@@ -200,6 +201,71 @@ namespace GamePlatform.Tests.Features.Purchases
             await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.StartAsync(Owner, Product, new NativeStoreProduct("test.package", "test.sku", "$1.00"), CancellationToken.None));
             Assert.Equal(new[] { "reserve" }, steps);
         }
+        [Fact]
+        public async Task AllocatedKeyIsOnlyLocalCorrelationAndExactLookupDistinguishesReservationFailure()
+        {
+            var steps = new List<string>();
+            var store = new TestStore(steps) { FailReserve = true };
+            using var coordinator = Create(steps, store);
+            Guid? allocated = null;
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.StartAsync(Owner, Product,
+                new NativeStoreProduct("test.package", "test.sku", "$1.00"), CancellationToken.None,
+                onAttemptAllocated: value => { Assert.Null(allocated); allocated = value; Assert.Empty(steps); }));
+            Assert.NotNull(allocated);
+            Assert.Null(await coordinator.FindAttemptAsync(Owner, allocated!.Value, CancellationToken.None));
+            Assert.DoesNotContain("launch", steps);
+        }
+        [Fact]
+        public async Task AllocatedKeyFindsDurableAttemptWhenFreshPriceValidationFails()
+        {
+            var steps = new List<string>();
+            var store = new TestStore(steps);
+            using var coordinator = Create(steps, store);
+            Guid? allocated = null;
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.StartAsync(Owner, Product,
+                new NativeStoreProduct("test.package", "test.sku", "$99.00"), CancellationToken.None,
+                onAttemptAllocated: value => allocated = value));
+            var attempt = await coordinator.FindAttemptAsync(Owner, allocated!.Value, CancellationToken.None);
+            Assert.NotNull(attempt);
+            Assert.NotNull(attempt!.Intent);
+            Assert.False(attempt.LaunchRequested);
+            Assert.DoesNotContain("launch", steps);
+        }
+        [Fact]
+        public async Task FinalizedLateCallbackNeverOpensCompactedProofOrSubmitsAgain()
+        {
+            var steps = new List<string>();
+            var store = new TestStore(steps) { ThrowOnOpen = true };
+            store.Records.Add(new ProtectedNativeProofRecord(Guid.Parse("0199f9a0-0000-7000-8000-000000000008"), Guid.Parse("0199f9a0-0000-7000-8000-000000000007"), Product.PackageName,
+                Product.StoreProductId, finalizedChargeId: Guid.Parse("0199f9a0-0000-7000-8000-000000000009")));
+            using var coordinator = Create(steps, store);
+            await coordinator.StartAsync(Owner, Product, new NativeStoreProduct("test.package", "test.sku", "$1.00"), CancellationToken.None);
+            Assert.DoesNotContain("submit", steps);
+            Assert.Null((await coordinator.FindAttemptAsync(Owner, Assert.Single(await store.ReadAttemptsAsync(Owner, CancellationToken.None)).IntentKey, CancellationToken.None))!.Intent!.ChargeId);
+            Assert.Throws<ArgumentException>(() => new ProtectedNativeProofRecord(Guid.NewGuid(), Guid.NewGuid(), "pkg", "sku", finalizedChargeId: Guid.Empty));
+            Assert.Throws<ArgumentException>(() => new ProtectedNativeProofRecord(Guid.NewGuid(), Guid.Parse("0199f9a0-0000-7000-8000-000000000007"), Product.PackageName, Product.StoreProductId,
+                finalizedChargeId: Guid.Parse("0199f9a0-0000-7000-8000-000000000009")));
+        }
+        [Fact]
+        public async Task ProtectedPagesVisitCapturedHighWaterIncrementallyAndRejectDrift()
+        {
+            var steps = new List<string>();
+            var store = new PagedTestStore(steps);
+            for (int i = 0; i < 65; i++)
+                store.PagedAttempts.Add(new NativeAttempt(Guid.NewGuid(), Product, null, false));
+            using var coordinator = new NativePurchaseCoordinator(Owner, new TestRemote(steps), new TestBridge(steps), store,
+                new Checkpoint(), new UuidV7Generator(new Clock(), new CryptographicUuidRandomSource()));
+            int count = 0;
+            await coordinator.VisitAttemptsAsync(Owner, (item, ct) => { if (count++ == 0) store.PagedAttempts.Add(new NativeAttempt(Guid.NewGuid(), Product, null, false)); return Task.CompletedTask; }, CancellationToken.None);
+            Assert.Equal(65, count);
+            Assert.Equal(3, store.PageCalls);
+            store.Drift = true;
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.VisitAttemptsAsync(Owner, (item, ct) => Task.CompletedTask, CancellationToken.None));
+            _ = new NativeProtectedPage<NativeAttempt>(Array.Empty<NativeAttempt>(), "next", 64, 0, 32);
+            _ = new NativeProtectedPage<NativeAttempt>(Array.Empty<NativeAttempt>(), null, 64, 32, 64);
+            Assert.Throws<ArgumentException>(() => new NativeProtectedPage<NativeAttempt>(Array.Empty<NativeAttempt>(), null, 65, 0, 0));
+            Assert.Throws<ArgumentException>(() => new NativeProtectedPage<NativeAttempt>(Array.Empty<NativeAttempt>(), "next", 64, 0, 0));
+        }
         private static NativePurchaseCoordinator Create(List<string> steps, TestStore store) =>
             new NativePurchaseCoordinator(Owner, new TestRemote(steps), new TestBridge(steps), store, new Checkpoint(),
                 new UuidV7Generator(new Clock(), new CryptographicUuidRandomSource()));
@@ -246,10 +312,12 @@ namespace GamePlatform.Tests.Features.Purchases
             public Task<NativeIntentState> SubmitProofAsync(Guid intentId, NativeProof proof, CancellationToken token)
             { steps.Add("submit"); return Task.FromResult(new NativeIntentState(intentId, purchaseKey, Product.ProductId, Product.Version, Product.PackageName, Product.StoreProductId, Product.Environment, Guid.Parse("0199f9a0-0000-7000-8000-000000000004"), "purchase", false, GrantOnSubmit ? "granted" : "pending_verification", null, GrantOnSubmit ? "pending" : "not_required", GrantOnSubmit ? 1 : (long?)null, GrantOnSubmit ? 1 : (long?)null, GrantOnSubmit ? Guid.Parse("0199f9a0-0000-7000-8000-000000000005") : (Guid?)null, GrantOnSubmit ? Guid.Parse("0199f9a0-0000-7000-8000-000000000006") : (Guid?)null, GrantOnSubmit ? Guid.Parse("0199f9a0-0000-7000-8000-000000000007") : (Guid?)null)); }
         }
-        private sealed class TestStore : IProtectedProofStore
+        private class TestStore : IBoundedProtectedProofStore
         {
             private readonly List<string> steps;
+            public int MaximumRecords => 256;
             public bool FailReserve;
+            public bool ThrowOnOpen;
             private readonly List<NativeAttempt> attempts = new List<NativeAttempt>();
             public void Seed(NativeAttempt value) => attempts.Add(value);
             public readonly List<ProtectedNativeProofRecord> Records = new List<ProtectedNativeProofRecord>();
@@ -260,7 +328,7 @@ namespace GamePlatform.Tests.Features.Purchases
             { steps.Add("commit"); var index = attempts.FindIndex(value => value.IntentKey == intentKey); attempts[index] = new NativeAttempt(intentKey, attempts[index].Product, intent, attempts[index].LaunchRequested); return Task.CompletedTask; }
             public Task MarkLaunchRequestedAsync(ScopedOwnerContext owner, Guid intentKey, CancellationToken token)
             { steps.Add("launch-marker"); var index = attempts.FindIndex(value => value.IntentKey == intentKey); attempts[index] = new NativeAttempt(intentKey, attempts[index].Product, attempts[index].Intent, true); return Task.CompletedTask; }
-            public Task<IReadOnlyList<NativeAttempt>> ReadAttemptsAsync(ScopedOwnerContext owner, CancellationToken token) =>
+            public virtual Task<IReadOnlyList<NativeAttempt>> ReadAttemptsAsync(ScopedOwnerContext owner, CancellationToken token) =>
                 Task.FromResult<IReadOnlyList<NativeAttempt>>(attempts.ToArray());
             public Task<ProtectedNativeProofRecord> ProtectAndCommitAsync(ScopedOwnerContext owner, NativeProof proof, Guid key, Guid? reservedAttemptKey, CancellationToken token)
             {
@@ -273,9 +341,31 @@ namespace GamePlatform.Tests.Features.Purchases
             }
             public Task<IReadOnlyList<ProtectedNativeProofRecord>> ReadProtectedRecordsAsync(ScopedOwnerContext owner, CancellationToken token) => Task.FromResult<IReadOnlyList<ProtectedNativeProofRecord>>(Records);
             public Task<NativeProof> OpenForSubmissionAsync(ScopedOwnerContext owner, Guid proofId, CancellationToken token) =>
-                Task.FromResult(new NativeProof("test.package", "test.sku", "synthetic"));
+                ThrowOnOpen ? throw new InvalidOperationException("Compacted proof must not open.") : Task.FromResult(new NativeProof("test.package", "test.sku", "synthetic"));
             public Task MarkFinalizedAsync(ScopedOwnerContext owner, Guid proofId, Guid chargeId, CancellationToken token) => Task.CompletedTask;
             public Task<bool> TryClaimPresentationAsync(ScopedOwnerContext owner, Guid grantId, CancellationToken token) => Task.FromResult(true);
+        }
+        private sealed class PagedTestStore : TestStore, IPagedProtectedProofStore
+        {
+            public readonly List<NativeAttempt> PagedAttempts = new List<NativeAttempt>();
+            public int PageCalls;
+            public bool Drift;
+            public PagedTestStore(List<string> steps) : base(steps) { }
+            public override Task<IReadOnlyList<NativeAttempt>> ReadAttemptsAsync(ScopedOwnerContext owner, CancellationToken token) => throw new InvalidOperationException("Legacy materialization is forbidden.");
+            public Task<NativeAttempt?> FindAttemptAsync(ScopedOwnerContext owner, Guid key, CancellationToken token) => Task.FromResult(PagedAttempts.SingleOrDefault(item => item.IntentKey == key));
+            public Task<NativeProtectedPage<NativeAttempt>> ReadAttemptPageAsync(ScopedOwnerContext owner, string? cursor, int limit, CancellationToken token)
+            {
+                PageCalls++;
+                int after = cursor == null ? 0 : int.Parse(cursor.Split(':')[0]);
+                int high = cursor == null ? PagedAttempts.Count : int.Parse(cursor.Split(':')[1]);
+                if (Drift && cursor != null)
+                    high++;
+                int last = Math.Min(after + limit, high);
+                return Task.FromResult(new NativeProtectedPage<NativeAttempt>(PagedAttempts.Skip(after).Take(last - after).ToArray(),
+                    last < high ? last + ":" + high : null, high, after, last));
+            }
+            public Task<NativeProtectedPage<ProtectedNativeProofRecord>> ReadProofPageAsync(ScopedOwnerContext owner, string? cursor, int limit, CancellationToken token) =>
+                Task.FromResult(new NativeProtectedPage<ProtectedNativeProofRecord>(Array.Empty<ProtectedNativeProofRecord>(), null, 0, 0, 0));
         }
     }
 }

@@ -85,6 +85,21 @@ namespace GamePlatform.Tests.Transport
             Assert.Equal(new byte[] { 0x80 }, new NativePurchaseMessagePackCodec().ProductsRequest());
         }
         [Fact]
+        public void PermanentBackendReceiptHasNoQuantityAndRetainsProductType()
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null && !File.Exists(Path.Combine(dir.FullName, "contracts", "native-purchases", "fixtures.json")))
+                dir = dir.Parent;
+            Assert.NotNull(dir);
+            using var json = JsonDocument.Parse(File.ReadAllText(Path.Combine(dir!.FullName, "contracts", "native-purchases", "fixtures.json")));
+            var bytes = Convert.FromHexString(json.RootElement.GetProperty("permanentGrantedMessagePackHex").GetString()!);
+            var result = new NativePurchaseMessagePackCodec().Intent(bytes);
+            Assert.Equal("non_consumable", result.ProductType);
+            var line = Assert.IsType<NativeEntitlementContentLine>(Assert.Single(result.ReceiptLines));
+            Assert.Null(line.Quantity);
+            Assert.Equal("ads.no_unsolicited", line.ResourceId);
+        }
+        [Fact]
         public void NativeIntentRequestUsesSchemaAndBinaryUuid()
         {
             var bytes = new NativePurchaseMessagePackCodec().IntentRequest(Guid.Parse("0199f9a0-0000-7000-8000-000000000002"), "synthetic.coins", 1);

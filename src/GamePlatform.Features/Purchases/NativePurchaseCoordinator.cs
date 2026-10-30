@@ -76,14 +76,107 @@ namespace GamePlatform.Features.Purchases
                     if (!seen.Add(item.IntentId))
                         throw new InvalidOperationException("Native recovery repeats an intent.");
                 results.AddRange(page.Intents);
+                if (results.Count > 200 || (results.Count == 200 && page.NextIntentId.HasValue))
+                    throw new InvalidOperationException("Native history requires explicit paging.");
                 if (page.NextIntentId.HasValue && (page.Intents.Count == 0 || page.NextIntentId == after || !seen.Contains(page.NextIntentId.Value)))
                     throw new InvalidOperationException("Native recovery cursor did not advance.");
                 after = page.NextIntentId;
             } while (after.HasValue);
             return results.AsReadOnly();
         }
+        public async Task<NativeRecoveryPage> ReadPurchasePageAsync(ScopedOwnerContext requested, Guid? after, int limit, CancellationToken token)
+        {
+            if (limit < 1 || limit > 50)
+                throw new ArgumentOutOfRangeException(nameof(limit));
+            using var linked = Link(requested, token);
+            var page = await remote.RecoveryAsync(after, limit, linked.Token).ConfigureAwait(false);
+            Ensure(requested);
+            if (page == null || page.Intents == null || page.Intents.Count > limit || page.Intents.Any(item => item == null) ||
+                (page.NextIntentId.HasValue && (page.Intents.Count == 0 || page.NextIntentId != page.Intents[page.Intents.Count - 1].IntentId)))
+                throw new InvalidOperationException("Invalid native history page.");
+            string previous = after?.ToString("D") ?? "";
+            foreach (var item in page.Intents)
+            {
+                string current = item.IntentId.ToString("D");
+                if (string.CompareOrdinal(previous, current) >= 0)
+                    throw new InvalidOperationException("Native history did not advance.");
+                previous = current;
+            }
+            return page;
+        }
+        public async Task VisitAttemptsAsync(ScopedOwnerContext requested, Func<NativeAttempt, CancellationToken, Task> visitor, CancellationToken token)
+        {
+            if (visitor == null)
+                throw new ArgumentNullException(nameof(visitor));
+            using var linked = Link(requested, token);
+            if (store is IPagedProtectedProofStore paged)
+                await VisitPagesAsync(requested, (cursor, ct) => paged.ReadAttemptPageAsync(owner, cursor, 32, ct), visitor, linked.Token).ConfigureAwait(false);
+            else
+            {
+                int maximum = RequireLegacyBound();
+                var items = await store.ReadAttemptsAsync(owner, linked.Token).ConfigureAwait(false);
+                Ensure(requested);
+                if (items.Count > maximum)
+                    throw new InvalidOperationException("The legacy proof store exceeded its fixed bound.");
+                foreach (var item in items)
+                { Ensure(requested); linked.Token.ThrowIfCancellationRequested(); await visitor(item, linked.Token).ConfigureAwait(false); }
+            }
+        }
+        public async Task<NativeAttempt?> FindAttemptAsync(ScopedOwnerContext requested, Guid intentKey, CancellationToken token)
+        {
+            using var linked = Link(requested, token);
+            if (store is IPagedProtectedProofStore paged)
+            {
+                var item = await paged.FindAttemptAsync(owner, intentKey, linked.Token).ConfigureAwait(false);
+                Ensure(requested);
+                if (item != null && item.IntentKey != intentKey)
+                    throw new InvalidOperationException("Protected attempt identity changed.");
+                return item;
+            }
+            NativeAttempt? result = null;
+            await VisitAttemptsAsync(requested, (item, ct) =>
+            {
+                if (item.IntentKey == intentKey)
+                { if (result != null) throw new InvalidOperationException("Duplicate protected attempt."); result = item; }
+                return Task.CompletedTask;
+            }, linked.Token).ConfigureAwait(false);
+            return result;
+        }
+        public async Task<bool> HasUnresolvedAttemptAsync(ScopedOwnerContext requested, NativeProduct product, Guid? exceptIntentKey, CancellationToken token)
+        {
+            bool unresolved = false;
+            await VisitAttemptsAsync(requested, (item, ct) =>
+            {
+                if (item.IntentKey != exceptIntentKey && item.Product.PackageName == product.PackageName && item.Product.StoreProductId == product.StoreProductId &&
+                    (item.Intent == null || (item.Intent.State != "granted" && item.Intent.State != "rejected")))
+                    unresolved = true;
+                return Task.CompletedTask;
+            }, token).ConfigureAwait(false);
+            return unresolved;
+        }
+        private async Task VisitPagesAsync<T>(ScopedOwnerContext requested, Func<string?, CancellationToken, Task<NativeProtectedPage<T>>> read,
+            Func<T, CancellationToken, Task> visitor, CancellationToken token)
+        {
+            string? cursor = null;
+            long? highWater = null;
+            long after = 0;
+            do
+            {
+                token.ThrowIfCancellationRequested();
+                var page = await read(cursor, token).ConfigureAwait(false);
+                Ensure(requested);
+                if (page == null || page.AfterSequence != after || (highWater.HasValue && page.HighWatermark != highWater.Value) ||
+                    (page.NextCursor != null && page.NextCursor == cursor))
+                    throw new InvalidOperationException("Protected-store page did not advance within its captured snapshot.");
+                highWater = page.HighWatermark;
+                foreach (var item in page.Items)
+                { Ensure(requested); token.ThrowIfCancellationRequested(); await visitor(item, token).ConfigureAwait(false); }
+                after = page.LastSequence;
+                cursor = page.NextCursor;
+            } while (cursor != null);
+        }
         public async Task<NativeStartOutcome> StartAsync(ScopedOwnerContext requested, NativeProduct product, NativeStoreProduct confirmedPrice, CancellationToken token,
-            bool acknowledgeUnresolvedPriorPurchase = false)
+            bool acknowledgeUnresolvedPriorPurchase = false, Action<Guid>? onAttemptAllocated = null)
         {
             if (product == null)
                 throw new ArgumentNullException(nameof(product));
@@ -95,19 +188,17 @@ namespace GamePlatform.Features.Purchases
             try
             {
                 Ensure(requested);
-                var attempts = await store.ReadAttemptsAsync(owner, linked.Token).ConfigureAwait(false);
-                Ensure(requested);
-                if (!acknowledgeUnresolvedPriorPurchase && attempts.Any(a => a.Product.PackageName == product.PackageName && a.Product.StoreProductId == product.StoreProductId &&
-                    (a.Intent == null || (a.Intent.State != "granted" && a.Intent.State != "rejected"))))
+                if (!acknowledgeUnresolvedPriorPurchase && await HasUnresolvedAttemptAsync(requested, product, null, linked.Token).ConfigureAwait(false))
                     throw new InvalidOperationException("A prior native purchase remains unresolved.");
                 var intentKey = ids.NewId();
+                onAttemptAllocated?.Invoke(intentKey);
                 await store.ReserveAttemptAsync(owner, intentKey, product, 8192, linked.Token).ConfigureAwait(false);
                 Ensure(requested);
                 var intent = await remote.CreateIntentAsync(intentKey, product.ProductId, product.Version, linked.Token).ConfigureAwait(false);
                 Ensure(requested);
                 if (intent.IntentKey != intentKey || intent.ProductId != product.ProductId || intent.ProductVersion != product.Version ||
                     intent.PackageName != product.PackageName || intent.StoreProductId != product.StoreProductId ||
-                    intent.Environment != product.Environment || intent.Source != "purchase" || !intent.LaunchAllowed || intent.State != "awaiting_proof")
+                    intent.Environment != product.Environment || intent.ProductType != product.ProductType || intent.Source != "purchase" || !intent.LaunchAllowed || intent.State != "awaiting_proof")
                     throw new InvalidOperationException("Native intent does not authorize this launch.");
                 await store.CommitIntentAsync(owner, intentKey, intent, linked.Token).ConfigureAwait(false);
                 Ensure(requested);
@@ -146,9 +237,7 @@ namespace GamePlatform.Features.Purchases
             await serial.WaitAsync(linked.Token).ConfigureAwait(false);
             try
             {
-                var attempts = await store.ReadAttemptsAsync(owner, linked.Token).ConfigureAwait(false);
-                Ensure(requested);
-                foreach (var attempt in attempts)
+                await VisitAttemptsAsync(requested, async (attempt, ct) =>
                 {
                     var intent = attempt.Intent == null
                         ? await remote.CreateIntentAsync(attempt.IntentKey, attempt.Product.ProductId, attempt.Product.Version, linked.Token).ConfigureAwait(false)
@@ -156,12 +245,12 @@ namespace GamePlatform.Features.Purchases
                     Ensure(requested);
                     if (intent.IntentKey != attempt.IntentKey || intent.ProductId != attempt.Product.ProductId ||
                         intent.ProductVersion != attempt.Product.Version || intent.PackageName != attempt.Product.PackageName ||
-                        intent.StoreProductId != attempt.Product.StoreProductId || intent.Environment != attempt.Product.Environment ||
+                        intent.StoreProductId != attempt.Product.StoreProductId || intent.Environment != attempt.Product.Environment || intent.ProductType != attempt.Product.ProductType ||
                         intent.Source != "purchase" || (attempt.Intent != null &&
                             (intent.IntentId != attempt.Intent.IntentId || intent.CustomerBinding != attempt.Intent.CustomerBinding)))
                         throw new InvalidOperationException("Retained native intent identity changed.");
                     await store.CommitIntentAsync(owner, attempt.IntentKey, intent, linked.Token).ConfigureAwait(false);
-                }
+                }, linked.Token).ConfigureAwait(false);
             }
             finally { serial.Release(); }
         }
@@ -175,9 +264,7 @@ namespace GamePlatform.Features.Purchases
                 throw new InvalidOperationException("A native purchase operation is already in progress.");
             try
             {
-                var attempts = await store.ReadAttemptsAsync(owner, linked.Token).ConfigureAwait(false);
-                Ensure(requested);
-                var attempt = attempts.SingleOrDefault(value => value.IntentKey == intentKey);
+                var attempt = await FindAttemptAsync(requested, intentKey, linked.Token).ConfigureAwait(false);
                 if (attempt?.Intent == null || attempt.LaunchRequested)
                     throw new InvalidOperationException("This attempt cannot be launched again.");
                 var intent = await remote.StatusAsync(attempt.Intent.IntentId, linked.Token).ConfigureAwait(false);
@@ -186,7 +273,7 @@ namespace GamePlatform.Features.Purchases
                     intent.State != "awaiting_proof" || intent.Source != "purchase" ||
                     intent.PackageName != attempt.Product.PackageName || intent.StoreProductId != attempt.Product.StoreProductId ||
                     intent.ProductId != attempt.Product.ProductId || intent.ProductVersion != attempt.Product.Version ||
-                    intent.Environment != attempt.Product.Environment || intent.CustomerBinding != attempt.Intent.CustomerBinding)
+                    intent.Environment != attempt.Product.Environment || intent.ProductType != attempt.Product.ProductType || intent.CustomerBinding != attempt.Intent.CustomerBinding)
                     throw new InvalidOperationException("The prepared native intent cannot be launched.");
                 await bridge.ConnectAsync(linked.Token).ConfigureAwait(false);
                 Ensure(requested);
@@ -249,14 +336,24 @@ namespace GamePlatform.Features.Purchases
                     catch (OperationCanceledException) { throw; }
                     catch { Ensure(requested); unresolved++; }
                 }
-                var records = await store.ReadProtectedRecordsAsync(owner, linked.Token).ConfigureAwait(false);
-                Ensure(requested);
-                foreach (var record in records)
+                async Task SubmitRecord(ProtectedNativeProofRecord record, CancellationToken ct)
                 {
                     try
                     { await SubmitAsync(record, requested, linked.Token).ConfigureAwait(false); }
                     catch (OperationCanceledException) { throw; }
                     catch { Ensure(requested); unresolved++; }
+                }
+                if (store is IPagedProtectedProofStore paged)
+                    await VisitPagesAsync(requested, (cursor, ct) => paged.ReadProofPageAsync(owner, cursor, 32, ct), SubmitRecord, linked.Token).ConfigureAwait(false);
+                else
+                {
+                    int maximum = RequireLegacyBound();
+                    var records = await store.ReadProtectedRecordsAsync(owner, linked.Token).ConfigureAwait(false);
+                    Ensure(requested);
+                    if (records.Count > maximum)
+                        throw new InvalidOperationException("The legacy proof store exceeded its fixed bound.");
+                    foreach (var record in records)
+                        await SubmitRecord(record, linked.Token).ConfigureAwait(false);
                 }
                 if (unresolved != 0)
                     throw new NativeRecoveryException(unresolved);
@@ -265,6 +362,10 @@ namespace GamePlatform.Features.Purchases
         }
         private async Task SubmitAsync(ProtectedNativeProofRecord record, ScopedOwnerContext requested, CancellationToken token)
         {
+            Ensure(requested);
+            token.ThrowIfCancellationRequested();
+            if (record.FinalizedChargeId.HasValue)
+                return;
             var proof = await store.OpenForSubmissionAsync(owner, record.ProofId, token).ConfigureAwait(false);
             Ensure(requested);
             if (proof.PackageName != record.PackageName || proof.StoreProductId != record.StoreProductId)
@@ -272,9 +373,7 @@ namespace GamePlatform.Features.Purchases
             NativeAttempt? attempt = null;
             if (record.ReservedAttemptKey.HasValue)
             {
-                var attempts = await store.ReadAttemptsAsync(owner, token).ConfigureAwait(false);
-                Ensure(requested);
-                attempt = attempts.SingleOrDefault(value => value.IntentKey == record.ReservedAttemptKey.Value);
+                attempt = await FindAttemptAsync(requested, record.ReservedAttemptKey.Value, token).ConfigureAwait(false);
                 if (attempt?.Intent == null || !attempt.LaunchRequested || attempt.Product.PackageName != proof.PackageName ||
                     attempt.Product.StoreProductId != proof.StoreProductId)
                     throw new InvalidOperationException("Protected callback reservation is invalid.");
@@ -305,6 +404,12 @@ namespace GamePlatform.Features.Purchases
             }
             if (state.State == "granted" && state.FinishState == "finished" && state.ChargeId.HasValue)
                 await store.MarkFinalizedAsync(owner, record.ProofId, state.ChargeId.Value, token).ConfigureAwait(false);
+        }
+        private int RequireLegacyBound()
+        {
+            if (!(store is IBoundedProtectedProofStore bounded) || bounded.MaximumRecords < 1 || bounded.MaximumRecords > 256)
+                throw new InvalidOperationException("The proof store requires paged reads or an enforced fixed legacy bound.");
+            return bounded.MaximumRecords;
         }
         public async Task<bool> IsDeliveredAsync(ScopedOwnerContext requested, Guid intentId, CancellationToken token)
         {

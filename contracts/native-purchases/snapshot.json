@@ -3,7 +3,7 @@
   "contractVersion": "native-purchases-1.0.0",
   "algorithm": "sha256",
   "files": {
-    "native-purchases/schema.json": "a959fd271714e759bb5db7bdcd3555b4798e54988d8f68c60356acfdad7685da",
-    "native-purchases/fixtures.json": "8a39b56adad65da217dc7830611e829025c0adf07768a8c694604228dedaf0c2"
+    "native-purchases/schema.json": "99f8a975ce1991217055b71b8f922ba6770087dd7e688631489681cc05539901",
+    "native-purchases/fixtures.json": "c5eadbc23dd36119ae3aac5eed1d848e49cebcadec742856f200dc28c712e2a5"
   }
 }

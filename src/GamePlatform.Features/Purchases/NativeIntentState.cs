@@ -9,7 +9,7 @@ namespace GamePlatform.Features.Purchases
             string storeProductId, string environment, Guid customerBinding, string source, bool launchAllowed,
             string state, string? reason, string finishState, long? feedRevision, long? visibilityGeneration, Guid? logEpoch, Guid? grantId, Guid? chargeId,
             IReadOnlyList<NativeContentLine>? receiptLines = null, long? originalFeedRevision = null,
-            Guid? originatingIntentId = null, int? retryAfterMilliseconds = null)
+            Guid? originatingIntentId = null, int? retryAfterMilliseconds = null, string productType = "consumable")
         {
             IntentId = intentId;
             IntentKey = intentKey;
@@ -33,6 +33,9 @@ namespace GamePlatform.Features.Purchases
             OriginalFeedRevision = originalFeedRevision;
             OriginatingIntentId = originatingIntentId;
             RetryAfterMilliseconds = retryAfterMilliseconds;
+            if (productType != "consumable" && productType != "non_consumable")
+                throw new ArgumentException("Unsupported native product type.", nameof(productType));
+            ProductType = productType;
         }
         public Guid IntentId { get; }
         public Guid IntentKey { get; }
@@ -56,5 +59,6 @@ namespace GamePlatform.Features.Purchases
         public long? OriginalFeedRevision { get; }
         public Guid? OriginatingIntentId { get; }
         public int? RetryAfterMilliseconds { get; }
+        public string ProductType { get; }
     }
 }

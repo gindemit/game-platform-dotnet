@@ -56,7 +56,10 @@
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
               },
               "productType": {
-                "const": "consumable"
+                "enum": [
+                  "consumable",
+                  "non_consumable"
+                ]
               },
               "environment": {
                 "enum": [
@@ -107,6 +110,26 @@
                         },
                         "quantity": {
                           "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/positiveInt64"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "kind",
+                        "entitlementId",
+                        "expiresAt"
+                      ],
+                      "properties": {
+                        "kind": {
+                          "const": "entitlement"
+                        },
+                        "entitlementId": {
+                          "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+                        },
+                        "expiresAt": {
+                          "type": "null"
                         }
                       }
                     }
@@ -293,7 +316,10 @@
           "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
         },
         "productType": {
-          "const": "consumable"
+          "enum": [
+            "consumable",
+            "non_consumable"
+          ]
         },
         "environment": {
           "enum": [
@@ -460,6 +486,38 @@
                             "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/positiveInt64"
                           }
                         }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "lineIndex",
+                          "definitionVersion",
+                          "kind",
+                          "entitlementId",
+                          "expiresAt"
+                        ],
+                        "properties": {
+                          "lineIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 62
+                          },
+                          "definitionVersion": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483647
+                          },
+                          "kind": {
+                            "const": "entitlement"
+                          },
+                          "entitlementId": {
+                            "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+                          },
+                          "expiresAt": {
+                            "type": "null"
+                          }
+                        }
                       }
                     ]
                   }
@@ -595,6 +653,38 @@
                             },
                             "quantity": {
                               "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/positiveInt64"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "lineIndex",
+                            "definitionVersion",
+                            "kind",
+                            "entitlementId",
+                            "expiresAt"
+                          ],
+                          "properties": {
+                            "lineIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 62
+                            },
+                            "definitionVersion": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2147483647
+                            },
+                            "kind": {
+                              "const": "entitlement"
+                            },
+                            "entitlementId": {
+                              "$ref": "https://contracts.gindemit.invalid/v1/schemas/common.schema.json#/$defs/semanticKey"
+                            },
+                            "expiresAt": {
+                              "type": "null"
                             }
                           }
                         }
