@@ -266,6 +266,295 @@ namespace GamePlatform.Tests.Features.Purchases
             Assert.Throws<ArgumentException>(() => new NativeProtectedPage<NativeAttempt>(Array.Empty<NativeAttempt>(), null, 65, 0, 0));
             Assert.Throws<ArgumentException>(() => new NativeProtectedPage<NativeAttempt>(Array.Empty<NativeAttempt>(), "next", 64, 0, 0));
         }
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task CancelledLaunchRetainsProofForFreshCoordinatorRecovery(bool continuePrepared, bool cancelBeforeProof)
+        {
+            var steps = new List<string>();
+            var store = new StatefulProofStore { HoldProtection = true };
+            var bridge = new TestBridge(steps) { HoldLaunch = true };
+            using var caller = new CancellationTokenSource();
+            using (var first = StatefulCoordinator(new TestRemote(steps), bridge, store))
+            {
+                Guid? preparedKey = null;
+                if (continuePrepared)
+                {
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => first.StartAsync(Owner, Product,
+                        new NativeStoreProduct(Product.PackageName, Product.StoreProductId, "$0.99"), CancellationToken.None));
+                    preparedKey = Assert.Single(store.Attempts.Values).IntentKey;
+                }
+                var operation = continuePrepared
+                    ? first.ContinuePreparedAsync(Owner, preparedKey!.Value, Price, caller.Token)
+                    : first.StartAsync(Owner, Product, Price, caller.Token);
+                try
+                {
+                    await bridge.LaunchStarted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                    if (cancelBeforeProof)
+                        caller.Cancel();
+                    bridge.LaunchRelease.SetResult(true);
+                    await store.ProtectionCommitted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                    Assert.Equal(CancellationToken.None, store.ProtectionToken);
+                    var retained = Assert.Single(store.Records);
+                    Assert.Null(retained.ReservedAttemptKey);
+                    Assert.Equal("synthetic", store.Proofs[retained.ProofId].Token);
+                    Assert.False(operation.IsCompleted);
+                    caller.Cancel();
+                    store.ProtectionRelease.SetResult(true);
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation);
+                    Assert.DoesNotContain("submit", steps);
+                    Assert.Null(Assert.Single(store.Records).FinalizedChargeId);
+                    Assert.True(Assert.Single(store.Attempts.Values).LaunchRequested);
+                }
+                finally
+                {
+                    caller.Cancel();
+                    bridge.LaunchRelease.TrySetResult(true);
+                    store.ProtectionRelease.TrySetResult(true);
+                }
+            }
+            var original = Assert.Single(store.Records);
+            var recovery = new StatefulRecoveryRemote(store);
+            using (var fresh = StatefulCoordinator(recovery, bridge, store))
+            {
+                await fresh.RecoverAsync(Owner, CancellationToken.None);
+                await fresh.RecoverAsync(Owner, CancellationToken.None);
+            }
+            var submission = Assert.Single(recovery.Submissions);
+            Assert.Equal(original.RecoveryIntentKey, submission.Key);
+            Assert.Equal(original.ProofId, submission.ProofId);
+            Assert.Equal(StatefulCharge(original.ProofId), Assert.Single(store.Records).FinalizedChargeId);
+            Assert.Equal(original.ProofId, Assert.Single(store.Finalizations));
+            Assert.Single(steps, step => step == "launch");
+        }
+        [Fact]
+        public async Task ProofRecoveryPagesKeepSnapshotAndFreshCoordinatorProcessesLaterAppend()
+        {
+            var steps = new List<string>();
+            var store = new StatefulProofStore();
+            for (int i = 1; i <= 65; i++)
+                store.SeedProof(i);
+            var original = store.Records.ToArray();
+            var remote = new StatefulRecoveryRemote(store) { OnSubmission = count => { if (count == 1) store.SeedProof(66); } };
+            var bridge = new TestBridge(steps);
+            using (var first = StatefulCoordinator(remote, bridge, store))
+                await first.RecoverAsync(Owner, CancellationToken.None);
+            Assert.Equal(new[] { (0L, 32L, 65L), (32L, 64L, 65L), (64L, 65L, 65L) }, store.ProofPages);
+            Assert.Equal(original.Select(item => item.ProofId), remote.Submissions.Select(item => item.ProofId));
+            Assert.Equal(original.Select(item => item.RecoveryIntentKey), remote.Submissions.Select(item => item.Key));
+            Assert.Equal(original.Select(item => item.ProofId), store.Finalizations);
+            Assert.All(store.Records.Take(65), item => Assert.Equal(StatefulCharge(item.ProofId), item.FinalizedChargeId));
+            Assert.Null(store.Records[65].FinalizedChargeId);
+            store.ProofPages.Clear();
+            using (var fresh = StatefulCoordinator(remote, bridge, store))
+                await fresh.RecoverAsync(Owner, CancellationToken.None);
+            Assert.Equal(new[] { (0L, 32L, 66L), (32L, 64L, 66L), (64L, 66L, 66L) }, store.ProofPages);
+            Assert.Equal(store.Records.Select(item => item.ProofId), remote.Submissions.Select(item => item.ProofId));
+            Assert.Equal(store.Records.Select(item => item.RecoveryIntentKey), remote.Submissions.Select(item => item.Key));
+            Assert.Equal(66, store.Finalizations.Distinct().Count());
+            Assert.Equal(66, store.Finalizations.Count);
+            Assert.All(store.Records, item => Assert.Equal(StatefulCharge(item.ProofId), item.FinalizedChargeId));
+            Assert.DoesNotContain("launch", steps);
+        }
+        [Fact]
+        public async Task CancelledSecondProofPageResumesRetainedIdentitiesWithoutResubmittingFinalizedProofs()
+        {
+            var steps = new List<string>();
+            var store = new StatefulProofStore();
+            for (int i = 1; i <= 65; i++)
+                store.SeedProof(i);
+            var original = store.Records.ToArray();
+            var remote = new StatefulRecoveryRemote(store) { HoldSubmission = 33 };
+            var bridge = new TestBridge(steps);
+            using var caller = new CancellationTokenSource();
+            using (var first = StatefulCoordinator(remote, bridge, store))
+            {
+                var operation = first.RecoverAsync(Owner, caller.Token);
+                try
+                {
+                    await remote.SubmissionStarted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                    Assert.Equal(32, store.Finalizations.Count);
+                    Assert.Equal(original[32].ProofId, remote.Submissions[32].ProofId);
+                    caller.Cancel();
+                    remote.SubmissionRelease.SetResult(true);
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation);
+                }
+                finally
+                {
+                    caller.Cancel();
+                    remote.SubmissionRelease.TrySetResult(true);
+                }
+            }
+            Assert.Equal(new[] { (0L, 32L, 65L), (32L, 64L, 65L) }, store.ProofPages);
+            Assert.All(store.Records.Take(32), item => Assert.NotNull(item.FinalizedChargeId));
+            Assert.All(store.Records.Skip(32), item => Assert.Null(item.FinalizedChargeId));
+            var resumed = new StatefulRecoveryRemote(store);
+            using (var fresh = StatefulCoordinator(resumed, bridge, store))
+                await fresh.RecoverAsync(Owner, CancellationToken.None);
+            Assert.Equal(original.Skip(32).Select(item => item.ProofId), resumed.Submissions.Select(item => item.ProofId));
+            Assert.Equal(original.Skip(32).Select(item => item.RecoveryIntentKey), resumed.Submissions.Select(item => item.Key));
+            Assert.Equal(original.Select(item => item.ProofId), store.Finalizations);
+            Assert.All(store.Records, item => Assert.Equal(StatefulCharge(item.ProofId), item.FinalizedChargeId));
+            Assert.DoesNotContain("launch", steps);
+        }
+        [Theory]
+        [InlineData("high-water")]
+        [InlineData("after-sequence")]
+        [InlineData("repeated-cursor")]
+        public async Task ProofRecoveryRejectsInconsistentSecondPageBeforeSubmission(string fault)
+        {
+            var store = new StatefulProofStore { PageFault = fault };
+            for (int i = 1; i <= 65; i++)
+                store.SeedProof(i);
+            var remote = new StatefulRecoveryRemote(store);
+            using var coordinator = StatefulCoordinator(remote, new TestBridge(new List<string>()), store);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.RecoverAsync(Owner, CancellationToken.None));
+            Assert.Equal(2, store.ProofPages.Count);
+            Assert.Equal(store.Records.Take(32).Select(item => item.ProofId), remote.Submissions.Select(item => item.ProofId));
+            Assert.Equal(32, store.Finalizations.Count);
+            Assert.All(store.Records.Skip(32), item => Assert.Null(item.FinalizedChargeId));
+        }
+        private static NativePurchaseCoordinator StatefulCoordinator(INativePurchaseRemote remote, INativeStoreBridge bridge, StatefulProofStore store) =>
+            new NativePurchaseCoordinator(Owner, remote, bridge, store, new Checkpoint(),
+                new UuidV7Generator(new Clock(), new DeterministicRandom()));
+        private static Guid StatefulId(int value) => Guid.Parse("0199f9a0-0000-7000-8000-" + value.ToString("x12"));
+        private static int StatefulProofNumber(Guid proofId) => int.Parse(proofId.ToString("D").Substring(24), System.Globalization.NumberStyles.HexNumber);
+        private static Guid StatefulCharge(Guid proofId) => StatefulId(2000 + StatefulProofNumber(proofId));
+        private sealed class DeterministicRandom : IUuidRandomSource
+        {
+            private byte next;
+            public void Fill(Span<byte> destination) { destination.Clear(); destination[destination.Length - 1] = ++next; }
+        }
+        // Models retained state across coordinator instances only; not host encryption or disk durability.
+        private sealed class StatefulProofStore : IPagedProtectedProofStore
+        {
+            public readonly Dictionary<Guid, NativeAttempt> Attempts = new Dictionary<Guid, NativeAttempt>();
+            public readonly List<ProtectedNativeProofRecord> Records = new List<ProtectedNativeProofRecord>();
+            public readonly Dictionary<Guid, NativeProof> Proofs = new Dictionary<Guid, NativeProof>();
+            public readonly List<Guid> Finalizations = new List<Guid>();
+            public readonly List<(long After, long Last, long High)> ProofPages = new List<(long, long, long)>();
+            public bool HoldProtection;
+            public string? PageFault;
+            public CancellationToken ProtectionToken;
+            public readonly TaskCompletionSource<bool> ProtectionCommitted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public readonly TaskCompletionSource<bool> ProtectionRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public void SeedProof(int index)
+            {
+                var proof = new NativeProof(Product.PackageName, Product.StoreProductId, "synthetic-" + index);
+                AddProof(index, proof, StatefulId(1000 + index), null);
+            }
+            private ProtectedNativeProofRecord AddProof(int index, NativeProof proof, Guid recoveryKey, Guid? reservedKey)
+            {
+                var record = new ProtectedNativeProofRecord(StatefulId(index), recoveryKey, proof.PackageName, proof.StoreProductId, reservedKey);
+                Records.Add(record);
+                Proofs.Add(record.ProofId, proof);
+                return record;
+            }
+            private static void Check(ScopedOwnerContext owner, CancellationToken token)
+            { Assert.Equal(Owner, owner); token.ThrowIfCancellationRequested(); }
+            public Task ReserveAttemptAsync(ScopedOwnerContext owner, Guid key, NativeProduct product, int maximumProofBytes, CancellationToken token)
+            { Check(owner, token); Assert.Equal(8192, maximumProofBytes); Attempts.Add(key, new NativeAttempt(key, product, null, false)); return Task.CompletedTask; }
+            public Task CommitIntentAsync(ScopedOwnerContext owner, Guid key, NativeIntentState intent, CancellationToken token)
+            { Check(owner, token); var old = Attempts[key]; Attempts[key] = new NativeAttempt(key, old.Product, intent, old.LaunchRequested); return Task.CompletedTask; }
+            public Task MarkLaunchRequestedAsync(ScopedOwnerContext owner, Guid key, CancellationToken token)
+            { Check(owner, token); var old = Attempts[key]; Attempts[key] = new NativeAttempt(key, old.Product, old.Intent, true); return Task.CompletedTask; }
+            public Task<IReadOnlyList<NativeAttempt>> ReadAttemptsAsync(ScopedOwnerContext owner, CancellationToken token) =>
+                throw new InvalidOperationException("Legacy attempt materialization is forbidden.");
+            public Task<IReadOnlyList<ProtectedNativeProofRecord>> ReadProtectedRecordsAsync(ScopedOwnerContext owner, CancellationToken token) =>
+                throw new InvalidOperationException("Legacy proof materialization is forbidden.");
+            public Task<NativeAttempt?> FindAttemptAsync(ScopedOwnerContext owner, Guid key, CancellationToken token)
+            { Check(owner, token); return Task.FromResult(Attempts.TryGetValue(key, out var attempt) ? attempt : null); }
+            public Task<NativeProtectedPage<NativeAttempt>> ReadAttemptPageAsync(ScopedOwnerContext owner, string? cursor, int limit, CancellationToken token)
+            {
+                Check(owner, token);
+                Assert.Null(cursor);
+                Assert.Equal(32, limit);
+                return Task.FromResult(new NativeProtectedPage<NativeAttempt>(Attempts.Values.ToArray(), null, Attempts.Count, 0, Attempts.Count));
+            }
+            public async Task<ProtectedNativeProofRecord> ProtectAndCommitAsync(ScopedOwnerContext owner, NativeProof proof, Guid proposedKey, Guid? reservedKey, CancellationToken token)
+            {
+                Check(owner, token);
+                ProtectionToken = token;
+                var existing = Records.SingleOrDefault(item => item.PackageName == proof.PackageName && item.StoreProductId == proof.StoreProductId && Proofs[item.ProofId].Token == proof.Token);
+                var record = existing ?? AddProof(Records.Count + 1, proof, proposedKey, reservedKey);
+                ProtectionCommitted.TrySetResult(true);
+                if (HoldProtection)
+                    await ProtectionRelease.Task;
+                return record;
+            }
+            public Task<NativeProof> OpenForSubmissionAsync(ScopedOwnerContext owner, Guid proofId, CancellationToken token)
+            { Check(owner, token); Assert.Null(Records.Single(item => item.ProofId == proofId).FinalizedChargeId); return Task.FromResult(Proofs[proofId]); }
+            public Task MarkFinalizedAsync(ScopedOwnerContext owner, Guid proofId, Guid chargeId, CancellationToken token)
+            {
+                Check(owner, token);
+                int index = Records.FindIndex(item => item.ProofId == proofId);
+                var old = Records[index];
+                Assert.Null(old.FinalizedChargeId);
+                Assert.Equal(StatefulCharge(proofId), chargeId);
+                Records[index] = new ProtectedNativeProofRecord(old.ProofId, old.RecoveryIntentKey, old.PackageName, old.StoreProductId, old.ReservedAttemptKey, chargeId);
+                Finalizations.Add(proofId);
+                return Task.CompletedTask;
+            }
+            public Task<bool> TryClaimPresentationAsync(ScopedOwnerContext owner, Guid grantId, CancellationToken token) =>
+                throw new InvalidOperationException("Presentation is outside this fixture's contract.");
+            public Task<NativeProtectedPage<ProtectedNativeProofRecord>> ReadProofPageAsync(ScopedOwnerContext owner, string? cursor, int limit, CancellationToken token)
+            {
+                Check(owner, token);
+                Assert.Equal(32, limit);
+                int after = cursor == null ? 0 : int.Parse(cursor.Split(':')[0]);
+                int high = cursor == null ? Records.Count : int.Parse(cursor.Split(':')[1]);
+                int last = Math.Min(after + limit, high);
+                string? next = last < high ? last + ":" + high : null;
+                var items = Records.Skip(after).Take(last - after).ToArray();
+                if (cursor != null)
+                {
+                    if (PageFault == "high-water")
+                        high++;
+                    if (PageFault == "after-sequence")
+                        after--;
+                    if (PageFault == "repeated-cursor")
+                        next = cursor;
+                }
+                ProofPages.Add((after, last, high));
+                return Task.FromResult(new NativeProtectedPage<ProtectedNativeProofRecord>(items, next, high, after, last));
+            }
+        }
+        private sealed class StatefulRecoveryRemote : INativePurchaseRemote
+        {
+            private readonly StatefulProofStore store;
+            public readonly List<(Guid Key, Guid ProofId)> Submissions = new List<(Guid, Guid)>();
+            public Action<int>? OnSubmission;
+            public int HoldSubmission;
+            public readonly TaskCompletionSource<bool> SubmissionStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public readonly TaskCompletionSource<bool> SubmissionRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public StatefulRecoveryRemote(StatefulProofStore store) => this.store = store;
+            public async Task<NativeIntentState> RecoverProofAsync(Guid key, NativeProof proof, CancellationToken token)
+            {
+                token.ThrowIfCancellationRequested();
+                var record = store.Records.Single(item => item.RecoveryIntentKey == key);
+                Assert.Same(store.Proofs[record.ProofId], proof);
+                Assert.Equal(record.PackageName, proof.PackageName);
+                Assert.Equal(record.StoreProductId, proof.StoreProductId);
+                Submissions.Add((key, record.ProofId));
+                OnSubmission?.Invoke(Submissions.Count);
+                if (Submissions.Count == HoldSubmission)
+                {
+                    SubmissionStarted.SetResult(true);
+                    await SubmissionRelease.Task;
+                }
+                token.ThrowIfCancellationRequested();
+                return new NativeIntentState(StatefulId(3000 + StatefulProofNumber(record.ProofId)), key, Product.ProductId, Product.Version,
+                    proof.PackageName, proof.StoreProductId, Product.Environment, StatefulId(5000), "recovery", false,
+                    "granted", null, "finished", 1, 1, StatefulId(5001), StatefulId(4000 + StatefulProofNumber(record.ProofId)), StatefulCharge(record.ProofId));
+            }
+            public Task<IReadOnlyList<NativeProduct>> ProductsAsync(CancellationToken token) => throw new InvalidOperationException();
+            public Task<NativeIntentState> CreateIntentAsync(Guid key, string productId, int version, CancellationToken token) => throw new InvalidOperationException("Recovery must not allocate a purchase intent.");
+            public Task<NativeIntentState> SubmitProofAsync(Guid intentId, NativeProof proof, CancellationToken token) => throw new InvalidOperationException("Unattributed proof must use recovery.");
+            public Task<NativeIntentState> StatusAsync(Guid intentId, CancellationToken token) => throw new InvalidOperationException();
+            public Task<NativeRecoveryPage> RecoveryAsync(Guid? after, int limit, CancellationToken token) => throw new InvalidOperationException();
+        }
         private static NativePurchaseCoordinator Create(List<string> steps, TestStore store) =>
             new NativePurchaseCoordinator(Owner, new TestRemote(steps), new TestBridge(steps), store, new Checkpoint(),
                 new UuidV7Generator(new Clock(), new CryptographicUuidRandomSource()));
