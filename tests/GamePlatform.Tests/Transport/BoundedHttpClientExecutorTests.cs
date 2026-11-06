@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using GamePlatform.Backend.Contracts.Remote;
 using GamePlatform.Core;
 using GamePlatform.Features.Teams;
 using GamePlatform.Features.Leaderboards;
+using GamePlatform.Features.Profiles;
+using GamePlatform.Features.Purchases;
+using GamePlatform.Tests.Features.Daily;
 using GamePlatform.Tests.Features.Leaderboards;
 using GamePlatform.Serialization.MessagePack;
 using GamePlatform.Transport.Abstractions;
@@ -52,17 +57,262 @@ namespace GamePlatform.Tests.Transport
         }
 
         [Theory]
+        [InlineData("provision")]
+        [InlineData("bootstrap/pages")]
+        [InlineData("sync/pull")]
+        [InlineData("sync/push")]
+        [InlineData("teams/query")]
+        [InlineData("teams/commands")]
         [InlineData("friends/query")]
         [InlineData("friends/commands")]
+        [InlineData("leaderboards/query")]
+        [InlineData("leaderboards/country")]
         [InlineData("leaderboards/friends/query")]
         [InlineData("sync/streams/inspect")]
         [InlineData("sync/streams/recover")]
-        public async Task SelectedPostRoutesReachBoundedHttpExecutor(string route)
+        [InlineData("sync/receipts/lookup")]
+        [InlineData("store/native/products")]
+        [InlineData("store/native/intents")]
+        [InlineData("store/native/proofs")]
+        [InlineData("store/native/recover-proof")]
+        [InlineData("store/native/status")]
+        [InlineData("store/native/recovery")]
+        [InlineData("store/offers")]
+        [InlineData("daily/status")]
+        [InlineData("profiles/public/query")]
+        public async Task SupportedPostRoutesReachBoundedHttpExecutor(string route)
         {
-            var handler = new DelegateHandler((request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1 }) }));
+            var handler = new DelegateHandler(async (request, _) =>
+            {
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/platform/v1/apps/" + App + "/" + route, request.RequestUri!.AbsolutePath);
+                Assert.Equal(string.Empty, request.RequestUri.Query);
+                Assert.Equal("Bearer token", request.Headers.Authorization!.ToString());
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Headers.Accept.Single().MediaType);
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Content!.Headers.ContentType!.MediaType);
+                Assert.Equal(new byte[] { 1 }, await request.Content.ReadAsByteArrayAsync());
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 2 }) };
+            });
             using var client = new HttpClient(handler);
             var executor = new BoundedHttpClientExecutor(client, Configuration());
-            Assert.Equal(200, (await executor.SendAsync(Request("v1/apps/" + App + "/" + route), CancellationToken.None)).StatusCode);
+            var response = await executor.SendAsync(Request("v1/apps/" + App + "/" + route), CancellationToken.None);
+            Assert.Equal(200, response.StatusCode);
+            Assert.Equal(new byte[] { 2 }, response.CopyBody());
+            Assert.Equal(1, handler.Calls);
+        }
+
+        public static IEnumerable<object[]> AddedRouteOperations()
+        {
+            foreach (var route in AddedRoutes())
+                foreach (var retry in new[] { false, true })
+                    yield return new object[] { route, retry };
+        }
+
+        private static IEnumerable<string> AddedRoutes() => new[]
+        {
+            "store/native/products", "store/native/intents", "store/native/proofs",
+            "store/native/recover-proof", "store/native/status", "store/native/recovery",
+            "store/offers", "daily/status", "profiles/public/query"
+        };
+
+        public static IEnumerable<object[]> NoncanonicalAddedRoutes()
+        {
+            var root = "v1/apps/" + App + "/";
+            foreach (var route in AddedRoutes())
+            {
+                yield return new object[] { "GET", root + route };
+                yield return new object[] { "PUT", root + route };
+                yield return new object[] { "post", root + route };
+                yield return new object[] { "POST", root + route + "?cursor=1" };
+                yield return new object[] { "POST", root + route + "/" };
+                yield return new object[] { "POST", root + route + "/extra" };
+                var terminalStart = route.LastIndexOf('/') + 1;
+                yield return new object[] { "POST", root + route.Substring(0, terminalStart) + route.Substring(terminalStart).ToUpperInvariant() };
+                yield return new object[] { "POST", "v1/apps/invalid/" + route };
+            }
+            foreach (var route in new[] { "store/native", "store/native/unknown", "store/native/recover",
+                "store/products", "store/commands", "daily/query", "daily/claim",
+                "profiles/query", "profiles/public", "profiles/public/commands" })
+                yield return new object[] { "POST", root + route };
+        }
+
+        [Theory]
+        [MemberData(nameof(NoncanonicalAddedRoutes))]
+        public async Task NoncanonicalAddedRoutesFailBeforeNetwork(string method, string path)
+        {
+            var handler = new DelegateHandler((_, _) => throw new InvalidOperationException("must not send"));
+            using var client = new HttpClient(handler);
+            var executor = new BoundedHttpClientExecutor(client, Configuration());
+            var headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer token",
+                ["Accept"] = ProvisioningHttpProvider.MediaType
+            };
+            if (method != "GET")
+                headers["Content-Type"] = ProvisioningHttpProvider.MediaType;
+            var request = new HttpRequestData(method, Configuration().Resolve(path).AbsoluteUri, headers,
+                method == "GET" ? Array.Empty<byte>() : new byte[] { 1 });
+            var error = await Assert.ThrowsAsync<HttpExecutionException>(() => executor.SendAsync(request, CancellationToken.None));
+            Assert.Equal(HttpDeliveryCertainty.NotSent, error.Certainty);
+            Assert.Equal(0, handler.Calls);
+        }
+
+        [Theory]
+        [MemberData(nameof(AddedRouteOperations))]
+        public async Task ActualProvidersUseExactAddedRoutesAndDecodeReplies(string route, bool retry)
+        {
+            var nativeCodec = new NativePurchaseMessagePackCodec();
+            var id = Guid.Parse("0199f9a0-0000-7000-8000-000000000001");
+            var intentKey = Guid.Parse("0199f9a0-0000-7000-8000-000000000002");
+            var proof = new NativeProof("com.example.native", "synthetic.coins", "synthetic-token");
+            var subject = Guid.Parse("0199f9a0-1000-7000-8000-000000000006");
+            var profileQuery = new PublicProfileQuery(subject);
+            byte[] expectedBody;
+            byte[] responseBody;
+            switch (route)
+            {
+                case "store/native/products":
+                    expectedBody = nativeCodec.ProductsRequest();
+                    responseBody = new byte[] { 0x81, 0xa8, 0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x74, 0x73, 0x90 };
+                    break;
+                case "store/native/intents":
+                    expectedBody = nativeCodec.IntentRequest(intentKey, "synthetic.coins", 1);
+                    responseBody = NativePendingResponse();
+                    break;
+                case "store/native/proofs":
+                    expectedBody = nativeCodec.ProofRequest(id, proof);
+                    responseBody = NativePendingResponse();
+                    break;
+                case "store/native/recover-proof":
+                    expectedBody = nativeCodec.RecoverProofRequest(intentKey, proof);
+                    responseBody = NativePendingResponse();
+                    break;
+                case "store/native/status":
+                    expectedBody = nativeCodec.StatusRequest(id);
+                    responseBody = NativePendingResponse();
+                    break;
+                case "store/native/recovery":
+                    expectedBody = nativeCodec.RecoveryRequest(null, 10);
+                    responseBody = new QualificationMessagePackCodec().Encode("native-purchases/schema.json#/$defs/recoveryResponse",
+                        QualificationValue.Object(new[]
+                        {
+                            new KeyValuePair<string, QualificationValue>("intents", QualificationValue.Array(Array.Empty<QualificationValue>())),
+                            new KeyValuePair<string, QualificationValue>("nextIntentId", QualificationValue.Null)
+                        }));
+                    break;
+                case "store/offers":
+                    expectedBody = new byte[] { 0x80 };
+                    responseBody = new byte[] { 0x81, 0xa6, 0x6f, 0x66, 0x66, 0x65, 0x72, 0x73, 0x90 };
+                    break;
+                case "daily/status":
+                    expectedBody = new byte[] { 0x80 };
+                    responseBody = new DailyFeatureCodec().EncodeStatus(DailyServiceTests.Status());
+                    break;
+                case "profiles/public/query":
+                    expectedBody = new PublicProfileMessagePackCodec().EncodeQuery(subject);
+                    responseBody = new PublicProfileStateCodec().EncodeResponse(new PublicProfileResponse(App.Value, subject, 1_790_000_000_000, null));
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown test route");
+            }
+            var sends = 0;
+            var handler = new DelegateHandler(async (request, _) =>
+            {
+                sends++;
+                Assert.Equal(HttpMethod.Post, request.Method);
+                Assert.Equal("/platform/v1/apps/" + App + "/" + route, request.RequestUri!.AbsolutePath);
+                Assert.Equal(string.Empty, request.RequestUri.Query);
+                Assert.Equal(retry && sends == 2 ? "Bearer fresh" : "Bearer token", request.Headers.Authorization!.ToString());
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Headers.Accept.Single().MediaType);
+                Assert.Equal(ProvisioningHttpProvider.MediaType, request.Content!.Headers.ContentType!.MediaType);
+                Assert.Equal(expectedBody, await request.Content.ReadAsByteArrayAsync());
+                if (retry && sends == 1)
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new ByteArrayContent(Array.Empty<byte>()) };
+                var reply = new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(responseBody) };
+                reply.Content.Headers.TryAddWithoutValidation("Content-Type", ProvisioningHttpProvider.MediaType);
+                reply.Headers.TryAddWithoutValidation("X-Correlation-Id", "added-route-test");
+                return reply;
+            });
+            using var client = new HttpClient(handler);
+            using var refresh = new AuthRefreshCoordinator();
+            var auth = new RefreshingAuth();
+            var configuration = Configuration();
+            var executor = new BoundedHttpClientExecutor(client, configuration);
+            var native = new NativePurchaseHttpProvider(App, Account, configuration, executor, auth, refresh);
+            NativeIntentState? intent = null;
+            switch (route)
+            {
+                case "store/native/products":
+                    Assert.Empty(await native.ProductsAsync(CancellationToken.None));
+                    break;
+                case "store/native/intents":
+                    intent = await native.CreateIntentAsync(intentKey, "synthetic.coins", 1, CancellationToken.None);
+                    break;
+                case "store/native/proofs":
+                    intent = await native.SubmitProofAsync(id, proof, CancellationToken.None);
+                    break;
+                case "store/native/recover-proof":
+                    intent = await native.RecoverProofAsync(intentKey, proof, CancellationToken.None);
+                    break;
+                case "store/native/status":
+                    intent = await native.StatusAsync(id, CancellationToken.None);
+                    break;
+                case "store/native/recovery":
+                    var page = await native.RecoveryAsync(null, 10, CancellationToken.None);
+                    Assert.Empty(page.Intents);
+                    Assert.Null(page.NextIntentId);
+                    break;
+                case "store/offers":
+                    var offers = await new StorefrontHttpProvider(App, Account, configuration, executor, auth, refresh).FetchAsync(CancellationToken.None);
+                    Assert.True(offers.IsSuccess);
+                    Assert.Empty(offers.Value!);
+                    break;
+                case "daily/status":
+                    var daily = await new DailyHttpProvider(App, Account, configuration, executor, auth, refresh).StatusAsync(CancellationToken.None);
+                    Assert.True(daily.IsSuccess);
+                    Assert.Equal(DailyServiceTests.Status().UtcDate, daily.Value!.UtcDate);
+                    break;
+                case "profiles/public/query":
+                    var profile = await new PublicProfileHttpProvider(App, Account, configuration, executor, auth, refresh).QueryAsync(profileQuery, CancellationToken.None);
+                    Assert.True(profile.IsSuccess);
+                    Assert.Equal(subject, profile.Value!.PlayerId);
+                    Assert.Null(profile.Value.Profile);
+                    break;
+            }
+            if (intent != null)
+            {
+                Assert.Equal("pending_verification", intent.State);
+                Assert.Equal(id, intent.IntentId);
+                Assert.Equal(intentKey, intent.IntentKey);
+            }
+            Assert.Equal(retry ? 2 : 1, handler.Calls);
+            Assert.Equal(retry ? 1 : 0, auth.Refreshes);
+        }
+
+        private static byte[] NativePendingResponse()
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "contracts", "native-purchases", "fixtures.json")))
+                directory = directory.Parent;
+            Assert.NotNull(directory);
+            using var json = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory!.FullName, "contracts", "native-purchases", "fixtures.json")));
+            return Convert.FromHexString(json.RootElement.GetProperty("pendingMessagePackHex").GetString()!);
+        }
+
+        [Fact]
+        public async Task BootstrapGetRouteIsAdmittedWithItsExactQuery()
+        {
+            var path = "v1/apps/" + App + "/bootstrap?clientStreamId=" + Stream;
+            var handler = new DelegateHandler((request, _) =>
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                Assert.Equal(Configuration().Resolve(path), request.RequestUri);
+                Assert.Null(request.Content);
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(new byte[] { 1 }) });
+            });
+            using var client = new HttpClient(handler);
+            var result = await new BoundedHttpClientExecutor(client, Configuration()).SendAsync(GetRequest(path), CancellationToken.None);
+            Assert.Equal(200, result.StatusCode);
             Assert.Equal(1, handler.Calls);
         }
 
@@ -360,6 +610,20 @@ namespace GamePlatform.Tests.Transport
                 Task.FromResult(new AccessTokenSnapshot("token", 0));
             public Task<AccessTokenSnapshot> RefreshAsync(long rejectedGeneration, CancellationToken cancellationToken) =>
                 Task.FromResult(new AccessTokenSnapshot("token", 0));
+        }
+
+        private sealed class RefreshingAuth : IAuthSession
+        {
+            public int Refreshes { get; private set; }
+            public string SessionKey => "added-route-test";
+            public Task<AccessTokenSnapshot> GetAsync(CancellationToken cancellationToken) =>
+                Task.FromResult(new AccessTokenSnapshot("token", 1));
+            public Task<AccessTokenSnapshot> RefreshAsync(long rejectedGeneration, CancellationToken cancellationToken)
+            {
+                Assert.Equal(1, rejectedGeneration);
+                Refreshes++;
+                return Task.FromResult(new AccessTokenSnapshot("fresh", 2));
+            }
         }
     }
 }

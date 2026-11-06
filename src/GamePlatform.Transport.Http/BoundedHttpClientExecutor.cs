@@ -143,7 +143,13 @@ namespace GamePlatform.Transport.Http
                 (segments.Length == 6 && segments[3] == "leaderboards" && segments[4] == "friends" && segments[5] == "query") ||
                 (segments.Length == 6 && segments[3] == "sync" && segments[4] == "streams" &&
                     (segments[5] == "inspect" || segments[5] == "recover")) ||
-                (segments.Length == 6 && segments[3] == "sync" && segments[4] == "receipts" && segments[5] == "lookup");
+                (segments.Length == 6 && segments[3] == "sync" && segments[4] == "receipts" && segments[5] == "lookup") ||
+                (segments.Length == 5 && segments[3] == "store" && segments[4] == "offers") ||
+                (segments.Length == 5 && segments[3] == "daily" && segments[4] == "status") ||
+                (segments.Length == 6 && segments[3] == "profiles" && segments[4] == "public" && segments[5] == "query") ||
+                (segments.Length == 6 && segments[3] == "store" && segments[4] == "native" &&
+                    (segments[5] == "products" || segments[5] == "intents" || segments[5] == "proofs" ||
+                     segments[5] == "recover-proof" || segments[5] == "status" || segments[5] == "recovery"));
         }
 
         private static HttpRequestMessage CreateMessage(HttpRequestData request)
