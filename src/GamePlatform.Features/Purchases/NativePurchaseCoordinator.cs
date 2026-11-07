@@ -18,7 +18,7 @@ namespace GamePlatform.Features.Purchases
         private readonly UuidV7Generator ids;
         private readonly CancellationTokenSource lifetime = new CancellationTokenSource();
         private readonly SemaphoreSlim serial = new SemaphoreSlim(1, 1);
-        private bool disposed;
+        private int disposed;
         public NativePurchaseCoordinator(ScopedOwnerContext owner, INativePurchaseRemote remote, INativeStoreBridge bridge,
             IProtectedProofStore store, INativeInstalledCheckpointReader checkpoints, UuidV7Generator ids)
         {
@@ -451,11 +451,19 @@ namespace GamePlatform.Features.Purchases
         { Ensure(requested); return CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.Token); }
         private void Ensure(ScopedOwnerContext requested)
         {
-            if (disposed)
+            if (Volatile.Read(ref disposed) != 0)
                 throw new ObjectDisposedException(nameof(NativePurchaseCoordinator));
             if (requested != owner)
                 throw new ArgumentException("The native purchase owner changed.", nameof(requested));
         }
-        public void Dispose() { if (disposed) return; disposed = true; lifetime.Cancel(); }
+        /// <summary>Retires this coordinator and signals cancellation without waiting for admitted operations.</summary>
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+                return;
+            // Admitted operations may still persist returned proof or release serial.
+            // Neither synchronization object can be disposed safely before a full drain.
+            lifetime.Cancel();
+        }
     }
 }

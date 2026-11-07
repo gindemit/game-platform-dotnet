@@ -12,6 +12,15 @@ namespace GamePlatform.Features.Purchases
         Task CommitIntentAsync(ScopedOwnerContext owner, Guid intentKey, NativeIntentState intent, CancellationToken token);
         Task MarkLaunchRequestedAsync(ScopedOwnerContext owner, Guid intentKey, CancellationToken token);
         Task<IReadOnlyList<NativeAttempt>> ReadAttemptsAsync(ScopedOwnerContext owner, CancellationToken token);
+        /// <summary>Atomically protects a proof and preserves its durable token identity on replay.</summary>
+        /// <param name="owner">The captured owner of the proof and any trusted reservation.</param>
+        /// <param name="proof">Private provider evidence; matching a SKU alone never establishes attempt ownership.</param>
+        /// <param name="proposedRecoveryIntentKey">A candidate recovery key used only for a newly retained token.</param>
+        /// <param name="reservedAttemptKey">An independently trusted attempt association, or null when none is supplied.
+        /// Coordinator callback paths pass null. The returned record may retain a previously authenticated durable
+        /// association on replay; the store must not infer an association from matching SKU or an active sheet.</param>
+        /// <param name="token">Cancellation for this persistence operation.</param>
+        /// <returns>The retained record with its original proof/recovery identities and trusted association, if any.</returns>
         Task<ProtectedNativeProofRecord> ProtectAndCommitAsync(ScopedOwnerContext owner, NativeProof proof, Guid proposedRecoveryIntentKey, Guid? reservedAttemptKey, CancellationToken token);
         Task<IReadOnlyList<ProtectedNativeProofRecord>> ReadProtectedRecordsAsync(ScopedOwnerContext owner, CancellationToken token);
         Task<NativeProof> OpenForSubmissionAsync(ScopedOwnerContext owner, Guid proofId, CancellationToken token);

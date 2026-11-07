@@ -20,6 +20,15 @@ Presentation claims are durable by grant ID. The claim and checkpoint belong to
 different stores: a reset racing a claim can suppress a celebration, but cannot
 produce local value or make the claim evidence of delivery.
 
+`Dispose` atomically retires the coordinator and signals cancellation; it does not
+wait for admitted operations to finish or dispose their synchronization objects.
+An already returned native proof is protected with `CancellationToken.None` before
+retirement/caller cancellation can reject the result. The host must await its
+outstanding calls and use a fresh coordinator to recover retained evidence. A
+remote or native collaborator may complete after cancellation; that does not
+authorize a retired coordinator to deliver its late result. Final resource disposal
+would require a joint admission, cancellation and asynchronous drain design.
+
 Network and platform failures leave attempts or protected proofs unresolved.
 Unsupported products, provider credentials, native bridge/Keystore runtime,
 actual Play verification, Android device execution and production configuration
@@ -41,6 +50,15 @@ not infer delivery of a neighboring unknown attempt. Adapter compaction must
 preserve unresolved reservations and proof evidence. The optional
 `onAttemptAllocated` callback identifies only a candidate local key; hosts must
 perform an exact durable lookup before presenting it as a retained attempt.
+
+Unfinalized protected records require nonempty proof/recovery IDs and a nonempty
+reservation ID when supplied; existing nonempty issued GUIDs are preserved without
+a new version requirement. Their package and SKU metadata are nonempty and bounded
+to 256 strict UTF-8 bytes, matching the native retained-store boundary. Whitespace
+and the original strings remain intact: structural validity of retained evidence
+does not establish server product admissibility. Finalized records keep their
+existing UUIDv7, nonblank and 255-character scope requirements. Validation never
+rewrites identities, deletes retained evidence or infers a trusted association.
 
 `ICommercePrivateProjectionSink` installs exact inventory and entitlement rows
 with the private cursor transaction. Existing G3 sinks still reject nonempty

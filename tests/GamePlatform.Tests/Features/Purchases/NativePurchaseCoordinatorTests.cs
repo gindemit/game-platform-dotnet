@@ -26,7 +26,17 @@ namespace GamePlatform.Tests.Features.Purchases
                 new UuidV7Generator(new Clock(), new CryptographicUuidRandomSource()));
             var result = await coordinator.StartAsync(Owner, Product, Price, CancellationToken.None);
             Assert.Equal(NativeLaunchStatus.Unresolved, result.Status);
-            Assert.Single(store.Records);
+            var retained = Assert.Single(store.Records);
+            Assert.Null(retained.ReservedAttemptKey);
+            Assert.Null(retained.FinalizedChargeId);
+            Assert.NotEqual(Guid.Empty, retained.RecoveryIntentKey);
+            Assert.Equal(Product.PackageName, retained.PackageName);
+            Assert.Equal(Product.StoreProductId, retained.StoreProductId);
+            var attempt = Assert.Single(await store.ReadAttemptsAsync(Owner, CancellationToken.None));
+            Assert.Equal(result.IntentKey, attempt.IntentKey);
+            Assert.True(attempt.LaunchRequested);
+            Assert.Equal("awaiting_proof", attempt.Intent!.State);
+            Assert.Null(attempt.Intent.GrantId);
             Assert.Contains("submit", steps);
         }
         [Fact]
@@ -594,6 +604,553 @@ namespace GamePlatform.Tests.Features.Purchases
             Assert.Empty(store.Finalizations);
             Assert.DoesNotContain("launch", steps);
         }
+        [Theory]
+        [InlineData("wrong-intent")]
+        [InlineData("ungranted")]
+        [InlineData("missing-revision")]
+        [InlineData("missing-visibility")]
+        [InlineData("missing-epoch")]
+        [InlineData("missing-grant")]
+        [InlineData("absent-checkpoint")]
+        [InlineData("stale-revision")]
+        [InlineData("wrong-visibility")]
+        [InlineData("wrong-epoch")]
+        public async Task PresentationRejectsIncompleteGrantOrCheckpointWithoutClaim(string fault)
+        {
+            var store = new StatefulProofStore();
+            var remote = new CoverageRemote { StatusFactory = _ => CoverageState(1, fault: fault) };
+            var checkpoint = new Checkpoint { Value = PresentationCheckpoint(fault) };
+            using var coordinator = CoverageCoordinator(remote, store, checkpoint);
+            Assert.False(await coordinator.TryClaimPresentationAsync(Owner, StatefulId(1), CancellationToken.None));
+            Assert.Equal(0, store.ClaimCalls);
+            Assert.Empty(store.PresentationClaims);
+            Assert.Empty(store.Records);
+            Assert.Empty(store.Attempts);
+        }
+        [Fact]
+        public async Task ExactCheckpointClaimsPresentationOnceAcrossCoordinators()
+        {
+            var store = new StatefulProofStore();
+            var remote = new CoverageRemote();
+            var checkpoint = new Checkpoint { Value = PresentationCheckpoint("") };
+            using (var first = CoverageCoordinator(remote, store, checkpoint))
+                Assert.True(await first.TryClaimPresentationAsync(Owner, StatefulId(1), CancellationToken.None));
+            using (var fresh = CoverageCoordinator(remote, store, checkpoint))
+                Assert.False(await fresh.TryClaimPresentationAsync(Owner, StatefulId(1), CancellationToken.None));
+            Assert.Equal(StatefulId(4001), Assert.Single(store.PresentationClaims));
+            Assert.Equal(2, store.ClaimCalls);
+            Assert.Empty(store.Finalizations);
+        }
+        [Theory]
+        [InlineData("absent-checkpoint")]
+        [InlineData("stale-revision")]
+        [InlineData("wrong-visibility")]
+        [InlineData("wrong-epoch")]
+        public async Task SecondCheckpointInvalidationRejectsPresentationAfterClaimWasConsumed(string fault)
+        {
+            var store = new StatefulProofStore { HoldClaim = true };
+            var checkpoint = new Checkpoint { Value = PresentationCheckpoint("") };
+            using var coordinator = CoverageCoordinator(new CoverageRemote(), store, checkpoint);
+            var operation = coordinator.TryClaimPresentationAsync(Owner, StatefulId(1), CancellationToken.None);
+            try
+            {
+                await store.ClaimCommitted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                Assert.Equal(StatefulId(4001), Assert.Single(store.PresentationClaims));
+                checkpoint.Value = PresentationCheckpoint(fault);
+                store.ClaimRelease.TrySetResult(true);
+                Assert.False(await operation.WaitAsync(TimeSpan.FromSeconds(30)));
+                checkpoint.Value = PresentationCheckpoint("");
+                Assert.False(await coordinator.TryClaimPresentationAsync(Owner, StatefulId(1), CancellationToken.None));
+                Assert.Equal(StatefulId(4001), Assert.Single(store.PresentationClaims));
+                Assert.Equal(2, store.ClaimCalls);
+            }
+            finally { store.ClaimRelease.TrySetResult(true); }
+        }
+        [Fact]
+        public async Task ResumeAttemptsUpdatesMetadataAcrossCapturedPagesWithoutLaunchingOrIncludingAppend()
+        {
+            var store = new StatefulProofStore();
+            for (int i = 1; i <= 65; i++)
+                store.Attempts.Add(StatefulId(i), new NativeAttempt(StatefulId(i), Product,
+                    i % 2 == 0 ? CoverageState(i) : null, i % 2 == 0));
+            var original = store.Attempts.Values.ToArray();
+            var remote = new CoverageRemote
+            {
+                CreateFactory = key => CoverageState(StatefulProofNumber(key), state: "pending_verification"),
+                StatusFactory = id => CoverageState(StatefulProofNumber(id), state: "pending_verification")
+            };
+            store.OnIntentCommit = count =>
+            {
+                if (count == 1)
+                    store.Attempts.Add(StatefulId(66), new NativeAttempt(StatefulId(66), Product, null, false));
+            };
+            var steps = new List<string>();
+            using var coordinator = StatefulCoordinator(remote, new TestBridge(steps), store);
+            await coordinator.ResumeAttemptsAsync(Owner, CancellationToken.None);
+            Assert.Equal(new[] { (0L, 32L, 65L), (32L, 64L, 65L), (64L, 65L, 65L) }, store.AttemptPages);
+            Assert.Equal(original.Where(item => item.Intent == null).Select(item => item.IntentKey), remote.Created);
+            Assert.Equal(original.Where(item => item.Intent != null).Select(item => item.Intent!.IntentId), remote.StatusReads);
+            Assert.Equal(original.Select(item => item.IntentKey), store.IntentCommits);
+            foreach (var old in original)
+            {
+                var updated = store.Attempts[old.IntentKey];
+                Assert.Same(old.Product, updated.Product);
+                Assert.Equal(old.LaunchRequested, updated.LaunchRequested);
+                Assert.Equal(old.IntentKey, updated.Intent!.IntentKey);
+                Assert.Equal(old.Intent?.IntentId ?? old.IntentKey, updated.Intent.IntentId);
+                Assert.Equal("pending_verification", updated.Intent.State);
+            }
+            Assert.Null(store.Attempts[StatefulId(66)].Intent);
+            Assert.Empty(store.Records);
+            Assert.DoesNotContain("launch", steps);
+        }
+        [Theory]
+        [InlineData("wrong-intent")]
+        [InlineData("key")]
+        [InlineData("product")]
+        [InlineData("version")]
+        [InlineData("package")]
+        [InlineData("sku")]
+        [InlineData("environment")]
+        [InlineData("type")]
+        [InlineData("binding")]
+        [InlineData("source")]
+        public async Task ResumeAttemptsRejectsChangedIdentityWithoutOverwritingRetainedAttempt(string fault)
+        {
+            var store = new StatefulProofStore();
+            var original = new NativeAttempt(StatefulId(1), Product, CoverageState(1), true);
+            store.Attempts.Add(original.IntentKey, original);
+            var remote = new CoverageRemote { StatusFactory = _ => CoverageState(1, fault: fault) };
+            using var coordinator = CoverageCoordinator(remote, store);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.ResumeAttemptsAsync(Owner, CancellationToken.None));
+            Assert.Same(original, Assert.Single(store.Attempts.Values));
+            Assert.Empty(store.IntentCommits);
+            Assert.Empty(store.Records);
+            Assert.Equal(original.Intent!.IntentId, Assert.Single(remote.StatusReads));
+        }
+        [Fact]
+        public async Task FindAttemptRejectsStoreReturningAnotherIdentity()
+        {
+            var store = new StatefulProofStore { WrongFindIdentity = true };
+            var original = new NativeAttempt(StatefulId(1), Product, CoverageState(1), true);
+            store.Attempts.Add(original.IntentKey, original);
+            using var coordinator = CoverageCoordinator(new CoverageRemote(), store);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.FindAttemptAsync(Owner, original.IntentKey, CancellationToken.None));
+            Assert.Same(original, Assert.Single(store.Attempts.Values));
+            Assert.Empty(store.IntentCommits);
+        }
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task OpenedProofScopeMismatchRetainsOriginalWithoutSubmissionOrFinalization(bool changePackage)
+        {
+            var store = new StatefulProofStore();
+            var original = store.SeedReservedProof(1);
+            var attempt = Assert.Single(store.Attempts.Values);
+            store.Proofs[original.ProofId] = new NativeProof(changePackage ? "other.package" : Product.PackageName,
+                changePackage ? Product.StoreProductId : "other.sku", "synthetic-1");
+            var remote = new RetainedPurchaseRemote(store);
+            using var coordinator = StatefulCoordinator(remote, new TestBridge(new List<string>()), store);
+            var error = await Assert.ThrowsAsync<NativeRecoveryException>(() => coordinator.RecoverAsync(Owner, CancellationToken.None));
+            Assert.Equal(1, error.UnresolvedCount);
+            Assert.Same(original, Assert.Single(store.Records));
+            Assert.Same(attempt, Assert.Single(store.Attempts.Values));
+            Assert.Empty(remote.Calls);
+            Assert.Empty(store.IntentCommits);
+            Assert.Empty(store.Finalizations);
+        }
+        [Fact]
+        public async Task StatefulTokenReplayKeepsFinalizedTombstoneAndDifferentTokenHasDistinctIdentity()
+        {
+            var store = new StatefulProofStore();
+            store.SeedProof(1);
+            var original = Assert.Single(store.Records);
+            var proof = store.Proofs[original.ProofId];
+            var remote = new StatefulRecoveryRemote(store);
+            var bridge = new TestBridge(new List<string>()) { ReturnUnfinished = true, ProofToken = "synthetic-1" };
+            using (var first = StatefulCoordinator(remote, bridge, store))
+                await first.RecoverAsync(Owner, CancellationToken.None);
+            var tombstone = Assert.Single(store.Records);
+            Assert.Equal(StatefulCharge(original.ProofId), tombstone.FinalizedChargeId);
+            using (var replay = StatefulCoordinator(remote, bridge, store))
+                await replay.RecoverAsync(Owner, CancellationToken.None);
+            Assert.Same(tombstone, Assert.Single(store.Records));
+            Assert.Same(proof, store.Proofs[original.ProofId]);
+            Assert.Equal(original.ProofId, Assert.Single(store.OpenedProofs));
+            Assert.Equal((original.RecoveryIntentKey, original.ProofId), Assert.Single(remote.Submissions));
+            bridge.ProofToken = "synthetic-2";
+            using (var different = StatefulCoordinator(remote, bridge, store))
+                await different.RecoverAsync(Owner, CancellationToken.None);
+            Assert.Equal(2, store.Records.Count);
+            var next = store.Records[1];
+            Assert.Same(tombstone, store.Records[0]);
+            Assert.NotEqual(original.ProofId, next.ProofId);
+            Assert.NotEqual(original.RecoveryIntentKey, next.RecoveryIntentKey);
+            Assert.Equal("synthetic-2", store.Proofs[next.ProofId].Token);
+            Assert.Null(next.ReservedAttemptKey);
+            Assert.Equal(StatefulCharge(next.ProofId), next.FinalizedChargeId);
+            Assert.Equal(new[] { original.ProofId, next.ProofId }, store.OpenedProofs);
+            Assert.Equal(new[] { original.ProofId, next.ProofId }, store.Finalizations);
+            Assert.Equal(new[] { original.RecoveryIntentKey, next.RecoveryIntentKey }, remote.Submissions.Select(item => item.Key));
+        }
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task MismatchedLaunchCallbackIsRetainedWithoutAttributionAndReturnsUnresolved(bool continuePrepared, bool changePackage)
+        {
+            var steps = new List<string>();
+            var store = new StatefulProofStore();
+            var bridge = new TestBridge(steps)
+            {
+                ProofPackage = changePackage ? "other.package" : Product.PackageName,
+                ProofSku = changePackage ? Product.StoreProductId : "other.sku"
+            };
+            var remote = new TestRemote(steps) { UseProofScopeForRecovery = true };
+            using var coordinator = StatefulCoordinator(remote, bridge, store);
+            Guid? prepared = null;
+            if (continuePrepared)
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.StartAsync(Owner, Product,
+                    new NativeStoreProduct(Product.PackageName, Product.StoreProductId, "$0.99"), CancellationToken.None));
+                prepared = Assert.Single(store.Attempts.Values).IntentKey;
+            }
+            var outcome = continuePrepared
+                ? await coordinator.ContinuePreparedAsync(Owner, prepared!.Value, Price, CancellationToken.None)
+                : await coordinator.StartAsync(Owner, Product, Price, CancellationToken.None);
+            Assert.Equal(NativeLaunchStatus.Unresolved, outcome.Status);
+            var retained = Assert.Single(store.Records);
+            Assert.Equal(bridge.ProofPackage, retained.PackageName);
+            Assert.Equal(bridge.ProofSku, retained.StoreProductId);
+            Assert.Equal(bridge.ProofPackage, store.Proofs[retained.ProofId].PackageName);
+            Assert.Equal(bridge.ProofSku, store.Proofs[retained.ProofId].StoreProductId);
+            Assert.Equal("synthetic", store.Proofs[retained.ProofId].Token);
+            Assert.Null(retained.ReservedAttemptKey);
+            Assert.Null(retained.FinalizedChargeId);
+            var attempt = Assert.Single(store.Attempts.Values);
+            Assert.Equal(outcome.IntentKey, attempt.IntentKey);
+            Assert.True(attempt.LaunchRequested);
+            Assert.Equal("awaiting_proof", attempt.Intent!.State);
+            Assert.Null(attempt.Intent.GrantId);
+            Assert.Single(store.IntentCommits);
+            Assert.Single(store.OpenedProofs);
+            Assert.Empty(store.Finalizations);
+            Assert.Single(steps, step => step == "submit");
+            Assert.Single(steps, step => step == "launch");
+        }
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task RetiredLaunchRetainsReturnedProofAndQueuedResumeCancelsBeforeFreshRecovery(bool continuePrepared)
+        {
+            var steps = new List<string>();
+            var store = new StatefulProofStore { HoldProtection = true };
+            var bridge = new TestBridge(steps) { HoldLaunch = true };
+            using (var first = StatefulCoordinator(new TestRemote(steps), bridge, store))
+            {
+                Guid? prepared = null;
+                if (continuePrepared)
+                {
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => first.StartAsync(Owner, Product,
+                        new NativeStoreProduct(Product.PackageName, Product.StoreProductId, "$0.99"), CancellationToken.None));
+                    prepared = Assert.Single(store.Attempts.Values).IntentKey;
+                }
+                var operation = continuePrepared
+                    ? first.ContinuePreparedAsync(Owner, prepared!.Value, Price, CancellationToken.None)
+                    : first.StartAsync(Owner, Product, Price, CancellationToken.None);
+                try
+                {
+                    await bridge.LaunchStarted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                    var queued = first.ResumeAttemptsAsync(Owner, CancellationToken.None);
+                    Assert.False(queued.IsCompleted);
+                    await Task.WhenAll(Enumerable.Range(0, 16).Select(_ => Task.Run(() => first.Dispose()))).WaitAsync(TimeSpan.FromSeconds(30));
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => queued.WaitAsync(TimeSpan.FromSeconds(30)));
+                    bridge.LaunchRelease.TrySetResult(true);
+                    await store.ProtectionCommitted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                    Assert.Equal(CancellationToken.None, store.ProtectionToken);
+                    var retained = Assert.Single(store.Records);
+                    Assert.Null(retained.ReservedAttemptKey);
+                    Assert.Null(retained.FinalizedChargeId);
+                    Assert.Equal("synthetic", store.Proofs[retained.ProofId].Token);
+                    Assert.False(operation.IsCompleted);
+                    store.ProtectionRelease.TrySetResult(true);
+                    await Assert.ThrowsAsync<ObjectDisposedException>(() => operation.WaitAsync(TimeSpan.FromSeconds(30)));
+                    await Assert.ThrowsAsync<ObjectDisposedException>(() => first.ResumeAttemptsAsync(Owner, CancellationToken.None));
+                    Assert.True(Assert.Single(store.Attempts.Values).LaunchRequested);
+                    Assert.Single(store.IntentCommits);
+                    Assert.DoesNotContain("submit", steps);
+                }
+                finally
+                {
+                    first.Dispose();
+                    bridge.LaunchRelease.TrySetResult(true);
+                    store.ProtectionRelease.TrySetResult(true);
+                }
+            }
+            var original = Assert.Single(store.Records);
+            var remote = new StatefulRecoveryRemote(store);
+            using (var fresh = StatefulCoordinator(remote, bridge, store))
+                await fresh.RecoverAsync(Owner, CancellationToken.None);
+            Assert.Equal((original.RecoveryIntentKey, original.ProofId), Assert.Single(remote.Submissions));
+            Assert.Equal(original.ProofId, Assert.Single(store.Finalizations));
+            Assert.Equal(StatefulCharge(original.ProofId), Assert.Single(store.Records).FinalizedChargeId);
+            Assert.Single(steps, step => step == "launch");
+        }
+        [Fact]
+        public async Task RetirementRejectsLateSuccessfulRemoteResultIgnoringCancellation()
+        {
+            var store = new StatefulProofStore();
+            var remote = new CoverageRemote { HoldStatus = true };
+            using var coordinator = CoverageCoordinator(remote, store, new Checkpoint { Value = PresentationCheckpoint("") });
+            var operation = coordinator.TryClaimPresentationAsync(Owner, StatefulId(1), CancellationToken.None);
+            try
+            {
+                await remote.StatusStarted.Task.WaitAsync(TimeSpan.FromSeconds(30));
+                coordinator.Dispose();
+                Assert.True(remote.StatusToken.IsCancellationRequested);
+                remote.StatusRelease.TrySetResult(true);
+                await Assert.ThrowsAsync<ObjectDisposedException>(() => operation.WaitAsync(TimeSpan.FromSeconds(30)));
+                Assert.Empty(store.PresentationClaims);
+                Assert.Equal(0, store.ClaimCalls);
+            }
+            finally { remote.StatusRelease.TrySetResult(true); }
+        }
+        [Theory]
+        [InlineData("proof")]
+        [InlineData("recovery")]
+        [InlineData("reservation")]
+        public void UnfinalizedRecordRejectsEmptyRequiredOrOptionalIdentity(string field)
+        {
+            Assert.Throws<ArgumentException>(() => new ProtectedNativeProofRecord(field == "proof" ? Guid.Empty : StatefulId(1),
+                field == "recovery" ? Guid.Empty : StatefulId(2), Product.PackageName, Product.StoreProductId,
+                field == "reservation" ? Guid.Empty : StatefulId(3)));
+        }
+        [Theory]
+        [InlineData(true, "null")]
+        [InlineData(false, "null")]
+        [InlineData(true, "empty")]
+        [InlineData(false, "empty")]
+        [InlineData(true, "ascii-overflow")]
+        [InlineData(false, "ascii-overflow")]
+        [InlineData(true, "utf8-overflow")]
+        [InlineData(false, "utf8-overflow")]
+        [InlineData(true, "high-surrogate")]
+        [InlineData(false, "high-surrogate")]
+        [InlineData(true, "low-surrogate")]
+        [InlineData(false, "low-surrogate")]
+        public void UnfinalizedRecordRejectsMissingOversizedOrMalformedScope(bool package, string fault)
+        {
+            string? value = fault switch
+            {
+                "null" => null,
+                "empty" => "",
+                "ascii-overflow" => new string('a', 257),
+                "utf8-overflow" => new string('\u00e9', 129),
+                "high-surrogate" => "\ud800",
+                "low-surrogate" => "\udc00",
+                _ => throw new InvalidOperationException()
+            };
+            Assert.Throws<ArgumentException>(() => new ProtectedNativeProofRecord(StatefulId(1), StatefulId(2),
+                package ? value! : Product.PackageName, package ? Product.StoreProductId : value!));
+        }
+        [Theory]
+        [InlineData("whitespace")]
+        [InlineData("ascii-boundary")]
+        [InlineData("utf8-boundary")]
+        public void UnfinalizedRecordPreservesNativeScopeAndExactNonV7IssuedIdentities(string boundary)
+        {
+            var proof = Guid.Parse("11111111-1111-4111-8111-111111111111");
+            var recovery = Guid.Parse("22222222-2222-4222-8222-222222222222");
+            var reserved = Guid.Parse("33333333-3333-4333-8333-333333333333");
+            string scope = boundary == "whitespace" ? " \t " : boundary == "ascii-boundary" ? new string('a', 256) : new string('\u00e9', 128);
+            var record = new ProtectedNativeProofRecord(proof, recovery, scope, scope, reserved);
+            Assert.Equal(proof, record.ProofId);
+            Assert.Equal(recovery, record.RecoveryIntentKey);
+            Assert.Equal(reserved, record.ReservedAttemptKey);
+            Assert.Equal(scope, record.PackageName);
+            Assert.Equal(scope, record.StoreProductId);
+            Assert.Null(record.FinalizedChargeId);
+            Assert.Null(new ProtectedNativeProofRecord(proof, recovery, scope, scope).ReservedAttemptKey);
+        }
+        [Theory]
+        [InlineData("proof")]
+        [InlineData("recovery")]
+        [InlineData("reservation")]
+        [InlineData("charge")]
+        [InlineData("package-blank")]
+        [InlineData("sku-blank")]
+        [InlineData("package-length")]
+        [InlineData("sku-length")]
+        public void FinalizedRecordRetainsItsPreexistingStrictValidation(string fault)
+        {
+            var nonV7 = Guid.Parse("11111111-1111-4111-8111-111111111111");
+            Assert.Throws<ArgumentException>(() => new ProtectedNativeProofRecord(fault == "proof" ? nonV7 : StatefulId(1),
+                fault == "recovery" ? nonV7 : StatefulId(2), fault == "package-blank" ? " " : fault == "package-length" ? new string('a', 256) : Product.PackageName,
+                fault == "sku-blank" ? " " : fault == "sku-length" ? new string('a', 256) : Product.StoreProductId,
+                fault == "reservation" ? nonV7 : StatefulId(3), fault == "charge" ? nonV7 : StatefulId(4)));
+        }
+        [Fact]
+        public void FinalizedRecordKeepsCharacterBasedMultibyteBoundary()
+        {
+            var scope = new string('\u00e9', 255);
+            var record = new ProtectedNativeProofRecord(StatefulId(1), StatefulId(2), scope, scope, StatefulId(3), StatefulId(4));
+            Assert.Equal(scope, record.PackageName);
+            Assert.Equal(scope, record.StoreProductId);
+            Assert.Equal(StatefulId(4), record.FinalizedChargeId);
+        }
+        [Fact]
+        public async Task HistoryReadsFollowRemoteCursorAndPreserveReturnedStates()
+        {
+            var first = CoverageState(1);
+            var second = CoverageState(2);
+            var remote = new CoverageRemote
+            {
+                History = (after, _) => after == null
+                ? new NativeRecoveryPage(new[] { first }, first.IntentId) : new NativeRecoveryPage(new[] { second }, null)
+            };
+            using var coordinator = CoverageCoordinator(remote, new StatefulProofStore());
+            var result = await coordinator.ReadPurchasesAsync(Owner, CancellationToken.None);
+            Assert.Equal(new[] { first, second }, result);
+            Assert.Equal(new (Guid?, int)[] { (null, 50), (first.IntentId, 50) }, remote.HistoryReads);
+        }
+        [Theory]
+        [InlineData("duplicate")]
+        [InlineData("oversized")]
+        [InlineData("empty-cursor")]
+        [InlineData("foreign-cursor")]
+        [InlineData("repeated-cursor")]
+        [InlineData("over-200")]
+        [InlineData("200-with-cursor")]
+        public async Task HistoryReadsRejectMalformedCursorOrUnboundedMaterialization(string fault)
+        {
+            int call = 0;
+            var remote = new CoverageRemote
+            {
+                History = (after, _) =>
+                {
+                    call++;
+                    if (fault == "duplicate")
+                        return new NativeRecoveryPage(new[] { CoverageState(1), CoverageState(1) }, null);
+                    if (fault == "oversized")
+                        return new NativeRecoveryPage(Enumerable.Range(1, 51).Select(i => CoverageState(i)).ToArray(), null);
+                    if (fault == "empty-cursor")
+                        return new NativeRecoveryPage(Array.Empty<NativeIntentState>(), StatefulId(1));
+                    if (fault == "foreign-cursor")
+                        return new NativeRecoveryPage(new[] { CoverageState(1) }, StatefulId(2));
+                    if (fault == "repeated-cursor")
+                        return call == 1
+                        ? new NativeRecoveryPage(new[] { CoverageState(1) }, StatefulId(1))
+                        : new NativeRecoveryPage(new[] { CoverageState(2) }, after);
+                    int count = fault == "over-200" ? (call == 5 ? 5 : 49) : 50;
+                    var items = Enumerable.Range((call - 1) * 50 + 1, count).Select(i => CoverageState(i)).ToArray();
+                    return new NativeRecoveryPage(items, fault == "over-200" && call == 5 ? null : items[count - 1].IntentId);
+                }
+            };
+            using var coordinator = CoverageCoordinator(remote, new StatefulProofStore());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.ReadPurchasesAsync(Owner, CancellationToken.None));
+            Assert.Equal(fault == "repeated-cursor" ? 2 : fault == "over-200" ? 5 : fault == "200-with-cursor" ? 4 : 1, remote.HistoryReads.Count);
+        }
+        [Theory]
+        [InlineData("null-page")]
+        [InlineData("null-items")]
+        [InlineData("null-item")]
+        [InlineData("oversized")]
+        [InlineData("empty-cursor")]
+        [InlineData("cursor-not-last")]
+        [InlineData("duplicate")]
+        [InlineData("unordered")]
+        [InlineData("before-after")]
+        public async Task ExplicitHistoryPageRejectsMalformedResultsBeforeReturning(string fault)
+        {
+            var remote = new CoverageRemote
+            {
+                History = (_, _) => fault switch
+                {
+                    "null-page" => null!,
+                    "null-items" => new NativeRecoveryPage(null!, null),
+                    "null-item" => new NativeRecoveryPage(new NativeIntentState[] { null! }, null),
+                    "oversized" => new NativeRecoveryPage(new[] { CoverageState(2), CoverageState(3), CoverageState(4) }, null),
+                    "empty-cursor" => new NativeRecoveryPage(Array.Empty<NativeIntentState>(), StatefulId(2)),
+                    "cursor-not-last" => new NativeRecoveryPage(new[] { CoverageState(2), CoverageState(3) }, StatefulId(2)),
+                    "duplicate" => new NativeRecoveryPage(new[] { CoverageState(2), CoverageState(2) }, null),
+                    "unordered" => new NativeRecoveryPage(new[] { CoverageState(3), CoverageState(2) }, null),
+                    "before-after" => new NativeRecoveryPage(new[] { CoverageState(1) }, null),
+                    _ => throw new InvalidOperationException()
+                }
+            };
+            using var coordinator = CoverageCoordinator(remote, new StatefulProofStore());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => coordinator.ReadPurchasePageAsync(Owner, StatefulId(1), 2, CancellationToken.None));
+            Assert.Equal(((Guid?)StatefulId(1), 2), Assert.Single(remote.HistoryReads));
+        }
+        [Fact]
+        public async Task ExplicitHistoryPagePassesExactCursorAndLimitAndRejectsInvalidLimitsLocally()
+        {
+            var page = new NativeRecoveryPage(new[] { CoverageState(2), CoverageState(3) }, StatefulId(3));
+            var remote = new CoverageRemote { History = (_, _) => page };
+            using var coordinator = CoverageCoordinator(remote, new StatefulProofStore());
+            Assert.Same(page, await coordinator.ReadPurchasePageAsync(Owner, StatefulId(1), 2, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => coordinator.ReadPurchasePageAsync(Owner, null, 0, CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => coordinator.ReadPurchasePageAsync(Owner, null, 51, CancellationToken.None));
+            Assert.Equal(((Guid?)StatefulId(1), 2), Assert.Single(remote.HistoryReads));
+        }
+        private static NativeInstalledCheckpoint? PresentationCheckpoint(string fault) => fault == "absent-checkpoint" ? null
+            : new NativeInstalledCheckpoint(fault == "stale-revision" ? 41 : 42, fault == "wrong-visibility" ? 3 : 2,
+                fault == "wrong-epoch" ? StatefulId(999) : StatefulId(5001));
+        private static NativeIntentState CoverageState(int index, string fault = "", string state = "granted") =>
+            new NativeIntentState(StatefulId(fault == "wrong-intent" ? 999 : index), StatefulId(fault == "key" ? 999 : index),
+                fault == "product" ? "other.product" : Product.ProductId, fault == "version" ? 2 : Product.Version,
+                fault == "package" ? "other.package" : Product.PackageName, fault == "sku" ? "other.sku" : Product.StoreProductId,
+                fault == "environment" ? "other" : Product.Environment, StatefulId(fault == "binding" ? 999 : 5000),
+                fault == "source" ? "recovery" : "purchase", false, fault == "ungranted" ? "pending_verification" : state, null, "pending",
+                fault == "missing-revision" ? null : 42, fault == "missing-visibility" ? null : 2,
+                fault == "missing-epoch" ? null : StatefulId(5001), fault == "missing-grant" ? null : StatefulId(4001), StatefulId(2001),
+                productType: fault == "type" ? "non_consumable" : "consumable");
+        private static NativePurchaseCoordinator CoverageCoordinator(INativePurchaseRemote remote, StatefulProofStore store, Checkpoint? checkpoint = null) =>
+            new NativePurchaseCoordinator(Owner, remote, new TestBridge(new List<string>()), store, checkpoint ?? new Checkpoint(),
+                new UuidV7Generator(new Clock(), new DeterministicRandom()));
+        private sealed class CoverageRemote : INativePurchaseRemote
+        {
+            public Func<Guid, NativeIntentState> StatusFactory = id => CoverageState(StatefulProofNumber(id));
+            public Func<Guid, NativeIntentState>? CreateFactory;
+            public Func<Guid?, int, NativeRecoveryPage>? History;
+            public readonly List<Guid> Created = new List<Guid>();
+            public readonly List<Guid> StatusReads = new List<Guid>();
+            public readonly List<(Guid? After, int Limit)> HistoryReads = new List<(Guid?, int)>();
+            public bool HoldStatus;
+            public CancellationToken StatusToken;
+            public readonly TaskCompletionSource<bool> StatusStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public readonly TaskCompletionSource<bool> StatusRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public async Task<NativeIntentState> StatusAsync(Guid id, CancellationToken token)
+            {
+                token.ThrowIfCancellationRequested();
+                StatusReads.Add(id);
+                StatusToken = token;
+                if (HoldStatus)
+                {
+                    StatusStarted.TrySetResult(true);
+                    await StatusRelease.Task; // Deliberately models a remote adapter that ignores cancellation.
+                }
+                return StatusFactory(id);
+            }
+            public Task<NativeIntentState> CreateIntentAsync(Guid key, string productId, int version, CancellationToken token)
+            {
+                token.ThrowIfCancellationRequested();
+                Assert.Equal(Product.ProductId, productId);
+                Assert.Equal(Product.Version, version);
+                Created.Add(key);
+                return Task.FromResult((CreateFactory ?? throw new InvalidOperationException("Intent creation is outside this fixture."))(key));
+            }
+            public Task<NativeRecoveryPage> RecoveryAsync(Guid? after, int limit, CancellationToken token)
+            {
+                token.ThrowIfCancellationRequested();
+                HistoryReads.Add((after, limit));
+                return Task.FromResult((History ?? throw new InvalidOperationException("History is outside this fixture."))(after, limit));
+            }
+            public Task<IReadOnlyList<NativeProduct>> ProductsAsync(CancellationToken token) => throw new InvalidOperationException();
+            public Task<NativeIntentState> SubmitProofAsync(Guid id, NativeProof proof, CancellationToken token) => throw new InvalidOperationException();
+            public Task<NativeIntentState> RecoverProofAsync(Guid key, NativeProof proof, CancellationToken token) => throw new InvalidOperationException();
+        }
         private static NativePurchaseCoordinator StatefulCoordinator(INativePurchaseRemote remote, INativeStoreBridge bridge, StatefulProofStore store) =>
             new NativePurchaseCoordinator(Owner, remote, bridge, store, new Checkpoint(),
                 new UuidV7Generator(new Clock(), new DeterministicRandom()));
@@ -613,6 +1170,16 @@ namespace GamePlatform.Tests.Features.Purchases
             public readonly Dictionary<Guid, NativeProof> Proofs = new Dictionary<Guid, NativeProof>();
             public readonly List<Guid> Finalizations = new List<Guid>();
             public readonly List<(long After, long Last, long High)> ProofPages = new List<(long, long, long)>();
+            public readonly List<(long After, long Last, long High)> AttemptPages = new List<(long, long, long)>();
+            public readonly List<Guid> IntentCommits = new List<Guid>();
+            public readonly HashSet<Guid> PresentationClaims = new HashSet<Guid>();
+            public readonly List<Guid> OpenedProofs = new List<Guid>();
+            public Action<int>? OnIntentCommit;
+            public bool WrongFindIdentity;
+            public bool HoldClaim;
+            public int ClaimCalls;
+            public readonly TaskCompletionSource<bool> ClaimCommitted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public readonly TaskCompletionSource<bool> ClaimRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             public bool HoldProtection;
             public string? PageFault;
             public CancellationToken ProtectionToken;
@@ -645,7 +1212,14 @@ namespace GamePlatform.Tests.Features.Purchases
             public Task ReserveAttemptAsync(ScopedOwnerContext owner, Guid key, NativeProduct product, int maximumProofBytes, CancellationToken token)
             { Check(owner, token); Assert.Equal(8192, maximumProofBytes); Attempts.Add(key, new NativeAttempt(key, product, null, false)); return Task.CompletedTask; }
             public Task CommitIntentAsync(ScopedOwnerContext owner, Guid key, NativeIntentState intent, CancellationToken token)
-            { Check(owner, token); var old = Attempts[key]; Attempts[key] = new NativeAttempt(key, old.Product, intent, old.LaunchRequested); return Task.CompletedTask; }
+            {
+                Check(owner, token);
+                var old = Attempts[key];
+                Attempts[key] = new NativeAttempt(key, old.Product, intent, old.LaunchRequested);
+                IntentCommits.Add(key);
+                OnIntentCommit?.Invoke(IntentCommits.Count);
+                return Task.CompletedTask;
+            }
             public Task MarkLaunchRequestedAsync(ScopedOwnerContext owner, Guid key, CancellationToken token)
             { Check(owner, token); var old = Attempts[key]; Attempts[key] = new NativeAttempt(key, old.Product, old.Intent, true); return Task.CompletedTask; }
             public Task<IReadOnlyList<NativeAttempt>> ReadAttemptsAsync(ScopedOwnerContext owner, CancellationToken token) =>
@@ -653,13 +1227,22 @@ namespace GamePlatform.Tests.Features.Purchases
             public Task<IReadOnlyList<ProtectedNativeProofRecord>> ReadProtectedRecordsAsync(ScopedOwnerContext owner, CancellationToken token) =>
                 throw new InvalidOperationException("Legacy proof materialization is forbidden.");
             public Task<NativeAttempt?> FindAttemptAsync(ScopedOwnerContext owner, Guid key, CancellationToken token)
-            { Check(owner, token); return Task.FromResult(Attempts.TryGetValue(key, out var attempt) ? attempt : null); }
+            {
+                Check(owner, token);
+                if (WrongFindIdentity)
+                    return Task.FromResult<NativeAttempt?>(new NativeAttempt(StatefulId(999), Product, null, false));
+                return Task.FromResult(Attempts.TryGetValue(key, out var attempt) ? attempt : null);
+            }
             public Task<NativeProtectedPage<NativeAttempt>> ReadAttemptPageAsync(ScopedOwnerContext owner, string? cursor, int limit, CancellationToken token)
             {
                 Check(owner, token);
-                Assert.Null(cursor);
                 Assert.Equal(32, limit);
-                return Task.FromResult(new NativeProtectedPage<NativeAttempt>(Attempts.Values.ToArray(), null, Attempts.Count, 0, Attempts.Count));
+                int after = cursor == null ? 0 : int.Parse(cursor.Split(':')[0]);
+                int high = cursor == null ? Attempts.Count : int.Parse(cursor.Split(':')[1]);
+                int last = Math.Min(after + limit, high);
+                AttemptPages.Add((after, last, high));
+                return Task.FromResult(new NativeProtectedPage<NativeAttempt>(Attempts.Values.Skip(after).Take(last - after).ToArray(),
+                    last < high ? last + ":" + high : null, high, after, last));
             }
             public async Task<ProtectedNativeProofRecord> ProtectAndCommitAsync(ScopedOwnerContext owner, NativeProof proof, Guid proposedKey, Guid? reservedKey, CancellationToken token)
             {
@@ -673,7 +1256,7 @@ namespace GamePlatform.Tests.Features.Purchases
                 return record;
             }
             public Task<NativeProof> OpenForSubmissionAsync(ScopedOwnerContext owner, Guid proofId, CancellationToken token)
-            { Check(owner, token); Assert.Null(Records.Single(item => item.ProofId == proofId).FinalizedChargeId); return Task.FromResult(Proofs[proofId]); }
+            { Check(owner, token); Assert.Null(Records.Single(item => item.ProofId == proofId).FinalizedChargeId); OpenedProofs.Add(proofId); return Task.FromResult(Proofs[proofId]); }
             public Task MarkFinalizedAsync(ScopedOwnerContext owner, Guid proofId, Guid chargeId, CancellationToken token)
             {
                 Check(owner, token);
@@ -685,8 +1268,18 @@ namespace GamePlatform.Tests.Features.Purchases
                 Finalizations.Add(proofId);
                 return Task.CompletedTask;
             }
-            public Task<bool> TryClaimPresentationAsync(ScopedOwnerContext owner, Guid grantId, CancellationToken token) =>
-                throw new InvalidOperationException("Presentation is outside this fixture's contract.");
+            public async Task<bool> TryClaimPresentationAsync(ScopedOwnerContext owner, Guid grantId, CancellationToken token)
+            {
+                Check(owner, token);
+                ClaimCalls++;
+                if (!PresentationClaims.Add(grantId))
+                    return false;
+                ClaimCommitted.TrySetResult(true);
+                if (HoldClaim)
+                    await ClaimRelease.Task;
+                token.ThrowIfCancellationRequested();
+                return true;
+            }
             public Task<NativeProtectedPage<ProtectedNativeProofRecord>> ReadProofPageAsync(ScopedOwnerContext owner, string? cursor, int limit, CancellationToken token)
             {
                 Check(owner, token);
@@ -825,6 +1418,9 @@ namespace GamePlatform.Tests.Features.Purchases
             public bool ReturnPending;
             public bool PendingWithProof;
             public bool HoldLaunch;
+            public string ProofToken = "synthetic";
+            public string ProofPackage = "test.package";
+            public string ProofSku = "test.sku";
             public readonly TaskCompletionSource<bool> LaunchStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             public readonly TaskCompletionSource<bool> LaunchRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             public TestBridge(List<string> steps) => this.steps = steps;
@@ -832,10 +1428,10 @@ namespace GamePlatform.Tests.Features.Purchases
             public Task<IReadOnlyList<NativeStoreProduct>> QueryProductsAsync(IReadOnlyList<NativeProduct> products, CancellationToken cancellationToken) =>
                 Task.FromResult<IReadOnlyList<NativeStoreProduct>>(new[] { new NativeStoreProduct("test.package", "test.sku", "$1.00") });
             public async Task<NativeLaunchResult> LaunchAsync(NativeLaunchRequest request, CancellationToken cancellationToken)
-            { steps.Add("launch"); LaunchStarted.TrySetResult(true); if (HoldLaunch) await LaunchRelease.Task; return PendingWithProof ? new NativeLaunchResult(NativeLaunchStatus.Pending, new NativeProof("test.package", "test.sku", "synthetic")) : ReturnPending ? new NativeLaunchResult(NativeLaunchStatus.Pending) : new NativeLaunchResult(NativeLaunchStatus.Proof, new NativeProof("test.package", "test.sku", "synthetic")); }
+            { steps.Add("launch"); LaunchStarted.TrySetResult(true); if (HoldLaunch) await LaunchRelease.Task; return PendingWithProof ? new NativeLaunchResult(NativeLaunchStatus.Pending, new NativeProof(ProofPackage, ProofSku, ProofToken)) : ReturnPending ? new NativeLaunchResult(NativeLaunchStatus.Pending) : new NativeLaunchResult(NativeLaunchStatus.Proof, new NativeProof(ProofPackage, ProofSku, ProofToken)); }
             public int ScanUnresolved;
             public Task<NativeProofScanResult> QueryUnfinishedAsync(CancellationToken cancellationToken) =>
-                Task.FromResult(new NativeProofScanResult(ReturnUnfinished ? new[] { new NativeProof("test.package", "test.sku", "synthetic") } : Array.Empty<NativeProof>(), ScanUnresolved));
+                Task.FromResult(new NativeProofScanResult(ReturnUnfinished ? new[] { new NativeProof("test.package", "test.sku", ProofToken) } : Array.Empty<NativeProof>(), ScanUnresolved));
         }
         private sealed class TestRemote : INativePurchaseRemote
         {
@@ -843,13 +1439,14 @@ namespace GamePlatform.Tests.Features.Purchases
             public NativeIntentState? Status;
             public bool FailFirstRecovery;
             public bool GrantOnSubmit;
+            public bool UseProofScopeForRecovery;
             private Guid purchaseKey;
             public TestRemote(List<string> steps) => this.steps = steps;
             public Task<IReadOnlyList<NativeProduct>> ProductsAsync(CancellationToken token) => Task.FromResult<IReadOnlyList<NativeProduct>>(new[] { Product });
             public Task<NativeIntentState> CreateIntentAsync(Guid key, string productId, int version, CancellationToken token)
             { steps.Add("intent"); purchaseKey = key; Status = new NativeIntentState(Guid.Parse("0199f9a0-0000-7000-8000-000000000003"), key, productId, version, Product.PackageName, Product.StoreProductId, Product.Environment, Guid.Parse("0199f9a0-0000-7000-8000-000000000004"), "purchase", true, "awaiting_proof", null, "not_required", null, null, null, null, null); return Task.FromResult(Status); }
             public Task<NativeIntentState> RecoverProofAsync(Guid intentKey, NativeProof proof, CancellationToken token)
-            { steps.Add("submit"); if (FailFirstRecovery) { FailFirstRecovery = false; throw new InvalidOperationException(); } return Task.FromResult(new NativeIntentState(Guid.Parse("0199f9a0-0000-7000-8000-000000000005"), intentKey, Product.ProductId, Product.Version, Product.PackageName, Product.StoreProductId, Product.Environment, Guid.Parse("0199f9a0-0000-7000-8000-000000000004"), "recovery", false, "pending_verification", null, "not_required", null, null, null, null, null)); }
+            { steps.Add("submit"); if (FailFirstRecovery) { FailFirstRecovery = false; throw new InvalidOperationException(); } return Task.FromResult(new NativeIntentState(Guid.Parse("0199f9a0-0000-7000-8000-000000000005"), intentKey, Product.ProductId, Product.Version, UseProofScopeForRecovery ? proof.PackageName : Product.PackageName, UseProofScopeForRecovery ? proof.StoreProductId : Product.StoreProductId, Product.Environment, Guid.Parse("0199f9a0-0000-7000-8000-000000000004"), "recovery", false, "pending_verification", null, "not_required", null, null, null, null, null)); }
             public Task<NativeIntentState> StatusAsync(Guid intentId, CancellationToken token) => Task.FromResult(Status ?? throw new NotImplementedException());
             public Task<NativeRecoveryPage> RecoveryAsync(Guid? afterIntentId, int limit, CancellationToken token) => throw new NotImplementedException();
             public Task<NativeIntentState> SubmitProofAsync(Guid intentId, NativeProof proof, CancellationToken token)

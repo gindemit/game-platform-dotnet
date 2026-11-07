@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 namespace GamePlatform.Features.Purchases
 {
     public sealed class ProtectedNativeProofRecord
@@ -12,6 +13,9 @@ namespace GamePlatform.Features.Purchases
                     string.IsNullOrWhiteSpace(packageName) || packageName.Length > 255 || string.IsNullOrWhiteSpace(storeProductId) || storeProductId.Length > 255)
                     throw new ArgumentException("A finalized proof requires its immutable UUIDv7 identities and product scope.", nameof(finalizedChargeId));
             }
+            else if (proofId == Guid.Empty || recoveryIntentKey == Guid.Empty || reservedAttemptKey == Guid.Empty ||
+                !IsRetainedScope(packageName) || !IsRetainedScope(storeProductId))
+                throw new ArgumentException("An unfinalized proof requires its retained identities and bounded product scope.");
             ProofId = proofId;
             RecoveryIntentKey = recoveryIntentKey;
             PackageName = packageName;
@@ -25,6 +29,15 @@ namespace GamePlatform.Features.Purchases
         public string StoreProductId { get; }
         public Guid? ReservedAttemptKey { get; }
         public Guid? FinalizedChargeId { get; }
+        private static bool IsRetainedScope(string value)
+        {
+            // Preserve the native retained-store domain, rather than imposing server product rules.
+            if (string.IsNullOrEmpty(value) || value.Length > 256)
+                return false;
+            try
+            { return new UTF8Encoding(false, true).GetByteCount(value) <= 256; }
+            catch (EncoderFallbackException) { return false; }
+        }
         private static bool IsV7(Guid id)
         {
             string value = id.ToString("D");
