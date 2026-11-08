@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import tempfile
 from pathlib import Path
 
@@ -225,16 +226,50 @@ def verify_stable_asset_metadata(root: Path) -> None:
             fail('package_asset_meta_invalid: ' + relative)
 
 
-def export_package(bundle: Path, output: Path, package_version: str = PACKAGE_VERSION) -> None:
+def validation_destination(output: Path) -> Path:
+    """Validate a new external destination without creating or deleting anything."""
+    if not output.is_absolute():
+        fail('validation_output_must_be_absolute')
+    for candidate in (output, *output.parents):
+        if os.path.lexists(candidate):
+            attributes = getattr(candidate.lstat(), 'st_file_attributes', 0)
+            if candidate.is_symlink() or attributes & getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 0):
+                fail('validation_output_linked_path')
+    destination = output.resolve()
+    repository = ROOT.resolve()
+    if destination == repository or repository in destination.parents or destination in repository.parents:
+        fail('validation_output_must_be_external')
+    if not destination.parent.is_dir():
+        fail('validation_output_parent_missing')
+    if os.path.lexists(destination):
+        fail('validation_output_already_exists')
+    if os.path.lexists(destination.with_name(destination.name + '.previous')):
+        fail('validation_previous_collision')
+    return destination
+
+
+def install_validation_stage(stage: Path, output: Path) -> None:
+    """Install only into an exclusively created directory; retain partial evidence."""
+    output = validation_destination(output)
+    output.mkdir()
+    for item in stage.iterdir():
+        item.rename(output / item.name)
+
+
+def export_package(bundle: Path, output: Path, package_version: str = PACKAGE_VERSION,
+                   validation_only: bool = False) -> None:
     module = load_sdk_packager()
     source_manifest = module.verify_bundle(bundle)
     if source_manifest['version'] != PACKAGE_VERSION:
         fail('source_package_version_mismatch')
 
-    output = output.resolve()
-    if output != OUTPUT.resolve() or OUTPUT.is_symlink():
-        fail('output_must_be_upm_package_directory')
-    output.parent.mkdir(parents=True, exist_ok=True)
+    if validation_only:
+        output = validation_destination(output)
+    else:
+        output = output.resolve()
+        if output != OUTPUT.resolve() or OUTPUT.is_symlink():
+            fail('output_must_be_upm_package_directory')
+        output.parent.mkdir(parents=True, exist_ok=True)
     previous = output.with_name(output.name + '.previous')
     if previous.is_symlink() or (previous.exists() and previous.resolve() != output.parent / (output.name + '.previous')):
         fail('previous_package_path_invalid')
@@ -312,6 +347,14 @@ def export_package(bundle: Path, output: Path, package_version: str = PACKAGE_VE
         package_manifest_path.write_text(
             json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
         verify_package(stage, package_version)
+        if validation_only:
+            # Never enter canonical backup/removal/restore logic. Exclusive mkdir
+            # also refuses a directory raced into place after the policy check.
+            install_validation_stage(stage, output)
+            # On failure, retain partial validation output as evidence. finally
+            # cleans only our stage, never any caller destination or .previous.
+            verify_package(output, package_version)
+            return
         if previous.exists():
             shutil.rmtree(previous)
         if output.exists():
@@ -333,14 +376,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle', type=Path, default=ROOT / 'artifacts/sdk')
     parser.add_argument('--verify', action='store_true')
+    parser.add_argument('--validation-only', action='store_true',
+                        help='Generate only into a new absolute external output; never replace committed delivery.')
     parser.add_argument('--output', type=Path, default=OUTPUT)
     parser.add_argument('--package-version', default=PACKAGE_VERSION)
     args = parser.parse_args()
+    if args.verify and args.validation_only:
+        parser.error('--validation-only is a generation mode; use --verify alone for an existing tree')
     if args.verify:
         verify_package(args.output.resolve(), args.package_version)
         print('UPM package identity, complete inventory, hashes and native payload verified.')
     else:
-        export_package(args.bundle.resolve(), args.output, args.package_version)
+        export_package(args.bundle.resolve(), args.output, args.package_version,
+                       validation_only=args.validation_only)
         print(f'Generated complete Git UPM package at {args.output}; nothing published.')
 
 
