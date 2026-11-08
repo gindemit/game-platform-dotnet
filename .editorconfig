@@ -15,6 +15,9 @@ csharp_preserve_single_line_statements = false
 # This preserves existing compact blocks; it does not collapse expanded code.
 csharp_preserve_single_line_blocks = true
 dotnet_diagnostic.IDE0055.severity = warning
+# First explicit correctness stage; retain default enabled CA rules as well.
+dotnet_diagnostic.CA2012.severity = warning
+dotnet_diagnostic.CA2200.severity = warning
 
 # Generated contracts and third-party source retain their owning layout.
 [*.g.cs]

@@ -32,17 +32,53 @@ namespace GamePlatform.Tests.Sqlite
         public void EveryMaterializedRowTypeIsFullyPreservedByTheUnityLinkXml()
         {
             var rowTypes = FindMaterializedRowTypes();
-            var preserved = XDocument.Load(FindLinkXml()).Descendants("assembly")
+            var document = XDocument.Load(FindLinkXml());
+            var preserved = PreservedRowTypes(document);
+
+            Assert.DoesNotContain(preserved, name => name != null && name.Contains('+'));
+            Assert.Contains("GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow", rowTypes);
+            Assert.Empty(UnpreservedRowTypes(rowTypes, document));
+        }
+
+        [Theory]
+        [InlineData("remove")]
+        [InlineData("rename")]
+        [InlineData("weaken")]
+        public void LinkerGuardRejectsEveryMaterializedRowPreservationRegression(string mutation)
+        {
+            // Mutate actual production XML against actual compiled materializer
+            // discoveries, so a vacuous guard cannot accept these regressions.
+            var rowTypes = FindMaterializedRowTypes();
+            Assert.NotEmpty(rowTypes);
+            foreach (var rowType in rowTypes)
+            {
+                var document = XDocument.Load(FindLinkXml());
+                var entry = document.Descendants("assembly")
+                    .Where(assembly => (string?)assembly.Attribute("fullname") == StorageAssembly.GetName().Name)
+                    .Descendants("type")
+                    .Single(type => (string?)type.Attribute("fullname") == rowType);
+                if (mutation == "remove")
+                    entry.Remove();
+                else if (mutation == "rename")
+                    entry.SetAttributeValue("fullname", rowType + "Renamed");
+                else
+                    entry.SetAttributeValue("preserve", "fields");
+
+                Assert.Equal(new[] { rowType }, UnpreservedRowTypes(rowTypes, document));
+            }
+        }
+
+        private static HashSet<string?> PreservedRowTypes(XDocument document) => document.Descendants("assembly")
                 .Where(assembly => (string?)assembly.Attribute("fullname") == StorageAssembly.GetName().Name)
                 .Descendants("type")
                 .Where(type => (string?)type.Attribute("preserve") == "all")
                 .Select(type => (string?)type.Attribute("fullname"))
                 .ToHashSet(StringComparer.Ordinal);
 
-            Assert.DoesNotContain(preserved, name => name != null && name.Contains('+'));
-            Assert.Contains("GamePlatform.Storage.Sqlite.Sync.SqlitePrivateSyncStore/StagedProjectionRow", rowTypes);
-            var unpreserved = rowTypes.Where(name => !preserved.Contains(name)).ToArray();
-            Assert.Empty(unpreserved);
+        private static string[] UnpreservedRowTypes(IEnumerable<string> rowTypes, XDocument document)
+        {
+            var preserved = PreservedRowTypes(document);
+            return rowTypes.Where(name => !preserved.Contains(name)).ToArray();
         }
 
         private static SortedSet<string> FindMaterializedRowTypes()
