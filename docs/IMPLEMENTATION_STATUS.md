@@ -1,5 +1,26 @@
 # SDK current status
 
+## Source CI and consumer delivery — 2026-11-12 review
+
+Latest inspected source `32a34d6da1cf6de465dd955ef3e8859cd4efd075` has passing
+[CI run 42529351239](https://github.com/gindemit/game-platform-dotnet/actions/runs/42529351239):
+1,268 main SDK + 48 configuration + 75 configuration-client tests = **1,391 passed**,
+with nine existing skips and zero failures. All 98 Python tooling checks, build,
+format/schema checks and packaging passed. The manually dispatched run skipped
+`release-upm`; no new consumer delivery is implied.
+
+Unity at `c5f1ef3afb578a2cbdf522cf86c2c16a424487f2` still consumes Git UPM
+`6ed8a17642996f7d5752552c752bacacbe8230e8`, whose manifest identifies source
+`7a9ab9d3d533a097fa0c53481ffce84074dd61cb`. November route-admission and
+purchase-retirement repairs are tested in source but are not in that mobile
+package. Package production, provenance, import and consumer runtime qualification
+remain a separate Android/account-platform follow-up. Browser-local WebLite does
+not require an unrelated mobile SDK repin for CrazyGames.
+
+See the [current cross-repository release review](https://github.com/gindemit/game-platform-workspace/blob/main/plans/CRAZYGAMES-RESUBMISSION-REVIEW-2026-11-12.md).
+The dated entries below preserve their original source/package and runtime scope;
+older totals are not the current source CI inventory.
+
 ## Canonical checkout and current consumer identity — 2026-10-21
 
 The owner selected one working checkout on `main` at

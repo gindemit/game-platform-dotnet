@@ -22,7 +22,7 @@ independently useful types, with explicit exceptions for compact companions,
 implementation helpers and generated/vendor sources.
 
 Use main and preserve unrelated work. Do not reset, stash/discard or commit another
-session's files. Build/package from owned disposable exact-source copies. Serialize
+session's files. Build/package in the canonical checkout with ignored outputs or external evidence. Serialize
 git indexes and package production; consumer Unity manifest/import changes need a
 separate integration lease. Keep canonical runtime source in src, with generated
 Git UPM delivery and exact source/payload identities. No automatic publishing,
